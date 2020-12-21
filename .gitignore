@@ -1,0 +1,5 @@
+# Project exclude paths
+/cmake-build-debug/
+/CMakeFiles/
+/Sources/glfw/CMakeFiles/
+/Sources/glfw/src/CMakeFiles/

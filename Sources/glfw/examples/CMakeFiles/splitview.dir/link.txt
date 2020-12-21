@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/splitview.dir/splitview.c.o CMakeFiles/splitview.dir/__/deps/glad_gl.c.o -o splitview  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 
