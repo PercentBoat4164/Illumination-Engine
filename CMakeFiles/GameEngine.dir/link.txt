@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/GameEngine.dir/Renderer.cpp.o  -o GameEngine  -Wl,-rpath,/opt/arrayfire/lib64 Sources/glfw/src/libglfw3.a -lglfw3 /usr/lib/x86_64-linux-gnu/libvulkan.so /opt/arrayfire/lib64/libaf.so.3.7.3 -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 
