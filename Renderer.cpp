@@ -10,6 +10,7 @@
 #include <optional>
 #include <set>
 #include <cstdint>
+#include <fstream>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -108,6 +109,7 @@ private:
         createLogicalDevice();
         createSwapChain();
         createImageViews();
+        createGraphicsPipeline();
     }
 
     void mainLoop() {
@@ -343,6 +345,11 @@ private:
         }
     }
 
+    static void createGraphicsPipeline() {
+        auto vertShaderCode = readFile("Shaders/vert.spv");
+        auto fragShaderCode = readFile("Shaders/frag.spv");
+    }
+
     static bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -467,6 +474,20 @@ private:
         }
     }
 
+    VkShaderModule createShaderModule(const std::vector<char>& code) {
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = code.size();
+        createInfo.pCode - reinterpret_cast<const uint32_t*>(code.data());
+
+        VkShaderModule shaderModule;
+        if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create shader module!");
+        }
+
+        return shaderModule;
+    }
+
     static std::vector<const char*> getRequiredExtensions() {
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
@@ -479,6 +500,21 @@ private:
         }
 
         return extensions;
+    }
+
+    static std::vector<char> readFile(const std::string& filename) {
+        std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+        if (!file.is_open()) {
+            throw std::runtime_error("failed to open file!");
+        }
+
+        size_t fileSize = (size_t)file.tellg();
+        std::vector<char> buffer(fileSize);
+        file.seekg(0);
+        file.read(buffer.data(), fileSize);
+        file.close();
+        return buffer;
     }
 
     static bool checkValidationLayerSupport() {
