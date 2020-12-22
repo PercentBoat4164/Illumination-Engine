@@ -177,17 +177,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named vulkantutorial
+# Target rules for targets named GameEngine
 
 # Build rule for target.
-vulkantutorial: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 vulkantutorial
-.PHONY : vulkantutorial
+GameEngine: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 GameEngine
+.PHONY : GameEngine
 
 # fast build rule for target.
-vulkantutorial/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/vulkantutorial.dir/build.make CMakeFiles/vulkantutorial.dir/build
-.PHONY : vulkantutorial/fast
+GameEngine/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameEngine.dir/build.make CMakeFiles/GameEngine.dir/build
+.PHONY : GameEngine/fast
 
 #=============================================================================
 # Target rules for targets named uninstall
@@ -221,7 +221,7 @@ Renderer.o: Renderer.cpp.o
 
 # target to build an object file
 Renderer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/vulkantutorial.dir/build.make CMakeFiles/vulkantutorial.dir/Renderer.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameEngine.dir/build.make CMakeFiles/GameEngine.dir/Renderer.cpp.o
 .PHONY : Renderer.cpp.o
 
 Renderer.i: Renderer.cpp.i
@@ -230,7 +230,7 @@ Renderer.i: Renderer.cpp.i
 
 # target to preprocess a source file
 Renderer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/vulkantutorial.dir/build.make CMakeFiles/vulkantutorial.dir/Renderer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameEngine.dir/build.make CMakeFiles/GameEngine.dir/Renderer.cpp.i
 .PHONY : Renderer.cpp.i
 
 Renderer.s: Renderer.cpp.s
@@ -239,7 +239,7 @@ Renderer.s: Renderer.cpp.s
 
 # target to generate assembly for a file
 Renderer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/vulkantutorial.dir/build.make CMakeFiles/vulkantutorial.dir/Renderer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameEngine.dir/build.make CMakeFiles/GameEngine.dir/Renderer.cpp.s
 .PHONY : Renderer.cpp.s
 
 # Help Target
@@ -255,8 +255,8 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... uninstall"
+	@echo "... GameEngine"
 	@echo "... glfw"
-	@echo "... vulkantutorial"
 	@echo "... Renderer.o"
 	@echo "... Renderer.i"
 	@echo "... Renderer.s"
