@@ -1,0 +1,1410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="GLFW"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\CMake\;CMake Files\src\;CMake Files\examples\;CMake Files\tests\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/strip">
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 install/strip"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/local">
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 install/local"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="uninstall">
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 uninstall"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install">
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 install"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glfw">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/libglfw3.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D_GLFW_USE_CONFIG_H"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/Makefile&quot;  VERBOSE=1 glfw"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glfw/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/libglfw3.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D_GLFW_USE_CONFIG_H"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/Makefile&quot;  VERBOSE=1 glfw/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="windows">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/windows" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 windows"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="windows/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/windows" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 windows/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gears">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/gears" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 gears"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gears/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/gears" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 gears/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="boing">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/boing" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 boing"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="boing/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/boing" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 boing/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="offscreen">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/offscreen" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 offscreen"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="offscreen/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/offscreen" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 offscreen/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="particles">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/particles" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 particles"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="particles/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/particles" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 particles/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="wave">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/wave" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 wave"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="wave/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/wave" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 wave/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="sharing">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/sharing" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 sharing"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="sharing/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/sharing" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 sharing/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="splitview">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/splitview" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 splitview"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="splitview/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/splitview" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 splitview/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="heightmap">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/heightmap" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 heightmap"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="heightmap/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/heightmap" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 heightmap/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="triangle-opengl">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/triangle-opengl" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 triangle-opengl"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="triangle-opengl/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/triangle-opengl" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 triangle-opengl/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="reopen">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/reopen" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 reopen"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="reopen/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/reopen" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 reopen/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="inputlag">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/inputlag" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 inputlag"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="inputlag/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/inputlag" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 inputlag/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="monitors">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/monitors" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 monitors"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="monitors/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/monitors" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 monitors/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="iconify">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/iconify" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 iconify"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="iconify/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/iconify" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 iconify/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gamma">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/gamma" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 gamma"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gamma/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/gamma" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 gamma/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="icon">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/icon" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 icon"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="icon/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/icon" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 icon/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="tearing">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/tearing" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 tearing"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="tearing/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/tearing" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 tearing/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="empty">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/empty" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 empty"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="empty/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/empty" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 empty/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="events">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/events" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 events"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="events/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/events" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 events/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="msaa">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/msaa" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 msaa"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="msaa/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/msaa" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 msaa/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="cursor">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/cursor" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 cursor"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="cursor/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/cursor" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 cursor/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="threads">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/threads" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 threads"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="threads/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/threads" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 threads/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glfwinfo">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/glfwinfo" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 glfwinfo"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glfwinfo/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/glfwinfo" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 glfwinfo/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="joysticks">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/joysticks" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 joysticks"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="joysticks/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/joysticks" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 joysticks/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="clipboard">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/clipboard" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clipboard"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="clipboard/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/clipboard" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clipboard/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="title">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/title" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 title"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="title/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/title" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 title/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="triangle-vulkan">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/triangle-vulkan" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 triangle-vulkan"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="triangle-vulkan/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/triangle-vulkan" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 triangle-vulkan/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="window">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/window" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 window"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="window/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/window" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 window/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="timeout">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/timeout" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 timeout"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="timeout/fast">
+				<Option output="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/timeout" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests"/>
+				<Option object_output="./"/>
+				<Option type="0"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps"/>
+					<Add directory="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 timeout/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps/getopt.c">
+			<Option target="particles"/>
+			<Option target="inputlag"/>
+			<Option target="monitors"/>
+			<Option target="iconify"/>
+			<Option target="events"/>
+			<Option target="msaa"/>
+			<Option target="glfwinfo"/>
+			<Option target="clipboard"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps/getopt.h">
+			<Option target="particles"/>
+			<Option target="inputlag"/>
+			<Option target="monitors"/>
+			<Option target="iconify"/>
+			<Option target="events"/>
+			<Option target="msaa"/>
+			<Option target="glfwinfo"/>
+			<Option target="clipboard"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps/glad/gl.h">
+			<Option target="windows"/>
+			<Option target="gears"/>
+			<Option target="boing"/>
+			<Option target="offscreen"/>
+			<Option target="particles"/>
+			<Option target="wave"/>
+			<Option target="sharing"/>
+			<Option target="splitview"/>
+			<Option target="heightmap"/>
+			<Option target="triangle-opengl"/>
+			<Option target="reopen"/>
+			<Option target="inputlag"/>
+			<Option target="monitors"/>
+			<Option target="iconify"/>
+			<Option target="gamma"/>
+			<Option target="icon"/>
+			<Option target="tearing"/>
+			<Option target="empty"/>
+			<Option target="events"/>
+			<Option target="msaa"/>
+			<Option target="cursor"/>
+			<Option target="threads"/>
+			<Option target="glfwinfo"/>
+			<Option target="joysticks"/>
+			<Option target="clipboard"/>
+			<Option target="title"/>
+			<Option target="window"/>
+			<Option target="timeout"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps/glad/vulkan.h">
+			<Option target="glfwinfo"/>
+			<Option target="triangle-vulkan"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps/glad_gl.c">
+			<Option target="windows"/>
+			<Option target="gears"/>
+			<Option target="boing"/>
+			<Option target="offscreen"/>
+			<Option target="particles"/>
+			<Option target="wave"/>
+			<Option target="sharing"/>
+			<Option target="splitview"/>
+			<Option target="heightmap"/>
+			<Option target="triangle-opengl"/>
+			<Option target="reopen"/>
+			<Option target="inputlag"/>
+			<Option target="monitors"/>
+			<Option target="iconify"/>
+			<Option target="gamma"/>
+			<Option target="icon"/>
+			<Option target="tearing"/>
+			<Option target="empty"/>
+			<Option target="events"/>
+			<Option target="msaa"/>
+			<Option target="cursor"/>
+			<Option target="threads"/>
+			<Option target="glfwinfo"/>
+			<Option target="joysticks"/>
+			<Option target="clipboard"/>
+			<Option target="title"/>
+			<Option target="window"/>
+			<Option target="timeout"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps/glad_vulkan.c">
+			<Option target="glfwinfo"/>
+			<Option target="triangle-vulkan"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps/tinycthread.c">
+			<Option target="particles"/>
+			<Option target="empty"/>
+			<Option target="threads"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/deps/tinycthread.h">
+			<Option target="particles"/>
+			<Option target="empty"/>
+			<Option target="threads"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/boing.c">
+			<Option target="boing"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/gears.c">
+			<Option target="gears"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/heightmap.c">
+			<Option target="heightmap"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/offscreen.c">
+			<Option target="offscreen"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/particles.c">
+			<Option target="particles"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/sharing.c">
+			<Option target="sharing"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/splitview.c">
+			<Option target="splitview"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/triangle-opengl.c">
+			<Option target="triangle-opengl"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/wave.c">
+			<Option target="wave"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/windows.c">
+			<Option target="windows"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include/GLFW/glfw3.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/include/GLFW/glfw3native.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/context.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/egl_context.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/egl_context.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/glfw_config.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/glx_context.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/glx_context.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/init.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/input.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/internal.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/linux_joystick.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/linux_joystick.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/mappings.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/monitor.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/osmesa_context.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/osmesa_context.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/posix_thread.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/posix_thread.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/posix_time.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/posix_time.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/vulkan.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/window.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/x11_init.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/x11_monitor.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/x11_platform.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/x11_window.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/xkb_unicode.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/xkb_unicode.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/clipboard.c">
+			<Option target="clipboard"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/cursor.c">
+			<Option target="cursor"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/empty.c">
+			<Option target="empty"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/events.c">
+			<Option target="events"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/gamma.c">
+			<Option target="gamma"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/glfwinfo.c">
+			<Option target="glfwinfo"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/icon.c">
+			<Option target="icon"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/iconify.c">
+			<Option target="iconify"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/inputlag.c">
+			<Option target="inputlag"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/joysticks.c">
+			<Option target="joysticks"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/monitors.c">
+			<Option target="monitors"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/msaa.c">
+			<Option target="msaa"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/reopen.c">
+			<Option target="reopen"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/tearing.c">
+			<Option target="tearing"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/threads.c">
+			<Option target="threads"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/timeout.c">
+			<Option target="timeout"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/title.c">
+			<Option target="title"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/triangle-vulkan.c">
+			<Option target="triangle-vulkan"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/window.c">
+			<Option target="window"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/CMake/cmake_uninstall.cmake.in">
+			<Option virtualFolder="CMake Files\CMake\"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/CMake/glfw3.pc.in">
+			<Option virtualFolder="CMake Files\CMake\"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/CMake/glfw3Config.cmake.in">
+			<Option virtualFolder="CMake Files\CMake\"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/src/glfw_config.h.in">
+			<Option virtualFolder="CMake Files\src\"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/examples/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\examples\"/>
+		</Unit>
+		<Unit filename="/home/thaddeus/Documents/Programming/C++/GameEngine/Sources/glfw/tests/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\tests\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
