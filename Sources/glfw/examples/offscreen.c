@@ -148,7 +148,6 @@ int main(void)
     glUseProgram(program);
     glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    glFinish();
 
 #if USE_NATIVE_OSMESA
     glfwGetOSMesaColorBuffer(window, &width, &height, NULL, (void**) &buffer);

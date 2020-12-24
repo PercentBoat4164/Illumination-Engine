@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/clipboard.dir/clipboard.c.o CMakeFiles/clipboard.dir/__/deps/getopt.c.o CMakeFiles/clipboard.dir/__/deps/glad_gl.c.o  -o clipboard  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 

@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/offscreen.dir/offscreen.c.o CMakeFiles/offscreen.dir/__/deps/glad_gl.c.o  -o offscreen  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 

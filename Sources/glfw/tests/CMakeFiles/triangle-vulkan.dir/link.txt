@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/triangle-vulkan.dir/triangle-vulkan.c.o CMakeFiles/triangle-vulkan.dir/__/deps/glad_vulkan.c.o  -o triangle-vulkan  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 

@@ -30,7 +30,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-#ifdef WINDOWS
+#ifdef _WIN32
 #include <direct.h>
 #define GetCurrentDir _getcwd
 #else
@@ -580,8 +580,8 @@ private:
                     static_cast<uint32_t>(height)
             };
 
-            actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
-            actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+            actualExtent.width = (std::max)(capabilities.minImageExtent.width, (std::min)(capabilities.maxImageExtent.width, actualExtent.width));
+            actualExtent.height = (std::max)(capabilities.minImageExtent.height, (std::min)(capabilities.maxImageExtent.height, actualExtent.height));
 
             return actualExtent;
         }
