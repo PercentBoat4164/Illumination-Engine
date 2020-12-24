@@ -1,1 +1,1 @@
-/usr/bin/cc CMakeFiles/heightmap.dir/heightmap.c.o CMakeFiles/heightmap.dir/__/deps/glad_gl.c.o -o heightmap  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 
+/usr/bin/cc -g   CMakeFiles/heightmap.dir/heightmap.c.o CMakeFiles/heightmap.dir/__/deps/glad_gl.c.o  -o heightmap  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 

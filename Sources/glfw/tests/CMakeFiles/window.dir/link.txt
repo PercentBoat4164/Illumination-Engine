@@ -1,1 +1,1 @@
-/usr/bin/cc CMakeFiles/window.dir/window.c.o CMakeFiles/window.dir/__/deps/glad_gl.c.o -o window  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 
+/usr/bin/cc -g   CMakeFiles/window.dir/window.c.o CMakeFiles/window.dir/__/deps/glad_gl.c.o  -o window  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 

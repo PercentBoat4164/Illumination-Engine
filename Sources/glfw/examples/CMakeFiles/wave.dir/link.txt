@@ -1,1 +1,1 @@
-/usr/bin/cc CMakeFiles/wave.dir/wave.c.o CMakeFiles/wave.dir/__/deps/glad_gl.c.o -o wave  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 
+/usr/bin/cc -g   CMakeFiles/wave.dir/wave.c.o CMakeFiles/wave.dir/__/deps/glad_gl.c.o  -o wave  ../src/libglfw3.a -lm -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 
