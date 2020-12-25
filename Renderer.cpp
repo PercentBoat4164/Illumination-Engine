@@ -565,7 +565,7 @@ private:
             throw std::runtime_error("failed to allocate command buffers!");
         }
 
-        for (size_t i = 0; i < )
+        //for (size_t i = 0; i < 0)
     }
 
     VkShaderModule createShaderModule(const std::vector<char>& code) {
