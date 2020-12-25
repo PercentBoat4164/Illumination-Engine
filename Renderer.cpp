@@ -3,6 +3,7 @@
 #include <arrayfire.h>
 
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include <stdexcept>
 #include <algorithm>
@@ -875,10 +876,9 @@ private:
     }
 
     static std::vector<char> readFile(const std::string& filename) {
-        char buff[FILENAME_MAX];
-        GetCurrentDir(buff, FILENAME_MAX);
-        std::string filenameAbsolute(buff);
-        filenameAbsolute += "/" + filename;
+        std::string filenameAbsolute{std::filesystem::canonical("/proc/self/exe").u8string()};
+        filenameAbsolute = filenameAbsolute.substr(0, filenameAbsolute.find_last_of("/")) + "/" + filename;
+        std::cout << "Requesting: " << filename << std::endl;
         std::cout << "Opening: " << filenameAbsolute << std::endl;
         std::ifstream file(filenameAbsolute, std::ios::ate | std::ios::binary);
 
