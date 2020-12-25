@@ -878,8 +878,8 @@ private:
         char buff[FILENAME_MAX];
         GetCurrentDir(buff, FILENAME_MAX);
         std::string filenameAbsolute(buff);
-        filenameAbsolute = filenameAbsolute.substr(0, filenameAbsolute.find_last_of('/'));
         filenameAbsolute += "/" + filename;
+        std::cout << "Opening: " << filenameAbsolute << std::endl;
         std::ifstream file(filenameAbsolute, std::ios::ate | std::ios::binary);
 
         if (!file.is_open()) {
