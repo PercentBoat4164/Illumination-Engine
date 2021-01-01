@@ -10,6 +10,15 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf glfw.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Sources)
 
+IF(WIN32)
+    add_subdirectory(Sources/glm)
+ENDIF()
+
 add_subdirectory(Sources/glfw)
 add_executable(GameEngine Renderer.cpp)
-target_link_libraries(GameEngine glfw ${GLFW_LIBRARIES} Vulkan::Vulkan)
+
+IF(WIN32)
+    target_link_libraries(GameEngine glfw ${GLFW_LIBRARIES} Vulkan::Vulkan glm ${GLM_LIBRARIES})
+ELSE()
+    target_link_libraries(GameEngine glfw ${GLFW_LIBRARIES} Vulkan::Vulkan)
+ENDIF()
