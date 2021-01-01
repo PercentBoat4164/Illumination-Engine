@@ -2,7 +2,6 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <GLFW/glfw3.h>
-#include <arrayfire.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -1270,8 +1269,6 @@ private:
 };
 
 int main() {
-    //af::setBackend(AF_BACKEND_DEFAULT);
-    //af::info();
     GameEngineRenderer app;
 
     try {
