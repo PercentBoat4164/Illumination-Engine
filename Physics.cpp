@@ -2,14 +2,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
-
+#define TINYOBJLOADER_IMPLEMENTATION
 #include "sources/tiny_obj_loader.h"
 
-#if _WIN32
-const std::string MODEL_PATH = "../models/viking_room.obj";
-#else
-const std::string MODEL_PATH = "models/viking_room.obj";
-#endif
+    const std::string MODEL_PATH = "models/viking_room.obj";
 
 //A body with a position, velocity, and mass.
 class Body {
@@ -71,15 +67,12 @@ void loadModel() {
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
-
     if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
         throw std::runtime_error(warn + err);
     }
 }
 
 int main() {
-
-
 
     Body myBody = Body(0.0f,0.0f,0.0f,0.1f);
     World myWorld;
