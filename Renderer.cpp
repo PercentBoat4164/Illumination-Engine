@@ -704,10 +704,17 @@ private:
     void createTextureImage() {
         int texWidth, texHeight, texChannels;
         #if WIN32
-            stbi_uc* pixels = stbi_load("../textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+            char pathChar[MAX_PATH];
+            GetModuleFileNameA(NULL, pathChar, MAX_PATH);
+            std::string path = std::string(pathChar);
+            std::string filenameAbsolute = path.substr(0, path.find_last_of("\\"));
         #else
-            stbi_uc* pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+            std::string filenameAbsolute{std::filesystem::canonical("/proc/self/exe").u8string()};
+            filenameAbsolute = (std::string)filenameAbsolute.substr(0, filenameAbsolute.find_last_of('/'));
         #endif
+        filenameAbsolute += "/textures/texture.jpg";
+        const char *filename = filenameAbsolute.data();
+        stbi_uc* pixels = stbi_load(filename, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         if (!pixels) {
@@ -1371,7 +1378,7 @@ private:
     }
 
     static std::vector<char> readFile(const std::string& filename) {
-        #if _WIN32
+        #if WIN32
             char pathChar[MAX_PATH];
             GetModuleFileNameA(NULL, pathChar, MAX_PATH);
             std::string path = std::string(pathChar);
