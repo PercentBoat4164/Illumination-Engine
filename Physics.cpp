@@ -6,9 +6,9 @@
 #include "sources/tiny_obj_loader.h"
 
 #if WIN32
-    const std::string MODEL_PATH = "../models/viking_room.obj";
+    const std::string MODEL_PATH = "../models/room.obj";
 #else
-    const std::string MODEL_PATH = "models/viking_room.obj";
+    const std::string MODEL_PATH = "models/room.obj";
 #endif
 
 //A body with a position, velocity, and mass.
