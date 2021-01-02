@@ -1,14 +1,14 @@
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
-#define TINYOBJLOADER_IMPLEMENTATION
+
 #include "sources/tiny_obj_loader.h"
 
-    const std::string MODEL_PATH = "models/viking_room.obj";
 
-//A body with a position, velocity, and mass.
-class Body {
+//A particle with a position, velocity, and mass.
+class Particle {
 public:
 
     glm::vec4 pos; //position
@@ -16,9 +16,9 @@ public:
     float m; //mass
 
     //constructor
-    Body(float x,float y,float z, float mass) {
-        v = glm::vec4(0.0f,0.0f,0.0f, 0.0f);
+    Particle(float x, float y, float z, float mass) {
         pos = glm::vec4(x, y, z, 1.0f);
+        v = glm::vec4(0.0f,0.0f,0.0f, 0.0f);
         m = mass;
     }
 
@@ -31,27 +31,68 @@ public:
     void applyImpulse(glm::vec4 impulse) {
         v += impulse;
     }
+
     void applyImpulse(float x, float y, float z) {
         v.x += (x/m);
         v.y += (y/m);
         v.z += (z/m);
     }
+protected:
+    Particle() {
+        pos = glm::vec4(0.0f,0.0f,0.0f,0.0f);
+        v = glm::vec4(0.0f,0.0f,0.0f,0.0f);
+        m = 0.0f;
+    }
 };
 
-class RigidBody: public Body {
+class RigidBody: public Particle {
 public:
     glm::vec3 rot; //the current angular position of the rigidbody
     glm::vec3 rotV; //the current angular velocity of the rigidbody
     float I; //the moment of inertia for the rigidbody
+
+    RigidBody(float x,float y,float z,float m) : Particle(x,y,z,m) {
+        rot = glm::vec3();
+        rotV = glm::vec3();
+    }
+
+
+protected:
+    RigidBody() {
+
+    }
+};
+
+class SphereBody: public RigidBody {
+public:
+
+
+    float r; //radius
+
+    SphereBody(float x,float y,float z,float mass,float radius) {
+        pos = glm::vec4(x,y,z,0.0f);
+        m=mass;
+        r=radius;
+    }
+
+    bool checkCollision(SphereBody otherSphere) {
+        if(r + otherSphere.r > glm::length(otherSphere.pos - pos)) {
+            return true;
+        }
+        return false;
+    }
+    void bounce(SphereBody otherSphere) {
+
+    }
 };
 
 //creates a world
 class World {
 public:
 
-    std::vector<Body*> bodies;
+    std::vector<Particle*> bodies;
 
-    void addBody(Body *body) {
+    void addBody(Particle *body) {
         bodies.push_back(body);
     }
 
@@ -61,20 +102,9 @@ public:
         }
     }
 };
-
-void loadModel() {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
-        throw std::runtime_error(warn + err);
-    }
-}
-
 int main() {
-
-    Body myBody = Body(0.0f,0.0f,0.0f,0.1f);
+    SphereBody myBody = SphereBody(0.0f, 0.0f, 0.0f, 1.0f,2.0f);
+    SphereBody otherBody = SphereBody(5.0f, 0.0f, 0.0f, 1.0f,2.0f);
     World myWorld;
     myWorld.addBody(&myBody);
     char input;
@@ -106,6 +136,11 @@ int main() {
         }
         std::cout << "\nVx: " << myBody.v.x << "  Vy: " << myBody.v.y << "  Vz: " << myBody.v.z;
         std::cout << "\nPos x: " << myBody.pos.x << " Pos y: " << myBody.pos.y << " Pos z: " << myBody.pos.z << "\n";
+        if(myBody.checkCollision(otherBody)) {
+            std::cout << "Intersecting\n";
+        } else {
+            std::cout << "Not intersecting\n";
+        }
     } while(input != 'e');
     return 0;
 }
