@@ -1,6 +1,15 @@
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
+
+#include "sources/tiny_obj_loader.h"
+
+#if _WIN32
+const std::string MODEL_PATH = "../models/viking_room.obj";
+#else
+const std::string MODEL_PATH = "models/viking_room.obj";
+#endif
 
 //A body with a position, velocity, and mass.
 class Body {
@@ -35,8 +44,9 @@ public:
 
 class RigidBody: public Body {
 public:
-    glm::vec3 rot;
-    glm::vec3 rotV;
+    glm::vec3 rot; //the current angular position of the rigidbody
+    glm::vec3 rotV; //the current angular velocity of the rigidbody
+    float I; //the moment of inertia for the rigidbody
 };
 
 //creates a world
@@ -45,7 +55,7 @@ public:
 
     std::vector<Body*> bodies;
 
-    Body addBody(Body *body) {
+    void addBody(Body *body) {
         bodies.push_back(body);
     }
 
@@ -56,10 +66,23 @@ public:
     }
 };
 
+void loadModel() {
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn, err;
+
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
+        throw std::runtime_error(warn + err);
+    }
+}
+
 int main() {
+
+
+
+    Body myBody = Body(0.0f,0.0f,0.0f,0.1f);
     World myWorld;
-    Body myBody = Body(0.0f, 0.0f, 0.0f, 0.1f);
-    Body *myBodyPtr = &myBody;
     myWorld.addBody(&myBody);
     char input;
     do {
@@ -67,22 +90,29 @@ int main() {
         switch(input) {
             case 'p':
                 myWorld.step();
-            break;
+                break;
             case 'w':
                 myBody.applyImpulse(0,1,0);
-            break;
+                break;
             case 'a':
                 myBody.applyImpulse(-1,0,0);
-            break;
+                break;
             case 's':
                 myBody.applyImpulse(0,-1,0);
-            break;
+                break;
             case 'd':
                 myBody.applyImpulse(1,0,0);
-            break;
+                break;
+            case 'z':
+                myBody.applyImpulse(0,0,1);
+                break;
+            case 'x':
+                myBody.applyImpulse(0,0,-1);
+                break;
+
         }
         std::cout << "\nVx: " << myBody.v.x << "  Vy: " << myBody.v.y << "  Vz: " << myBody.v.z;
-        std::cout << "\nPos x: " << myBody.pos.x << " Pos y: " << myBody.pos.y << " Pos z: " << myBody.pos.z;
+        std::cout << "\nPos x: " << myBody.pos.x << " Pos y: " << myBody.pos.y << " Pos z: " << myBody.pos.z << "\n";
     } while(input != 'e');
     return 0;
 }
