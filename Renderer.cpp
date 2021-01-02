@@ -5,7 +5,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Sources/stb_image.h"
+#include "sources/stb_image.h"
+#include "sources/tiny_obj_loader.h"
 
 #include <iostream>
 #include <filesystem>

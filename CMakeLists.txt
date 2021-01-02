@@ -8,13 +8,13 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf glfw.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Sources)
+execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf glfw.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/sources)
 
 IF(WIN32)
-    add_subdirectory(Sources/glm)
+    add_subdirectory(sources/glm)
 ENDIF()
 
-add_subdirectory(Sources/glfw)
+add_subdirectory(sources/glfw)
 add_executable(GameEngine Renderer.cpp)
 
 IF(WIN32)

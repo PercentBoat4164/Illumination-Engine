@@ -1,5 +1,4 @@
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
 
@@ -44,25 +43,24 @@ public:
 class World {
 public:
 
-    std::vector<Body> bodies;
+    std::vector<Body*> bodies;
 
-    Body addBody(float x, float y, float z, float mass) {
-        Body body = Body(x, y, z, mass);
-        bodies.resize(bodies.size() + 1);
-        bodies[-1] = body;
-        return body;
+    Body addBody(Body *body) {
+        bodies.push_back(body);
     }
 
     void step() {
-        for(int i = 0; i < bodies.size(); i++) {
-            bodies[i].step();
+        for(auto & body : bodies) {
+            body -> step();
         }
     }
 };
 
 int main() {
     World myWorld;
-    Body myBody = myWorld.addBody(3.0f, 2.0f, 1.0f, 3.5f);
+    Body myBody = Body(0.0f, 0.0f, 0.0f, 0.1f);
+    Body *myBodyPtr = &myBody;
+    myWorld.addBody(&myBody);
     char input;
     do {
         std::cin >> input;
