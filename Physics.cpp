@@ -46,9 +46,13 @@ public:
 
     std::vector<Body> bodies;
 
-    void addBody(Body &body) {
-        bodies.push_back(body);
+    Body addBody(float x, float y, float z, float mass) {
+        Body body = Body(x, y, z, mass);
+        bodies.resize(bodies.size() + 1);
+        bodies[-1] = body;
+        return body;
     }
+
     void step() {
         for(int i = 0; i < bodies.size(); i++) {
             bodies[i].step();
@@ -57,10 +61,8 @@ public:
 };
 
 int main() {
-
-    Body myBody = Body(0,0,0,2);
     World myWorld;
-    myWorld.addBody(myBody);
+    Body myBody = myWorld.addBody(3.0f, 2.0f, 1.0f, 3.5f);
     char input;
     do {
         std::cin >> input;

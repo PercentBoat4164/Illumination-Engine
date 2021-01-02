@@ -15,7 +15,7 @@ IF(WIN32)
 ENDIF()
 
 add_subdirectory(Sources/glfw)
-add_executable(GameEngine Physics.cpp)
+add_executable(GameEngine Renderer.cpp)
 
 IF(WIN32)
     target_link_libraries(GameEngine glfw ${GLFW_LIBRARIES} Vulkan::Vulkan glm ${GLM_LIBRARIES})
