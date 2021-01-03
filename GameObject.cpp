@@ -11,10 +11,10 @@ typedef struct {
       Pb = P3 + mub (P4 - P3)
    Return FALSE if no solution exists.
 */
-int LineLineIntersect(XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *pb, double *mua, double *mub) {
-    XYZ p13,p43,p21;
-    double d1343,d4321,d1321,d4343,d2121;
-    double numer,denom;
+int LineLineIntersect(XYZ p1, XYZ p2, XYZ p3, XYZ p4, XYZ *pa, XYZ *pb, double *mua, double *mub) {
+    XYZ p13, p43, p21;
+    double d1343, d4321, d1321, d4343, d2121;
+    double numer, denom;
     epsilon = 0.01;
 
     p13.x = p1.x - p3.x;
