@@ -3,6 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 #include "sources/tiny_obj_loader.h"
 
@@ -76,6 +77,17 @@ public:
     }
 
     bool checkCollision(SphereBody otherSphere) {
+        glm::vec3 dst = {pos.x + v.x, pos.y + v.y, pos.z + v.z};
+        glm::
+
+
+
+
+
+
+
+
+
         if(r + otherSphere.r > glm::length(otherSphere.pos - pos)) {
             return true;
         }
