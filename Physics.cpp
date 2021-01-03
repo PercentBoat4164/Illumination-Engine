@@ -1,51 +1,29 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/component_wise.hpp>
 #include <iostream>
 #include <vector>
 
 #include "sources/tiny_obj_loader.h"
 
 float getLineDist(glm::vec3 p1,glm::vec3 p2,glm::vec3 p3,glm::vec3 p4) {
-
-    glm::vec3 pa,pb,p13,p43,p21;
-    float d1343,d4321,d1321,d4343,d2121;
-    float mua,mub,numer,denom;
+    glm::vec3 pa, pb, p13, p43, p21;
     float epsilon = 0.01;
-
-    p13 = p1-p3;
-    p43 = p4-p3;
-    std::cout <<"\nPoints: p1x: " << p1.x << "  p3x: " << p3.x << "  p4x: " <<p4.x <<"\n";
-    if (std::abs(p43.x) < epsilon && std::abs(p43.y) < epsilon && std::abs(p43.z) < epsilon) {
-        return -1.0f;
-    }
-    p21 = p2-p3;
-    if (std::abs(p21.x) < epsilon && std::abs(p21.y) < epsilon && std::abs(p21.z) < epsilon) {
-        return -2.0f;
-    }
-
-    d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
-    d4321 = p43.x * p21.x + p43.y * p21.y + p43.z * p21.z;
-    d1321 = p13.x * p21.x + p13.y * p21.y + p13.z * p21.z;
-    d4343 = p43.x * p43.x + p43.y * p43.y + p43.z * p43.z;
-    d2121 = p21.x * p21.x + p21.y * p21.y + p21.z * p21.z;
-
-    denom = d2121 * d4343 - d4321 * d4321;
-    if (std::abs(denom) < epsilon) {
-        return -3.0f;
-    }
-    numer = d1343 * d4321 - d1321 * d4343;
-
-    mua = numer / denom;
-    mub = (d1343 + d4321 * (mua)) / d4343;
-
-    pa.x = p1.x + mua * p21.x;
-    pa.y = p1.y + mua * p21.y;
-    pa.z = p1.z + mua * p21.z;
-    pb.x = p3.x + mub * p43.x;
-    pb.y = p3.y + mub * p43.y;
-    pb.z = p3.z + mub * p43.z;
-
+    p13 = p1 - p3;
+    p43 = p4 - p3;
+    if (std::abs(p43.x) < epsilon && std::abs(p43.y) < epsilon && std::abs(p43.z) < epsilon) {return -1.0f;}
+    p21 = p2 - p3;
+    if (std::abs(p21.x) < epsilon && std::abs(p21.y) < epsilon && std::abs(p21.z) < epsilon) {return -2.0f;}
+    float d1343 = glm::compAdd(p13 * p43);
+    float d4321 = glm::compAdd(p43 * p21);
+    float d4343 = glm::compAdd(p43 * p43);
+    float denom = glm::compAdd(p21 * p21) * d4343 - d4321 * d4321;
+    float numer = d1343 * d4321 - glm::compAdd(p13 * p21) * d4343;
+    if (std::abs(denom) < epsilon) {return -3.0f;} //Are lines parallel?
+    float mua = numer / denom;
+    float mub = (d1343 + d4321 * (mua)) / d4343;
+    pa = p1 + mua * p21;
+    pb = p3 + mub * p43;
     return(glm::length(pa-pb));
 }
 
@@ -146,7 +124,7 @@ public:
         float l = getLineDist(s1.pos,(s1.pos+s1.v),s2.pos,(s2.pos+s2.v));
         std::cout << "Distance between lines: " << l << "\n";
         if(l <= 0) {
-            l = s1.r+s2.r+1;
+            l = s1.r + s2.r+1;
         }
         if(s1.r + s2.r > glm::length(s2.pos - s1.pos) || l < s1.r + s2.r) {
             return true;
@@ -160,6 +138,7 @@ int main() {
     otherBody.applyImpulse(0,0,1);
     World myWorld;
     myWorld.addBody(&myBody);
+    myWorld.addBody(&otherBody);
     char input;
     do {
         std::cin >> input;
@@ -187,9 +166,13 @@ int main() {
                 break;
 
         }
+        std::cout << "-----myBody--------";
         std::cout << "\nVx: " << myBody.v.x << "  Vy: " << myBody.v.y << "  Vz: " << myBody.v.z;
         std::cout << "\nPos x: " << myBody.pos.x << " Pos y: " << myBody.pos.y << " Pos z: " << myBody.pos.z << "\n";
-        if(myWorld.checkCollision(myBody,otherBody)) {
+        std::cout << "-----otherBody-----";
+        std::cout << "\nVx: " << otherBody.v.x << "  Vy: " << otherBody.v.y << "  Vz: " << otherBody.v.z;
+        std::cout << "\nPos x: " << otherBody.pos.x << " Pos y: " << otherBody.pos.y << " Pos z: " << otherBody.pos.z << "\n" << std::endl;
+        if(myWorld.checkCollision(myBody, otherBody)) {
             std::cout << "Intersecting\n";
         } else {
             std::cout << "Not intersecting\n";
