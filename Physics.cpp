@@ -2,7 +2,6 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <vector>
-
 #include "sources/tiny_obj_loader.h"
 
 //returns the distance between two lines in 3d space
@@ -43,7 +42,7 @@ public:
     }
 
     //step forward in time. Should be called every tick
-    void step() {
+    virtual void step() {
         pos += v;
     }
 
@@ -75,6 +74,10 @@ public:
         rotV = glm::vec3();
     }
 
+    void step() {
+        Particle::step();
+        rot += rotV;
+    }
 
 protected:
     RigidBody() {
@@ -92,14 +95,6 @@ public:
         m=mass;
         r=radius;
     }
-
-    //replaced by method in world?
-    /*bool checkCollision(SphereBody otherSphere) {
-        if(r + otherSphere.r > glm::length(otherSphere.pos - pos)) {
-            return true;
-        }
-        return false;
-    }*/
 };
 
 //creates a world
@@ -124,18 +119,18 @@ public:
         //store the distance between the spheres' vectors
         float l = s1.r + s2.r + 1;
 
-        //make sure the closest points are on the vector, not behind or past it
-        if(glm::length(getClosestPoints(s1.pos,s1.v,s2.pos,s2.v)[0]) <= std::max(glm::length(s1.pos+s1.v),glm::length(s1.pos)) && glm::length(getClosestPoints(s1.pos,s1.v,s2.pos,s2.v)[0]) >= std::min(glm::length(s1.pos),glm::length(s1.pos+s1.v))) {
-            if(glm::length(getClosestPoints(s1.pos,s1.v,s2.pos,s2.v)[1]) <= std::max(glm::length(s2.pos+s2.v),glm::length(s2.pos)) && glm::length(getClosestPoints(s1.pos,s1.v,s2.pos,s2.v)[1]) >= std::min(glm::length(s2.pos+s2.v),glm::length(s2.pos))) {
+        //get the closest points to each other on the spheres' vectors
+        std::vector<glm::vec3> closestPoints = getClosestPoints(s1.pos,s1.v,s2.pos,s2.v);
 
+        //make sure the closest points are on the vectors, not behind or past them
+        if(glm::length(closestPoints[0]) <= std::max(glm::length(s1.pos+s1.v),glm::length(s1.pos)) && glm::length(closestPoints[0]) >= std::min(glm::length(s1.pos),glm::length(s1.pos+s1.v))) {
+            if(glm::length(closestPoints[1]) <= std::max(glm::length(s2.pos+s2.v),glm::length(s2.pos)) && glm::length(closestPoints[1]) >= std::min(glm::length(s2.pos+s2.v),glm::length(s2.pos))) {
                 //record the distance between the vectors
                 l = distLineLine(s1.pos, s1.v, s2.pos, s2.v);
-                std::cout << "\nDistance between lines: " << l;
             } else {
-                std::cout << "\nClosest points not on line segment";
+
             }
         } else {
-            std::cout << "\nClosest points not on line segment";
         }
 
         //check whether the spheres' current location, next tick location, or paths intercept
@@ -145,6 +140,7 @@ public:
         return false;
     }
 };
+
 int main() {
     SphereBody myBody = SphereBody(0.0f, 0.0f, 0.0f, 1.0f,2.0f);
     SphereBody otherBody = SphereBody(5.0f, 0.0f, 0.0f, 1.0f,2.0f);
@@ -186,6 +182,7 @@ int main() {
         std::cout << "\nVx: " << otherBody.v.x << "  Vy: " << otherBody.v.y << "  Vz: " << otherBody.v.z;
         std::cout << "\nPos x: " << otherBody.pos.x << " Pos y: " << otherBody.pos.y << " Pos z: " << otherBody.pos.z;
         std::cout << "\n--Closest Points on Sphere 1's line--";
+        std::cout << "\n" << distLineLine(myBody.pos,myBody.v,otherBody.pos,otherBody.v);
         std::cout << "\nX: " << (getClosestPoints(myBody.pos,myBody.v,otherBody.pos,otherBody.v))[0].x;
         std::cout << "  Y: " << (getClosestPoints(myBody.pos,myBody.v,otherBody.pos,otherBody.v))[0].y;
         std::cout << "  Z: " << (getClosestPoints(myBody.pos,myBody.v,otherBody.pos,otherBody.v))[0].z;
