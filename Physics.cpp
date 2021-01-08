@@ -1,54 +1,53 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <glm/glm.hpp>
-#include <glm/gtx/component_wise.hpp>
 #include <iostream>
 #include <vector>
-
 #include "sources/tiny_obj_loader.h"
 
-float getLineDist(glm::vec3 p1,glm::vec3 p2,glm::vec3 p3,glm::vec3 p4) {
-    glm::vec3 pa, pb, p13, p43, p21;
-    float epsilon = 0.01;
-    p13 = p1 - p3;
-    p43 = p4 - p3;
-    if (std::abs(p43.x) < epsilon && std::abs(p43.y) < epsilon && std::abs(p43.z) < epsilon) {return -1.0f;}
-    p21 = p2 - p3;
-    if (std::abs(p21.x) < epsilon && std::abs(p21.y) < epsilon && std::abs(p21.z) < epsilon) {return -2.0f;}
-    float d1343 = glm::compAdd(p13 * p43);
-    float d4321 = glm::compAdd(p43 * p21);
-    float d4343 = glm::compAdd(p43 * p43);
-    float denom = glm::compAdd(p21 * p21) * d4343 - d4321 * d4321;
-    float numer = d1343 * d4321 - glm::compAdd(p13 * p21) * d4343;
-    if (std::abs(denom) < epsilon) {return -3.0f;} //Are lines parallel?
-    float mua = numer / denom;
-    float mub = (d1343 + d4321 * (mua)) / d4343;
-    pa = p1 + mua * p21;
-    pb = p3 + mub * p43;
-    return(glm::length(pa-pb));
+//returns the distance between two lines in 3d space
+float distLineLine(glm::vec3 pos1, glm::vec3 v1, glm::vec3 pos2, glm::vec3 v2) {
+    glm::vec3 as1,as2,n,d;
+    as1 = pos1;
+    as2 = pos2;
+    n = glm::cross(v1,v2);
+    return glm::length(((glm::dot(n, (as1 - as2))) / glm::length(n)));
+}
+
+//returns the closest points to each other on two skew lines
+std::vector<glm::vec3> getClosestPoints(glm::vec3 as1, glm::vec3 v1, glm::vec3 as2, glm::vec3 v2) {
+    glm::vec3 n,n1,n2,d,c1,c2;
+    std::vector<glm::vec3> results;
+    n = glm::cross(v1, v2);
+    n1 = glm::cross(n, v1);
+    n2 = glm::cross(n, v2);
+
+    results.push_back(as1 + v1 * (glm::dot(n2,(as2-as1))/glm::dot(v1,n2)));
+    results.push_back(as2 + v2 * (glm::dot(n1,(as1-as2))/glm::dot(v2,n1)));
+    return results;
 }
 
 //A particle with a position, velocity, and mass.
 class Particle {
 public:
 
-    glm::vec4 pos; //position
-    glm::vec4 v; //velocity
+    glm::vec3 pos; //position
+    glm::vec3 v; //velocity
     float m; //mass
 
     //constructor
     Particle(float x, float y, float z, float mass) {
-        pos = glm::vec4(x, y, z, 1.0f);
-        v = glm::vec4(0.0f,0.0f,0.0f, 0.0f);
+        pos = glm::vec3(x, y, z);
+        v = glm::vec3(0.0f,0.0f,0.0f);
         m = mass;
     }
 
     //step forward in time. Should be called every tick
-    void step() {
+    virtual void step() {
         pos += v;
     }
 
     //apply an impulse to the body
-    void applyImpulse(glm::vec4 impulse) {
+    void applyImpulse(glm::vec3 impulse) {
         v += impulse;
     }
 
@@ -59,8 +58,8 @@ public:
     }
 protected:
     Particle() {
-        pos = glm::vec4(0.0f,0.0f,0.0f,0.0f);
-        v = glm::vec4(0.0f,0.0f,0.0f,0.0f);
+        pos = glm::vec3(0.0f,0.0f,0.0f);
+        v = glm::vec3(0.0f,0.0f,0.0f);
         m = 0.0f;
     }
 };
@@ -69,13 +68,16 @@ class RigidBody: public Particle {
 public:
     glm::vec3 rot; //the current angular position of the rigidbody
     glm::vec3 rotV; //the current angular velocity of the rigidbody
-    float I; //the moment of inertia for the rigidbody
 
     RigidBody(float x,float y,float z,float m) : Particle(x,y,z,m) {
         rot = glm::vec3();
         rotV = glm::vec3();
     }
 
+    void step() {
+        Particle::step();
+        rot += rotV;
+    }
 
 protected:
     RigidBody() {
@@ -93,14 +95,6 @@ public:
         m=mass;
         r=radius;
     }
-
-    //replaced by method in world?
-    /*bool checkCollision(SphereBody otherSphere) {
-        if(r + otherSphere.r > glm::length(otherSphere.pos - pos)) {
-            return true;
-        }
-        return false;
-    }*/
 };
 
 //creates a world
@@ -119,23 +113,38 @@ public:
         }
     }
 
+    //check for collision between two spheres
     bool checkCollision(SphereBody s1, SphereBody s2) {
 
-        float l = getLineDist(s1.pos,(s1.pos+s1.v),s2.pos,(s2.pos+s2.v));
-        std::cout << "Distance between lines: " << l << "\n";
-        if(l <= 0) {
-            l = s1.r + s2.r+1;
+        //store the distance between the spheres' vectors
+        float l = s1.r + s2.r + 1;
+
+        //get the closest points to each other on the spheres' vectors
+        std::vector<glm::vec3> closestPoints = getClosestPoints(s1.pos,s1.v,s2.pos,s2.v);
+
+        //make sure the closest points are on the vectors, not behind or past them
+        if(glm::length(closestPoints[0]) <= std::max(glm::length(s1.pos+s1.v),glm::length(s1.pos)) && glm::length(closestPoints[0]) >= std::min(glm::length(s1.pos),glm::length(s1.pos+s1.v))) {
+            if(glm::length(closestPoints[1]) <= std::max(glm::length(s2.pos+s2.v),glm::length(s2.pos)) && glm::length(closestPoints[1]) >= std::min(glm::length(s2.pos+s2.v),glm::length(s2.pos))) {
+                //record the distance between the vectors
+                l = distLineLine(s1.pos, s1.v, s2.pos, s2.v);
+            } else {
+
+            }
+        } else {
         }
-        if(s1.r + s2.r > glm::length(s2.pos - s1.pos) || l < s1.r + s2.r) {
+
+        //check whether the spheres' current location, next tick location, or paths intercept
+        if (s1.r + s2.r > glm::length(s2.pos - s1.pos) || s1.r + s2.r > glm::length((s2.pos + s2.v) - (s1.pos + s1.v)) || l < s1.r + s2.r) {
             return true;
         }
         return false;
     }
 };
+
 int main() {
     SphereBody myBody = SphereBody(0.0f, 0.0f, 0.0f, 1.0f,2.0f);
-    SphereBody otherBody = SphereBody(5.0f, 1.0f, 1.0f, 1.0f,2.0f);
-    otherBody.applyImpulse(0,0,1);
+    SphereBody otherBody = SphereBody(5.0f, 0.0f, 0.0f, 1.0f,2.0f);
+    otherBody.applyImpulse(0,1,0);
     World myWorld;
     myWorld.addBody(&myBody);
     myWorld.addBody(&otherBody);
@@ -166,17 +175,23 @@ int main() {
                 break;
 
         }
-        std::cout << "-----myBody--------";
+        std::cout << "--Sphere 1--";
         std::cout << "\nVx: " << myBody.v.x << "  Vy: " << myBody.v.y << "  Vz: " << myBody.v.z;
-        std::cout << "\nPos x: " << myBody.pos.x << " Pos y: " << myBody.pos.y << " Pos z: " << myBody.pos.z << "\n";
-        std::cout << "-----otherBody-----";
+        std::cout << "\nPos x: " << myBody.pos.x << " Pos y: " << myBody.pos.y << " Pos z: " << myBody.pos.z;
+        std::cout << "\n--Sphere 2--";
         std::cout << "\nVx: " << otherBody.v.x << "  Vy: " << otherBody.v.y << "  Vz: " << otherBody.v.z;
-        std::cout << "\nPos x: " << otherBody.pos.x << " Pos y: " << otherBody.pos.y << " Pos z: " << otherBody.pos.z << "\n" << std::endl;
-        if(myWorld.checkCollision(myBody, otherBody)) {
-            std::cout << "Intersecting\n";
+        std::cout << "\nPos x: " << otherBody.pos.x << " Pos y: " << otherBody.pos.y << " Pos z: " << otherBody.pos.z;
+        std::cout << "\n--Closest Points on Sphere 1's line--";
+        std::cout << "\n" << distLineLine(myBody.pos,myBody.v,otherBody.pos,otherBody.v);
+        std::cout << "\nX: " << (getClosestPoints(myBody.pos,myBody.v,otherBody.pos,otherBody.v))[0].x;
+        std::cout << "  Y: " << (getClosestPoints(myBody.pos,myBody.v,otherBody.pos,otherBody.v))[0].y;
+        std::cout << "  Z: " << (getClosestPoints(myBody.pos,myBody.v,otherBody.pos,otherBody.v))[0].z;
+        if(myWorld.checkCollision(myBody,otherBody)) {
+            std::cout << "\nIntersecting";
         } else {
-            std::cout << "Not intersecting\n";
+            std::cout << "\nNot intersecting";
         }
+        std::cout << "\n";
     } while(input != 'e');
     return 0;
 }
