@@ -156,60 +156,60 @@ public:
     }
 
 private:
-    GLFWwindow* window;
+    GLFWwindow* window{};
 
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debugMessenger;
-    VkSurfaceKHR surface;
+    VkInstance instance{};
+    VkDebugUtilsMessengerEXT debugMessenger{};
+    VkSurfaceKHR surface{};
 
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice device;
+    VkDevice device{};
 
-    VkQueue graphicsQueue;
-    VkQueue presentQueue;
+    VkQueue graphicsQueue{};
+    VkQueue presentQueue{};
 
-    VkSwapchainKHR swapChain;
+    VkSwapchainKHR swapChain{};
     std::vector<VkImage> swapChainImages;
-    VkFormat swapChainImageFormat;
-    VkExtent2D swapChainExtent;
+    VkFormat swapChainImageFormat{};
+    VkExtent2D swapChainExtent{};
     std::vector<VkImageView> swapChainImageViews;
 
-    VkRenderPass renderPass;
-    VkDescriptorSetLayout descriptorSetLayout;
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
+    VkRenderPass renderPass{};
+    VkDescriptorSetLayout descriptorSetLayout{};
+    VkPipelineLayout pipelineLayout{};
+    VkPipeline graphicsPipeline{};
 
     std::vector<VkFramebuffer> swapChainFrameBuffers;
 
-    VkCommandPool commandPool;
+    VkCommandPool commandPool{};
 
-    VkImage depthImage;
-    VkDeviceMemory depthImageMemory;
-    VkImageView depthImageView;
+    VkImage depthImage{};
+    VkDeviceMemory depthImageMemory{};
+    VkImageView depthImageView{};
 
-    VkImage colorImage;
-    VkDeviceMemory colorImageMemory;
-    VkImageView colorImageView;
+    VkImage colorImage{};
+    VkDeviceMemory colorImageMemory{};
+    VkImageView colorImageView{};
 
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
+    VkBuffer vertexBuffer{};
+    VkDeviceMemory vertexBufferMemory{};
+    VkBuffer indexBuffer{};
+    VkDeviceMemory indexBufferMemory{};
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
 
-    VkDescriptorPool descriptorPool;
+    VkDescriptorPool descriptorPool{};
     std::vector<VkDescriptorSet> descriptorSets;
 
-    uint32_t mipLevels;
-    VkImage textureImage;
-    VkDeviceMemory textureImageMemory;
+    uint32_t mipLevels{};
+    VkImage textureImage{};
+    VkDeviceMemory textureImageMemory{};
 
-    VkImageView textureImageView;
-    VkSampler textureSampler;
+    VkImageView textureImageView{};
+    VkSampler textureSampler{};
 
     std::vector<VkCommandBuffer> commandBuffers;
 
@@ -1650,8 +1650,7 @@ private:
 
     static std::vector<const char*> getRequiredExtensions() {
         uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
         std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
