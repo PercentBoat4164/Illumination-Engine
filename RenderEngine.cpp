@@ -15,18 +15,44 @@
 
 class Settings {
 public:
+    std::vector<const char*> validationLayers;
+    std::vector<const char*> requestedExtensions;
+    std::string name;
+    std::array<int, 3> version{};
     int msaaSamples = VK_SAMPLE_COUNT_1_BIT;
     int anisotropicFilterLevel = 1;
+    bool fullscreen = false;
+    int refreshRate = 60;
+    std::array<int ,2> resolution{};
+
+    Settings findMaxSettings(VkPhysicalDeviceFeatures physicalDeviceFeatures, VkPhysicalDeviceProperties physicalDeviceProperties) {
+        VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts &
+                                    physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+        if (counts & VK_SAMPLE_COUNT_64_BIT) { msaaSamples = VK_SAMPLE_COUNT_64_BIT; }
+        else if (counts & VK_SAMPLE_COUNT_32_BIT) {msaaSamples = VK_SAMPLE_COUNT_32_BIT;}
+        else if (counts & VK_SAMPLE_COUNT_16_BIT) {msaaSamples = VK_SAMPLE_COUNT_16_BIT;}
+        else if (counts & VK_SAMPLE_COUNT_8_BIT) {msaaSamples = VK_SAMPLE_COUNT_8_BIT;}
+        else if (counts & VK_SAMPLE_COUNT_4_BIT) {msaaSamples = VK_SAMPLE_COUNT_4_BIT;}
+        else if (counts & VK_SAMPLE_COUNT_2_BIT) {msaaSamples = VK_SAMPLE_COUNT_2_BIT;}
+        else if (counts & VK_SAMPLE_COUNT_1_BIT) {msaaSamples = VK_SAMPLE_COUNT_1_BIT;}
+        if (physicalDeviceFeatures.samplerAnisotropy) {
+            anisotropicFilterLevel = static_cast<int>(physicalDeviceProperties.limits.maxSamplerAnisotropy);
+        }
+        return *this;
+    }
 };
 
 class VulkanRenderEngine {
 public:
-    VulkanRenderEngine(std::vector<const char*>& validationLayers, std::vector<const char*>& requestedExtensions, std::array<int, 2>& size, std::string& name, std::array<int, 3>& version) {
-        createWindow(size, name);
-        createVulkanInstance(validationLayers, requestedExtensions, name, version);
+    explicit VulkanRenderEngine(Settings startSettings) {
+        settings = startSettings;
+        settings.fullscreen = false;
+        createWindow();
+        setSettings(startSettings);
+        createVulkanInstance();
         createWindowSurface();
-        findBestSuitableDevice(requestedExtensions);
-        settings = findMaxSettings();
+        findBestSuitableDevice();
+        settings = settings.findMaxSettings(physicalDeviceFeatures, physicalDeviceProperties);
         createLogicalDevice();
     }
 
@@ -34,22 +60,31 @@ public:
 
     }
 
-    void update() {
-
+    void setSettings(Settings& newSettings) {
+        if (!settings.fullscreen & newSettings.fullscreen) {glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, settings.resolution[0], settings.resolution[0], settings.refreshRate);}
+        if (settings.fullscreen & !newSettings.fullscreen) {glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, settings.refreshRate);}
     }
 
-    void cleanUp() {
-
+    int update() {
+        if (glfwWindowShouldClose(window)) {
+            cleanUp();
+            vkDeviceWaitIdle(logicalDevice);
+            return 1;}
+        return 0;
     }
-
 private:
+    void cleanUp() {
+        glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, settings.refreshRate);
+    }
+
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
     };
 
-    VkInstance instance{};
     GLFWwindow* window{};
+    VkDevice logicalDevice{};
+    VkInstance instance{};
     VkDebugUtilsMessengerEXT debugMessenger{};
     bool framebufferResized = false;
     VkSurfaceKHR surface{};
@@ -59,7 +94,8 @@ private:
     VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
     Settings settings{};
     QueueFamilyIndices indices{};
-    VkDevice device{};
+    VkQueue graphicsQueue{};
+    VkQueue presentQueue{};
 
     VkDevice createLogicalDevice() {
         uint32_t queueFamilyCount = 0;
@@ -89,27 +125,24 @@ private:
         VkPhysicalDeviceFeatures deviceFeatures{};
         deviceFeatures.samplerAnisotropy = (settings.anisotropicFilterLevel > 1) ? VK_TRUE: VK_FALSE;
         deviceFeatures.sampleRateShading = VK_TRUE;
-
-        return device;
+        VkDeviceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
+        createInfo.pEnabledFeatures = &deviceFeatures;
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(settings.requestedExtensions.size());
+        createInfo.ppEnabledExtensionNames = settings.requestedExtensions.data();
+        if (!settings.validationLayers.empty()) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(settings.validationLayers.size());
+            createInfo.ppEnabledLayerNames = settings.validationLayers.data();
+        } else {createInfo.enabledLayerCount = 0;}
+        if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) != VK_SUCCESS) {throw std::runtime_error("failed to create logical device!");}
+        vkGetDeviceQueue(logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
+        vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
+        return logicalDevice;
     }
 
-    Settings findMaxSettings() {
-        VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts &
-                                    physicalDeviceProperties.limits.framebufferDepthSampleCounts;
-        if (counts & VK_SAMPLE_COUNT_64_BIT) { settings.msaaSamples = VK_SAMPLE_COUNT_64_BIT; }
-        else if (counts & VK_SAMPLE_COUNT_32_BIT) {settings.msaaSamples = VK_SAMPLE_COUNT_32_BIT;}
-        else if (counts & VK_SAMPLE_COUNT_16_BIT) {settings.msaaSamples = VK_SAMPLE_COUNT_16_BIT;}
-        else if (counts & VK_SAMPLE_COUNT_8_BIT) {settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;}
-        else if (counts & VK_SAMPLE_COUNT_4_BIT) {settings.msaaSamples = VK_SAMPLE_COUNT_4_BIT;}
-        else if (counts & VK_SAMPLE_COUNT_2_BIT) {settings.msaaSamples = VK_SAMPLE_COUNT_2_BIT;}
-        else if (counts & VK_SAMPLE_COUNT_1_BIT) {settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;}
-        if (physicalDeviceFeatures.samplerAnisotropy) {
-            settings.anisotropicFilterLevel = static_cast<int>(physicalDeviceProperties.limits.maxSamplerAnisotropy);
-        }
-        return settings;
-    }
-
-    VkPhysicalDevice findBestSuitableDevice(std::vector<const char*>& requestedExtensions) {
+    VkPhysicalDevice findBestSuitableDevice() {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
         std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -120,7 +153,7 @@ private:
             uint32_t extensionCount;
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
             vkEnumerateDeviceExtensionProperties(singleDevice, nullptr, &extensionCount, availableExtensions.data());
-            std::set<std::string> requiredExtensions(requestedExtensions.begin(), requestedExtensions.end());
+            std::set<std::string> requiredExtensions(settings.requestedExtensions.begin(), settings.requestedExtensions.end());
             for (const auto& extension : availableExtensions) {
                 requiredExtensions.erase(extension.extensionName);
             }
@@ -144,31 +177,31 @@ private:
         return surface;
     }
 
-    VkInstance createVulkanInstance(std::vector<const char*>& validationLayers, std::vector<const char*>& requestedExtensions, std::string& name, std::array<int, 3>& version) {
+    VkInstance createVulkanInstance() {
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = name.c_str();
-        appInfo.applicationVersion = VK_MAKE_VERSION(version[0], version[1], version[2]);
+        appInfo.pApplicationName = settings.name.c_str();
+        appInfo.applicationVersion = VK_MAKE_VERSION(settings.version[0], settings.version[1], settings.version[2]);
         appInfo.pEngineName = "No Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
         appInfo.apiVersion = VK_API_VERSION_1_2;
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
         std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-        if (!validationLayers.empty()) {extensions.push_back("VK_EXT_debug_utils");}
+        if (!settings.validationLayers.empty()) {extensions.push_back("VK_EXT_debug_utils");}
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
         createInfo.enabledExtensionCount = extensions.size();
         createInfo.ppEnabledExtensionNames = extensions.data();
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-        if (!validationLayers.empty()) {
+        if (!settings.validationLayers.empty()) {
             //Check for validation layer support
             uint32_t layerCount;
             vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
             std::vector<VkLayerProperties> availableLayers(layerCount);
             vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-            for (const char* layerName : validationLayers) {
+            for (const char* layerName : settings.validationLayers) {
                 bool layerFound = false;
                 for (const auto& layerProperties : availableLayers) {
                     if (strcmp(layerName, layerProperties.layerName) == 0) {
@@ -183,8 +216,8 @@ private:
             debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
             debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
             debugCreateInfo.pfnUserCallback = debugCallback;
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(settings.validationLayers.size());
+            createInfo.ppEnabledLayerNames = settings.validationLayers.data();
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
         } else {
             createInfo.enabledLayerCount = 0;
@@ -195,10 +228,10 @@ private:
         return instance;
     }
 
-    GLFWwindow* createWindow(std::array<int, 2>& size, std::string& name) {
+    GLFWwindow* createWindow() {
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        window = glfwCreateWindow(size[0], size[1], name.c_str(), nullptr, nullptr);
+        window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.name.c_str(), nullptr, nullptr);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         return window;
@@ -221,18 +254,22 @@ private:
 };
 
 int main() {
-    std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    std::vector<const char*> requestedExtensions = {"VK_KHR_swapchain"};
-    std::array<int, 2> size = {800, 600};
-    std::string name = "RenderEngine";
-    std::array<int, 3> version = {0, 0, 1};
-    VulkanRenderEngine app(validationLayers, requestedExtensions, size, name, version);
+    Settings settings{};
+    settings.fullscreen = true;
+    settings.validationLayers = {"VK_LAYER_KHRONOS_validation"};
+    settings.requestedExtensions = {"VK_KHR_swapchain"};
+    settings.name = "RenderEngine";
+    settings.version = {0, 0, 1};
+    settings.resolution = {1920, 1080};
+    VulkanRenderEngine RenderEngine(settings);
     try {
-        app.start();
+        RenderEngine.start();
+        while (RenderEngine.update() != 1) {
+            glfwPollEvents();
+        }
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
-
     return EXIT_SUCCESS;
 }
