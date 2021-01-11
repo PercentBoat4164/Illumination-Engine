@@ -15,20 +15,28 @@
 
 class Settings {
 public:
-    std::vector<const char*> validationLayers;
-    std::vector<const char*> requestedExtensions;
-    std::string name;
-    std::array<int, 3> version{};
+    std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+    std::vector<const char*> requestedExtensions  = {"VK_KHR_swapchain"};
+    std::string name = "RenderEngine";
+    std::array<int, 3> version = {0, 0, 1};
     int msaaSamples = VK_SAMPLE_COUNT_1_BIT;
     int anisotropicFilterLevel = 1;
     bool fullscreen = false;
     int refreshRate = 60;
-    std::array<int ,2> resolution{};
+    std::array<int, 2> resolution = {800, 600};
 
-    Settings findMaxSettings(VkPhysicalDeviceFeatures physicalDeviceFeatures, VkPhysicalDeviceProperties physicalDeviceProperties) {
+    Settings findMaxSettings(VkPhysicalDevice physicalDevice) {
+        VkPhysicalDeviceFeatures physicalDeviceFeatures{};
+        vkGetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);
+        VkPhysicalDeviceProperties physicalDeviceProperties{};
+        vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+        const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        refreshRate = mode->refreshRate;
+        resolution[0] = mode->width;
+        resolution[1] = mode->height;
         VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts &
                                     physicalDeviceProperties.limits.framebufferDepthSampleCounts;
-        if (counts & VK_SAMPLE_COUNT_64_BIT) { msaaSamples = VK_SAMPLE_COUNT_64_BIT; }
+        if (counts & VK_SAMPLE_COUNT_64_BIT) {msaaSamples = VK_SAMPLE_COUNT_64_BIT;}
         else if (counts & VK_SAMPLE_COUNT_32_BIT) {msaaSamples = VK_SAMPLE_COUNT_32_BIT;}
         else if (counts & VK_SAMPLE_COUNT_16_BIT) {msaaSamples = VK_SAMPLE_COUNT_16_BIT;}
         else if (counts & VK_SAMPLE_COUNT_8_BIT) {msaaSamples = VK_SAMPLE_COUNT_8_BIT;}
@@ -44,7 +52,10 @@ public:
 
 class VulkanRenderEngine {
 public:
-    explicit VulkanRenderEngine(Settings startSettings) {
+    GLFWwindow* window{};
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+
+    explicit VulkanRenderEngine(const Settings& startSettings) {
         settings = startSettings;
         settings.fullscreen = false;
         createWindow();
@@ -52,17 +63,19 @@ public:
         createVulkanInstance();
         createWindowSurface();
         findBestSuitableDevice();
-        settings = settings.findMaxSettings(physicalDeviceFeatures, physicalDeviceProperties);
         createLogicalDevice();
+        createSwapChain();
     }
 
     void start() {
 
     }
 
-    void setSettings(Settings& newSettings) {
-        if (!settings.fullscreen & newSettings.fullscreen) {glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, settings.resolution[0], settings.resolution[0], settings.refreshRate);}
-        if (settings.fullscreen & !newSettings.fullscreen) {glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, settings.refreshRate);}
+    void setSettings(const Settings& newSettings) {
+        if (!settings.fullscreen & newSettings.fullscreen) {glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, newSettings.resolution[0], newSettings.resolution[0], newSettings.refreshRate);}
+        else if (settings.fullscreen & !newSettings.fullscreen) {glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, settings.refreshRate);}
+        else {glfwSetWindowSize(window, newSettings.resolution[0], newSettings.resolution[1]);}
+        settings = newSettings;
     }
 
     int update() {
@@ -73,22 +86,21 @@ public:
         return 0;
     }
 private:
-    void cleanUp() {
-        glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, settings.refreshRate);
-    }
-
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
     };
 
-    GLFWwindow* window{};
-    VkDevice logicalDevice{};
+    struct SwapChainSupportDetails {
+        VkSurfaceCapabilitiesKHR capabilities{};
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
+
     VkInstance instance{};
     VkDebugUtilsMessengerEXT debugMessenger{};
     bool framebufferResized = false;
     VkSurfaceKHR surface{};
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkPhysicalDeviceProperties physicalDeviceProperties{};
     VkPhysicalDeviceFeatures physicalDeviceFeatures{};
     VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
@@ -96,6 +108,97 @@ private:
     QueueFamilyIndices indices{};
     VkQueue graphicsQueue{};
     VkQueue presentQueue{};
+    VkDevice logicalDevice{};
+    VkSwapchainKHR swapChain{};
+    std::vector<VkImage> swapChainImages;
+    VkFormat swapChainImageFormat{};
+    VkExtent2D swapChainExtent{};
+
+    void cleanUp() const {
+        glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, 0);
+    }
+
+    VkSwapchainKHR createSwapChain() {
+        SwapChainSupportDetails details;
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.capabilities);
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr);
+        if (formatCount != 0) {
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, details.formats.data());
+        }
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr);
+        if(presentModeCount != 0) {
+            details.presentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, details.presentModes.data());
+        }
+        //Choose best format
+        VkSurfaceFormatKHR surfaceFormat;
+        bool chosen = false;
+        for (const auto& availableFormat : details.formats) {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+                surfaceFormat = availableFormat;
+                chosen = true;
+                break;
+            }
+        }
+        if (!chosen) {surfaceFormat = details.formats[0];}
+        //Choose best present mode
+        VkPresentModeKHR presentMode;
+        chosen = false;
+        for (const auto& availablePresentMode : details.presentModes) {
+            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+                presentMode = availablePresentMode;
+                chosen = true;
+                break;
+            }
+        }
+        if (!chosen) {presentMode = VK_PRESENT_MODE_FIFO_KHR;}
+        //Choose swap chain extent
+        VkExtent2D extent;
+        if (details.capabilities.currentExtent.width != UINT32_MAX) {extent = details.capabilities.currentExtent;}
+        else {
+            int width, height;
+            glfwGetFramebufferSize(window, &width, &height);
+            extent = {
+                    static_cast<uint32_t>(width),
+                    static_cast<uint32_t>(height)
+            };
+            extent.width = (std::max)(details.capabilities.minImageExtent.width, (std::min)(details.capabilities.maxImageExtent.width, extent.width));
+            extent.height = (std::max)(details.capabilities.minImageExtent.height, (std::min)(details.capabilities.maxImageExtent.height, extent.height));
+        }
+        //Create swap chian
+        uint32_t imageCount = details.capabilities.minImageCount + 1;
+        if (details.capabilities.maxImageCount > 0 && imageCount > details.capabilities.maxImageCount) {imageCount = details.capabilities.maxImageCount;}
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = surface;
+        createInfo.minImageCount = imageCount;
+        createInfo.imageFormat = surfaceFormat.format;
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.imageExtent = extent;
+        createInfo.imageArrayLayers = 1;
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+        if (indices.graphicsFamily != indices.presentFamily) {
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        } else {createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;}
+        createInfo.preTransform = details.capabilities.currentTransform;
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.presentMode = presentMode;
+        createInfo.clipped = VK_TRUE;
+        createInfo.oldSwapchain = VK_NULL_HANDLE;
+        if (vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {throw std::runtime_error("failed to create swap chain!");}
+        vkGetSwapchainImagesKHR(logicalDevice, swapChain, &imageCount, nullptr);
+        swapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(logicalDevice, swapChain, &imageCount, swapChainImages.data());
+        swapChainImageFormat = surfaceFormat.format;
+        swapChainExtent = extent;
+        return swapChain;
+    }
 
     VkDevice createLogicalDevice() {
         uint32_t queueFamilyCount = 0;
@@ -253,17 +356,18 @@ private:
     }
 };
 
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {glfwSetWindowShouldClose(window, 1);}
+}
+
 int main() {
     Settings settings{};
-    settings.fullscreen = true;
-    settings.validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    settings.requestedExtensions = {"VK_KHR_swapchain"};
-    settings.name = "RenderEngine";
-    settings.version = {0, 0, 1};
-    settings.resolution = {1920, 1080};
     VulkanRenderEngine RenderEngine(settings);
+    settings.fullscreen = true;
+    RenderEngine.setSettings(settings.findMaxSettings(RenderEngine.physicalDevice));
     try {
         RenderEngine.start();
+        glfwSetKeyCallback(RenderEngine.window, keyCallback);
         while (RenderEngine.update() != 1) {
             glfwPollEvents();
         }
