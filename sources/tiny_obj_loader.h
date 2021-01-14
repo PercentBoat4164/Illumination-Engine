@@ -341,7 +341,7 @@ typedef double real_t;
         std::vector<joint_and_weight_t> weightValues;
     };
 
-// Index struct to support different indices for vtx/normal/texcoord.
+// Index struct to support different familyIndices for vtx/normal/texcoord.
 // -1 means not used.
     struct index_t {
         int vertex_index;
@@ -363,17 +363,17 @@ typedef double real_t;
     };
 
 // struct path_t {
-//  std::vector<int> indices;  // pairs of indices for lines
+//  std::vector<int> familyIndices;  // pairs of familyIndices for lines
 //};
 
     struct lines_t {
-        // Linear flattened indices.
-        std::vector<index_t> indices;        // indices for vertices(poly lines)
+        // Linear flattened familyIndices.
+        std::vector<index_t> indices;        // familyIndices for vertices(poly lines)
         std::vector<int> num_line_vertices;  // The number of vertices per line.
     };
 
     struct points_t {
-        std::vector<index_t> indices;  // indices for points
+        std::vector<index_t> indices;  // familyIndices for points
     };
 
     struct shape_t {
@@ -426,7 +426,7 @@ typedef double real_t;
         // `vt` line.
         void (*texcoord_cb)(void *user_data, real_t x, real_t y, real_t z);
 
-        // called per 'f' line. num_indices is the number of face indices(e.g. 3 for
+        // called per 'f' line. num_indices is the number of face familyIndices(e.g. 3 for
         // triangle, 4 for quad)
         // 0 will be passed for undefined index in index_t members.
         void (*index_cb)(void *user_data, index_t *indices, int num_indices);
@@ -672,7 +672,7 @@ struct face_t {
   unsigned int
       smoothing_group_id;  // smoothing group id. 0 = smoothing groupd is off.
   int pad_;
-  std::vector<vertex_index_t> vertex_indices;  // face vertex indices.
+  std::vector<vertex_index_t> vertex_indices;  // face vertex familyIndices.
 
   face_t() : smoothing_group_id(0), pad_(0) {}
 };
@@ -1376,7 +1376,7 @@ static bool exportGroupsToShape(shape_t *shape, const PrimGroup &prim_group,
 
   // polygon
   if (!prim_group.faceGroup.empty()) {
-    // Flatten vertices and indices
+    // Flatten vertices and familyIndices
     for (size_t i = 0; i < prim_group.faceGroup.size(); i++) {
       const face_t &face = prim_group.faceGroup[i];
 
@@ -1619,7 +1619,7 @@ static bool exportGroupsToShape(shape_t *shape, const PrimGroup &prim_group,
 
   // line
   if (!prim_group.lineGroup.empty()) {
-    // Flatten indices
+    // Flatten familyIndices
     for (size_t i = 0; i < prim_group.lineGroup.size(); i++) {
       for (size_t j = 0; j < prim_group.lineGroup[i].vertex_indices.size();
            j++) {
@@ -1640,7 +1640,7 @@ static bool exportGroupsToShape(shape_t *shape, const PrimGroup &prim_group,
 
   // points
   if (!prim_group.pointsGroup.empty()) {
-    // Flatten & convert indices
+    // Flatten & convert familyIndices
     for (size_t i = 0; i < prim_group.pointsGroup.size(); i++) {
       for (size_t j = 0; j < prim_group.pointsGroup[i].vertex_indices.size();
            j++) {
@@ -2717,7 +2717,7 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
   if (greatest_v_idx >= static_cast<int>(v.size() / 3)) {
     if (warn) {
       std::stringstream ss;
-      ss << "Vertex indices out of bounds (line " << line_num << ".)\n"
+      ss << "Vertex familyIndices out of bounds (line " << line_num << ".)\n"
          << std::endl;
       (*warn) += ss.str();
     }
@@ -2725,7 +2725,7 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
   if (greatest_vn_idx >= static_cast<int>(vn.size() / 3)) {
     if (warn) {
       std::stringstream ss;
-      ss << "Vertex normal indices out of bounds (line " << line_num << ".)\n"
+      ss << "Vertex normal familyIndices out of bounds (line " << line_num << ".)\n"
          << std::endl;
       (*warn) += ss.str();
     }
@@ -2733,7 +2733,7 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
   if (greatest_vt_idx >= static_cast<int>(vt.size() / 2)) {
     if (warn) {
       std::stringstream ss;
-      ss << "Vertex texcoord indices out of bounds (line " << line_num << ".)\n"
+      ss << "Vertex texcoord familyIndices out of bounds (line " << line_num << ".)\n"
          << std::endl;
       (*warn) += ss.str();
     }
@@ -2744,7 +2744,7 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
   // exportGroupsToShape return false when `usemtl` is called in the last
   // line.
   // we also add `shape` to `shapes` when `shape.mesh` has already some
-  // faces(indices)
+  // faces(familyIndices)
   if (ret || shape.mesh.indices
                  .size()) {  // FIXME(syoyo): Support other prims(e.g. lines)
     shapes->push_back(shape);
