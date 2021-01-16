@@ -4,7 +4,7 @@ project(GameEngine)
 set(OpenGL_GL_PREFERENCE GLVND)
 
 set(CMAKE_CXX_STANDARD 17)
-find_package(Vulkan REQUIRED)
+find_package(Vulkan)
 find_package(OpenGL REQUIRED)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
