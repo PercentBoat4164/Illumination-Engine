@@ -1,3 +1,5 @@
+#include "sources/glew/include/GL/glew.h"
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -25,10 +27,14 @@ public:
     explicit VulkanRenderEngine(const Settings& startSettings) {
         settings = startSettings;
         createWindow();
-        setSettings(startSettings, false);
+        updateSettings(startSettings, false);
         createVulkanInstance();
         createWindowSurface();
         findBestSuitableDevice();
+        start();
+    }
+
+    void start() {
         createLogicalDevice();
         createSwapChain();
         createImageViews();
@@ -38,7 +44,7 @@ public:
         createCommandPool();
         createResources();
         createFramebuffers();
-        start();
+        loadGameObject(GameObject("models/viking_room", ".obj", ".png"));
         createVertexBuffer();
         createIndexBuffer();
         createUniformBuffers();
@@ -49,11 +55,7 @@ public:
         createFences();
     }
 
-    void start() {
-        loadGameObject(GameObject("models/viking_room", ".obj", ".png"));
-    }
-
-    void setSettings(const Settings& newSettings, bool updateAll) {
+    void updateSettings(const Settings& newSettings, bool updateAll) {
         if (!settings.fullscreen & newSettings.fullscreen) {glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, newSettings.resolution[0], newSettings.resolution[0], newSettings.refreshRate);}
         else if (settings.fullscreen & !newSettings.fullscreen) {glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, newSettings.refreshRate);}
         else {glfwSetWindowSize(window, newSettings.resolution[0], newSettings.resolution[1]);}
@@ -963,7 +965,7 @@ private:
             createInfo.pNext = nullptr;
         }
         if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {throw std::runtime_error("failed to create Vulkan instance!");}
-        if (CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &debugMessenger) != VK_SUCCESS) {throw std::runtime_error("failed to setup debug messenger!");}
+        if (!settings.validationLayers.empty()) {if (CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &debugMessenger) != VK_SUCCESS) {throw std::runtime_error("failed to setup debug messenger!");}}
         return instance;
     }
 
@@ -1143,37 +1145,70 @@ private:
     }
 };
 
+class OpenGLRenderEngine {
+public:
+    GLFWwindow *window;
+
+    explicit OpenGLRenderEngine(const Settings& settings) {
+        if(!glfwInit()) {throw std::runtime_error("failed to initialize GLFW");}
+        glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), nullptr, nullptr);
+        if (window == nullptr) {throw std::runtime_error("failed to open GLFW window!");}
+        glfwMakeContextCurrent(window);
+        glewExperimental = true;
+        if (glewInit() != GLEW_OK) {throw std::runtime_error("failed to initialize GLEW!");}
+    }
+
+    [[nodiscard]] int update() const {
+        if (glfwWindowShouldClose(window)) {return 1;}
+        return 0;
+    }
+};
+
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {glfwSetWindowShouldClose(window, 1);}
 }
 
 int main() {
     Settings settings{};
-    settings.validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    VulkanRenderEngine RenderEngine(settings);
-    settings.findMaxSettings(RenderEngine.physicalDevice);
-    settings.fullscreen = false;
-    RenderEngine.setSettings(settings, true);
-    try {
-        //RenderEngine.start();
-        glfwSetKeyCallback(RenderEngine.window, keyCallback);
-        bool samples = true;
-        static auto startTime = std::chrono::high_resolution_clock::now();
-        while (RenderEngine.update() != 1) {
-            glfwPollEvents();
-            auto currentTime = std::chrono::high_resolution_clock::now();
-            float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-            if (static_cast<int>(time) % 5 == 0) {
-                samples ^= true;
-                if (samples) {settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;}
-                else {settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;}
-                RenderEngine.setSettings(settings, true);
-                sleep(1);
+    //settings.validationLayers = {"VK_LAYER_KHRONOS_validation"};
+    std::cout << "Use Vulkan? Y/n:\n";
+    std::basic_string<char> input;
+    std::cin >> input;
+    input = static_cast<std::string>(input);
+    if (input == "y") {
+        try {
+            VulkanRenderEngine RenderEngine(settings);
+            settings.findMaxSettings(RenderEngine.physicalDevice);
+            settings.fullscreen = false;
+            RenderEngine.updateSettings(settings, true);
+            glfwSetKeyCallback(RenderEngine.window, keyCallback);
+            static auto startTime = std::chrono::high_resolution_clock::now();
+            while (RenderEngine.update() != 1) {
+                glfwPollEvents();
             }
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
+            return EXIT_FAILURE;
         }
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
+        return EXIT_SUCCESS;
     }
-    return EXIT_SUCCESS;
+    else {
+        try {
+            OpenGLRenderEngine RenderEngine(settings);
+            glfwSetKeyCallback(RenderEngine.window, keyCallback);
+            static auto startTime = std::chrono::high_resolution_clock::now();
+            while (RenderEngine.update() != 1) {
+                glfwPollEvents();
+            }
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
+            return EXIT_FAILURE;
+        }
+        return EXIT_SUCCESS;
+    }
 }
