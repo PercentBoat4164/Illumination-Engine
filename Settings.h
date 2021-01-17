@@ -1,7 +1,7 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
 #include <filesystem>
+#include <array>
 
 class Settings {
 public:
@@ -21,11 +21,11 @@ public:
     #include <windows.h>
     char pathChar[MAX_PATH];
     GetModuleFileNameA(NULL, pathChar, MAX_PATH);
-    std::string filenameAbsolute = std::string(pathChar);
-    std::string absolutePath = filenameAbsolute.substr(0, filenameAbsolute.find_last_of("\\") + 1);
+    std::string executablePath = std::string(pathChar);
+    std::string absolutePath = executablePath.substr(0, executablePath.find_last_of("\\") + 1);
 #else
-    std::string filenameAbsolute{std::filesystem::canonical("/proc/self/exe").u8string()};
-    std::string absolutePath = (std::string)filenameAbsolute.substr(0, filenameAbsolute.find_last_of('/') + 1);
+    std::string executablePath{std::filesystem::canonical("/proc/self/exe").u8string()};
+    std::string absolutePath = (std::string)executablePath.substr(0, executablePath.find_last_of('/') + 1);
 #endif
 
     void set(std::vector<const char*>& layers, std::vector<const char*>& extensions, std::string& name, std::array<int, 3>& version) {
@@ -60,4 +60,3 @@ public:
         return *this;
     }
 };
-#endif

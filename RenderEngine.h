@@ -3,7 +3,7 @@
 #include "sources/glew/include/GL/glew.h"
 
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include "sources/glfw/include/GLFW/glfw3.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "sources/stb_image.h"
@@ -11,15 +11,15 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "sources/tiny_obj_loader.h"
 
-#include <glm/glm.hpp>
+#include "sources/glm/glm.hpp"
 
 #include "Settings.h"
 #include "GameObject.h"
 
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <set>
-#include <unistd.h>
 
 #if defined(_WIN32)
 #define GLSLC "glslc.exe "
@@ -75,7 +75,6 @@ public:
     int update() {
         if (glfwWindowShouldClose(window)) {
             cleanUp();
-            vkDeviceWaitIdle(logicalDevice);
             return 1;}
         //Draw frame
         vkWaitForFences(logicalDevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -192,7 +191,7 @@ private:
     size_t currentFrame = 0;
 
     void cleanUp() {
-        glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, 0);
+        vkDeviceWaitIdle(logicalDevice);
         cleanupSwapChain();
         vkDestroySampler(logicalDevice, textureSampler, nullptr);
         vkDestroyImageView(logicalDevice, textureImageView, nullptr);
@@ -213,6 +212,7 @@ private:
         if (!settings.validationLayers.empty()) {DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);}
         vkDestroySurfaceKHR(instance, surface, nullptr);
         vkDestroyInstance(instance, nullptr);
+        glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, 0);
         glfwDestroyWindow(window);
         glfwTerminate();
     }
@@ -989,9 +989,8 @@ private:
     }
 
     VkShaderModule readShader(const char *filename) const {
-        std::string filenameAbsolute = settings.absolutePath + filename;
-        std::ifstream file(filenameAbsolute, std::ios::ate | std::ios::binary);
-        if (!file.is_open()) {throw std::runtime_error("failed to open file: " + std::string(filename) + "\n as file: " + filenameAbsolute);}
+        std::ifstream file(settings.absolutePath + filename, std::ios::ate | std::ios::binary);
+        if (!file.is_open()) {throw std::runtime_error("failed to open file: " + std::string(filename) + "\n as file: " + settings.absolutePath + filename);}
         size_t fileSize = (size_t) file.tellg();
         std::vector<char> buffer(fileSize);
         file.seekg(0);
@@ -1163,10 +1162,13 @@ private:
 
 class OpenGLRenderEngine {
 public:
+    Settings settings{};
     GLFWwindow *window;
     GLuint vertexBuffer{};
+    GLuint programID{};
 
-    explicit OpenGLRenderEngine(const Settings& settings) {
+    explicit OpenGLRenderEngine(const Settings& startSettings) {
+        settings = startSettings;
         if(!glfwInit()) {throw std::runtime_error("failed to initialize GLFW");}
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -1185,18 +1187,70 @@ public:
         glGenBuffers(1, &vertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+        programID = loadShaders({"shaders/vertexShader.glsl", "shaders/fragmentShader.glsl"});
     }
 
-    [[nodiscard]] int update() const {
-        if (glfwWindowShouldClose(window)) {return 1;}
+    int update() {
+        if (glfwWindowShouldClose(window)) {
+            cleanUp();
+            return 1;
+        }
+        glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(programID);
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glDisableVertexAttribArray(0);
+        glfwSwapBuffers(window);
         return 0;
     }
 
 private:
     constexpr static const GLfloat g_vertex_buffer_data[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f};
+
+    void cleanUp() const {
+        glFinish();
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
+
+    GLuint loadShaders(const std::array<std::string, 2>& paths) const{
+        GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+        GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+        std::array<GLuint, 2> shaderIDs = {vertexShaderID, fragmentShaderID};
+        GLint Result = GL_FALSE;
+        int InfoLogLength;
+        for (int i = 0; i < paths.size(); i++) {
+            std::ifstream file(settings.absolutePath + paths[i], std::ios::in);
+            if (!file.is_open()) {throw std::runtime_error("failed to load shader: " + settings.absolutePath + paths[i]);}
+            std::stringstream stringStream;
+            stringStream << file.rdbuf();
+            std::string shaderCode = stringStream.str();
+            file.close();
+            char const * sourcePointer = shaderCode.c_str();
+            glShaderSource(shaderIDs[i], 1, &sourcePointer, nullptr);
+            glCompileShader(shaderIDs[i]);
+            glGetShaderiv(shaderIDs[i], GL_COMPILE_STATUS, &Result);
+            glGetShaderiv(shaderIDs[i], GL_INFO_LOG_LENGTH, &InfoLogLength);
+            if (InfoLogLength > 0){throw std::runtime_error("failed to compile shaders!");}
+        }
+        GLuint ProgramID = glCreateProgram();
+        glAttachShader(ProgramID, vertexShaderID);
+        glAttachShader(ProgramID, fragmentShaderID);
+        glLinkProgram(ProgramID);
+        glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
+        glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+        if (InfoLogLength > 0){
+            std::vector<char> ProgramErrorMessage(InfoLogLength+1);
+            glGetProgramInfoLog(ProgramID, InfoLogLength, nullptr, &ProgramErrorMessage[0]);
+            printf("%s\n", &ProgramErrorMessage[0]);
+        }
+        glDetachShader(ProgramID, vertexShaderID);
+        glDetachShader(ProgramID, fragmentShaderID);
+        glDeleteShader(vertexShaderID);
+        glDeleteShader(fragmentShaderID);
+        return ProgramID;
+    }
 };

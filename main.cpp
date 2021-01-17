@@ -9,7 +9,7 @@ int main() {
     //settings.validationLayers = {"VK_LAYER_KHRONOS_validation"};
     std::cout << "Use Vulkan? Y/n:\n";
     std::basic_string<char> input;
-    std::cin >> input;
+    //std::cin >> input;
     input = static_cast<std::string>(input);
     if (input == "y") {
         try {
@@ -18,7 +18,6 @@ int main() {
             settings.fullscreen = false;
             RenderEngine.updateSettings(settings, true);
             glfwSetKeyCallback(RenderEngine.window, keyCallback);
-            static auto startTime = std::chrono::high_resolution_clock::now();
             while (RenderEngine.update() != 1) {
                 glfwPollEvents();
             }
@@ -32,7 +31,6 @@ int main() {
         try {
             OpenGLRenderEngine RenderEngine(settings);
             glfwSetKeyCallback(RenderEngine.window, keyCallback);
-            static auto startTime = std::chrono::high_resolution_clock::now();
             while (RenderEngine.update() != 1) {
                 glfwPollEvents();
             }
