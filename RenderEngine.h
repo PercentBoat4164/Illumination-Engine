@@ -1,3 +1,5 @@
+#pragma once
+
 #include "sources/glew/include/GL/glew.h"
 
 #define GLFW_INCLUDE_VULKAN
@@ -18,6 +20,12 @@
 #include <cstdlib>
 #include <set>
 #include <unistd.h>
+
+#if defined(_WIN32)
+#define GLSLC "glslc.exe "
+#else
+#define GLSLC "glslc "
+#endif
 
 class VulkanRenderEngine {
 public:
@@ -40,6 +48,7 @@ public:
         createImageViews();
         createRenderPass();
         createDescriptorSetLayout();
+        compileShaders("shaders");
         createGraphicsPipeline();
         createCommandPool();
         createResources();
@@ -237,6 +246,7 @@ private:
         createSwapChain();
         createImageViews();
         createRenderPass();
+        compileShaders("shaders");
         createGraphicsPipeline();
         createResources();
         createFramebuffers();
@@ -558,8 +568,8 @@ private:
     }
 
     VkPipeline createGraphicsPipeline() {
-        VkShaderModule vertShaderModule = createShaderModule(readShader("shaders/vert.spv"));
-        VkShaderModule fragShaderModule = createShaderModule(readShader("shaders/frag.spv"));
+        VkShaderModule vertShaderModule = readShader("shaders/vertexShader.spv");
+        VkShaderModule fragShaderModule = readShader("shaders/fragmentShader.spv");
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -978,17 +988,7 @@ private:
         return window;
     }
 
-    VkShaderModule createShaderModule(const std::vector<char>& code) {
-        VkShaderModuleCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = code.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-        VkShaderModule shaderModule;
-        if (vkCreateShaderModule(logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {throw std::runtime_error("failed to create shader module!");}
-        return shaderModule;
-    }
-
-    std::vector<char> readShader(const char *filename) const {
+    VkShaderModule readShader(const char *filename) const {
         std::string filenameAbsolute = settings.absolutePath + filename;
         std::ifstream file(filenameAbsolute, std::ios::ate | std::ios::binary);
         if (!file.is_open()) {throw std::runtime_error("failed to open file: " + std::string(filename) + "\n as file: " + filenameAbsolute);}
@@ -997,7 +997,23 @@ private:
         file.seekg(0);
         file.read(buffer.data(), fileSize);
         file.close();
-        return buffer;
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = buffer.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t*>(buffer.data());
+        VkShaderModule shaderModule;
+        if (vkCreateShaderModule(logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {throw std::runtime_error("failed to create shader module!");}
+        return shaderModule;
+    }
+
+    void compileShaders(const char *filename) const {
+        for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(settings.absolutePath + filename)) {
+            std::string path = entry.path().c_str();
+            if (entry.path().extension() == ".frag" || entry.path().extension() == ".vert") {
+                system((GLSLC + path + " -o " + path.substr(0, path.find_last_of('.')) + ".spv").c_str());}
+        }
+        for (const std::filesystem::directory_entry& file : std::filesystem::directory_iterator(settings.absolutePath + filename)) {if (file.path().extension() == ".spv") {return;}}
+        throw std::runtime_error("no precompiled shaders exist and compiling failed as glslc was not found!");
     }
 
     void updateUniformBuffer(uint32_t currentImage) {
@@ -1148,11 +1164,12 @@ private:
 class OpenGLRenderEngine {
 public:
     GLFWwindow *window;
+    GLuint vertexBuffer{};
 
     explicit OpenGLRenderEngine(const Settings& settings) {
         if(!glfwInit()) {throw std::runtime_error("failed to initialize GLFW");}
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -1161,54 +1178,25 @@ public:
         glfwMakeContextCurrent(window);
         glewExperimental = true;
         if (glewInit() != GLEW_OK) {throw std::runtime_error("failed to initialize GLEW!");}
+        GLuint VertexArrayID;
+        glGenVertexArrays(1, &VertexArrayID);
+        glBindVertexArray(VertexArrayID);
+        //Create vertex buffer
+        glGenBuffers(1, &vertexBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
     }
 
     [[nodiscard]] int update() const {
         if (glfwWindowShouldClose(window)) {return 1;}
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDisableVertexAttribArray(0);
         return 0;
     }
+
+private:
+    constexpr static const GLfloat g_vertex_buffer_data[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f};
 };
-
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {glfwSetWindowShouldClose(window, 1);}
-}
-
-int main() {
-    Settings settings{};
-    //settings.validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    std::cout << "Use Vulkan? Y/n:\n";
-    std::basic_string<char> input;
-    std::cin >> input;
-    input = static_cast<std::string>(input);
-    if (input == "y") {
-        try {
-            VulkanRenderEngine RenderEngine(settings);
-            settings.findMaxSettings(RenderEngine.physicalDevice);
-            settings.fullscreen = false;
-            RenderEngine.updateSettings(settings, true);
-            glfwSetKeyCallback(RenderEngine.window, keyCallback);
-            static auto startTime = std::chrono::high_resolution_clock::now();
-            while (RenderEngine.update() != 1) {
-                glfwPollEvents();
-            }
-        } catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
-            return EXIT_FAILURE;
-        }
-        return EXIT_SUCCESS;
-    }
-    else {
-        try {
-            OpenGLRenderEngine RenderEngine(settings);
-            glfwSetKeyCallback(RenderEngine.window, keyCallback);
-            static auto startTime = std::chrono::high_resolution_clock::now();
-            while (RenderEngine.update() != 1) {
-                glfwPollEvents();
-            }
-        } catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
-            return EXIT_FAILURE;
-        }
-        return EXIT_SUCCESS;
-    }
-}

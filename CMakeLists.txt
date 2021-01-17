@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10.2)
 project(GameEngine)
 
 set(OpenGL_GL_PREFERENCE GLVND)
-
 set(CMAKE_CXX_STANDARD 17)
+
 find_package(Vulkan)
 find_package(OpenGL REQUIRED)
 
@@ -19,16 +19,7 @@ add_subdirectory(sources/glm)
 add_subdirectory(sources/glfw)
 add_subdirectory(sources/glew/build/cmake)
 add_executable(Main main.cpp)
-add_executable(RenderEngineOld RenderEngineOld.cpp)
-add_executable(RenderEngine RenderEngine.cpp)
 add_executable(Physics Physics.cpp)
 
-IF(WIN32)
-    target_link_libraries(Main glfw ${GLFW_LIBRARIES} Vulkan::Vulkan glm ${GLM_LIBRARIES})
-    target_link_libraries(RenderEngineOld glfw ${GLFW_LIBRARIES} Vulkan::Vulkan glm ${GLM_LIBRARIES})
-    target_link_libraries(RenderEngine glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} Vulkan::Vulkan glm ${GLM_LIBRARIES})
-ELSE()
-    target_link_libraries(Main glfw ${GLFW_LIBRARIES} Vulkan::Vulkan)
-    target_link_libraries(RenderEngineOld glfw ${GLFW_LIBRARIES} Vulkan::Vulkan)
-    target_link_libraries(RenderEngine glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} Vulkan::Vulkan)
-ENDIF()
+target_link_libraries(Main glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} Vulkan::Vulkan glm ${GLM_LIBRARIES})
+target_link_libraries(Physics glm ${GLM_LIBRARIES})
