@@ -2,6 +2,9 @@
 
 #include "sources/glew/include/GL/glew.h"
 
+#define VMA_IMPLEMENTATION
+#include "sources/vk_mem_alloc.h"
+
 #define GLFW_INCLUDE_VULKAN
 #include "sources/glfw/include/GLFW/glfw3.h"
 
@@ -39,11 +42,12 @@ public:
         createVulkanInstance();
         createWindowSurface();
         findBestSuitableDevice();
+        createLogicalDevice();
+        createMemoryAllocator();
         start();
     }
 
     void start() {
-        createLogicalDevice();
         createSwapChain();
         createImageViews();
         createRenderPass();
@@ -120,6 +124,11 @@ public:
         return 0;
     }
 
+    void close() {
+        glfwSetWindowShouldClose(window, 1);
+        cleanUp();
+    }
+
 private:
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
@@ -136,6 +145,11 @@ private:
         alignas(16) glm::mat4 model;
         alignas(16) glm::mat4 view;
         alignas(16) glm::mat4 proj;
+    };
+
+    struct AllocatedBuffer {
+        VkBuffer buffer;
+        VmaAllocation allocation;
     };
 
     VkInstance instance{};
@@ -175,6 +189,7 @@ private:
     VkImage textureImage{};
     VkDeviceMemory textureImageMemory{};
     VkSampler textureSampler{};
+    VmaAllocator allocator{};
     VkBuffer vertexBuffer{};
     VkDeviceMemory vertexBufferMemory{};
     VkBuffer indexBuffer{};
@@ -849,6 +864,15 @@ private:
         return swapChain;
     }
 
+    VmaAllocator createMemoryAllocator() {
+        VmaAllocatorCreateInfo allocatorInfo{};
+        allocatorInfo.physicalDevice = physicalDevice;
+        allocatorInfo.device = logicalDevice;
+        allocatorInfo.instance = instance;
+        vmaCreateAllocator(&allocatorInfo, &allocator);
+        return allocator;
+    }
+
     VkDevice createLogicalDevice() {
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
@@ -1216,7 +1240,7 @@ private:
         glfwTerminate();
     }
 
-    GLuint loadShaders(const std::array<std::string, 2>& paths) const{
+    [[nodiscard]] GLuint loadShaders(const std::array<std::string, 2>& paths) const {
         GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
         std::array<GLuint, 2> shaderIDs = {vertexShaderID, fragmentShaderID};

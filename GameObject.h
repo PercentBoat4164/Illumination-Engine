@@ -94,6 +94,8 @@ public:
         herm = stbi_load(hermFilename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         if (!herm) {std::cerr << "failed to load texture image: " + hermFilename << std::endl;}
     }
+
+
 };
 
 #endif
