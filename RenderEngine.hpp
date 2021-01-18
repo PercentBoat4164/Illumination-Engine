@@ -16,8 +16,8 @@
 
 #include "sources/glm/glm.hpp"
 
-#include "Settings.h"
-#include "GameObject.h"
+#include "Settings.hpp"
+#include "GameObject.hpp"
 
 #include <iostream>
 #include <fstream>

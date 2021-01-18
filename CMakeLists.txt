@@ -24,7 +24,5 @@ endif()
 add_subdirectory(sources/glfw)
 add_subdirectory(sources/glew/build/cmake)
 add_executable(Main main.cpp)
-add_executable(Physics Physics.cpp)
 
 target_link_libraries(Main glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} Vulkan::Vulkan glm ${GLM_LIBRARIES})
-target_link_libraries(Physics glm ${GLM_LIBRARIES})

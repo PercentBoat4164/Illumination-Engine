@@ -4,7 +4,7 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Settings.h"
+#include "Settings.hpp"
 
 #include <iostream>
 

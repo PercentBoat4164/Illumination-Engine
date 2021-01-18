@@ -1,8 +1,8 @@
-#define TINYOBJLOADER_IMPLEMENTATION
+#pragma once
+
 #include <glm/glm.hpp>
 #include <iostream>
 #include <vector>
-#include "sources/tiny_obj_loader.h"
 
 //returns the distance between two lines in 3d space
 float distLineLine(glm::vec3 pos1, glm::vec3 v1, glm::vec3 pos2, glm::vec3 v2) {
@@ -30,8 +30,8 @@ std::vector<glm::vec3> getClosestPoints(glm::vec3 as1, glm::vec3 v1, glm::vec3 a
 class Particle {
 public:
 
-    glm::vec3 pos; //position
-    glm::vec3 v; //velocity
+    glm::vec3 pos{}; //position
+    glm::vec3 v{}; //velocity
     float m; //mass
 
     //constructor
@@ -66,23 +66,21 @@ protected:
 
 class RigidBody: public Particle {
 public:
-    glm::vec3 rot; //the current angular position of the rigidbody
-    glm::vec3 rotV; //the current angular velocity of the rigidbody
+    glm::vec3 rot{}; //the current angular position of the rigidbody
+    glm::vec3 rotV{}; //the current angular velocity of the rigidbody
 
     RigidBody(float x,float y,float z,float m) : Particle(x,y,z,m) {
         rot = glm::vec3();
         rotV = glm::vec3();
     }
 
-    void step() {
+    void step() override {
         Particle::step();
         rot += rotV;
     }
 
 protected:
-    RigidBody() {
-
-    }
+    RigidBody() = default;
 };
 
 class SphereBody: public RigidBody {
@@ -114,7 +112,7 @@ public:
     }
 
     //check for collision between two spheres
-    bool checkCollision(SphereBody s1, SphereBody s2) {
+    static bool checkCollision(SphereBody s1, SphereBody s2) {
 
         //store the distance between the spheres' vectors
         float l = s1.r + s2.r + 1;
@@ -140,58 +138,3 @@ public:
         return false;
     }
 };
-
-int main() {
-    SphereBody myBody = SphereBody(0.0f, 0.0f, 0.0f, 1.0f,2.0f);
-    SphereBody otherBody = SphereBody(5.0f, 0.0f, 0.0f, 1.0f,2.0f);
-    otherBody.applyImpulse(0,1,0);
-    World myWorld;
-    myWorld.addBody(&myBody);
-    myWorld.addBody(&otherBody);
-    char input;
-    do {
-        std::cin >> input;
-        switch(input) {
-            case 'p':
-                myWorld.step();
-                break;
-            case 'w':
-                myBody.applyImpulse(0,1,0);
-                break;
-            case 'a':
-                myBody.applyImpulse(-1,0,0);
-                break;
-            case 's':
-                myBody.applyImpulse(0,-1,0);
-                break;
-            case 'd':
-                myBody.applyImpulse(1,0,0);
-                break;
-            case 'z':
-                myBody.applyImpulse(0,0,1);
-                break;
-            case 'x':
-                myBody.applyImpulse(0,0,-1);
-                break;
-
-        }
-        std::cout << "--Sphere 1--";
-        std::cout << "\nVx: " << myBody.v.x << "  Vy: " << myBody.v.y << "  Vz: " << myBody.v.z;
-        std::cout << "\nPos x: " << myBody.pos.x << " Pos y: " << myBody.pos.y << " Pos z: " << myBody.pos.z;
-        std::cout << "\n--Sphere 2--";
-        std::cout << "\nVx: " << otherBody.v.x << "  Vy: " << otherBody.v.y << "  Vz: " << otherBody.v.z;
-        std::cout << "\nPos x: " << otherBody.pos.x << " Pos y: " << otherBody.pos.y << " Pos z: " << otherBody.pos.z;
-        std::cout << "\n--Closest Points on Sphere 1's line--";
-        std::cout << "\n" << distLineLine(myBody.pos,myBody.v,otherBody.pos,otherBody.v);
-        std::cout << "\nX: " << (getClosestPoints(myBody.pos,myBody.v,otherBody.pos,otherBody.v))[0].x;
-        std::cout << "  Y: " << (getClosestPoints(myBody.pos,myBody.v,otherBody.pos,otherBody.v))[0].y;
-        std::cout << "  Z: " << (getClosestPoints(myBody.pos,myBody.v,otherBody.pos,otherBody.v))[0].z;
-        if(myWorld.checkCollision(myBody,otherBody)) {
-            std::cout << "\nIntersecting";
-        } else {
-            std::cout << "\nNot intersecting";
-        }
-        std::cout << "\n";
-    } while(input != 'e');
-    return 0;
-}
