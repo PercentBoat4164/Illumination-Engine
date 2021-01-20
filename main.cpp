@@ -7,12 +7,12 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 
 int main() {
     Settings settings{};
-    //settings.validationLayers = {"VK_LAYER_KHRONOS_validation"};
     std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics\n";
     char input;
     std::cin >> input;
     if (input == 'v') {
         try {
+            //settings.validationLayers = {"VK_LAYER_KHRONOS_validation"};
             VulkanRenderEngine RenderEngine(settings);
             settings.findMaxSettings(RenderEngine.physicalDevice);
             settings.fullscreen = false;

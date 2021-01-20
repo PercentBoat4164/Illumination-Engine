@@ -1,5 +1,10 @@
 # Project exclude paths
 /cmake-build-debug/
 /CMakeFiles/
-/sources/glfw/CMakeFiles/
-/sources/glfw/src/CMakeFiles/
+/sources/glfw
+/sources/glew
+/sources/glm
+/sources/vk-bootstrap
+/sources/stb_image.h
+/sources/tiny_obj_loader.h
+/sources/vk_mem_alloc.h

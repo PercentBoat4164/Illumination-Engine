@@ -1,5 +1,4 @@
-#ifndef GAMEOBJECT_H
-#define GAMEOBJECT_H
+#pragma once
 
 #include <glm/gtx/hash.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -97,5 +96,3 @@ public:
 
 
 };
-
-#endif
