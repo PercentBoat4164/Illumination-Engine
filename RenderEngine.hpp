@@ -34,6 +34,8 @@ class VulkanRenderEngine {
 public:
     GLFWwindow *window{};
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    uint32_t frameNumber = 0;
+    Settings settings{};
 
     explicit VulkanRenderEngine(const Settings& startSettings) {
         settings = startSettings;
@@ -120,12 +122,17 @@ public:
         } else if (result != VK_SUCCESS) {throw std::runtime_error("failed to present swap chain image!");}
         vkQueueWaitIdle(presentQueue);
         currentFrame = (currentFrame + 1) % settings.MAX_FRAMES_IN_FLIGHT;
+        frameNumber++;
         //Return success signal
         return 0;
     }
 
     void close() {
         glfwSetWindowShouldClose(window, 1);
+        cleanUp();
+    }
+
+    ~VulkanRenderEngine() {
         cleanUp();
     }
 
@@ -159,7 +166,6 @@ private:
     VkPhysicalDeviceProperties physicalDeviceProperties{};
     VkPhysicalDeviceFeatures physicalDeviceFeatures{};
     VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
-    Settings settings{};
     QueueFamilyIndices familyIndices{};
     VkQueue graphicsQueue{};
     VkQueue presentQueue{};
@@ -228,7 +234,6 @@ private:
         vkDestroySurfaceKHR(instance, surface, nullptr);
         vkDestroyInstance(instance, nullptr);
         glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, 0);
-        glfwDestroyWindow(window);
         glfwTerminate();
     }
 
@@ -546,21 +551,36 @@ private:
 
     std::vector<VkFramebuffer> createFramebuffers() {
         swapChainFramebuffers.resize(swapChainImageViews.size());
-        for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-            std::array<VkImageView, 3> attachments = {
-                    colorImageView,
-                    depthImageView,
-                    swapChainImageViews[i]
-            };
-            VkFramebufferCreateInfo framebufferInfo{};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = renderPass;
-            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = swapChainExtent.width;
-            framebufferInfo.height = swapChainExtent.height;
-            framebufferInfo.layers = 1;
-            if (vkCreateFramebuffer(logicalDevice, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {throw std::runtime_error("failed to create framebuffer!");}
+        if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) {
+            for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+                VkImageView attachments[] = {swapChainImageViews[i], depthImageView};
+                VkFramebufferCreateInfo framebufferInfo{};
+                framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+                framebufferInfo.renderPass = renderPass;
+                framebufferInfo.attachmentCount = 2;
+                framebufferInfo.pAttachments = attachments;
+                framebufferInfo.width = swapChainExtent.width;
+                framebufferInfo.height = swapChainExtent.height;
+                framebufferInfo.layers = 1;
+                if (vkCreateFramebuffer(logicalDevice, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {throw std::runtime_error("failed to create framebuffer!");}
+            }
+        } else {
+            for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+                std::array<VkImageView, 3> attachments = {
+                        colorImageView,
+                        depthImageView,
+                        swapChainImageViews[i]
+                };
+                VkFramebufferCreateInfo framebufferInfo{};
+                framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+                framebufferInfo.renderPass = renderPass;
+                framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+                framebufferInfo.pAttachments = attachments.data();
+                framebufferInfo.width = swapChainExtent.width;
+                framebufferInfo.height = swapChainExtent.height;
+                framebufferInfo.layers = 1;
+                if (vkCreateFramebuffer(logicalDevice, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {throw std::runtime_error("failed to create framebuffer!");}
+            }
         }
         return swapChainFramebuffers;
     }
@@ -635,10 +655,11 @@ private:
         rasterizer.depthBiasEnable = VK_FALSE;
         VkPipelineMultisampleStateCreateInfo multisampling{};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        multisampling.sampleShadingEnable = VK_FALSE;
+        if (settings.msaaSamples == 1) {multisampling.sampleShadingEnable = VK_FALSE;}
+        else {
+            multisampling.sampleShadingEnable = VK_TRUE;
+            multisampling.minSampleShading = 0.2f;}
         multisampling.rasterizationSamples = settings.msaaSamples;
-        multisampling.sampleShadingEnable = VK_TRUE;
-        multisampling.minSampleShading = 0.2f;
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         colorBlendAttachment.blendEnable = VK_FALSE;
@@ -716,7 +737,8 @@ private:
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) {colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;}
+        else {colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;}
         VkAttachmentReference colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -764,11 +786,16 @@ private:
         dependency.srcAccessMask = 0;
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        std::array<VkAttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
         VkRenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        renderPassInfo.pAttachments = attachments.data();
+        if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) {
+            renderPassInfo.attachmentCount = 2;
+            renderPassInfo.pAttachments = (std::array<VkAttachmentDescription, 2>){colorAttachment, depthAttachment}.data();
+        }
+        else {
+            renderPassInfo.attachmentCount = 3;
+            renderPassInfo.pAttachments = (std::array<VkAttachmentDescription, 3>){colorAttachment, depthAttachment, colorAttachmentResolve}.data();
+        }
         renderPassInfo.subpassCount = 1;
         renderPassInfo.pSubpasses = &subpass;
         renderPassInfo.dependencyCount = 1;
@@ -1009,6 +1036,7 @@ private:
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), nullptr, nullptr);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+        glfwSetWindowUserPointer(window, this);
         return window;
     }
 
@@ -1044,7 +1072,7 @@ private:
         auto currentTime = std::chrono::high_resolution_clock::now();
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
         UniformBufferObject ubo{};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
         ubo.proj[1][1] *= -1;
@@ -1214,7 +1242,7 @@ public:
         programID = loadShaders({"shaders/vertexShader.glsl", "shaders/fragmentShader.glsl"});
     }
 
-    int update() {
+    int update() const {
         if (glfwWindowShouldClose(window)) {
             cleanUp();
             return 1;
@@ -1231,16 +1259,19 @@ public:
         return 0;
     }
 
+    ~OpenGLRenderEngine() {
+        cleanUp();
+    }
+
 private:
     constexpr static const GLfloat g_vertex_buffer_data[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f};
 
-    void cleanUp() const {
+    static void cleanUp() {
         glFinish();
-        glfwDestroyWindow(window);
         glfwTerminate();
     }
 
-    [[nodiscard]] GLuint loadShaders(const std::array<std::string, 2>& paths) const {
+    GLuint loadShaders(const std::array<std::string, 2>& paths) const {
         GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
         std::array<GLuint, 2> shaderIDs = {vertexShaderID, fragmentShaderID};
