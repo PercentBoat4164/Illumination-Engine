@@ -23,6 +23,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <set>
+#include <optional>
 
 #if defined(_WIN32)
 #define GLSLC "glslc.exe "
@@ -491,7 +492,7 @@ private:
         barrier.subresourceRange.levelCount = 1;
         int32_t mipWidth = gameObject.texWidth;
         int32_t mipHeight = gameObject.texHeight;
-        for (uint32_t i = 1; i < settings.mipLevels; i++) {
+        for (int32_t i = 1; i < settings.mipLevels; i++) {
             barrier.subresourceRange.baseMipLevel = i - 1;
             barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
             barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -788,14 +789,10 @@ private:
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         VkRenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) {
-            renderPassInfo.attachmentCount = 2;
-            renderPassInfo.pAttachments = (std::array<VkAttachmentDescription, 2>){colorAttachment, depthAttachment}.data();
-        }
-        else {
-            renderPassInfo.attachmentCount = 3;
-            renderPassInfo.pAttachments = (std::array<VkAttachmentDescription, 3>){colorAttachment, depthAttachment, colorAttachmentResolve}.data();
-        }
+        std::vector<VkAttachmentDescription> descriptorAttachments = {colorAttachment, depthAttachment};
+        if (settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) {descriptorAttachments.push_back(colorAttachmentResolve);}
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(descriptorAttachments.size());
+        renderPassInfo.pAttachments = descriptorAttachments.data();
         renderPassInfo.subpassCount = 1;
         renderPassInfo.pSubpasses = &subpass;
         renderPassInfo.dependencyCount = 1;
@@ -952,7 +949,7 @@ private:
         long unsigned int highestMemorySize = 0;
         long unsigned int deviceMemorySize;
         for (auto & singleDevice : devices) {
-            uint32_t extensionCount;
+            uint32_t extensionCount = 0;
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
             vkEnumerateDeviceExtensionProperties(singleDevice, nullptr, &extensionCount, availableExtensions.data());
             std::set<std::string> requiredExtensions(settings.requestedExtensions.begin(), settings.requestedExtensions.end());
@@ -963,7 +960,7 @@ private:
             vkGetPhysicalDeviceProperties(singleDevice, &physicalDeviceProperties);
             if (physicalDeviceProperties.deviceType == 2) {
                 vkGetPhysicalDeviceMemoryProperties(singleDevice, &physicalDeviceMemoryProperties);
-                deviceMemorySize = physicalDeviceMemoryProperties.memoryHeaps[0].size;
+                deviceMemorySize = static_cast<unsigned long>(physicalDeviceMemoryProperties.memoryHeaps[0].size);
                 if (deviceMemorySize > highestMemorySize) {
                     highestMemorySize = deviceMemorySize;
                     physicalDevice = singleDevice;
@@ -994,7 +991,7 @@ private:
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
-        createInfo.enabledExtensionCount = extensions.size();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
         if (!settings.validationLayers.empty()) {
@@ -1059,7 +1056,7 @@ private:
 
     void compileShaders(const char *filename) const {
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(settings.absolutePath + filename)) {
-            std::string path = entry.path().c_str();
+            std::string path = reinterpret_cast<const char *const>(entry.path().c_str());
             if (entry.path().extension() == ".frag" || entry.path().extension() == ".vert") {
                 system((GLSLC + path + " -o " + path.substr(0, path.find_last_of('.')) + ".spv").c_str());}
         }

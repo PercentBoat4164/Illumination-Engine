@@ -2,6 +2,11 @@
 
 #include <filesystem>
 #include <array>
+#if defined(_WIN32)
+#include <direct.h>
+#include <windows.h>
+#include <TCHAR.h>
+#endif
 
 class Settings {
 public:
@@ -16,17 +21,21 @@ public:
     int refreshRate = 60;
     std::array<int, 2> resolution = {800, 600};
     int MAX_FRAMES_IN_FLIGHT = 2;
-#ifdef _WIN32
-    #include <direct.h>
-    #include <windows.h>
-    char pathChar[MAX_PATH];
-    GetModuleFileNameA(NULL, pathChar, MAX_PATH);
-    std::string executablePath = std::string(pathChar);
-    std::string absolutePath = executablePath.substr(0, executablePath.find_last_of("\\") + 1);
-#else
-    std::string executablePath{std::filesystem::canonical("/proc/self/exe").u8string()};
-    std::string absolutePath = (std::string)executablePath.substr(0, executablePath.find_last_of('/') + 1);
-#endif
+    std::string absolutePath = getProgramPath();
+
+    static std::string getProgramPath() {
+        #if defined(_WIN32)
+        char pathChar[MAX_PATH];
+        GetModuleFileName(nullptr, pathChar, MAX_PATH);
+        std::string executablePath = std::string(pathChar);
+        std::string absolutePath = executablePath.substr(0, executablePath.find_last_of('\\') + 1);
+        #else
+        std::string executablePath{std::filesystem::canonical("/proc/self/exe").u8string()};
+        std::string absolutePath = (std::string)executablePath.substr(0, executablePath.find_last_of('/') + 1);
+        #endif
+        return absolutePath;
+    }
+
 
     void set(std::vector<const char*>& layers, std::vector<const char*>& extensions, std::string& name, std::array<int, 3>& version) {
         for (auto& layer : layers) {validationLayers.insert(validationLayers.end(), layer);}
