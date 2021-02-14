@@ -35,5 +35,13 @@ endforeach()
 
 add_executable(Main main.cpp)
 add_executable(VulkanTutorialTheSecond VulkanTutorialTheSecond.cpp)
-target_link_libraries(Main glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} Vulkan::Vulkan)
-target_link_libraries(VulkanTutorialTheSecond glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap Vulkan::Vulkan)
+
+if (Vulkan_FOUND)
+    target_link_libraries(Main glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} Vulkan::Vulkan)
+    target_link_libraries(VulkanTutorialTheSecond glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap Vulkan::Vulkan)
+    message("found Vulkan")
+else()
+    target_link_libraries(Main glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES})
+endif()
+
+FILE(COPY cmake-build-debug/bin/glew32d.dll DESTINATION /cmake-build-debug/glew32d.dll)
