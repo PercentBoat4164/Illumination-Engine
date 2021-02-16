@@ -1,11 +1,11 @@
 # Project exclude paths
 /cmake-build-debug/
-/build/
-/out/
+/CMakeFiles/
+/.idea/
 /.vs/
 /.vscode/
-/.idea/
-/CMakeFiles/
+/build/
+/out/
 /sources/glfw
 /sources/glew
 /sources/glm

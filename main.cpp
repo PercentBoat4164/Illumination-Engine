@@ -27,9 +27,9 @@ int main() {
             VulkanRenderEngine RenderEngine(settings);
             glfwSetKeyCallback(RenderEngine.window, keyCallback);
             settings.findMaxSettings(RenderEngine.physicalDevice);
-            //settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-            //settings.resolution = {1280, 720};
-            //settings.fullscreen = false;
+            settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
+            settings.resolution = {1280, 720};
+            settings.fullscreen = false;
             RenderEngine.updateSettings(settings, true);
             while (RenderEngine.update() != 1) {
                 glfwPollEvents();

@@ -1,29 +1,56 @@
 #define GLFW_INCLUDE_VULKAN
-#define GLSLC "glslc "
+#define VMA_IMPLEMENTATION
 
 #include <GLFW/glfw3.h>
-
+#include <vk_mem_alloc.h>
 #include <VkBootstrap.h>
+#include "sources/glm/glm.hpp"
+
 #include <cmath>
+#include <utility>
 #include <vector>
 #include <fstream>
 #include <array>
 #include <deque>
 #include <functional>
 
+#define GLSLC "glslc "
 
-struct DeletionQueue {
-    std::deque<std::function<void()>> deletors;
+struct AllocatedBuffer {
+    VkBuffer _buffer;
+    VmaAllocation _allocation;
+};
 
-    void push_function(std::function<void()>&& function) {deletors.push_back(function);}
+class GameObject {
+private:
+    struct Vertex {
+        glm::vec3 position;
+        glm::vec3 normal;
+        glm::vec3 color;
+    };
 
-    void flush() {
-        for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {(*it)();}
-        deletors.clear();
-    }
+    struct Mesh {
+        std::vector<Vertex> _vertices;
+        AllocatedBuffer _vertexBuffer{};
+    };
+
+public:
+    Mesh objectMesh;
 };
 
 class VulkanEngine {
+private:
+    struct DeletionQueue {
+        std::deque<std::function<void()>> deletors;
+
+        void push_function(std::function<void()>&& function) {deletors.push_back(function);}
+
+        void flush() {
+            for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {(*it)();}
+            deletors.clear();
+        }
+    };
+
 public:
     bool _isInitialized{false};
     int _frameNumber{0};
@@ -33,7 +60,7 @@ public:
     VkDebugUtilsMessengerEXT _debug_messenger;
     VkPhysicalDevice _chosenGPU;
     VkDevice _device;
-    DeletionQueue _mainDeletionQueue{};
+    VulkanEngine::DeletionQueue _mainDeletionQueue{};
     VkSurfaceKHR _surface{};
     VkSwapchainKHR _swapchain{};
     VkFormat _swapchainImageFormat{};
@@ -51,10 +78,12 @@ public:
     VkViewport _viewport{};
     VkRect2D _scissor{};
     VkPipeline _trianglePipeline{};
+    VkPipeline _meshPipeline{};
+    VmaAllocator _allocator{};
     bool RGBTri{true};
     bool framebufferResized{false};
 
-    VulkanEngine() {
+    explicit VulkanEngine(std::array<std::string, 2> shaderPaths) {
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         _window = glfwCreateWindow(_windowExtent.width, _windowExtent.height, "Vulkan Tutorial", nullptr, nullptr);
@@ -74,6 +103,16 @@ public:
         _chosenGPU = physicalDevice.physical_device;
         _graphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
         _graphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
+        buildEngine(std::move(shaderPaths));
+        VmaAllocatorCreateInfo allocatorCreateInfo{};
+        allocatorCreateInfo.physicalDevice = _chosenGPU;
+        allocatorCreateInfo.device = _device;
+        allocatorCreateInfo.instance = _instance;
+        vmaCreateAllocator(&allocatorCreateInfo, &_allocator);
+    }
+
+    ~VulkanEngine() {
+        cleanUp();
     }
 
     void buildEngine(std::array<std::string, 2> shaderPaths) {
@@ -100,7 +139,7 @@ public:
         _mainDeletionQueue.push_function([=]() {vkDestroyCommandPool(_device, _commandPool, nullptr);});
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = _swapchainImageFormat;
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; //Only thing that changes with number of msaa samples.
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; //Changes with number of msaa samples.
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -250,6 +289,7 @@ public:
             vkb::destroy_debug_utils_messenger(_instance, _debug_messenger);
             vkDestroyInstance(_instance, nullptr);
             glfwDestroyWindow(_window);
+            _isInitialized = false;
         }
     }
 
@@ -258,6 +298,7 @@ public:
             cleanUp();
             return 1;
         }
+        //In future iterations add checking to be sure that the render engine is initialized.
         vkWaitForFences(_device, 1, &_renderFence, true, 1000000000);
         vkResetFences(_device, 1, &_renderFence);
         uint32_t swapchainImageIndex;
@@ -359,8 +400,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 }
 
 int main() {
-    VulkanEngine renderEngine;
-    renderEngine.buildEngine({"shaders/VulkanTutorialTheSecondFragmentShader.frag", "shaders/VulkanTutorialTheSecondVertexShader.vert"});
+    VulkanEngine renderEngine({"shaders/VulkanTutorialTheSecondFragmentShader.frag", "shaders/VulkanTutorialTheSecondVertexShader.vert"});
     glfwSetKeyCallback(renderEngine._window, keyCallback);
     while (renderEngine.update() != 1) {
         //GameLoop

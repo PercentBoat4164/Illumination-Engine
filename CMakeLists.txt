@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10.2)
 project(GameEngine)
 
 set(OpenGL_GL_PREFERENCE GLVND)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package(Vulkan)
 find_package(OpenGL REQUIRED)
@@ -35,13 +35,5 @@ endforeach()
 
 add_executable(Main main.cpp)
 add_executable(VulkanTutorialTheSecond VulkanTutorialTheSecond.cpp)
-
-if (Vulkan_FOUND)
-    target_link_libraries(Main glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} Vulkan::Vulkan)
-    target_link_libraries(VulkanTutorialTheSecond glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap Vulkan::Vulkan)
-    message("found Vulkan")
-else()
-    target_link_libraries(Main glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES})
-endif()
-
-FILE(COPY cmake-build-debug/bin/glew32d.dll DESTINATION /cmake-build-debug/glew32d.dll)
+target_link_libraries(Main glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} Vulkan::Vulkan)
+target_link_libraries(VulkanTutorialTheSecond glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap Vulkan::Vulkan)

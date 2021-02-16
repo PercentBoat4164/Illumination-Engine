@@ -1,11 +1,13 @@
 #pragma once
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Settings.hpp"
 
 #include <iostream>
+
 
 
 struct Vertex {
@@ -52,7 +54,7 @@ public:
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
     int texWidth{}, texHeight{}, texChannels{};
-    stbi_uc* albedo;
+    stbi_uc* albedo{};
     stbi_uc* normal{};
     stbi_uc* herm{};
     std::string modelFilename;

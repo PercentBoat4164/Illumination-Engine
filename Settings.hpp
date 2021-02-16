@@ -1,12 +1,14 @@
 #pragma once
 
-#include <filesystem>
 #include <array>
-#if defined(_WIN32)
-#include <direct.h>
+#include <filesystem>
+#ifdef _WIN32
 #include <windows.h>
-#include <TCHAR.h>
+#else
+#include <climits>
+#include <unistd.h>
 #endif
+
 
 class Settings {
 public:
@@ -23,19 +25,19 @@ public:
     int MAX_FRAMES_IN_FLIGHT = 2;
     std::string absolutePath = getProgramPath();
 
-    static std::string getProgramPath() {
-        #if defined(_WIN32)
-        char pathChar[MAX_PATH];
-        GetModuleFileName(nullptr, pathChar, MAX_PATH);
-        std::string executablePath = std::string(pathChar);
-        std::string absolutePath = executablePath.substr(0, executablePath.find_last_of('\\') + 1);
-        #else
-        std::string executablePath{std::filesystem::canonical("/proc/self/exe").u8string()};
-        std::string absolutePath = (std::string)executablePath.substr(0, executablePath.find_last_of('/') + 1);
-        #endif
-        return absolutePath;
-    }
 
+    static std::filesystem::path getProgramPath()
+    {
+        #ifdef _WIN32
+        wchar_t path[MAX_PATH] = { 0 };
+        GetModuleFileNameW(NULL, path, MAX_PATH);
+        #else
+        char result[PATH_MAX];
+        ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+        std::string path = std::string(result, (count > 0) ? count : 0);
+        #endif
+        return path.substr(0, path.find_last_of('/') + 1);
+    }
 
     void set(std::vector<const char*>& layers, std::vector<const char*>& extensions, std::string& name, std::array<int, 3>& version) {
         for (auto& layer : layers) {validationLayers.insert(validationLayers.end(), layer);}
