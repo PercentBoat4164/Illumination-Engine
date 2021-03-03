@@ -6,70 +6,6 @@
 
 class VulkanRenderEngine {
 public:
-    struct QueueFamilyIndices {
-        std::optional<uint32_t> graphicsFamily;
-        std::optional<uint32_t> presentFamily;
-    };
-
-    struct SwapChainSupportDetails {
-        VkSurfaceCapabilitiesKHR capabilities{};
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
-
-    VmaAllocator allocator{};
-    GLFWwindow *window{};
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    uint32_t frameNumber = 0;
-    std::deque<std::function<void()>> deletionQueue{};
-    Settings settings{};
-    VkDevice logicalDevice{};
-    VkInstance instance{};
-    VkDebugUtilsMessengerEXT debugMessenger{};
-    bool framebufferResized = false;
-    VkSurfaceKHR surface{};
-    VkPhysicalDeviceProperties physicalDeviceProperties{};
-    VkPhysicalDeviceFeatures physicalDeviceFeatures{};
-    VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
-    QueueFamilyIndices familyIndices{};
-    VkQueue graphicsQueue{};
-    VkQueue singleTimeQueue{};
-    VkQueue presentQueue{};
-    SwapChainSupportDetails swapChainSupport;
-    VkSwapchainKHR swapChain{};
-    std::vector<VkImage> swapChainImages;
-    VkFormat swapChainImageFormat{};
-    VkExtent2D swapChainExtent{};
-    std::vector<VkImageView> swapChainImageViews;
-    VkFormat depthFormat{};
-    VkRenderPass renderPass{};
-    VkDescriptorSetLayout descriptorSetLayout{};
-    VkPipelineLayout pipelineLayout{};
-    VkPipeline graphicsPipeline{};
-    VkCommandPool commandPool{};
-    VkImage colorImage{};
-    VkDeviceMemory colorImageMemory{};
-    VkImageView colorImageView{};
-    VkImage depthImage{};
-    VkDeviceMemory depthImageMemory{};
-    VkImageView depthImageView{};
-    std::vector<VkFramebuffer> swapChainFramebuffers{};
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    VkDescriptorPool descriptorPool{};
-    std::vector<VkDescriptorSet> descriptorSets;
-    VkCommandBuffer mainCommandBuffer{};
-    std::vector<VkCommandBuffer> commandBuffers;
-    std::vector<VkSemaphore> imageAvailableSemaphores;
-    std::vector<VkSemaphore> renderFinishedSemaphores;
-    std::vector<VkFence> inFlightFences;
-    std::vector<VkFence> imagesInFlight;
-    size_t currentFrame = 0;
-    std::vector<VkBuffer> vertexBuffers{};
-    std::vector<VkBuffer> indexBuffers{};
-    std::vector<Asset> assets{};
-
-
     explicit VulkanRenderEngine(const Settings& startSettings) {
         settings = startSettings;
         createWindow();
@@ -88,6 +24,24 @@ public:
         createCommandPool();
         createResources();
         createFramebuffers();
+    }
+
+    void recreateSwapChain() {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(window, &width, &height);
+        vkDeviceWaitIdle(logicalDevice);
+        cleanupSwapChain();
+        createSwapChain();
+        createImageViews();
+        createRenderPass();
+        compileShaders("shaders");
+        createDescriptorSetLayout();
+        createGraphicsPipeline();
+        createResources();
+        createFramebuffers();
+        createUniformBuffers();
+        createDescriptorPool();
+        createCommandBuffers();
     }
 
     void start() {
@@ -193,8 +147,7 @@ public:
     void cleanUp() {
         vkDeviceWaitIdle(logicalDevice);
         cleanupSwapChain();
-        vkDestroyDescriptorSetLayout(logicalDevice, descriptorSetLayout, nullptr);
-        for (size_t i = 0; i < settings.MAX_FRAMES_IN_FLIGHT; i++) {
+        for (int i = 0; i < settings.MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(logicalDevice, renderFinishedSemaphores[i], nullptr);
             vkDestroySemaphore(logicalDevice, imageAvailableSemaphores[i], nullptr);
             vkDestroyFence(logicalDevice, inFlightFences[i], nullptr);
@@ -208,27 +161,9 @@ public:
         glfwTerminate();
     }
 
-    [[maybe_unused]] void submitQueue(std::function<void(VkCommandBuffer)> &&function) const {
-        VkCommandBufferAllocateInfo cmdAllocInfo{};
-        cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cmdAllocInfo.commandPool = commandPool;
-        cmdAllocInfo.commandBufferCount = 1;
-        cmdAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        VkCommandBuffer cmd;
-        vkAllocateCommandBuffers(logicalDevice, &cmdAllocInfo, &cmd);
-        VkCommandBufferBeginInfo cmdBeginInfo{};
-        cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        vkBeginCommandBuffer(cmd, &cmdBeginInfo);
-        function(cmd);
-        vkEndCommandBuffer(cmd);
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &cmd;
-        vkQueueSubmit(graphicsQueue, 1, &submitInfo, nullptr);
-        vkResetCommandPool(logicalDevice, commandPool, 0);
-
+    void cleanupSwapChain() {
+        for (std::function<void()>& function : deletionQueue) {function();}
+        deletionQueue.clear();
     }
 
     void createCommandBuffers() {
@@ -270,55 +205,13 @@ public:
         }
     }
 
-    void cleanupSwapChain() {
-        vkDestroyImageView(logicalDevice, colorImageView, nullptr);
-        vkDestroyImage(logicalDevice, colorImage, nullptr);
-        vkFreeMemory(logicalDevice, colorImageMemory, nullptr);
-        vkDestroyImageView(logicalDevice, depthImageView, nullptr);
-        vkDestroyImage(logicalDevice, depthImage, nullptr);
-        vkFreeMemory(logicalDevice, depthImageMemory, nullptr);
-        for (auto & swapChainFramebuffer : swapChainFramebuffers) {vkDestroyFramebuffer(logicalDevice, swapChainFramebuffer, nullptr);}
-        vkFreeCommandBuffers(logicalDevice, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-        vkDestroyPipeline(logicalDevice, graphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(logicalDevice, pipelineLayout, nullptr);
-        vkDestroyRenderPass(logicalDevice, renderPass, nullptr);
-        for (auto & swapChainImageView : swapChainImageViews) {vkDestroyImageView(logicalDevice, swapChainImageView, nullptr);}
-        vkDestroySwapchainKHR(logicalDevice, swapChain, nullptr);
-        for (size_t i = 0; i < swapChainImages.size(); i++) {
-            vkDestroyBuffer(logicalDevice, uniformBuffers[i], nullptr);
-            vkFreeMemory(logicalDevice, uniformBuffersMemory[i], nullptr);
-        }
-        vkDestroyDescriptorPool(logicalDevice, descriptorPool, nullptr);
-    }
-
-    void recreateSwapChain() {
-        int width = 0, height = 0;
-        while (width == 0 || height == 0) {glfwGetFramebufferSize(window, &width, &height);}
-        vkDeviceWaitIdle(logicalDevice);
-        cleanupSwapChain();
-        createSwapChain();
-        createImageViews();
-        createRenderPass();
-        compileShaders("shaders");
-        createGraphicsPipeline();
-        createResources();
-        createFramebuffers();
-        createUniformBuffers();
-        createDescriptorPool();
-        //Reload descriptor sets from assets
-        createCommandBuffers();
-    }
-
     std::array<std::vector<VkFence>, 2> createFences() {
         inFlightFences.resize(settings.MAX_FRAMES_IN_FLIGHT);
         imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
         VkFenceCreateInfo fenceInfo{};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        for (size_t i = 0; i < settings.MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateFence(logicalDevice, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {throw std::runtime_error("failed to create synchronization objects for a frame!");}
-            deletionQueue.emplace_back([&]{vkDestroyFence(logicalDevice, inFlightFences[i], nullptr);});
-        }
+        for (size_t i = 0; i < settings.MAX_FRAMES_IN_FLIGHT; i++) {if (vkCreateFence(logicalDevice, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {throw std::runtime_error("failed to create synchronization objects for a frame!");}}
         return {inFlightFences, imagesInFlight};
     }
 
@@ -327,11 +220,7 @@ public:
         renderFinishedSemaphores.resize(settings.MAX_FRAMES_IN_FLIGHT);
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        for (size_t i = 0; i < settings.MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS || vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) {throw std::runtime_error("failed to create synchronization objects for a frame!");}
-            deletionQueue.emplace_back([&]{vkDestroySemaphore(logicalDevice, imageAvailableSemaphores[i], nullptr);});
-            deletionQueue.emplace_back([&]{vkDestroySemaphore(logicalDevice, renderFinishedSemaphores[i], nullptr);});
-        }
+        for (size_t i = 0; i < settings.MAX_FRAMES_IN_FLIGHT; i++) {if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS || vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) {throw std::runtime_error("failed to create synchronization objects for a frame!");}}
         return {imageAvailableSemaphores, renderFinishedSemaphores};
     }
 
@@ -347,7 +236,7 @@ public:
         poolInfo.pPoolSizes = poolSizes.data();
         poolInfo.maxSets = swapChainImages.size();
         if (vkCreateDescriptorPool(logicalDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {throw std::runtime_error("failed to create descriptor pool!");}
-        deletionQueue.emplace_back([&]{vkDestroyDescriptorPool(logicalDevice, descriptorPool, nullptr);});
+        deletionQueue.emplace_front([&]{vkDestroyDescriptorPool(logicalDevice, descriptorPool, nullptr);});
         return descriptorPool;
     }
 
@@ -356,6 +245,7 @@ public:
         uniformBuffers.resize(swapChainImages.size());
         uniformBuffersMemory.resize(swapChainImages.size());
         for(size_t i =0; i < swapChainImages.size(); i++) {createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);}
+        deletionQueue.emplace_front([&]{for (VkDeviceMemory memory : uniformBuffersMemory) {vkFreeMemory(logicalDevice, memory, nullptr);}});
         return uniformBuffers;
     }
 
@@ -373,8 +263,8 @@ public:
             framebufferInfo.height = swapChainExtent.height;
             framebufferInfo.layers = 1;
             if (vkCreateFramebuffer(logicalDevice, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {throw std::runtime_error("failed to create framebuffer!");}
-            deletionQueue.emplace_back([&]{vkDestroyFramebuffer(logicalDevice, swapChainFramebuffers[i], nullptr);});
         }
+        deletionQueue.emplace_front([&]{for (VkFramebuffer framebuffer : swapChainFramebuffers)vkDestroyFramebuffer(logicalDevice, framebuffer, nullptr);});
         return swapChainFramebuffers;
     }
 
@@ -382,8 +272,12 @@ public:
         VkFormat colorFormat = swapChainImageFormat;
         createImage(swapChainExtent.width, swapChainExtent.height, 1, settings.msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, colorImage, colorImageMemory);
         colorImageView = createImageView(colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+        deletionQueue.emplace_front([&]{vkDestroyImageView(logicalDevice, colorImageView, nullptr);});
+        deletionQueue.emplace_front([&]{vkFreeMemory(logicalDevice, colorImageMemory, nullptr);});
         createImage(swapChainExtent.width, swapChainExtent.height, 1, settings.msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
         depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+        deletionQueue.emplace_front([&]{vkDestroyImageView(logicalDevice, depthImageView, nullptr);});
+        deletionQueue.emplace_front([&]{vkFreeMemory(logicalDevice, depthImageMemory, nullptr);});
         return {colorImage, depthImage};
     }
 
@@ -393,7 +287,6 @@ public:
         poolInfo.queueFamilyIndex = familyIndices.graphicsFamily.value();
         poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
         if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {throw std::runtime_error("failed to create command pool!");}
-        deletionQueue.emplace_back([&]{vkDestroyCommandPool(logicalDevice, commandPool, nullptr);});
         return commandPool;
     }
 
@@ -474,7 +367,7 @@ public:
         pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         if (vkCreatePipelineLayout(logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {throw std::runtime_error("failed to create pipeline layout!");}
-        deletionQueue.emplace_back([&]{vkDestroyPipelineLayout(logicalDevice, pipelineLayout, nullptr);});
+        deletionQueue.emplace_front([&]{vkDestroyPipelineLayout(logicalDevice, pipelineLayout, nullptr);});
         VkPipelineDepthStencilStateCreateInfo  depthStencil{};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = VK_TRUE;
@@ -498,7 +391,7 @@ public:
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {throw std::runtime_error("failed to create graphics pipeline!");}
-        deletionQueue.emplace_back([&]{vkDestroyPipeline(logicalDevice, graphicsPipeline, nullptr);});
+        deletionQueue.emplace_front([&]{vkDestroyPipeline(logicalDevice, graphicsPipeline, nullptr);});
         vkDestroyShaderModule(logicalDevice, fragShaderModule, nullptr);
         vkDestroyShaderModule(logicalDevice, vertShaderModule, nullptr);
         return graphicsPipeline;
@@ -522,7 +415,7 @@ public:
         layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
         layoutInfo.pBindings = bindings.data();
         if (vkCreateDescriptorSetLayout(logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {throw std::runtime_error("failed to create descriptor set layout!");}
-        deletionQueue.emplace_back([&]{vkDestroyDescriptorSetLayout(logicalDevice, descriptorSetLayout, nullptr);});
+        deletionQueue.emplace_front([&]{vkDestroyDescriptorSetLayout(logicalDevice, descriptorSetLayout, nullptr);});
         return descriptorSetLayout;
     };
 
@@ -599,13 +492,14 @@ public:
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
         if (vkCreateRenderPass(logicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {throw std::runtime_error("failed to create render pass!");}
-        deletionQueue.emplace_back([&]{vkDestroyRenderPass(logicalDevice, renderPass, nullptr);});
+        deletionQueue.emplace_front([&]{vkDestroyRenderPass(logicalDevice, renderPass, nullptr);});
         return renderPass;
     }
 
     std::vector<VkImageView> createImageViews() {
         swapChainImageViews.resize(swapChainImages.size());
         for (size_t i = 0; i < swapChainImages.size(); i++) {swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);}
+        deletionQueue.emplace_front([&]{for (VkImageView imageView : swapChainImageViews) {vkDestroyImageView(logicalDevice, imageView, nullptr);}});
         return swapChainImageViews;
     }
 
@@ -682,7 +576,7 @@ public:
         createInfo.clipped = VK_TRUE;
         createInfo.oldSwapchain = VK_NULL_HANDLE;
         if (vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {throw std::runtime_error("failed to create swap chain!");}
-        deletionQueue.emplace_back([&]{vkDestroySwapchainKHR(logicalDevice, swapChain, nullptr);});
+        deletionQueue.emplace_front([&]{vkDestroySwapchainKHR(logicalDevice, swapChain, nullptr);});
         vkGetSwapchainImagesKHR(logicalDevice, swapChain, &imageCount, nullptr);
         swapChainImages.resize(imageCount);
         vkGetSwapchainImagesKHR(logicalDevice, swapChain, &imageCount, swapChainImages.data());
@@ -739,7 +633,6 @@ public:
             createInfo.ppEnabledLayerNames = settings.validationLayers.data();
         } else {createInfo.enabledLayerCount = 0;}
         if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) != VK_SUCCESS) {throw std::runtime_error("failed to create logical device!");}
-        deletionQueue.emplace_back([&]{vkDestroyDevice(logicalDevice, nullptr);});
         vkGetDeviceQueue(logicalDevice, familyIndices.graphicsFamily.value(), 0, &graphicsQueue);
         vkGetDeviceQueue(logicalDevice, familyIndices.presentFamily.value(), 0, &presentQueue);
         return logicalDevice;
@@ -827,7 +720,6 @@ public:
             createInfo.pNext = nullptr;
         }
         if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {throw std::runtime_error("failed to create Vulkan instance!");}
-        deletionQueue.emplace_back([&]{vkDestroyInstance(instance, nullptr);});
         if (!settings.validationLayers.empty()) {if (CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &debugMessenger) != VK_SUCCESS) {throw std::runtime_error("failed to setup debug messenger!");}}
         return instance;
     }
@@ -925,7 +817,7 @@ public:
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         if (vkCreateBuffer(logicalDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {throw std::runtime_error("failed to create buffer!");}
-        deletionQueue.emplace_back([&]{vkDestroyBuffer(logicalDevice, buffer, nullptr);});
+        deletionQueue.emplace_front([&]{vkDestroyBuffer(logicalDevice, buffer, nullptr);});
         uint32_t memoryIndex;
         VkMemoryRequirements memRequirements;
         vkGetBufferMemoryRequirements(logicalDevice, buffer, &memRequirements);
@@ -959,7 +851,7 @@ public:
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.samples = numSamples;
         if (vkCreateImage(logicalDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {throw std::runtime_error("failed to create image!");}
-        deletionQueue.emplace_back([&]{vkDestroyImage(logicalDevice, image, nullptr);});
+        deletionQueue.emplace_front([&]{vkDestroyImage(logicalDevice, image, nullptr);});
         VkMemoryRequirements memRequirements;
         vkGetImageMemoryRequirements(logicalDevice, image, &memRequirements);
         uint32_t memoryIndex;
@@ -990,9 +882,8 @@ public:
         viewInfo.subresourceRange.levelCount = mipLevels;
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
-        VkImageView imageView;
+        VkImageView imageView{};
         if (vkCreateImageView(logicalDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {throw std::runtime_error("failed to create image view!");}
-        deletionQueue.emplace_back([&]{vkDestroyImageView(logicalDevice, imageView, nullptr);});
         return imageView;
     }
 
@@ -1015,6 +906,71 @@ public:
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr) {func(instance, debugMessenger, pAllocator);}
     }
+
+    GLFWwindow *window{};
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    Settings settings{};
+
+private:
+    struct QueueFamilyIndices {
+        std::optional<uint32_t> graphicsFamily;
+        std::optional<uint32_t> presentFamily;
+    };
+
+    struct SwapChainSupportDetails {
+        VkSurfaceCapabilitiesKHR capabilities{};
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
+
+    VmaAllocator allocator{};
+    uint32_t frameNumber = 0;
+    std::deque<std::function<void()>> deletionQueue{};
+    VkDevice logicalDevice{};
+    VkInstance instance{};
+    VkDebugUtilsMessengerEXT debugMessenger{};
+    bool framebufferResized = false;
+    VkSurfaceKHR surface{};
+    VkPhysicalDeviceProperties physicalDeviceProperties{};
+    VkPhysicalDeviceFeatures physicalDeviceFeatures{};
+    VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
+    QueueFamilyIndices familyIndices{};
+    VkQueue graphicsQueue{};
+    VkQueue singleTimeQueue{};
+    VkQueue presentQueue{};
+    SwapChainSupportDetails swapChainSupport;
+    VkSwapchainKHR swapChain{};
+    std::vector<VkImage> swapChainImages;
+    VkFormat swapChainImageFormat{};
+    VkExtent2D swapChainExtent{};
+    std::vector<VkImageView> swapChainImageViews;
+    VkFormat depthFormat{};
+    VkRenderPass renderPass{};
+    VkDescriptorSetLayout descriptorSetLayout{};
+    VkPipelineLayout pipelineLayout{};
+    VkPipeline graphicsPipeline{};
+    VkCommandPool commandPool{};
+    VkImage colorImage{};
+    VkDeviceMemory colorImageMemory{};
+    VkImageView colorImageView{};
+    VkImage depthImage{};
+    VkDeviceMemory depthImageMemory{};
+    VkImageView depthImageView{};
+    std::vector<VkFramebuffer> swapChainFramebuffers{};
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    VkDescriptorPool descriptorPool{};
+    std::vector<VkDescriptorSet> descriptorSets;
+    VkCommandBuffer mainCommandBuffer{};
+    std::vector<VkCommandBuffer> commandBuffers;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
+    std::vector<VkFence> imagesInFlight;
+    size_t currentFrame = 0;
+    std::vector<VkBuffer> vertexBuffers{};
+    std::vector<VkBuffer> indexBuffers{};
+    std::vector<Asset> assets{};
 };
 
 class OpenGLRenderEngine {

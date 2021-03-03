@@ -30,7 +30,7 @@ int main() {
             settings.resolution = {1280, 720};
             settings.fullscreen = false;
             RenderEngine.start();
-            RenderEngine.updateSettings(settings, true);
+            //RenderEngine.updateSettings(settings, true);
             while (RenderEngine.update() != 1) {
                 glfwPollEvents();
             }
