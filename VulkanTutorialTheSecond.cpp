@@ -21,7 +21,7 @@ struct AllocatedBuffer {
     VmaAllocation _allocation;
 };
 
-class GameObject {
+class Asset {
 private:
     struct Vertex {
         glm::vec3 position;

@@ -1,7 +1,13 @@
 #pragma once
 
+#include <glew/include/GL/glew.h>
+
+#define GLFW_INCLUDE_VULKAN
+#include "sources/glfw/include/GLFW/glfw3.h"
+
 #include <array>
 #include <filesystem>
+#include <vector>
 #ifdef _WIN32
 #include <windows.h>
 #else

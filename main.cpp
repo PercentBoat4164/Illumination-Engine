@@ -1,5 +1,4 @@
 #include "RenderEngine.hpp"
-#include "GameObject.hpp"
 //#include "Physics.hpp"
 #include "Settings.hpp"
 
@@ -30,6 +29,7 @@ int main() {
             settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
             settings.resolution = {1280, 720};
             settings.fullscreen = false;
+            RenderEngine.start();
             RenderEngine.updateSettings(settings, true);
             while (RenderEngine.update() != 1) {
                 glfwPollEvents();
