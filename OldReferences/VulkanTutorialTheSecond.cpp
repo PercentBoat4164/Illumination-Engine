@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <vk_mem_alloc.h>
 #include <VkBootstrap.h>
-#include "sources/glm/glm.hpp"
+#include "glm/glm.hpp"
 
 #include <cmath>
 #include <utility>

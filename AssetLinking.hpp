@@ -35,18 +35,18 @@
 #endif
 
 struct RenderEngineLink {
-    VmaAllocator *allocator{};
-    Settings *settings{};
-    std::deque<std::function<void()>> *deletionQueue{};
-    VkDevice *logicalDevice{};
-    VkPhysicalDevice *physicalDevice{};
-    std::vector<VkImage> *swapChainImages{};
-    VkDescriptorSetLayout *descriptorSetLayout{};
-    VkDescriptorPool *descriptorPool{};
-    std::vector<VkDescriptorSet> *descriptorSets{};
-    std::vector<VkBuffer> *uniformBuffers{};
-    VkCommandPool *commandPool{};
-    VkQueue *singleTimeQueue{};
+    VmaAllocator allocator{};
+    Settings settings{};
+    std::deque<std::function<void()>> deletionQueue{};
+    VkDevice logicalDevice{};
+    VkPhysicalDevice physicalDevice{};
+    std::vector<VkImage> swapChainImages{};
+    VkDescriptorSetLayout descriptorSetLayout{};
+    VkDescriptorPool descriptorPool{};
+    std::vector<VkDescriptorSet> descriptorSets{};
+    std::vector<VkBuffer> uniformBuffers{};
+    VkCommandPool commandPool{};
+    VkQueue singleTimeQueue{};
 };
 
 struct UniformBufferObject {
@@ -56,19 +56,64 @@ struct UniformBufferObject {
 };
 
 struct AllocatedBuffer {
-    VkBuffer buffer;
-    VmaAllocation allocation;
+    VkBuffer buffer{};
+    VmaAllocation allocation{};
+    VmaAllocator allocator{};
+    VkDeviceMemory memory{};
+    VkDevice device{};
+
+    void allocate(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage, VkSharingMode sharingMode, VmaMemoryUsage memoryUsage) {
+        if (device == VK_NULL_HANDLE) {throw std::runtime_error("initialize device before allocating!");}
+        VkBufferCreateInfo bufferCreateInfo{};
+        bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferCreateInfo.size = size;
+        bufferCreateInfo.usage = bufferUsage;
+        bufferCreateInfo.sharingMode = sharingMode;
+        VmaAllocationCreateInfo allocationCreateInfo{};
+        allocationCreateInfo.usage = memoryUsage;
+        vmaCreateBuffer(allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr);
+        vkBindBufferMemory(device, buffer, memory, 0);
+    }
+
+    ~AllocatedBuffer() {vmaDestroyBuffer(allocator, buffer, allocation);}
 };
 
 struct AllocatedImage {
-    VkImage image;
-    VmaAllocation allocation;
-};
+    VkImage image{};
+    VmaAllocation allocation{};
+    VmaAllocator allocator{};
+    VkDeviceMemory memory{};
+    VkDevice device{};
 
+    void allocate(int width, int height, int mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlagBits usage, VkSampleCountFlagBits msaaSamples, VmaMemoryUsage memoryUsage) {
+        if (image == VK_NULL_HANDLE) {throw std::runtime_error("initialize device before allocating!");}
+        VkImageCreateInfo imageCreateInfo{};
+        imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageCreateInfo.extent.width = width;
+        imageCreateInfo.extent.height = height;
+        imageCreateInfo.extent.depth = 1;
+        imageCreateInfo.mipLevels = mipLevels;
+        imageCreateInfo.arrayLayers = 1;
+        imageCreateInfo.format = format;
+        imageCreateInfo.tiling = tiling;
+        imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageCreateInfo.usage = usage;
+        imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageCreateInfo.samples = msaaSamples;
+        VmaAllocationCreateInfo allocationCreateInfo{};
+        allocationCreateInfo.usage = memoryUsage;
+        vmaCreateImage(allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
+        vkBindImageMemory(device, image, memory, 0);
+    }
+
+    ~AllocatedImage() {vmaDestroyImage(allocator, image, allocation);}
+};
 
 struct Vertex {
     glm::vec3 pos;
     glm::vec3 color;
+    glm::vec3 normal;
     glm::vec2 texCoord;
 
     static VkVertexInputBindingDescription getBindingDescription() {
@@ -98,9 +143,7 @@ struct Vertex {
         return attributeDescriptions;
     }
 
-    bool operator==(const Vertex &other) const {
-        return pos == other.pos && color == other.color && texCoord == other.texCoord;
-    }
+    bool operator==(const Vertex &other) const {return pos == other.pos && color == other.color && texCoord == other.texCoord;}
 };
 
-namespace std {template<> struct hash<Vertex> {size_t operator()(Vertex const& vertex) const {return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);}};}
+namespace std {template<> struct hash<Vertex> {size_t operator()(Vertex const& vertex) const {return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);}};}
