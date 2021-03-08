@@ -178,9 +178,8 @@ public:
             renderPassInfo.pClearValues = clearValues.data();
             vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-            VkDeviceSize offsets[vertexBuffers.size()];
             if (!vertexBuffers.empty()) {
-                vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers.data(), offsets);
+                vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers.data(), (VkDeviceSize *)vertexBuffers.size());
                 vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[0], 0, VK_INDEX_TYPE_UINT32);
                 vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,&descriptorSets[i], 0, nullptr);
                 vkCmdDrawIndexed(commandBuffers[i], 10, 1, 0, 0, 0);
@@ -466,11 +465,11 @@ public:
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) {
             renderPassInfo.attachmentCount = 2;
-            renderPassInfo.pAttachments = (std::array<VkAttachmentDescription, 2>){colorAttachment, depthAttachment}.data();
+            renderPassInfo.pAttachments = std::array<VkAttachmentDescription, 2> {colorAttachment, depthAttachment}.data();
         }
         else {
             renderPassInfo.attachmentCount = 3;
-            renderPassInfo.pAttachments = (std::array<VkAttachmentDescription, 3>){colorAttachment, depthAttachment, colorAttachmentResolve}.data();
+            renderPassInfo.pAttachments = std::array<VkAttachmentDescription, 3> {colorAttachment, depthAttachment, colorAttachmentResolve}.data();
         }
         renderPassInfo.subpassCount = 1;
         renderPassInfo.pSubpasses = &subpass;
@@ -631,7 +630,7 @@ public:
         long unsigned int highestMemorySize = 0;
         long unsigned int deviceMemorySize;
         for (auto & singleDevice : devices) {
-            uint32_t extensionCount;
+            uint32_t extensionCount{};
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
             vkEnumerateDeviceExtensionProperties(singleDevice, nullptr, &extensionCount, availableExtensions.data());
             std::set<std::string> requiredExtensions(settings.requestedExtensions.begin(), settings.requestedExtensions.end());
@@ -738,7 +737,7 @@ public:
 
     void compileShaders(const char *filename) const {
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(settings.absolutePath + filename)) {
-            std::string path = entry.path().c_str();
+            std::string path = entry.path().string();
             if (entry.path().extension() == ".frag" || entry.path().extension() == ".vert") {
                 system((GLSLC + path + " -o " + path.substr(0, path.find_last_of('.')) + ".spv").c_str());}
         }
