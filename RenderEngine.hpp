@@ -391,7 +391,7 @@ public:
         std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+        layoutInfo.bindingCount = bindings.size();
         layoutInfo.pBindings = bindings.data();
         if (vkCreateDescriptorSetLayout(logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {throw std::runtime_error("failed to create descriptor set layout!");}
         deletionQueue.emplace_front([&]{vkDestroyDescriptorSetLayout(logicalDevice, descriptorSetLayout, nullptr);});
@@ -564,6 +564,8 @@ public:
         return swapChain;
     }
 
+    /*Create a system that allows for features to be requested, then disabled if not available (e.g. anisotropy)*/
+
     VkDevice createLogicalDevice() {
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
@@ -589,7 +591,7 @@ public:
             queueCreateInfo.pQueuePriorities = &queuePriority;
             queueCreateInfos.push_back(queueCreateInfo);
         }
-        physicalDeviceFeatures.samplerAnisotropy = (settings.anisotropicFilterLevel > 1) ? VK_TRUE: VK_FALSE;
+        physicalDeviceFeatures.samplerAnisotropy = (settings.anisotropicFilterLevel > 0) ? VK_TRUE: VK_FALSE;
         physicalDeviceFeatures.sampleRateShading = VK_TRUE;
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

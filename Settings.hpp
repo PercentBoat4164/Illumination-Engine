@@ -24,7 +24,7 @@ public:
     std::string applicationName = "RenderEngine";
     std::array<int, 3> applicationVersion = {0, 0, 1};
     VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-    int anisotropicFilterLevel = 1;
+    float anisotropicFilterLevel = 1;
     int mipLevels = 1;
     bool fullscreen = false;
     int refreshRate = 60;
@@ -72,7 +72,7 @@ public:
         else if (counts & VK_SAMPLE_COUNT_4_BIT) {msaaSamples = VK_SAMPLE_COUNT_4_BIT;}
         else if (counts & VK_SAMPLE_COUNT_2_BIT) {msaaSamples = VK_SAMPLE_COUNT_2_BIT;}
         else if (counts & VK_SAMPLE_COUNT_1_BIT) {msaaSamples = VK_SAMPLE_COUNT_1_BIT;}
-        if (physicalDeviceFeatures.samplerAnisotropy) {anisotropicFilterLevel = static_cast<int>(physicalDeviceProperties.limits.maxSamplerAnisotropy);}
+        if (physicalDeviceFeatures.samplerAnisotropy) {anisotropicFilterLevel = physicalDeviceProperties.limits.maxSamplerAnisotropy;}
         return *this;
     }
 };

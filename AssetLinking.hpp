@@ -134,6 +134,8 @@ struct AllocatedBuffer {
 
 struct AllocatedImage {
     VkImage image{};
+    VkImageView view{};
+    VkSampler sampler{};
     VkDeviceMemory memory{};
     RenderEngineLink linkedRenderEngine{};
     std::deque<std::function<void()>> deletionQueue{};
@@ -175,6 +177,41 @@ struct AllocatedImage {
         vkBindImageMemory(linkedRenderEngine.logicalDevice, image, memory, 0);
         deletionQueue.emplace_front([&]{vkDestroyImage(linkedRenderEngine.logicalDevice, image, nullptr);});
         deletionQueue.emplace_front([&]{vkFreeMemory(linkedRenderEngine.logicalDevice, memory, nullptr);});
+        /*If errors occur here it may be because the image has no data in it at the time that this code is being run.
+         * That may not matter, but if it does move this to a separate function.*/
+        //Generate image view
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = image;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+        if (vkCreateImageView(linkedRenderEngine.logicalDevice, &viewInfo, nullptr, &view) != VK_SUCCESS) {throw std::runtime_error("failed to create texture image view!");}
+        deletionQueue.emplace_front([&]{vkDestroyImageView(linkedRenderEngine.logicalDevice, view, nullptr);});
+        //Generate image sampler
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable = linkedRenderEngine.settings.anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
+        samplerInfo.maxAnisotropy = linkedRenderEngine.settings.anisotropicFilterLevel;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = 0.0f;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f;
+        if (vkCreateSampler(linkedRenderEngine.logicalDevice, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {throw std::runtime_error("failed to create texture sampler!");}
+        deletionQueue.emplace_front([&]{vkDestroySampler(linkedRenderEngine.logicalDevice, sampler, nullptr);});
     }
 
     void transition(VkImageLayout oldLayout, VkImageLayout newLayout) const {
@@ -206,6 +243,14 @@ struct AllocatedImage {
         VkCommandBuffer commandBuffer = linkedRenderEngine.beginSingleTimeCommands();
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         linkedRenderEngine.endSingleTimeCommands(commandBuffer);
+    }
+
+    void generateView() {
+
+    }
+
+    void generateSampler() {
+
     }
 };
 
