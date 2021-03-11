@@ -6,15 +6,14 @@
 
 class VulkanRenderEngine {
 public:
-    explicit VulkanRenderEngine(const Settings& startSettings) {
+    explicit VulkanRenderEngine(const Settings& startSettings = Settings{}, GLFWwindow *window = nullptr) {
         settings = startSettings;
-        createWindow();
+        if (window == nullptr) {createWindow();}
         updateSettings(startSettings, false);
         createVulkanInstance();
         createWindowSurface();
         findBestSuitableDevice();
         createLogicalDevice();
-        createMemoryAllocator();
         createSwapChain();
         createImageViews();
         createRenderPass();
@@ -28,18 +27,14 @@ public:
 
     RenderEngineLink createEngineLink() {
         RenderEngineLink engineLink{};
-        engineLink.allocator = allocator;
         engineLink.settings = settings;
-        engineLink.deletionQueue = deletionQueue;
         engineLink.logicalDevice = logicalDevice;
         engineLink.physicalDevice = physicalDevice;
-        engineLink.swapChainImages = swapChainImages;
         engineLink.descriptorSetLayout = descriptorSetLayout;
-        engineLink.descriptorPool = descriptorPool;
         engineLink.descriptorSets = descriptorSets;
         engineLink.uniformBuffers = uniformBuffers;
         engineLink.commandPool = commandPool;
-        engineLink.singleTimeQueue = singleTimeQueue;
+        engineLink.graphicsQueue = graphicsQueue;
         return engineLink;
     }
 
@@ -158,7 +153,7 @@ public:
         commandBufferAllocInfo.commandPool = commandPool;
         commandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         commandBufferAllocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
-        if (vkAllocateCommandBuffers(logicalDevice, &commandBufferAllocInfo, commandBuffers.data()) != VK_SUCCESS) { throw std::runtime_error("failed to allocate command buffers!"); }
+        if (vkAllocateCommandBuffers(logicalDevice, &commandBufferAllocInfo, commandBuffers.data()) != VK_SUCCESS) { throw std::runtime_error("failed to create command buffers!"); }
         for (size_t i = 0; i < commandBuffers.size(); i++) {
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -569,15 +564,6 @@ public:
         return swapChain;
     }
 
-    VmaAllocator createMemoryAllocator() {
-        VmaAllocatorCreateInfo allocatorInfo{};
-        allocatorInfo.physicalDevice = physicalDevice;
-        allocatorInfo.device = logicalDevice;
-        allocatorInfo.instance = instance;
-        vmaCreateAllocator(&allocatorInfo, &allocator);
-        return allocator;
-    }
-
     VkDevice createLogicalDevice() {
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
@@ -630,7 +616,8 @@ public:
         long unsigned int highestMemorySize = 0;
         long unsigned int deviceMemorySize;
         for (auto & singleDevice : devices) {
-            uint32_t extensionCount{};
+            uint32_t extensionCount;
+            vkEnumerateDeviceExtensionProperties(singleDevice, nullptr, &extensionCount, nullptr);
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
             vkEnumerateDeviceExtensionProperties(singleDevice, nullptr, &extensionCount, availableExtensions.data());
             std::set<std::string> requiredExtensions(settings.requestedExtensions.begin(), settings.requestedExtensions.end());
@@ -760,40 +747,6 @@ public:
         vkUnmapMemory(logicalDevice, uniformBuffersMemory[currentImage]);
     }
 
-    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const {
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands(1)[0];
-        VkBufferCopy copyRegion{};
-        copyRegion.size = size;
-        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-        endSingleTimeCommands(std::vector<VkCommandBuffer>{commandBuffer});
-    }
-
-    [[nodiscard]] std::vector<VkCommandBuffer> beginSingleTimeCommands(size_t count) const {
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = commandPool;
-        allocInfo.commandBufferCount = count;
-        std::vector<VkCommandBuffer> singleTimeCommandBuffers{count};
-        vkAllocateCommandBuffers(logicalDevice, &allocInfo, singleTimeCommandBuffers.data());
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        for (VkCommandBuffer singleTimeCommandBuffer : singleTimeCommandBuffers) {vkBeginCommandBuffer(singleTimeCommandBuffer, &beginInfo);}
-        return singleTimeCommandBuffers;
-    }
-
-    void endSingleTimeCommands(std::vector<VkCommandBuffer> singleTimeCommandBuffers) const {
-        for (VkCommandBuffer singleTimeCommandBuffer : singleTimeCommandBuffers) {vkEndCommandBuffer(singleTimeCommandBuffer);}
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = singleTimeCommandBuffers.size();
-        submitInfo.pCommandBuffers = singleTimeCommandBuffers.data();
-        vkQueueSubmit(singleTimeQueue, singleTimeCommandBuffers.size(), &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(singleTimeQueue);
-        vkFreeCommandBuffers(logicalDevice, commandPool, singleTimeCommandBuffers.size(), singleTimeCommandBuffers.data());
-    }
-
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -815,7 +768,7 @@ public:
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = memoryIndex;
-        if (vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {throw std::runtime_error("failed to allocate buffer memory!");}
+        if (vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {throw std::runtime_error("failed to create buffer memory!");}
         vkBindBufferMemory(logicalDevice, buffer, bufferMemory, 0);
     }
 
@@ -850,7 +803,7 @@ public:
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = memoryIndex;
-        if (vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {throw std::runtime_error("failed to allocate image memory!");}
+        if (vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {throw std::runtime_error("failed to create image memory!");}
         vkBindImageMemory(logicalDevice, image, imageMemory, 0);
         return image;
     }
@@ -907,7 +860,6 @@ private:
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    VmaAllocator allocator{};
     uint32_t frameNumber = 0;
     std::deque<std::function<void()>> deletionQueue{};
     VkDevice logicalDevice{};
@@ -920,7 +872,6 @@ private:
     VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
     QueueFamilyIndices familyIndices{};
     VkQueue graphicsQueue{};
-    VkQueue singleTimeQueue{};
     VkQueue presentQueue{};
     SwapChainSupportDetails swapChainSupport;
     VkSwapchainKHR swapChain{};
