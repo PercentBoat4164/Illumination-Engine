@@ -24,7 +24,7 @@ public:
     std::string applicationName = "RenderEngine";
     std::array<int, 3> applicationVersion = {0, 0, 1};
     VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-    int anisotropicFilterLevel = 1;
+    float anisotropicFilterLevel = 1;
     int mipLevels = 1;
     bool fullscreen = false;
     int refreshRate = 60;
@@ -36,9 +36,15 @@ public:
     static std::filesystem::path getProgramPath()
     {
         #ifdef _WIN32
+<<<<<<< HEAD
         const char *buffer{};
         GetModuleFileNameW(nullptr, (LPWSTR) buffer, MAX_PATH);
         std::string path = std::string(buffer);
+=======
+        wchar_t buffer[MAX_PATH]{};
+        GetModuleFileNameW(nullptr, buffer, MAX_PATH);
+        std::string path = std::string(reinterpret_cast<const char *const>(buffer));
+>>>>>>> 9087054a13023b42a3201190b11182e115c64df4
         #else
         char result[PATH_MAX];
         ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
@@ -64,8 +70,7 @@ public:
         resolution[0] = mode->width;
         resolution[1] = mode->height;
         fullscreen = true;
-        VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts &
-                                    physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+        VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
         if (counts & VK_SAMPLE_COUNT_64_BIT) {msaaSamples = VK_SAMPLE_COUNT_64_BIT;}
         else if (counts & VK_SAMPLE_COUNT_32_BIT) {msaaSamples = VK_SAMPLE_COUNT_32_BIT;}
         else if (counts & VK_SAMPLE_COUNT_16_BIT) {msaaSamples = VK_SAMPLE_COUNT_16_BIT;}
@@ -73,9 +78,7 @@ public:
         else if (counts & VK_SAMPLE_COUNT_4_BIT) {msaaSamples = VK_SAMPLE_COUNT_4_BIT;}
         else if (counts & VK_SAMPLE_COUNT_2_BIT) {msaaSamples = VK_SAMPLE_COUNT_2_BIT;}
         else if (counts & VK_SAMPLE_COUNT_1_BIT) {msaaSamples = VK_SAMPLE_COUNT_1_BIT;}
-        if (physicalDeviceFeatures.samplerAnisotropy) {
-            anisotropicFilterLevel = static_cast<int>(physicalDeviceProperties.limits.maxSamplerAnisotropy);
-        }
+        if (physicalDeviceFeatures.samplerAnisotropy) {anisotropicFilterLevel = physicalDeviceProperties.limits.maxSamplerAnisotropy;}
         return *this;
     }
 };

@@ -24,14 +24,9 @@ int main() {
             settings.validationLayers = {"VK_LAYER_KHRONOS_validation"};
             VulkanRenderEngine RenderEngine(settings);
             glfwSetKeyCallback(RenderEngine.window, keyCallback);
-            settings.findMaxSettings(RenderEngine.physicalDevice);
-            settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-            settings.resolution = {1280, 720};
-            settings.fullscreen = false;
             RenderEngine.start();
             RenderEngineLink renderEngineLink = RenderEngine.createEngineLink();
-            //Asset viking_room = Asset().uploadAsset(renderEngineLink);//.load("models/viking_room", ".obj", ".png");
-            //RenderEngine.updateSettings(settings, true);
+            Asset viking_room = Asset("models/viking_room.obj", std::vector<const char *>{"models/viking_room.png"}, renderEngineLink);
             while (RenderEngine.update() != 1) {
                 glfwPollEvents();
             }

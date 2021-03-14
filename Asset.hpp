@@ -7,6 +7,17 @@
 class Asset {
 
 public:
+    Asset(const char *modelName, const std::vector<const char *>& textureNames, const RenderEngineLink& renderEngineLink) {
+        setEngineLink(renderEngineLink);
+        loadModel(modelName);
+        loadTextures(textureNames);
+        uploadAsset();
+    }
+
+    Asset setEngineLink(const RenderEngineLink& renderEngineLink) {
+        linkedRenderEngine = renderEngineLink;
+        return *this;
+    }
 
 private:
     void loadModel(const char *filename) {
@@ -35,82 +46,33 @@ private:
     void loadTextures(const std::vector<const char *>& filenames) {
         for (const char *filename : filenames) {
             stbi_uc *pixels = stbi_load(filename, &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) { throw std::runtime_error("failed to load texture image!"); } else {
-                textures.push_back(*pixels);
+            if (!pixels) {throw std::runtime_error("failed to load texture image!");} else {
+                int imageSize = width * height * 4;
+                std::vector<int, std::allocator<int>> texture;
+                for (int i = 0; i < imageSize; i++) {texture.push_back(pixels[i]);}
+                textures.push_back(texture);
                 stbi_image_free(pixels);
             }
         }
     }
 
-    void uploadAsset(const RenderEngineLink& renderEngineLink) {
-        linkedRenderEngine = renderEngineLink;
+    void uploadAsset() {
         VkDeviceSize imageSize = width * height * 4;
-        AllocatedBuffer stagingBuffer{};
-        stagingBuffer.allocator = renderEngineLink.allocator;
-        stagingBuffer.device = renderEngineLink.logicalDevice;
-        VkDeviceMemory stagingBufferMemory;
-        for (stbi_uc texture : textures) {
-//            //Create buffer for pixels
-            stagingBuffer.allocate(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, VMA_MEMORY_USAGE_CPU_TO_GPU);
-            /* -----------------------------PERHAPS USE THIS IF THE ABOVE FAILS-----------------------------------
-            if (vkCreateBuffer(renderEngineLink.logicalDevice, &bufferInfo, nullptr, &stagingBuffer) != VK_SUCCESS) { throw std::runtime_error("failed to create image buffer!"); }
-            VkMemoryRequirements memoryRequirements{};
-            vkGetBufferMemoryRequirements(renderEngineLink.logicalDevice, stagingBuffer, &memoryRequirements);
-            VkPhysicalDeviceMemoryProperties memProperties;
-            vkGetPhysicalDeviceMemoryProperties(linkedRenderEngine.physicalDevice, &memProperties);
-            int memoryTypeIndex{};
-            for (int i = 0; i < memProperties.memoryTypeCount; i++) {
-                if ((memoryRequirements.memoryTypeBits & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) == (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
-                    memoryTypeIndex = i;
-                    break;
-                }
-            }
-            if (!memoryTypeIndex) { throw std::runtime_error("failed to find suitable memory type!"); }
-            VkMemoryAllocateInfo allocInfo{};
-            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-            allocInfo.allocationSize = memoryRequirements.size;
-            allocInfo.memoryTypeIndex = memoryTypeIndex;
-            if (vkAllocateMemory(linkedRenderEngine.logicalDevice, &allocInfo, nullptr, &stagingBufferMemory) != VK_SUCCESS) { throw std::runtime_error("failed to allocate buffer memory!"); }
-            vkBindImageMemory(device, image, memory, 0);
-            */
-            //Put pixels in buffer
-            void *data;
-            vkMapMemory(renderEngineLink.logicalDevice, stagingBufferMemory, 0, imageSize, 0, &data);
-            memcpy(data, &texture, imageSize);
-            vkUnmapMemory(renderEngineLink.logicalDevice, stagingBufferMemory);
-            stbi_image_free(&texture);
-            textureImage.allocator = renderEngineLink.allocator;
-            textureImage.device = renderEngineLink.logicalDevice;
-            //textureImage.allocate(width, height, 1, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SAMPLE_COUNT_1_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU)
-
-//            VkImageCreateInfo imageInfo{};
-//            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-//            imageInfo.imageType = VK_IMAGE_TYPE_2D;
-//            imageInfo.extent.width = width;
-//            imageInfo.extent.height = height;
-//            imageInfo.extent.depth = 1;
-//            imageInfo.mipLevels = 1;
-//            imageInfo.arrayLayers = 1;
-//            imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-//            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-//            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//            imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-//            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-//            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-//            VmaAllocationCreateInfo allocInfo{};
-//            allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-//            vmaCreateImage(linkedRenderEngine.allocator, &imageInfo, &allocInfo, &textureImage.image, &textureImage.allocation, nullptr);
-        }
+        stagingBuffer.setEngineLink(linkedRenderEngine);
+        memcpy(stagingBuffer.create(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), textures[0].data(), imageSize);
+        textureImage.setEngineLink(linkedRenderEngine);
+        textureImage.create(width, height, 1, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_SAMPLE_COUNT_1_BIT);
+        textureImage.transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        stagingBuffer.toImage(textureImage.image, width, height);
+        textureImage.transition(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
     RenderEngineLink linkedRenderEngine{};
-    VkImageView textureImageView{};
     AllocatedImage textureImage{};
-    VkDeviceMemory textureImageMemory{};
-    VkSampler textureSampler{};
+    AllocatedBuffer stagingBuffer{};
     std::vector<Vertex> vertices{};
     std::vector<uint32_t> indices{};
     VkCommandBuffer commandBuffer{};
-    std::vector<stbi_uc> textures{};
+    std::vector<std::vector<int>> textures{};
     int width{}, height{}, channels{};
 };
