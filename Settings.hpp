@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <vector>
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #else
 #include <climits>
@@ -29,14 +30,15 @@ public:
     int refreshRate = 60;
     std::array<int, 2> resolution = {800, 600};
     int MAX_FRAMES_IN_FLIGHT = 2;
-    std::string absolutePath = getProgramPath();
+    std::string absolutePath = getProgramPath().string();
 
 
     static std::filesystem::path getProgramPath()
     {
         #ifdef _WIN32
-        wchar_t path[MAX_PATH] = { 0 };
-        GetModuleFileNameW(NULL, path, MAX_PATH);
+        const char *buffer{};
+        GetModuleFileNameW(nullptr, (LPWSTR) buffer, MAX_PATH);
+        std::string path = std::string(buffer);
         #else
         char result[PATH_MAX];
         ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);

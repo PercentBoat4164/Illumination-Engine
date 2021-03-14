@@ -313,9 +313,9 @@ public:
         VkClearValue clearValue;
         float speed = 20;
         speed = 1000/speed;
-        float red = std::sin((float)(_frameNumber + (2 * M_PI / 3 * speed)) / speed);
+        float red = std::sin((float)(_frameNumber + (2 * 3.1415 / 3 * speed)) / speed);
         float green = std::sin((float)(_frameNumber) / speed);
-        float blue = std::sin((float)(_frameNumber + (4 * M_PI / 3 * speed)) / speed);
+        float blue = std::sin((float)(_frameNumber + (4 * 3.1415 / 3 * speed)) / speed);
         clearValue.color = {{red, green, blue, 1.f}};
         VkRenderPassBeginInfo rpInfo{};
         rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
