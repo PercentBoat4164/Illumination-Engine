@@ -36,15 +36,9 @@ public:
     static std::filesystem::path getProgramPath()
     {
         #ifdef _WIN32
-<<<<<<< HEAD
-        const char *buffer{};
-        GetModuleFileNameW(nullptr, (LPWSTR) buffer, MAX_PATH);
-        std::string path = std::string(buffer);
-=======
         wchar_t buffer[MAX_PATH]{};
         GetModuleFileNameW(nullptr, buffer, MAX_PATH);
         std::string path = std::string(reinterpret_cast<const char *const>(buffer));
->>>>>>> 9087054a13023b42a3201190b11182e115c64df4
         #else
         char result[PATH_MAX];
         ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
