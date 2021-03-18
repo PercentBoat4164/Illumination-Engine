@@ -263,7 +263,7 @@ public:
     VkCommandPool createCommandPool() {
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.queueFamilyIndex = familyIndices.graphicsFamily.value();
+        poolInfo.queueFamilyIndex = familyIndices.graphicsFamily;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
         if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {throw std::runtime_error("failed to create command pool!");}
         return commandPool;
@@ -543,7 +543,7 @@ public:
         createInfo.imageExtent = extent;
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        uint32_t queueFamilyIndices[] = {familyIndices.graphicsFamily.value(), familyIndices.presentFamily.value()};
+        uint32_t queueFamilyIndices[] = {familyIndices.graphicsFamily, familyIndices.presentFamily};
         if (familyIndices.graphicsFamily != familyIndices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = 2;
@@ -577,11 +577,11 @@ public:
             VkBool32 presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
             if (presentSupport) { familyIndices.presentFamily = i;}
-            if (familyIndices.presentFamily.has_value() && familyIndices.graphicsFamily.has_value()) {break;}
+            if (familyIndices.presentFamily >= 0 && familyIndices.graphicsFamily >= 0) {break;}
             i++;
         }
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint32_t> uniqueQueueFamilies = {familyIndices.graphicsFamily.value(), familyIndices.presentFamily.value()};
+        std::set<int> uniqueQueueFamilies = {familyIndices.graphicsFamily, familyIndices.presentFamily};
         float queuePriority = 1.0f;
         for (uint32_t queueFamily : uniqueQueueFamilies) {
             VkDeviceQueueCreateInfo queueCreateInfo{};
@@ -605,8 +605,8 @@ public:
             createInfo.ppEnabledLayerNames = settings.validationLayers.data();
         } else {createInfo.enabledLayerCount = 0;}
         if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) != VK_SUCCESS) {throw std::runtime_error("failed to create logical device!");}
-        vkGetDeviceQueue(logicalDevice, familyIndices.graphicsFamily.value(), 0, &graphicsQueue);
-        vkGetDeviceQueue(logicalDevice, familyIndices.presentFamily.value(), 0, &presentQueue);
+        vkGetDeviceQueue(logicalDevice, familyIndices.graphicsFamily, 0, &graphicsQueue);
+        vkGetDeviceQueue(logicalDevice, familyIndices.presentFamily, 0, &presentQueue);
         return logicalDevice;
     }
 
@@ -852,8 +852,8 @@ public:
 
 private:
     struct QueueFamilyIndices {
-        std::optional<uint32_t> graphicsFamily;
-        std::optional<uint32_t> presentFamily;
+        int graphicsFamily = -1;
+        int presentFamily = -1;
     };
 
     struct SwapChainSupportDetails {

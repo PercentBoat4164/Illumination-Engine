@@ -24,7 +24,6 @@
 #include <deque>
 #include <functional>
 #include <filesystem>
-#include <optional>
 
 #if defined(_WIN32)
 #define GLSLC "glslc.exe "
