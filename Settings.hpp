@@ -1,14 +1,13 @@
 #pragma once
 
-#include <glew/include/GL/glew.h>
-
 #define GLFW_INCLUDE_VULKAN
-#include "sources/glfw/include/GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
+#include <vector>
 #include <array>
 #include <filesystem>
-#include <vector>
-#ifdef _WIN32
+
+#if defined(_WIN32)
 #define NOMINMAX
 #include <windows.h>
 #else
@@ -16,25 +15,24 @@
 #include <unistd.h>
 #endif
 
-
-class Settings {
+struct Settings {
 public:
-    std::vector<const char*> validationLayers = {};
-    std::vector<const char*> requestedExtensions  = {"VK_KHR_swapchain"};
+    std::vector<const char *> validationLayers{"VK_LAYER_KHRONOS_validation"};
+    std::vector<const char *> requestedExtensions{"VK_KHR_swapchain"};
     std::string applicationName = "RenderEngine";
     std::array<int, 3> applicationVersion = {0, 0, 1};
+    std::array<int, 2> requiredVulkanVersion = {1, 2};
     VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
     float anisotropicFilterLevel = 1;
     int mipLevels = 1;
     bool fullscreen = false;
-    int refreshRate = 60;
+    int refreshRate = 144;
     std::array<int, 2> resolution = {800, 600};
     int MAX_FRAMES_IN_FLIGHT = 2;
     std::string absolutePath = getProgramPath().string();
 
 
-    static std::filesystem::path getProgramPath()
-    {
+    static std::filesystem::path getProgramPath() {
         #ifdef _WIN32
         wchar_t buffer[MAX_PATH]{};
         GetModuleFileNameW(nullptr, buffer, MAX_PATH);
