@@ -1,26 +1,15 @@
 #pragma once
 
-#include <glew/include/GL/glew.h>
-
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 
-#include <iostream>
-#include <cstring>
-#include <fstream>
-#include <cstdlib>
-#include <set>
+#include <vk-bootstrap/src/VkBootstrap.h>
+
+#include <vector>
 #include <deque>
 #include <functional>
 #include <filesystem>
@@ -32,23 +21,22 @@
 #endif
 
 struct RenderEngineLink {
-    Settings settings{};
-    VkDevice logicalDevice{};
-    VkPhysicalDevice physicalDevice{};
-    VkDescriptorSetLayout descriptorSetLayout{};
-    std::vector<VkDescriptorSet> descriptorSets{};
-    std::vector<VkBuffer> uniformBuffers{};
-    VkCommandPool commandPool{};
-    VkQueue graphicsQueue{};
+    Settings *settings = nullptr;
+    vkb::Device *device;
+    VkDescriptorSetLayout *descriptorSetLayout;
+    std::vector<VkDescriptorSet> *descriptorSets;
+    std::vector<VkBuffer> *uniformBuffers;
+    VkCommandPool *commandPool;
+    std::vector<VkCommandBuffer> commandBuffers;
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = commandPool;
+        allocInfo.commandPool = *commandPool;
         allocInfo.commandBufferCount = 1;
         VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(logicalDevice, &allocInfo, &commandBuffer);
+        vkAllocateCommandBuffers((*device).device, &allocInfo, &commandBuffer);
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -62,9 +50,9 @@ struct RenderEngineLink {
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
-        vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(graphicsQueue);
-        vkFreeCommandBuffers(logicalDevice, commandPool, 1, &commandBuffer);
+        vkQueueSubmit((*device).get_queue(vkb::QueueType::graphics).value(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle((*device).get_queue(vkb::QueueType::graphics).value());
+        vkFreeCommandBuffers((*device).device, *commandPool, 1, &commandBuffer);
     }
 };
 
@@ -77,11 +65,12 @@ struct UniformBufferObject {
 struct AllocatedBuffer {
     VkBuffer buffer{};
     VkDeviceMemory memory{};
+    void *data{};
     RenderEngineLink linkedRenderEngine{};
     std::deque<std::function<void()>> deletionQueue{};
 
-    ~AllocatedBuffer() {
-        for (std::function<void()>& function : deletionQueue) {function();}
+    void destroy() {
+        for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
@@ -95,22 +84,21 @@ struct AllocatedBuffer {
         bufferInfo.size = size;
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        if (vkCreateBuffer(linkedRenderEngine.logicalDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {throw std::runtime_error("failed to create buffer!");}
+        if (vkCreateBuffer((*linkedRenderEngine.device).device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
         VkMemoryRequirements memoryRequirements;
-        vkGetBufferMemoryRequirements(linkedRenderEngine.logicalDevice, buffer, &memoryRequirements);
+        vkGetBufferMemoryRequirements((*linkedRenderEngine.device).device, buffer, &memoryRequirements);
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memoryRequirements.size;
         VkPhysicalDeviceMemoryProperties memoryProperties{};
-        vkGetPhysicalDeviceMemoryProperties(linkedRenderEngine.physicalDevice, &memoryProperties);
+        vkGetPhysicalDeviceMemoryProperties((*linkedRenderEngine.device).physical_device.physical_device, &memoryProperties);
         for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {if ((memoryRequirements.memoryTypeBits & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) { allocInfo.memoryTypeIndex = i; break;}}
-        if (vkAllocateMemory(linkedRenderEngine.logicalDevice, &allocInfo, nullptr, &memory) != VK_SUCCESS) {throw std::runtime_error("failed to create buffer memory!");}
-        vkBindBufferMemory(linkedRenderEngine.logicalDevice, buffer, memory, 0);
-        void *data;
-        vkMapMemory(linkedRenderEngine.logicalDevice, memory, 0, size, 0, &data);
-        deletionQueue.emplace_front([&]{vkDestroyBuffer(linkedRenderEngine.logicalDevice, buffer, nullptr);});
-        deletionQueue.emplace_front([&]{vkFreeMemory(linkedRenderEngine.logicalDevice, memory, nullptr);});
-        deletionQueue.emplace_front([&]{vkUnmapMemory(linkedRenderEngine.logicalDevice, memory);});
+        if (vkAllocateMemory((*linkedRenderEngine.device).device, &allocInfo, nullptr, &memory) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer memory!"); }
+        vkBindBufferMemory((*linkedRenderEngine.device).device, buffer, memory, 0);
+        vkMapMemory((*linkedRenderEngine.device).device, memory, 0, size, 0, &data);
+        deletionQueue.emplace_front([&]{ vkFreeMemory((*linkedRenderEngine.device).device, memory, nullptr); memory = VK_NULL_HANDLE; });
+        vkUnmapMemory((*linkedRenderEngine.device).device, memory);
+        deletionQueue.emplace_front([&]{ vkDestroyBuffer((*linkedRenderEngine.device).device, buffer, nullptr); buffer = VK_NULL_HANDLE; });
         return data;
     };
 
@@ -139,8 +127,8 @@ struct AllocatedImage {
     RenderEngineLink linkedRenderEngine{};
     std::deque<std::function<void()>> deletionQueue{};
 
-    ~AllocatedImage() {
-        for (std::function<void()>& function : deletionQueue) {function();}
+    void destroy() {
+        for (std::function<void()>& function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
@@ -148,7 +136,7 @@ struct AllocatedImage {
         linkedRenderEngine = renderEngineLink;
     }
 
-    void create(int width, int height, int mipLevels, VkFormat format, VkImageTiling tiling, int usage, VkMemoryPropertyFlagBits properties,VkSampleCountFlagBits msaaSamples) {
+    void create(VkFormat format, VkImageTiling tiling, VkMemoryPropertyFlagBits properties, VkSampleCountFlagBits msaaSamples, int usage, int mipLevels, int width, int height, bool depth, bool asTexture, AllocatedBuffer *dataSource = nullptr) {
         VkImageCreateInfo imageCreateInfo{};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -161,56 +149,75 @@ struct AllocatedImage {
         imageCreateInfo.tiling = tiling;
         imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageCreateInfo.usage = usage;
-        imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageCreateInfo.samples = msaaSamples;
-        if (vkCreateImage(linkedRenderEngine.logicalDevice, &imageCreateInfo, nullptr, &image) != VK_SUCCESS) {throw std::runtime_error("failed to create image!");}
+        imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (vkCreateImage((*linkedRenderEngine.device).device, &imageCreateInfo, nullptr, &image) != VK_SUCCESS) { throw std::runtime_error("failed to create image!"); }
+        deletionQueue.emplace_front([&]{ vkDestroyImage((*linkedRenderEngine.device).device, image, nullptr); image = VK_NULL_HANDLE; });
         VkMemoryRequirements memoryRequirements{};
-        vkGetImageMemoryRequirements(linkedRenderEngine.logicalDevice, image, &memoryRequirements);
+        vkGetImageMemoryRequirements((*linkedRenderEngine.device).device, image, &memoryRequirements);
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memoryRequirements.size;
         VkPhysicalDeviceMemoryProperties memoryProperties{};
-        vkGetPhysicalDeviceMemoryProperties(linkedRenderEngine.physicalDevice, &memoryProperties);
+        vkGetPhysicalDeviceMemoryProperties((*linkedRenderEngine.device).physical_device.physical_device, &memoryProperties);
         for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {if ((memoryRequirements.memoryTypeBits & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) { allocInfo.memoryTypeIndex = i; break;}}
-        if (vkAllocateMemory(linkedRenderEngine.logicalDevice, &allocInfo, nullptr, &memory) != VK_SUCCESS) {throw std::runtime_error("failed to create image memory!");}
-        vkBindImageMemory(linkedRenderEngine.logicalDevice, image, memory, 0);
-        deletionQueue.emplace_front([&]{vkDestroyImage(linkedRenderEngine.logicalDevice, image, nullptr);});
-        deletionQueue.emplace_front([&]{vkFreeMemory(linkedRenderEngine.logicalDevice, memory, nullptr);});
-        /*If errors occur here it may be because the image has no data in it at the time that this code is being run.
-         * That may not matter, but if it does move this to a separate function.*/
-        //Generate image view
-        VkImageViewCreateInfo viewInfo{};
-        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = image;
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = 1;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount = 1;
-        if (vkCreateImageView(linkedRenderEngine.logicalDevice, &viewInfo, nullptr, &view) != VK_SUCCESS) {throw std::runtime_error("failed to create texture image view!");}
-        deletionQueue.emplace_front([&]{vkDestroyImageView(linkedRenderEngine.logicalDevice, view, nullptr);});
-        //Generate image sampler
-        VkSamplerCreateInfo samplerInfo{};
-        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerInfo.magFilter = VK_FILTER_LINEAR;
-        samplerInfo.minFilter = VK_FILTER_LINEAR;
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.anisotropyEnable = linkedRenderEngine.settings.anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
-        samplerInfo.maxAnisotropy = linkedRenderEngine.settings.anisotropicFilterLevel;
-        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-        samplerInfo.unnormalizedCoordinates = VK_FALSE;
-        samplerInfo.compareEnable = VK_FALSE;
-        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.mipLodBias = 0.0f;
-        samplerInfo.minLod = 0.0f;
-        samplerInfo.maxLod = 0.0f;
-        if (vkCreateSampler(linkedRenderEngine.logicalDevice, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {throw std::runtime_error("failed to create texture sampler!");}
-        deletionQueue.emplace_front([&]{vkDestroySampler(linkedRenderEngine.logicalDevice, sampler, nullptr);});
+        if (vkAllocateMemory((*linkedRenderEngine.device).device, &allocInfo, nullptr, &memory) != VK_SUCCESS) { throw std::runtime_error("failed to create image memory!"); }
+        vkBindImageMemory((*linkedRenderEngine.device).device, image, memory, 0);
+        deletionQueue.emplace_front([&]{ vkFreeMemory((*linkedRenderEngine.device).device, memory, nullptr); memory = VK_NULL_HANDLE; });
+        VkImageViewCreateInfo imageViewCreateInfo{};
+        imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        imageViewCreateInfo.image = image;
+        imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        imageViewCreateInfo.format = format;
+        imageViewCreateInfo.subresourceRange.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+        imageViewCreateInfo.subresourceRange.levelCount = 1;
+        imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+        imageViewCreateInfo.subresourceRange.layerCount = 1;
+        if (vkCreateImageView((*linkedRenderEngine.device).device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
+        deletionQueue.emplace_front([&] { vkDestroyImageView((*linkedRenderEngine.device).device, view, nullptr); view = VK_NULL_HANDLE; });
+        if (dataSource != nullptr) {
+            transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            dataSource->toImage(image, width, height);
+            if (asTexture) {
+                VkSamplerCreateInfo samplerInfo{};
+                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo.magFilter = VK_FILTER_LINEAR;
+                samplerInfo.minFilter = VK_FILTER_LINEAR;
+                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo.anisotropyEnable = (*linkedRenderEngine.settings).anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
+                samplerInfo.maxAnisotropy = linkedRenderEngine.settings->anisotropicFilterLevel;
+                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo.unnormalizedCoordinates = VK_FALSE;
+                samplerInfo.compareEnable = VK_FALSE;
+                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                samplerInfo.maxLod = 0.0f;
+                if (vkCreateSampler((*linkedRenderEngine.device).device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
+                deletionQueue.emplace_front([&] { vkDestroySampler((*linkedRenderEngine.device).device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
+                transition(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            }
+        }
+    }
+
+    [[maybe_unused]] void toBuffer(VkBuffer buffer, uint32_t width, uint32_t height) const {
+        VkBufferImageCopy region{};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+        region.imageOffset = {0, 0, 0};
+        region.imageExtent = {width, height, 1};
+        VkCommandBuffer commandBuffer = linkedRenderEngine.beginSingleTimeCommands();
+        vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer, 1, &region);
+        linkedRenderEngine.endSingleTimeCommands(commandBuffer);
     }
 
     void transition(VkImageLayout oldLayout, VkImageLayout newLayout) const {
@@ -221,13 +228,13 @@ struct AllocatedImage {
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image = image;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.aspectMask = newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = 1;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
-        VkPipelineStageFlags sourceStage{};
-        VkPipelineStageFlags destinationStage{};
+        VkPipelineStageFlags sourceStage;
+        VkPipelineStageFlags destinationStage;
         if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
             barrier.srcAccessMask = 0;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -238,25 +245,21 @@ struct AllocatedImage {
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
             sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        } else {throw std::invalid_argument("unsupported layout transition!");}
+        } else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        } else { throw std::invalid_argument("unsupported layout transition!"); }
         VkCommandBuffer commandBuffer = linkedRenderEngine.beginSingleTimeCommands();
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         linkedRenderEngine.endSingleTimeCommands(commandBuffer);
-    }
-
-    void generateView() {
-
-    }
-
-    void generateSampler() {
-
     }
 };
 
 struct Vertex {
     glm::vec3 pos;
     glm::vec3 color;
-    glm::vec3 normal;
     glm::vec2 texCoord;
 
     static VkVertexInputBindingDescription getBindingDescription() {
@@ -289,4 +292,4 @@ struct Vertex {
     bool operator==(const Vertex &other) const {return pos == other.pos && color == other.color && texCoord == other.texCoord;}
 };
 
-namespace std {template<> struct hash<Vertex> {size_t operator()(Vertex const& vertex) const {return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);}};}
+namespace std {template<> struct hash<Vertex> {size_t operator()(Vertex const& vertex) const {return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);}};}
