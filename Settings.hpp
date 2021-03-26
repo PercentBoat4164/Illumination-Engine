@@ -22,7 +22,7 @@ public:
     std::string applicationName = "RenderEngine";
     std::array<int, 3> applicationVersion = {0, 0, 1};
     std::array<int, 2> requiredVulkanVersion = {1, 2};
-    VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+    VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_8_BIT;
     float anisotropicFilterLevel = 1;
     int mipLevels = 1;
     bool fullscreen = false;

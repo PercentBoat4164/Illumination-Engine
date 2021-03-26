@@ -45,9 +45,10 @@ public:
         vkResetCommandBuffer(commandBuffers[(imageIndex + (swapchain.image_count - 1)) % swapchain.image_count], commandBufferResetFlags);
         if (vkBeginCommandBuffer(commandBuffers[imageIndex], &commandBufferBeginInfo) != VK_SUCCESS) { throw std::runtime_error("failed to begin recording command buffer!"); }
         VkDeviceSize offsets[] = {0};
-        std::array<VkClearValue, 2> clearValues{};
+        std::vector<VkClearValue> clearValues{static_cast<size_t>(settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3)};
         clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
+        if (settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
         //Setup render pass to clear
         VkRenderPassBeginInfo renderPassBeginInfo{};
         renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -409,6 +410,7 @@ private:
         vkb::PhysicalDeviceSelector selector{ vkb_inst };
         VkPhysicalDeviceFeatures deviceFeatures{}; //Request device features here
         deviceFeatures.samplerAnisotropy = VK_TRUE;
+        deviceFeatures.sampleRateShading = VK_TRUE;
         vkb::detail::Result<vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).set_minimum_version(settings.requiredVulkanVersion[0], settings.requiredVulkanVersion[1]).require_dedicated_transfer_queue().set_required_features(deviceFeatures).select();
         if (!phys_ret) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + phys_ret.error().message() + "\n"); }
         vkb::DeviceBuilder device_builder{ phys_ret.value() };
