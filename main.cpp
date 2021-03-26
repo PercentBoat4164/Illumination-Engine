@@ -21,12 +21,12 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 int main(int argc, char **argv) {
     std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics\n";
     std::string selection;
-    char *input;
-    if (argc > 1) { input = argv[1]; } else {
+    char input;
+    if (argc > 1) { input = *argv[1]; } else {
         std::cin >> selection;
-        input = reinterpret_cast<char *>(selection[0]);
+        input = selection[0];
     }
-    if (*input == 'v') {
+    if (input == 'v') {
         try {
             VulkanRenderEngine renderEngine = VulkanRenderEngine();
             //glfwSetKeyCallback(renderEngine.window, keyCallback);
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
         }
         return EXIT_SUCCESS;
     }
-    else if (*input == 'o') {
+    else if (input == 'o') {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
             glfwSetKeyCallback(renderEngine.window, keyCallback);
