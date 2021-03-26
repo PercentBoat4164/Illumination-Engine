@@ -1,5 +1,8 @@
 #pragma once
 
+#define GLEW_IMPLEMENTATION
+#include <glew/include/GL/glew.h>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -36,13 +39,16 @@ public:
         #ifdef _WIN32
         wchar_t buffer[MAX_PATH]{};
         GetModuleFileNameW(nullptr, buffer, MAX_PATH);
-        std::string path = std::string(reinterpret_cast<const char *const>(buffer));
+        char chars[sizeof(buffer) / 8];
+        char defChar = ' ';
+        WideCharToMultiByte(CP_ACP, 0, buffer, -1, chars, sizeof(buffer) / 8, &defChar, nullptr);
+        std::string path = std::string(chars);
         #else
         char result[PATH_MAX];
         ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
         std::string path = std::string(result, (count > 0) ? count : 0);
         #endif
-        return path.substr(0, path.find_last_of('/') + 1);
+        return path.substr(0, path.find_last_of('\\') + 1);
     }
 
     void set(std::vector<const char*>& layers, std::vector<const char*>& extensions, std::string& name, std::array<int, 3>& version) {

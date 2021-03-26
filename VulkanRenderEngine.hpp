@@ -58,8 +58,8 @@ public:
         VkViewport viewport{};
         viewport.x = 0.f;
         viewport.y = 0.f;
-        viewport.width = swapchain.extent.width;
-        viewport.height = swapchain.extent.height;
+        viewport.width = (float)swapchain.extent.width;
+        viewport.height = (float)swapchain.extent.height;
         viewport.minDepth = 0.f;
         viewport.maxDepth = 1.f;
         VkRect2D scissor{};
@@ -256,7 +256,7 @@ public:
         asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ vkDestroyRenderPass(device.device, thisAsset.renderPass, nullptr); });
         //prepare shaders
         std::vector<VkPipelineShaderStageCreateInfo> shaders{};
-        for (int i = 0; i < asset->shaderData.size(); i++) {
+        for (unsigned int i = 0; i < asset->shaderData.size(); i++) {
             VkShaderModule shaderModule;
             VkShaderModuleCreateInfo shaderModuleCreateInfo{};
             shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -286,8 +286,8 @@ public:
         VkViewport viewport{};
         viewport.x = 0.f;
         viewport.y = 0.f;
-        viewport.width = swapchain.extent.width;
-        viewport.height = swapchain.extent.height;
+        viewport.width = (float)swapchain.extent.width;
+        viewport.height = (float)swapchain.extent.height;
         viewport.minDepth = 0.f;
         viewport.maxDepth = 1.f;
         VkRect2D scissor{};
@@ -360,7 +360,7 @@ public:
         //create asset framebuffers
         asset->framebuffers.resize(swapchain.image_count);
         std::vector<VkImageView> framebufferAttachments{};
-        for (int i = 0; i < asset->framebuffers.size(); i++) {
+        for (unsigned int i = 0; i < asset->framebuffers.size(); i++) {
             if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) { framebufferAttachments = { swapchainImageViews[i], depthImage.view }; } else { framebufferAttachments = { colorImage.view, depthImage.view, swapchainImageViews[i] }; }
             VkFramebufferCreateInfo framebufferCreateInfo{};
             framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -487,7 +487,7 @@ private:
             for  (VkFramebuffer framebuffer : asset->framebuffers) { vkDestroyFramebuffer(device.device, framebuffer, nullptr); }
             asset->framebuffers.resize(swapchain.image_count);
             std::vector<VkImageView> framebufferAttachments{};
-            for (int i = 0; i < asset->framebuffers.size(); i++) {
+            for (unsigned int i = 0; i < asset->framebuffers.size(); i++) {
                 if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) { framebufferAttachments = {swapchainImageViews[i], depthImage.view}; }
                 else { framebufferAttachments = {colorImage.view, depthImage.view, swapchainImageViews[i]}; }
                 VkFramebufferCreateInfo framebufferCreateInfo{};
@@ -523,7 +523,7 @@ private:
             VkFenceCreateInfo fenceCreateInfo{};
             fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-            for (int i = 0; i < swapchain.image_count; i++) {
+            for (unsigned int i = 0; i < swapchain.image_count; i++) {
                 if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
                 if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
                 if (vkCreateFence(device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create fences!"); }
