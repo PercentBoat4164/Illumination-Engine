@@ -26,6 +26,10 @@ public:
         loadShaders(shaderFileNames);
         ubo = { glm::rotate(glm::mat4(1.0f), 0 * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)), glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)), glm::perspective(glm::radians(45.0f), settings->resolution[0] / (float) settings->resolution[1], 0.1f, 10.0f) };
         ubo.proj[1][1] *= -1;
+        deletionQueue.emplace_front([&](const Asset& thisAsset){ vertexBuffer.destroy(); });
+        deletionQueue.emplace_front([&](const Asset& thisAsset){ indexBuffer.destroy(); });
+        deletionQueue.emplace_front([&](const Asset& thisAsset){ uniformBuffer.destroy(); });
+        deletionQueue.emplace_front([&](const Asset& thisAsset){ for (AllocatedImage textureImage : textureImages) { textureImage.destroy(); } });
     }
 
     ~Asset() {

@@ -89,9 +89,9 @@ struct AllocatedBuffer {
         if (vkAllocateMemory((*linkedRenderEngine.device).device, &allocInfo, nullptr, &memory) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer memory!"); }
         vkBindBufferMemory((*linkedRenderEngine.device).device, buffer, memory, 0);
         vkMapMemory((*linkedRenderEngine.device).device, memory, 0, size, 0, &data);
-        //deletionQueue.emplace_front([&]{ vkFreeMemory((*linkedRenderEngine.device).device, memory, nullptr); });
+        deletionQueue.emplace_front([&]{ vkFreeMemory((*linkedRenderEngine.device).device, memory, nullptr); memory = VK_NULL_HANDLE; });
         vkUnmapMemory((*linkedRenderEngine.device).device, memory);
-        //deletionQueue.emplace_front([&]{ vkDestroyBuffer((*linkedRenderEngine.device).device, buffer, nullptr); });
+        deletionQueue.emplace_front([&]{ vkDestroyBuffer((*linkedRenderEngine.device).device, buffer, nullptr); buffer = VK_NULL_HANDLE; });
         return data;
     };
 
@@ -145,6 +145,7 @@ struct AllocatedImage {
         imageCreateInfo.samples = msaaSamples;
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         if (vkCreateImage((*linkedRenderEngine.device).device, &imageCreateInfo, nullptr, &image) != VK_SUCCESS) { throw std::runtime_error("failed to create image!"); }
+        deletionQueue.emplace_front([&]{ vkDestroyImage((*linkedRenderEngine.device).device, image, nullptr); image = VK_NULL_HANDLE; });
         VkMemoryRequirements memoryRequirements{};
         vkGetImageMemoryRequirements((*linkedRenderEngine.device).device, image, &memoryRequirements);
         VkMemoryAllocateInfo allocInfo{};
@@ -155,8 +156,7 @@ struct AllocatedImage {
         for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {if ((memoryRequirements.memoryTypeBits & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) { allocInfo.memoryTypeIndex = i; break;}}
         if (vkAllocateMemory((*linkedRenderEngine.device).device, &allocInfo, nullptr, &memory) != VK_SUCCESS) { throw std::runtime_error("failed to create image memory!"); }
         vkBindImageMemory((*linkedRenderEngine.device).device, image, memory, 0);
-        deletionQueue.emplace_front([&]{ vkFreeMemory((*linkedRenderEngine.device).device, memory, nullptr); });
-        deletionQueue.emplace_front([&]{ vkDestroyImage((*linkedRenderEngine.device).device, image, nullptr); });
+        deletionQueue.emplace_front([&]{ vkFreeMemory((*linkedRenderEngine.device).device, memory, nullptr); memory = VK_NULL_HANDLE; });
         VkImageViewCreateInfo imageViewCreateInfo{};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.image = image;
@@ -168,7 +168,7 @@ struct AllocatedImage {
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         imageViewCreateInfo.subresourceRange.layerCount = 1;
         if (vkCreateImageView((*linkedRenderEngine.device).device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView((*linkedRenderEngine.device).device, view, nullptr); });
+        deletionQueue.emplace_front([&] { vkDestroyImageView((*linkedRenderEngine.device).device, view, nullptr); view = VK_NULL_HANDLE; });
         if (dataSource != nullptr) {
             transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             dataSource->toImage(image, width, height);
@@ -191,7 +191,7 @@ struct AllocatedImage {
                 samplerInfo.minLod = 0.0f;
                 samplerInfo.maxLod = 0.0f;
                 if (vkCreateSampler((*linkedRenderEngine.device).device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
-                deletionQueue.emplace_front([&] { vkDestroySampler((*linkedRenderEngine.device).device, sampler, nullptr); });
+                deletionQueue.emplace_front([&] { vkDestroySampler((*linkedRenderEngine.device).device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
                 transition(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             }
         }
