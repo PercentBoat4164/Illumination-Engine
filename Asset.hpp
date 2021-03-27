@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <cstring>
+#include <valarray>
 
 #if defined(_WIN32)
 #define GLSLC "glslc.exe "
@@ -19,51 +20,58 @@
 class Asset {
 
 public:
-    Asset(const char *modelName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, Settings *EngineSettings) {
+    Asset(const char *modelName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, Settings *EngineSettings, glm::vec3 initialPosition, glm::vec3 initialRotation, glm::vec3 initialScale) {
+        //TODO: Create an option to re-load an asset from disk.
+        // This will enable developers to edit shaders and upload them to see how they look without restarting the engine.
+        position = initialPosition;
+        rotation = initialRotation;
+        scale = initialScale;
         settings = EngineSettings;
         loadModel(modelName);
         loadTextures(textureFileNames);
         loadShaders(shaderFileNames);
-        ubo = { glm::rotate(glm::mat4(1.0f), 0 * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)), glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)), glm::perspective(glm::radians(45.0f), settings->resolution[0] / (float) settings->resolution[1], 0.1f, 10.0f) };
-        ubo.proj[1][1] *= -1;
-        deletionQueue.emplace_front([&](const Asset& thisAsset){ vertexBuffer.destroy(); });
-        deletionQueue.emplace_front([&](const Asset& thisAsset){ indexBuffer.destroy(); });
-        deletionQueue.emplace_front([&](const Asset& thisAsset){ uniformBuffer.destroy(); });
-        deletionQueue.emplace_front([&](const Asset& thisAsset){ for (AllocatedImage textureImage : textureImages) { textureImage.destroy(); } });
-    }
-
-    ~Asset() {
-        if (autoCleanUp) {
-            destroy();
-        }
     }
 
     void destroy() {
-        for (std::function<void(Asset)> &function : deletionQueue) { function(*this); }
+        vertexBuffer.destroy();
+        indexBuffer.destroy();
+        uniformBuffer.destroy();
+        for (AllocatedImage textureImage : textureImages) { textureImage.destroy(); }
+        for (stbi_uc *pixels : textures) { stbi_image_free(pixels); }
+        for (const std::function<void(Asset)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
     }
 
-    void updateUbo() {
-        memcpy(uniformBuffer.data, &ubo, sizeof(UniformBufferObject));
+    void update() {
+        //TODO: Make this take a Camera object that determines the other values of the UBO
+        uniformBufferObject = {glm::mat4(1.0f), glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)), glm::perspective(glm::radians(45.0f), settings->resolution[0] / (float) settings->resolution[1], 0.1f, 1000.0f) };
+        uniformBufferObject.model = glm::translate(glm::rotate(glm::rotate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::abs(scale)), rotation[0], glm::vec3(1.f, 0.f, 0.f)), rotation[1], glm::vec3(0.f, 1.f, 0.f)), rotation[2], glm::vec3(0.f, 0.f, 1.f)), position);
+        uniformBufferObject.proj[1][1] *= -1;
+        memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(UniformBufferObject));
+        memcpy(vertexBuffer.data, vertices.data(), sizeof(vertices[0]) * vertices.size());
+        memcpy(indexBuffer.data, indices.data(), sizeof(indices[0]) * indices.size());
     }
 
+    std::deque<std::function<void(Asset asset)>> deletionQueue;
     std::vector<uint32_t> indices{};
     std::vector<Vertex> vertices{};
     AllocatedBuffer vertexBuffer{};
     AllocatedBuffer indexBuffer{};
-    VkPipeline graphicsPipeline{};
-    VkDescriptorSet descriptorSet{};
+    AllocatedBuffer uniformBuffer{};
+    UniformBufferObject uniformBufferObject{};
+    std::vector<AllocatedImage> textureImages{};
     std::vector<stbi_uc *> textures{};
+    std::vector<std::vector<char>> shaderData{};
     int width{};
     int height{};
-    std::vector<AllocatedImage> textureImages{};
-    AllocatedBuffer uniformBuffer{};
-    std::deque<std::function<void(Asset asset)>> deletionQueue;
-    std::vector<std::vector<char>> shaderData{};
+    VkPipeline graphicsPipeline{};
+    VkDescriptorSet descriptorSet{};
     VkDescriptorPool descriptorPool{};
     VkRenderPass renderPass{};
     std::vector<VkFramebuffer> framebuffers{};
-    UniformBufferObject ubo{};
+    glm::vec3 position{};
+    glm::vec3 rotation{};
+    glm::vec3 scale{};
 
 private:
     void loadModel(const char *filename) {
@@ -95,7 +103,6 @@ private:
             stbi_uc *pixels = stbi_load((settings->absolutePath + (std::string)filename).c_str(), &width, &height, &channels, STBI_rgb_alpha);
             if (!pixels) { throw std::runtime_error(("failed to load texture image from file: " + settings->absolutePath + (std::string)filename).c_str()); }
             textures.push_back(pixels);
-            deletionQueue.emplace_front([&](const Asset& thisAsset){ for (stbi_uc *pixels : textures) { stbi_image_free(pixels); } });
         }
     }
 
@@ -117,5 +124,4 @@ private:
 
     Settings *settings{};
     std::vector<const char *> shaderNames{};
-    bool autoCleanUp{false};
 };

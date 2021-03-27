@@ -8,7 +8,6 @@
 
 #include <vk-bootstrap/src/VkBootstrap.h>
 
-
 class VulkanRenderEngine {
 public:
     explicit VulkanRenderEngine(Settings &initialSettings = *new Settings{}, GLFWwindow *attachWindow = nullptr) {
@@ -69,11 +68,8 @@ public:
         vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
         vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
         for (Asset *asset : assets) {
-            //update uniform buffer
-            asset->updateUbo();
-            //update textures
-            //update mesh
-            //update shaders?
+            //update asset
+            asset->update();
             //record command buffers
             renderPassBeginInfo.renderPass = asset->renderPass;
             renderPassBeginInfo.framebuffer = asset->framebuffers[imageIndex];
@@ -127,33 +123,28 @@ public:
         //upload mesh
         asset->vertexBuffer.setEngineLink(renderEngineLink);
         memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
-        asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.vertexBuffer.destroy(); });
         asset->indexBuffer.setEngineLink(renderEngineLink);
         memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
-        asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.indexBuffer.destroy(); });
         //upload textures
         stagingBuffer.setEngineLink(renderEngineLink);
         memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->textures[0], asset->width * asset->height * 4);
         asset->textureImages.resize(1);
         asset->textureImages[0].setEngineLink(renderEngineLink);
         asset->textureImages[0].create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 1, asset->width, asset->height, false, true, &stagingBuffer);
-        asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ for (AllocatedImage textureImage : thisAsset.textureImages) { textureImage.destroy(); } });
         //prepare data for shader
         //build uniform buffers
         asset->uniformBuffer.setEngineLink(renderEngineLink);
-        memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), &asset->ubo, sizeof(UniformBufferObject));
-        asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.uniformBuffer.destroy(); });
+        memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), &asset->uniformBufferObject, sizeof(UniformBufferObject));
         //build descriptor sets
         VkDescriptorPoolSize uboDescriptorPoolSize{};
         uboDescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         uboDescriptorPoolSize.descriptorCount = swapchain.image_count;
-        //Iterate for every image needed by the shader
-        VkDescriptorPoolSize imageDescriptorPoolSize{};
-        imageDescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        imageDescriptorPoolSize.descriptorCount = swapchain.image_count;
-        //stop iterating
+        //do this for every image needed by the shader
+        VkDescriptorPoolSize albedoDescriptorPoolSize{};
+        albedoDescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        albedoDescriptorPoolSize.descriptorCount = swapchain.image_count;
         VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
-        std::vector<VkDescriptorPoolSize> descriptorPoolSizes{uboDescriptorPoolSize, imageDescriptorPoolSize};
+        std::vector<VkDescriptorPoolSize> descriptorPoolSizes{uboDescriptorPoolSize, albedoDescriptorPoolSize};
         descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         descriptorPoolCreateInfo.poolSizeCount = descriptorPoolSizes.size();
         descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
@@ -167,10 +158,11 @@ public:
         allocInfo.descriptorSetCount = 1;
         allocInfo.pSetLayouts = layouts.data();
         if (vkAllocateDescriptorSets(device.device, &allocInfo, &asset->descriptorSet) != VK_SUCCESS) { throw std::runtime_error("failed to allocate descriptor sets!"); }
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = asset->uniformBuffer.buffer;
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
+        VkDescriptorBufferInfo uboBufferInfo{};
+        uboBufferInfo.buffer = asset->uniformBuffer.buffer;
+        uboBufferInfo.offset = 0;
+        uboBufferInfo.range = sizeof(UniformBufferObject);
+        //TODO: Rework descriptor set management.
         std::vector<VkWriteDescriptorSet> descriptorWrites{2};
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = asset->descriptorSet;
@@ -178,7 +170,7 @@ public:
         descriptorWrites[0].dstArrayElement = 0;
         descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
+        descriptorWrites[0].pBufferInfo = &uboBufferInfo;
         //Iterate this part for the number of textures used
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -455,7 +447,8 @@ private:
         engineDeletionQueue.emplace_front([&]{ vkDestroyPipelineLayout(device.device, pipelineLayout, nullptr); });
     }
 
-    void createSwapchain(bool fullRecreate = false, bool rebuildPipelines = false) {
+    void createSwapchain(bool fullRecreate = false) {
+        //TODO: Create an option to reload all assets to the scene with updated settings
         int width = 0, height = 0;
         glfwGetFramebufferSize(window, &width, &height);
         //Make sure no other GPU operations are on-going
@@ -547,22 +540,22 @@ private:
     std::deque<std::function<void()>> engineDeletionQueue{};
     std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
     vkb::Device device{};
+    vkb::Instance instance{};
+    vkb::Swapchain swapchain{};
     RenderEngineLink renderEngineLink{};
     AllocatedBuffer stagingBuffer{};
     AllocatedImage colorImage{};
     AllocatedImage depthImage{};
-    std::vector<VkCommandBuffer> commandBuffers{};
+    VkCommandPool commandPool{};
     VkSurfaceKHR surface{};
+    VkDescriptorSetLayout descriptorSetLayout{};
+    VkPipelineLayout pipelineLayout{};
+    std::vector<VkCommandBuffer> commandBuffers{};
+    std::vector<VkImageView> swapchainImageViews{};
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     std::vector<VkFence> inFlightFences{};
     std::vector<VkFence> imagesInFlight{};
-    VkCommandPool commandPool{};
-    vkb::Instance instance{};
-    vkb::Swapchain swapchain{};
-    std::vector<VkImageView> swapchainImageViews{};
     size_t currentFrame = 0;
     bool framebufferResized{false};
-    VkDescriptorSetLayout descriptorSetLayout{};
-    VkPipelineLayout pipelineLayout{};
 };

@@ -19,7 +19,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 }
 
 int main(int argc, char **argv) {
-    std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics\n";
+    std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics engine\n";
     std::string selection;
     char input;
     if (argc > 1) { input = *argv[1]; } else {
@@ -29,18 +29,19 @@ int main(int argc, char **argv) {
     if (input == 'v') {
         try {
             VulkanRenderEngine renderEngine = VulkanRenderEngine();
-            //glfwSetKeyCallback(renderEngine.window, keyCallback);
-            Asset vikingRoom = Asset("models/vikingRoom.obj", std::vector<const char *>{"models/vikingRoom.png"}, std::vector<const char *>{"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
+//            glfwSetKeyCallback(renderEngine.window, keyCallback);
+            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
             renderEngine.uploadAsset(&vikingRoom);
-//            Asset ancientStatue = Asset("models/ancientStatue.obj", std::vector<const char *>{"models/ancientStatue.png"}, std::vector<const char *>{"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
+//            Asset ancientStatue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
 //            renderEngine.uploadAsset(&ancientStatue);
             while (renderEngine.update()) {
                 glfwPollEvents();
                 static auto startTime = std::chrono::high_resolution_clock::now();
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-                vikingRoom.ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-//                ancientStatue.ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+                vikingRoom.rotation = {sin(time), sin(time), sin(time)};
+                vikingRoom.position = {sin(time), sin(time), sin(time)};
+                vikingRoom.scale = {sin(time), sin(time), sin(time)};
             }
             renderEngine.cleanUp();
         } catch (const std::exception& e) {
