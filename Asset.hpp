@@ -39,11 +39,10 @@ public:
         deletionQueue.clear();
     }
 
-    void update() {
+    void update(Camera camera) {
         //TODO: Make this take a Camera object that determines the other values of the UBO
-        uniformBufferObject = {glm::mat4(1.0f), glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)), glm::perspective(glm::radians(45.0f), settings->resolution[0] / (float) settings->resolution[1], 0.1f, 1000.0f) };
+        uniformBufferObject = {glm::mat4(1.0f), camera.view, camera.proj};
         uniformBufferObject.model = glm::translate(glm::rotate(glm::rotate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::abs(scale)), rotation[0], glm::vec3(1.f, 0.f, 0.f)), rotation[1], glm::vec3(0.f, 1.f, 0.f)), rotation[2], glm::vec3(0.f, 0.f, 1.f)), position);
-        uniformBufferObject.proj[1][1] *= -1;
         memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(UniformBufferObject));
     }
 
@@ -63,8 +62,8 @@ public:
     glm::vec3 position{};
     glm::vec3 rotation{};
     glm::vec3 scale{};
-
     unsigned long vertexOffset{};
+
 private:
     void loadModel(const char *filename) {
         tinyobj::attrib_t attrib;
@@ -76,9 +75,9 @@ private:
         for (const auto& shape : shapes) {
             for (const auto& index : shape.mesh.indices) {
                 Vertex vertex{};
-                vertex.pos = {attrib.vertices[3 * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2]};
-                vertex.texCoord = {attrib.texcoords[2 * index.texcoord_index], 1.f - attrib.texcoords[2 * index.texcoord_index + 1]};
-                //vertex.normal = {attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2]};
+                vertex.pos = { attrib.vertices[3 * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
+                vertex.texCoord = { attrib.texcoords[2 * index.texcoord_index], 1.f - attrib.texcoords[2 * index.texcoord_index + 1] };
+                //vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
                 vertex.color = {1.f, 1.f, 1.f};
                 if (uniqueVertices.count(vertex) == 0) {
                     uniqueVertices[vertex] = vertices.size();

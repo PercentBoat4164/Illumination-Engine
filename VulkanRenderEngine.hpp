@@ -12,7 +12,6 @@
  * Priorities:
  *  - Reload options
  *  - Implement Camera
- *  - Double check that updateSettings works
  *  - Multithreading
  *  - Shadows
  */
@@ -37,6 +36,7 @@ public:
 
     bool update() {
         //TODO: Add multithreading support throughout the engine
+        //TODO: Add better documentation to this function
         if (assets.empty()) { return glfwWindowShouldClose(window) != 1; }
         vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         uint32_t imageIndex = 0;
@@ -58,7 +58,6 @@ public:
         clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         if (settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
-        //Setup render pass to clear
         VkRenderPassBeginInfo renderPassBeginInfo{};
         renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassBeginInfo.renderArea.offset = {0, 0};
@@ -85,10 +84,11 @@ public:
         AllocatedBuffer indexBuffer{};
         vertexBuffer.linkedRenderEngine = renderEngineLink;
         indexBuffer.linkedRenderEngine = renderEngineLink;
+        camera.update();
         //TODO: Only recreate the vertex and index buffers if the assets vector was updated
         for (Asset *asset : assets) {
             //update asset
-            asset->update();
+            asset->update(camera);
             //update vertex and index buffers
             asset->vertexOffset = vertices.size();
             vertices.insert(vertices.end(), asset->vertices.begin(), asset->vertices.end());
@@ -144,6 +144,7 @@ public:
     }
 
     void uploadAsset(Asset *asset, bool append = true) {
+        //destroy previously created asset if any
         asset->destroy();
         //upload textures
         stagingBuffer.destroy();
@@ -257,7 +258,7 @@ public:
         rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL; //Controls fill mode (e.g. wireframe mode)
         rasterizationStateCreateInfo.lineWidth = 1.f;
         rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
         rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
         VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
         multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -323,6 +324,7 @@ public:
     Settings settings{};
     GLFWwindow *window{};
     std::vector<Asset *> assets{};
+    Camera camera{};
 
 private:
     void initializeVulkan(GLFWwindow *attachWindow) {
@@ -530,6 +532,10 @@ private:
             if (vkCreateFramebuffer(device.device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
         }
         recreationDeletionQueue.emplace_front([&]{ for  (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(device.device, framebuffer, nullptr); } });
+        //update camera
+        camera.resolution = settings.resolution;
+        camera.fov = settings.fov;
+        camera.renderDistance = settings.renderDistance;
     }
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {

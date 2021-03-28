@@ -33,6 +33,8 @@ public:
     std::array<int, 2> resolution = {800, 600};
     int MAX_FRAMES_IN_FLIGHT = 2;
     std::string absolutePath = getProgramPath().string();
+    float fov{90};
+    double renderDistance{1000};
 
 
     static std::filesystem::path getProgramPath() {
@@ -49,13 +51,6 @@ public:
         std::string path = std::string(result, (count > 0) ? count : 0);
         #endif
         return path.substr(0, path.find_last_of('\\') + 1);
-    }
-
-    void set(std::vector<const char*>& layers, std::vector<const char*>& extensions, std::string& name, std::array<int, 3>& version) {
-        for (auto& layer : layers) {validationLayers.insert(validationLayers.end(), layer);}
-        for (auto& extension : extensions) {requestedExtensions.insert(requestedExtensions.end(), extension);}
-        applicationName = name;
-        applicationVersion = version;
     }
 
     Settings findMaxSettings(VkPhysicalDevice physicalDevice) {

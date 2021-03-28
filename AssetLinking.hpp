@@ -52,9 +52,19 @@ struct UniformBufferObject {
 };
 
 struct Camera {
-    //TODO: Flesh out this struct and integrate it into both render engines.
+    std::array<glm::mat4, 2> update() {
+        view = {glm::lookAt(position, subjectPosition, glm::vec3(0.0f, 1.0f, 0.0f))};
+        proj = {glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
+        return {view, proj};
+    }
+
     glm::vec3 position{};
     glm::vec3 subjectPosition{};
+    std::array<int, 2> resolution{};
+    double renderDistance{10};
+    double fov{90};
+    glm::mat4 view{glm::lookAt(position, subjectPosition, glm::vec3(0.0f, 0.0f, 1.0f))};
+    glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
 };
 
 struct AllocatedBuffer {

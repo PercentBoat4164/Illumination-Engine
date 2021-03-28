@@ -42,9 +42,11 @@ int main(int argc, char **argv) {
                 vikingRoom.rotation = {sin(time), sin(time), sin(time)};
                 vikingRoom.position = {sin(time), sin(time), sin(time)};
                 vikingRoom.scale = {sin(time), sin(time), sin(time)};
-                ancientStatue.rotation = {sin(time), sin(time), sin(time)};
-                ancientStatue.position = {sin(time), sin(time), sin(time)};
-                ancientStatue.scale = {sin(time), sin(time), sin(time)};
+                ancientStatue.rotation = {tan(time), tan(time), tan(time)};
+                ancientStatue.position = {tan(time), tan(time), tan(time)};
+                ancientStatue.scale = {tan(time), tan(time), tan(time)};
+                renderEngine.camera.position = {2, 2, 2};
+                renderEngine.camera.subjectPosition = {glm::normalize(vikingRoom.position)};
             }
             vikingRoom.destroy();
             ancientStatue.destroy();
