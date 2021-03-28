@@ -23,11 +23,7 @@
 struct RenderEngineLink {
     Settings *settings = nullptr;
     vkb::Device *device;
-    VkDescriptorSetLayout *descriptorSetLayout;
-    std::vector<VkDescriptorSet> *descriptorSets;
-    std::vector<VkBuffer> *uniformBuffers;
     VkCommandPool *commandPool;
-    std::vector<VkCommandBuffer> commandBuffers;
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
         VkCommandBufferAllocateInfo allocInfo{};
@@ -57,21 +53,28 @@ struct RenderEngineLink {
 };
 
 struct UniformBufferObject {
-    alignas(16) glm::mat4 model;
-    alignas(16) glm::mat4 view;
-    alignas(16) glm::mat4 proj;
+    alignas(16) glm::mat4 model{};
+    alignas(16) glm::mat4 view{};
+    alignas(16) glm::mat4 proj{};
+};
+
+struct Camera {
+    //TODO: Flesh out this struct and integrate it into both render engines.
+    glm::vec3 position{};
+    glm::vec3 subjectPosition{};
 };
 
 struct AllocatedBuffer {
+    std::deque<std::function<void()>> deletionQueue{};
+    RenderEngineLink linkedRenderEngine{};
+    void *data{};
     VkBuffer buffer{};
     VkDeviceMemory memory{};
-    void *data{};
-    RenderEngineLink linkedRenderEngine{};
-    std::deque<std::function<void()>> deletionQueue{};
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
+        data = nullptr;
     }
 
     void setEngineLink(const RenderEngineLink& renderEngineLink) {
@@ -120,12 +123,12 @@ struct AllocatedBuffer {
 };
 
 struct AllocatedImage {
+    std::deque<std::function<void()>> deletionQueue{};
+    RenderEngineLink linkedRenderEngine{};
     VkImage image{};
     VkImageView view{};
     VkSampler sampler{};
     VkDeviceMemory memory{};
-    RenderEngineLink linkedRenderEngine{};
-    std::deque<std::function<void()>> deletionQueue{};
 
     void destroy() {
         for (std::function<void()>& function : deletionQueue) { function(); }
