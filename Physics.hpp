@@ -102,7 +102,7 @@ public:
         
         for(int i = 0; i < activeBodies.size(); i++) {
             for(int j = i+1; j < activeBodies.size(); j++) {
-                checkCollision(&activeBodies[i],&activeBodies[j]);
+                checkCollision(activeBodies[i], activeBodies[j]);
             }
         }
    }
