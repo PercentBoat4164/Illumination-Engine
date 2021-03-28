@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
     if (input == 'v') {
         try {
             VulkanRenderEngine renderEngine = VulkanRenderEngine();
-//            glfwSetKeyCallback(renderEngine.window, keyCallback);
-            Asset vikingRoom = Asset("models\\vikingRoom.obj", {"models\\vikingRoom.png"}, {"shaders\\vertexShader.vert", "shaders\\fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {0, 0, 0});
+            glfwSetKeyCallback(renderEngine.window, keyCallback);
+            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {0, 0, 0});
             renderEngine.uploadAsset(&vikingRoom);
             Asset ancientStatue = Asset("models\\ancientStatue.obj", {"models\\ancientStatue.png"}, {"shaders\\vertexShader.vert", "shaders\\fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {0, 0, 0});
             renderEngine.uploadAsset(&ancientStatue);

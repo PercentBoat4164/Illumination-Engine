@@ -34,7 +34,6 @@ public:
     void destroy() {
         uniformBuffer.destroy();
         for (AllocatedImage textureImage : textureImages) { textureImage.destroy(); }
-        for (stbi_uc *pixels : textures) { stbi_image_free(pixels); }
         for (const std::function<void(Asset)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
     }
