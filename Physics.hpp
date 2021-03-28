@@ -31,11 +31,18 @@ class Body {
 public:
     glm::vec3 pos;
     glm::vec3 v;
-    
+
     Body(glm::vec3 position, glm::vec3 velocity) {
         pos = position;
         v = velocity;
     }
+
+    Body(float x, float y, float z) {
+        pos = glm::vec3(x,y,z);
+        v = glm::vec3(0,0,0);
+    }
+
+    Body() {}
 
     void step() {
        pos += v;
@@ -50,50 +57,54 @@ public:
         m = mass;
     }
 
+    RigidBody() {}
+
     void applyImpulse(glm::vec3 impulse) {
-        v += impulse/m;
+        v += impulse / m;
     }
 
     void applyImpulse(float x, float y, float z) {
-       v.x += (x/m);
-       v.y += (y/m);
-       v.z += (z/m);
+       v.x += (x / m);
+       v.y += (y / m);
+       v.z += (z / m);
    }
 };
 
 class SphereBody: public RigidBody{
+public:
     float r;
 
-    SphereBody(float x,float y,float z,float mass,float radius) {
-       pos = glm::vec4(x,y,z,0.0f);
-       m=mass;
-       r=radius;
+    SphereBody(float x, float y, float z, float mass, float radius) {
+       pos = glm::vec4(x, y, z, 0.0f);
+       v = glm::vec3(0,0,0);
+       m = mass;
+       r = radius;
    }
 };
 
 class World {
 public:
 
-    std::vector<Body*> activeBodies;
-    std::vector<Body*> bodies;
+    std::vector<SphereBody *> activeBodies;
+    std::vector<SphereBody *> bodies;
 
-    void addBody(Body *body) {
+    void addBody(SphereBody *body) {
        bodies.push_back(body);
     }
 
-    void addActiveBody(Body *body) {
+    void addActiveBody(SphereBody *body) {
         bodies.push_back(body);
         activeBodies.push_back(body);
     }
 
-    void removeBody(Body *body) {
+    void removeBody(SphereBody *body) {
     }
 
-    void activateBody(Body *body) {
+    void activateBody(SphereBody *body) {
         activeBodies.push_back(body);
     }
 
-    void deactivateBody(Body *body) {
+    void deactivateBody(SphereBody *body) {
     }
 
     void step() {
@@ -102,38 +113,42 @@ public:
         
         for(int i = 0; i < activeBodies.size(); i++) {
             for(int j = i+1; j < activeBodies.size(); j++) {
-                checkCollision(&activeBodies[i], &activeBodies[j]);
+                checkCollision(activeBodies[i], activeBodies[j]);
             }
         }
-   }
+    }
 
 private:
 
     //check for collision between two spheres
-   bool checkCollision(SphereBody s1, SphereBody s2) {
+   bool checkCollision(SphereBody *s1, SphereBody *s2) {
 
-       //store the distance between the spheres' vectors
-       float l = s1.r + s2.r + 1;
+        SphereBody firstBody = *s1;
+        SphereBody secondBody = *s2;
+        
 
-       //get the closest points to each other on the spheres' vectors
-       std::vector<glm::vec3> closestPoints = getClosestPoints(s1.pos,s1.v,s2.pos,s2.v);
+        //store the distance between the spheres' vectors
+        float l = firstBody.r + secondBody.r + 1;
 
-       //make sure the closest points are on the vectors, not behind or past them
-       if(glm::length(closestPoints[0]) <= std::max(glm::length(s1.pos+s1.v),glm::length(s1.pos)) && glm::length(closestPoints[0]) >= std::min(glm::length(s1.pos),glm::length(s1.pos+s1.v))) {
-           if(glm::length(closestPoints[1]) <= std::max(glm::length(s2.pos+s2.v),glm::length(s2.pos)) && glm::length(closestPoints[1]) >= std::min(glm::length(s2.pos+s2.v),glm::length(s2.pos))) {
-               //record the distance between the vectors
-               l = distLineLine(s1.pos, s1.v, s2.pos, s2.v);
-           } else {
+        //get the closest points to each other on the spheres' vectors
+        std::vector<glm::vec3> closestPoints = getClosestPoints(firstBody.pos,firstBody.v,secondBody.pos,secondBody.v);
 
-           }
-       } else {
-       }
+        //make sure the closest points are on the vectors, not behind or past them
+        if(glm::length(closestPoints[0]) <= std::max(glm::length(firstBody.pos+firstBody.v),glm::length(firstBody.pos)) && glm::length(closestPoints[0]) >= std::min(glm::length(firstBody.pos),glm::length(firstBody.pos+secondBody.v))) {
+            if(glm::length(closestPoints[1]) <= std::max(glm::length(secondBody.pos+secondBody.v),glm::length(secondBody.pos)) && glm::length(closestPoints[1]) >= std::min(glm::length(secondBody.pos+secondBody.v),glm::length(secondBody.pos))) {
+                //record the distance between the vectors
+                l = distLineLine(firstBody.pos, firstBody.v, secondBody.pos, secondBody.v);
+            } else {
 
-       //check whether the spheres' current location, next tick location, or paths intercept
-       if (s1.r + s2.r > glm::length(s2.pos - s1.pos) || s1.r + s2.r > glm::length((s2.pos + s2.v) - (s1.pos + s1.v)) || l < s1.r + s2.r) {
-           return true;
-       }
-       return false;
+            }
+        } else {
+        }
+
+        //check whether the spheres' current location, next tick location, or paths intercept
+        if (secondBody.r + secondBody.r > glm::length(secondBody.pos - firstBody.pos) || firstBody.r + secondBody.r > glm::length((secondBody.pos + secondBody.v) - (firstBody.pos + firstBody.v)) || l < firstBody.r + secondBody.r) {
+            return true;
+        }
+        return false;
    }
 
     //solves ||(p1 + t*v1) - (p2 + t*v2)|| = r1 + r2 to get the instant of collision and returns the smallest positive value

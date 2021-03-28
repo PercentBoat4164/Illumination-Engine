@@ -4,7 +4,7 @@
 #include "Asset.hpp"
 #include "VulkanRenderEngine.hpp"
 #include "OpenGLRenderEngine.hpp"
-
+#include "Physics.hpp"
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     auto RenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
@@ -28,25 +28,34 @@ int main(int argc, char **argv) {
     }
     if (input == 'v') {
         try {
+
+            //physics init
+            SphereBody sphere{0,0,0,1,1};
+            float g = 0.001;
+            //rendering init
             VulkanRenderEngine renderEngine = VulkanRenderEngine();
             glfwSetKeyCallback(renderEngine.window, keyCallback);
-            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {0, 0, 0});
-            renderEngine.uploadAsset(&vikingRoom);
             Asset ancientStatue = Asset("models\\ancientStatue.obj", {"models\\ancientStatue.png"}, {"shaders\\vertexShader.vert", "shaders\\fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {0, 0, 0});
             renderEngine.uploadAsset(&ancientStatue);
+            auto currentTime = std::chrono::high_resolution_clock::now();
             while (renderEngine.update()) {
+
+                sphere.applyImpulse(0, 0, -g * sphere.m);
+                if(sphere.pos.z < -2) {
+                    sphere.applyImpulse(0,0, sphere.v.z * -1.91f);
+                }
+                sphere.step();
                 glfwPollEvents();
                 static auto startTime = std::chrono::high_resolution_clock::now();
-                auto currentTime = std::chrono::high_resolution_clock::now();
+                auto lastTime = currentTime;
+                currentTime = std::chrono::high_resolution_clock::now();
+                std::cout << "\nTime per frame" << (currentTime - lastTime);
                 float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-                vikingRoom.rotation = {sin(time), sin(time), sin(time)};
-                vikingRoom.position = {sin(time), sin(time), sin(time)};
-                vikingRoom.scale = {sin(time), sin(time), sin(time)};
-                ancientStatue.rotation = {sin(time), sin(time), sin(time)};
-                ancientStatue.position = {sin(time), sin(time), sin(time)};
-                ancientStatue.scale = {sin(time), sin(time), sin(time)};
+                ancientStatue.rotation = {0, 0, 0};
+                ancientStatue.position = {sphere.pos};
+                ancientStatue.scale = {1, 1, 1};
+
             }
-            vikingRoom.destroy();
             ancientStatue.destroy();
             renderEngine.cleanUp();
         } catch (const std::exception& e) {
