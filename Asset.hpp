@@ -33,8 +33,6 @@ public:
     }
 
     void destroy() {
-        vertexBuffer.destroy();
-        indexBuffer.destroy();
         uniformBuffer.destroy();
         for (AllocatedImage textureImage : textureImages) { textureImage.destroy(); }
         for (stbi_uc *pixels : textures) { stbi_image_free(pixels); }
@@ -48,15 +46,11 @@ public:
         uniformBufferObject.model = glm::translate(glm::rotate(glm::rotate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::abs(scale)), rotation[0], glm::vec3(1.f, 0.f, 0.f)), rotation[1], glm::vec3(0.f, 1.f, 0.f)), rotation[2], glm::vec3(0.f, 0.f, 1.f)), position);
         uniformBufferObject.proj[1][1] *= -1;
         memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(UniformBufferObject));
-        memcpy(vertexBuffer.data, vertices.data(), sizeof(vertices[0]) * vertices.size());
-        memcpy(indexBuffer.data, indices.data(), sizeof(indices[0]) * indices.size());
     }
 
     std::deque<std::function<void(Asset asset)>> deletionQueue;
     std::vector<uint32_t> indices{};
     std::vector<Vertex> vertices{};
-    AllocatedBuffer vertexBuffer{};
-    AllocatedBuffer indexBuffer{};
     AllocatedBuffer uniformBuffer{};
     UniformBufferObject uniformBufferObject{};
     std::vector<AllocatedImage> textureImages{};
@@ -67,12 +61,11 @@ public:
     VkPipeline graphicsPipeline{};
     VkDescriptorSet descriptorSet{};
     VkDescriptorPool descriptorPool{};
-    VkRenderPass renderPass{};
-    std::vector<VkFramebuffer> framebuffers{};
     glm::vec3 position{};
     glm::vec3 rotation{};
     glm::vec3 scale{};
 
+    unsigned long vertexOffset{};
 private:
     void loadModel(const char *filename) {
         tinyobj::attrib_t attrib;

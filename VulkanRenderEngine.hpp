@@ -55,6 +55,8 @@ public:
         renderPassBeginInfo.renderArea.extent = swapchain.extent;
         renderPassBeginInfo.clearValueCount = clearValues.size();
         renderPassBeginInfo.pClearValues = clearValues.data();
+        renderPassBeginInfo.renderPass = renderPass;
+        renderPassBeginInfo.framebuffer = framebuffers[imageIndex];
         VkViewport viewport{};
         viewport.x = 0.f;
         viewport.y = 0.f;
@@ -67,23 +69,32 @@ public:
         scissor.extent = swapchain.extent;
         vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
         vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
+        std::vector<Vertex> vertices{};
+        std::vector<uint32_t> indices{};
+        AllocatedBuffer vertexBuffer{};
+        AllocatedBuffer indexBuffer{};
+        vertexBuffer.linkedRenderEngine = renderEngineLink;
+        indexBuffer.linkedRenderEngine = renderEngineLink;
         for (Asset *asset : assets) {
             //update asset
             asset->update();
-            //record command buffers
-            renderPassBeginInfo.renderPass = asset->renderPass;
-            renderPassBeginInfo.framebuffer = asset->framebuffers[imageIndex];
-            vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-            vkCmdBindPipeline(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->graphicsPipeline);
-            vkCmdBindVertexBuffers(commandBuffers[imageIndex], 0, 1, &asset->vertexBuffer.buffer, offsets);
-            vkCmdBindIndexBuffer(commandBuffers[imageIndex], asset->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdBindDescriptorSets(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &asset->descriptorSet, 0, nullptr);
-            vkCmdDrawIndexed(commandBuffers[imageIndex], asset->indices.size(), 1, 0, 0, 0);
-            vkCmdEndRenderPass(commandBuffers[imageIndex]);
-            //Set render pass to not clear as to only clear contents of previous frame
-            renderPassBeginInfo.clearValueCount = 0;
-            renderPassBeginInfo.pClearValues = nullptr;
+            //update vertex and index buffers
+            asset->vertexOffset = vertices.size();
+            vertices.insert(vertices.end(), asset->vertices.begin(), asset->vertices.end());
+            indices.insert(indices.end(), asset->indices.begin(), asset->indices.end());
         }
+        memcpy(vertexBuffer.create(sizeof(vertices[0]) * vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), vertices.data(), sizeof(vertices[0]) * vertices.size());
+        memcpy(indexBuffer.create(sizeof(indices[0]) * indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), indices.data(), sizeof(indices[0]) * indices.size());
+        //record command buffers
+        vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindVertexBuffers(commandBuffers[imageIndex], 0, 1, &vertexBuffer.buffer, offsets);
+        vkCmdBindIndexBuffer(commandBuffers[imageIndex], indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+        for (Asset *asset : assets) {
+            vkCmdBindPipeline(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->graphicsPipeline);
+            vkCmdBindDescriptorSets(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &asset->descriptorSet, 0, nullptr);
+            vkCmdDrawIndexed(commandBuffers[imageIndex], asset->indices.size(), 1, 0, asset->vertexOffset, 0);
+        }
+        vkCmdEndRenderPass(commandBuffers[imageIndex]);
         if (vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record command buffer!"); }
         //Submit
         VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
@@ -116,17 +127,14 @@ public:
             createSwapchain();
         } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
         currentFrame = (currentFrame + 1) % settings.MAX_FRAMES_IN_FLIGHT;
+        vertexBuffer.destroy();
+        indexBuffer.destroy();
         return glfwWindowShouldClose(window) != 1;
     }
 
     void uploadAsset(Asset *asset) {
-        //upload mesh
-        asset->vertexBuffer.setEngineLink(renderEngineLink);
-        memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
-        asset->indexBuffer.setEngineLink(renderEngineLink);
-        memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
         //upload textures
-        stagingBuffer.setEngineLink(renderEngineLink);
+        stagingBuffer.destroy();
         memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->textures[0], asset->width * asset->height * 4);
         asset->textureImages.resize(1);
         asset->textureImages[0].setEngineLink(renderEngineLink);
@@ -185,68 +193,6 @@ public:
         descriptorWrites[1].pImageInfo = &imageInfo;
         //End the iterations here
         vkUpdateDescriptorSets(device.device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
-        //create render pass for this asset
-        VkAttachmentDescription colorAttachmentDescription{};
-        colorAttachmentDescription.format = swapchain.image_format;
-        colorAttachmentDescription.samples = settings.msaaSamples;
-        colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachmentDescription.finalLayout = settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        VkAttachmentDescription depthAttachmentDescription{};
-        depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
-        depthAttachmentDescription.samples = settings.msaaSamples;
-        depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        VkAttachmentDescription colorResolveAttachmentDescription{};
-        colorResolveAttachmentDescription.format = swapchain.image_format;
-        colorResolveAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-        colorResolveAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorResolveAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorResolveAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorResolveAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorResolveAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorResolveAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        VkAttachmentReference colorAttachmentReference{};
-        colorAttachmentReference.attachment = 0;
-        colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        VkAttachmentReference depthAttachmentReference{};
-        depthAttachmentReference.attachment = 1;
-        depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        VkAttachmentReference colorResolveAttachmentReference{};
-        colorResolveAttachmentReference.attachment = 2;
-        colorResolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        VkSubpassDescription subpassDescription{};
-        subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpassDescription.colorAttachmentCount = 1;
-        subpassDescription.pColorAttachments = &colorAttachmentReference;
-        subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
-        subpassDescription.pResolveAttachments = settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? nullptr : &colorResolveAttachmentReference;
-        VkSubpassDependency subpassDependency{};
-        subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        subpassDependency.dstSubpass = 0;
-        subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        subpassDependency.srcAccessMask = 0;
-        subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        std::vector<VkAttachmentDescription> attachmentDescriptions{};
-        if (settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription, colorResolveAttachmentDescription}; } else { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription}; }
-        VkRenderPassCreateInfo renderPassCreateInfo{};
-        renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassCreateInfo.attachmentCount = attachmentDescriptions.size();
-        renderPassCreateInfo.pAttachments = attachmentDescriptions.data();
-        renderPassCreateInfo.subpassCount = 1;
-        renderPassCreateInfo.pSubpasses = &subpassDescription;
-        renderPassCreateInfo.dependencyCount = 1;
-        renderPassCreateInfo.pDependencies = &subpassDependency;
-        if (vkCreateRenderPass(device.device, &renderPassCreateInfo, nullptr, &asset->renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
-        asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ vkDestroyRenderPass(device.device, thisAsset.renderPass, nullptr); });
         //prepare shaders
         std::vector<VkPipelineShaderStageCreateInfo> shaders{};
         for (unsigned int i = 0; i < asset->shaderData.size(); i++) {
@@ -344,33 +290,16 @@ public:
         pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
         pipelineCreateInfo.pDynamicState = &pipelineDynamicStateCreateInfo;
         pipelineCreateInfo.layout = pipelineLayout;
-        pipelineCreateInfo.renderPass = asset->renderPass;
+        pipelineCreateInfo.renderPass = renderPass;
         pipelineCreateInfo.subpass = 0;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &asset->graphicsPipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
         for (VkPipelineShaderStageCreateInfo shader : shaders) { vkDestroyShaderModule(device.device, shader.module, nullptr); }
         asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ vkDestroyPipeline(device.device, thisAsset.graphicsPipeline, nullptr); });
-        //create asset framebuffers
-        asset->framebuffers.resize(swapchain.image_count);
-        std::vector<VkImageView> framebufferAttachments{};
-        for (unsigned int i = 0; i < asset->framebuffers.size(); i++) {
-            if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) { framebufferAttachments = { swapchainImageViews[i], depthImage.view }; } else { framebufferAttachments = { colorImage.view, depthImage.view, swapchainImageViews[i] }; }
-            VkFramebufferCreateInfo framebufferCreateInfo{};
-            framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferCreateInfo.renderPass = asset->renderPass;
-            framebufferCreateInfo.attachmentCount = framebufferAttachments.size();
-            framebufferCreateInfo.pAttachments = framebufferAttachments.data();
-            framebufferCreateInfo.width = swapchain.extent.width;
-            framebufferCreateInfo.height = swapchain.extent.height;
-            framebufferCreateInfo.layers = 1;
-            if (vkCreateFramebuffer(device.device, &framebufferCreateInfo, nullptr, &asset->framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
-        }
-        asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ for (VkFramebuffer framebuffer : thisAsset.framebuffers) { vkDestroyFramebuffer(device.device, framebuffer, nullptr); } });
         assets.push_back(asset);
     }
 
     void cleanUp() {
-        for (Asset *asset : assets) { asset->destroy(); }
         for (std::function<void()>& function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
         for (std::function<void()>& function : oneTimeOptionalDeletionQueue) { function(); }
@@ -418,6 +347,7 @@ private:
         if (vkCreateCommandPool(device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) { throw std::runtime_error("failed to create command pool!"); }
         engineDeletionQueue.emplace_front([&]{ vkDestroyCommandPool(device.device, commandPool, nullptr); });
         //delete staging buffer
+        stagingBuffer.setEngineLink(renderEngineLink);
         engineDeletionQueue.emplace_front([&]{ stagingBuffer.destroy(); });
         createSwapchain(true);
         //Create descriptor set layouts
@@ -456,10 +386,6 @@ private:
         //Clear recreationDeletionQueue
         for (std::function<void()>& function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
-        if (fullRecreate) {
-            for (std::function<void()>& function : oneTimeOptionalDeletionQueue) { function(); }
-            oneTimeOptionalDeletionQueue.clear();
-        }
         //Create swapchain
         vkb::SwapchainBuilder swapchainBuilder{ device };
         vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).build();
@@ -477,30 +403,13 @@ private:
         depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, settings.msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 1, swapchain.extent.width, swapchain.extent.height, true, false);
         depthImage.transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
         recreationDeletionQueue.emplace_front([&]{ depthImage.destroy(); });
-        //recreate framebuffers
-        for (Asset *asset : assets) {
-            for  (VkFramebuffer framebuffer : asset->framebuffers) { vkDestroyFramebuffer(device.device, framebuffer, nullptr); }
-            asset->framebuffers.resize(swapchain.image_count);
-            std::vector<VkImageView> framebufferAttachments{};
-            for (unsigned int i = 0; i < asset->framebuffers.size(); i++) {
-                if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) { framebufferAttachments = {swapchainImageViews[i], depthImage.view}; }
-                else { framebufferAttachments = {colorImage.view, depthImage.view, swapchainImageViews[i]}; }
-                VkFramebufferCreateInfo framebufferCreateInfo{};
-                framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-                framebufferCreateInfo.renderPass = asset->renderPass;
-                framebufferCreateInfo.attachmentCount = framebufferAttachments.size();
-                framebufferCreateInfo.pAttachments = framebufferAttachments.data();
-                framebufferCreateInfo.width = swapchain.extent.width;
-                framebufferCreateInfo.height = swapchain.extent.height;
-                framebufferCreateInfo.layers = 1;
-                if (vkCreateFramebuffer(device.device, &framebufferCreateInfo, nullptr, &asset->framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
-            }
-        }
         //clear images marked as in flight
         imagesInFlight.clear();
         imagesInFlight.resize(swapchain.image_count, VK_NULL_HANDLE);
         //do the other stuff only if needed
         if (fullRecreate) {
+            for (std::function<void()>& function : oneTimeOptionalDeletionQueue) { function(); }
+            oneTimeOptionalDeletionQueue.clear();
             //Create commandBuffers
             commandBuffers.resize(swapchain.image_count);
             VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
@@ -526,7 +435,86 @@ private:
             oneTimeOptionalDeletionQueue.emplace_front([&]{ for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(device.device, imageAvailableSemaphore, nullptr); } });
             oneTimeOptionalDeletionQueue.emplace_front([&]{ for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); } });
             oneTimeOptionalDeletionQueue.emplace_front([&]{ for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); } });
+            //Create render pass
+            VkAttachmentDescription colorAttachmentDescription{};
+            colorAttachmentDescription.format = swapchain.image_format;
+            colorAttachmentDescription.samples = settings.msaaSamples;
+            colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            colorAttachmentDescription.finalLayout = settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            VkAttachmentDescription depthAttachmentDescription{};
+            depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
+            depthAttachmentDescription.samples = settings.msaaSamples;
+            depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            VkAttachmentDescription colorResolveAttachmentDescription{};
+            colorResolveAttachmentDescription.format = swapchain.image_format;
+            colorResolveAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+            colorResolveAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            colorResolveAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorResolveAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorResolveAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorResolveAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            colorResolveAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            VkAttachmentReference colorAttachmentReference{};
+            colorAttachmentReference.attachment = 0;
+            colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            VkAttachmentReference depthAttachmentReference{};
+            depthAttachmentReference.attachment = 1;
+            depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            VkAttachmentReference colorResolveAttachmentReference{};
+            colorResolveAttachmentReference.attachment = 2;
+            colorResolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            VkSubpassDescription subpassDescription{};
+            subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpassDescription.colorAttachmentCount = 1;
+            subpassDescription.pColorAttachments = &colorAttachmentReference;
+            subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+            subpassDescription.pResolveAttachments = settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? nullptr : &colorResolveAttachmentReference;
+            VkSubpassDependency subpassDependency{};
+            subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+            subpassDependency.dstSubpass = 0;
+            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+            subpassDependency.srcAccessMask = 0;
+            subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+            subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            std::vector<VkAttachmentDescription> attachmentDescriptions{};
+            if (settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription, colorResolveAttachmentDescription}; } else { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription}; }
+            VkRenderPassCreateInfo renderPassCreateInfo{};
+            renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+            renderPassCreateInfo.attachmentCount = attachmentDescriptions.size();
+            renderPassCreateInfo.pAttachments = attachmentDescriptions.data();
+            renderPassCreateInfo.subpassCount = 1;
+            renderPassCreateInfo.pSubpasses = &subpassDescription;
+            renderPassCreateInfo.dependencyCount = 1;
+            renderPassCreateInfo.pDependencies = &subpassDependency;
+            if (vkCreateRenderPass(device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
+            oneTimeOptionalDeletionQueue.emplace_front([&]{ vkDestroyRenderPass(device.device, renderPass, nullptr); });
         }
+        //recreate framebuffers
+        framebuffers.resize(swapchain.image_count);
+        std::vector<VkImageView> framebufferAttachments{};
+        for (unsigned int i = 0; i < framebuffers.size(); i++) {
+            if (settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT) { framebufferAttachments = {swapchainImageViews[i], depthImage.view}; }
+            else { framebufferAttachments = {colorImage.view, depthImage.view, swapchainImageViews[i]}; }
+            VkFramebufferCreateInfo framebufferCreateInfo{};
+            framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferCreateInfo.renderPass = renderPass;
+            framebufferCreateInfo.attachmentCount = framebufferAttachments.size();
+            framebufferCreateInfo.pAttachments = framebufferAttachments.data();
+            framebufferCreateInfo.width = swapchain.extent.width;
+            framebufferCreateInfo.height = swapchain.extent.height;
+            framebufferCreateInfo.layers = 1;
+            if (vkCreateFramebuffer(device.device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
+        }
+        recreationDeletionQueue.emplace_front([&]{ for  (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(device.device, framebuffer, nullptr); } });
     }
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
@@ -550,7 +538,9 @@ private:
     VkSurfaceKHR surface{};
     VkDescriptorSetLayout descriptorSetLayout{};
     VkPipelineLayout pipelineLayout{};
+    VkRenderPass renderPass{};
     std::vector<VkCommandBuffer> commandBuffers{};
+    std::vector<VkFramebuffer> framebuffers{};
     std::vector<VkImageView> swapchainImageViews{};
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};

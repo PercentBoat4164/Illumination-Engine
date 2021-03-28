@@ -30,10 +30,10 @@ int main(int argc, char **argv) {
         try {
             VulkanRenderEngine renderEngine = VulkanRenderEngine();
 //            glfwSetKeyCallback(renderEngine.window, keyCallback);
-            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
+            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {0, 0, 0});
             renderEngine.uploadAsset(&vikingRoom);
-//            Asset ancientStatue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
-//            renderEngine.uploadAsset(&ancientStatue);
+            Asset ancientStatue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {0, 0, 0});
+            renderEngine.uploadAsset(&ancientStatue);
             while (renderEngine.update()) {
                 glfwPollEvents();
                 static auto startTime = std::chrono::high_resolution_clock::now();
@@ -42,7 +42,12 @@ int main(int argc, char **argv) {
                 vikingRoom.rotation = {sin(time), sin(time), sin(time)};
                 vikingRoom.position = {sin(time), sin(time), sin(time)};
                 vikingRoom.scale = {sin(time), sin(time), sin(time)};
+                ancientStatue.rotation = {sin(time), sin(time), sin(time)};
+                ancientStatue.position = {sin(time), sin(time), sin(time)};
+                ancientStatue.scale = {sin(time), sin(time), sin(time)};
             }
+            vikingRoom.destroy();
+            ancientStatue.destroy();
             renderEngine.cleanUp();
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
