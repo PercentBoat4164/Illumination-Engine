@@ -16,7 +16,6 @@
 #define GLSLC "glslc "
 #endif
 
-
 class Asset {
 
 public:
