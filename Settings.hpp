@@ -22,7 +22,7 @@ struct Settings {
 public:
     std::vector<const char *> validationLayers{"VK_LAYER_KHRONOS_validation"};
     std::vector<const char *> requestedExtensions{"VK_KHR_swapchain"};
-    std::string applicationName = "RenderEngine";
+    std::string applicationName = "Crystal Engine";
     std::array<int, 3> applicationVersion = {0, 0, 1};
     std::array<int, 2> requiredVulkanVersion = {1, 2};
     VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_8_BIT;

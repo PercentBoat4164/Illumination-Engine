@@ -8,6 +8,15 @@
 
 #include <vk-bootstrap/src/VkBootstrap.h>
 
+/*
+ * Priorities:
+ *  - Reload options
+ *  - Implement Camera
+ *  - Double check that updateSettings works
+ *  - Multithreading
+ *  - Shadows
+ */
+
 class VulkanRenderEngine {
 public:
     explicit VulkanRenderEngine(Settings &initialSettings = *new Settings{}, GLFWwindow *attachWindow = nullptr) {
@@ -27,6 +36,7 @@ public:
     }
 
     bool update() {
+        //TODO: Add multithreading support throughout the engine
         if (assets.empty()) { return glfwWindowShouldClose(window) != 1; }
         vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         uint32_t imageIndex = 0;
@@ -75,6 +85,7 @@ public:
         AllocatedBuffer indexBuffer{};
         vertexBuffer.linkedRenderEngine = renderEngineLink;
         indexBuffer.linkedRenderEngine = renderEngineLink;
+        //TODO: Only recreate the vertex and index buffers if the assets vector was updated
         for (Asset *asset : assets) {
             //update asset
             asset->update();
@@ -132,7 +143,8 @@ public:
         return glfwWindowShouldClose(window) != 1;
     }
 
-    void uploadAsset(Asset *asset) {
+    void uploadAsset(Asset *asset, bool append = true) {
+        asset->destroy();
         //upload textures
         stagingBuffer.destroy();
         memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->textures[0], asset->width * asset->height * 4);
@@ -295,8 +307,8 @@ public:
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &asset->graphicsPipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
         for (VkPipelineShaderStageCreateInfo shader : shaders) { vkDestroyShaderModule(device.device, shader.module, nullptr); }
-        asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ vkDestroyPipeline(device.device, thisAsset.graphicsPipeline, nullptr); });
-        assets.push_back(asset);
+        asset->deletionQueue.emplace_front([&](Asset thisAsset){ vkDestroyPipeline(device.device, thisAsset.graphicsPipeline, nullptr); thisAsset.graphicsPipeline = VK_NULL_HANDLE; });
+        if (append) { assets.push_back(asset); }
     }
 
     void cleanUp() {
@@ -497,6 +509,9 @@ private:
             renderPassCreateInfo.pDependencies = &subpassDependency;
             if (vkCreateRenderPass(device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
             oneTimeOptionalDeletionQueue.emplace_front([&]{ vkDestroyRenderPass(device.device, renderPass, nullptr); });
+            for (Asset *asset : assets) {
+                uploadAsset(asset, false);
+            }
         }
         //recreate framebuffers
         framebuffers.resize(swapchain.image_count);
