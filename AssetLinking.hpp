@@ -52,17 +52,25 @@ struct UniformBufferObject {
 };
 
 struct Camera {
-    //TODO: Flesh out this struct and integrate it into both render engines.
+    std::array<glm::mat4, 2> update() {
+        view = {glm::lookAt(position, subjectPosition, glm::vec3(0.0f, 0.0f, 1.0f))};
+        proj = {glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
+        proj[1][1] *= -1;
+        return {view, proj};
+    }
+
     glm::vec3 position{};
     glm::vec3 subjectPosition{};
+    std::array<int, 2> resolution{};
+    double renderDistance{10};
+    double fov{90};
+    glm::mat4 view{glm::lookAt(position, subjectPosition, glm::vec3(0.0f, 0.0f, 1.0f))};
+    glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
 };
 
 struct AllocatedBuffer {
-    std::deque<std::function<void()>> deletionQueue{};
-    RenderEngineLink linkedRenderEngine{};
     void *data{};
     VkBuffer buffer{};
-    VkDeviceMemory memory{};
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
@@ -113,15 +121,17 @@ struct AllocatedBuffer {
         vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
         linkedRenderEngine.endSingleTimeCommands(commandBuffer);
     }
+
+private:
+    std::deque<std::function<void()>> deletionQueue{};
+    RenderEngineLink linkedRenderEngine{};
+    VkDeviceMemory memory{};
 };
 
 struct AllocatedImage {
-    std::deque<std::function<void()>> deletionQueue{};
-    RenderEngineLink linkedRenderEngine{};
     VkImage image{};
     VkImageView view{};
     VkSampler sampler{};
-    VkDeviceMemory memory{};
 
     void destroy() {
         for (std::function<void()>& function : deletionQueue) { function(); }
@@ -251,19 +261,24 @@ struct AllocatedImage {
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         linkedRenderEngine.endSingleTimeCommands(commandBuffer);
     }
+
+private:
+    std::deque<std::function<void()>> deletionQueue{};
+    RenderEngineLink linkedRenderEngine{};
+    VkDeviceMemory memory{};
 };
 
 struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
+    glm::vec3 pos{};
+    glm::vec3 color{};
+    glm::vec2 texCoord{};
+    glm::vec3 normal{};
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription;
         bindingDescription.binding = 0;
         bindingDescription.stride = sizeof(Vertex);
         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
         return bindingDescription;
     }
 
@@ -281,7 +296,10 @@ struct Vertex {
         attributeDescriptions[2].location = 2;
         attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
         attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
+        attributeDescriptions[3].binding = 0;
+        attributeDescriptions[3].location = 3;
+        attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(Vertex, texCoord);
         return attributeDescriptions;
     }
 

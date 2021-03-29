@@ -20,19 +20,22 @@
 
 struct Settings {
 public:
-    std::vector<const char *> validationLayers{"VK_LAYER_KHRONOS_validation"};
-    std::vector<const char *> requestedExtensions{"VK_KHR_swapchain"};
     std::string applicationName = "Crystal Engine";
     std::array<int, 3> applicationVersion = {0, 0, 1};
     std::array<int, 2> requiredVulkanVersion = {1, 2};
     VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-    float anisotropicFilterLevel = 1;
+    GLFWmonitor *monitor{glfwGetPrimaryMonitor()};
+    std::array<int, 2> defaultMonitorResolution{2560, 1440};
+    std::array<int, 2> defaultWindowResolution{800, 600};
+    float anisotropicFilterLevel = 0;
     int mipLevels = 1;
     bool fullscreen = false;
     int refreshRate = 144;
-    std::array<int, 2> resolution = {800, 600};
+    std::array<int, 2> resolution = defaultWindowResolution;
     int MAX_FRAMES_IN_FLIGHT = 2;
     std::string absolutePath = getProgramPath().string();
+    float fov{90};
+    double renderDistance{1000};
 
 
     static std::filesystem::path getProgramPath() {
@@ -49,13 +52,6 @@ public:
         std::string path = std::string(result, (count > 0) ? count : 0);
         #endif
         return path.substr(0, path.find_last_of('\\') + 1);
-    }
-
-    void set(std::vector<const char*>& layers, std::vector<const char*>& extensions, std::string& name, std::array<int, 3>& version) {
-        for (auto& layer : layers) {validationLayers.insert(validationLayers.end(), layer);}
-        for (auto& extension : extensions) {requestedExtensions.insert(requestedExtensions.end(), extension);}
-        applicationName = name;
-        applicationVersion = version;
     }
 
     Settings findMaxSettings(VkPhysicalDevice physicalDevice) {

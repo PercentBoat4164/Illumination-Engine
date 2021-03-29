@@ -10,9 +10,6 @@
 
 /*
  * Priorities:
- *  - Reload options
- *  - Implement Camera
- *  - Double check that updateSettings works
  *  - Multithreading
  *  - Shadows
  */
@@ -27,16 +24,27 @@ public:
         initializeVulkan(attachWindow);
     }
 
+    void clearAssets() {
+        assets.clear();
+        assets.resize(0);
+    }
+
     void updateSettings(Settings newSettings, bool updateAll) {
-        if (!settings.fullscreen & newSettings.fullscreen) { glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, newSettings.resolution[0], newSettings.resolution[0], newSettings.refreshRate); }
-        else if (settings.fullscreen & !newSettings.fullscreen) { glfwSetWindowMonitor(window, nullptr, 0, 0, 800, 600, newSettings.refreshRate); }
-        else { glfwSetWindowSize(window, newSettings.resolution[0], newSettings.resolution[1]); }
+        if (!settings.fullscreen & newSettings.fullscreen) { glfwSetWindowMonitor(window, nullptr, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], newSettings.refreshRate); }
+        else if (settings.fullscreen & !newSettings.fullscreen) {
+            glfwSetWindowMonitor(window, newSettings.monitor, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], GLFW_DONT_CARE);
+            glfwSetWindowMonitor(window, nullptr, 0, 0, newSettings.defaultWindowResolution[0], newSettings.defaultWindowResolution[1], GLFW_DONT_CARE);
+        }
+        else { glfwSetWindowSize(window, settings.resolution[0], settings.resolution[0]); }
+        glfwSetWindowTitle(window, newSettings.applicationName.c_str());
         settings = newSettings;
         if (updateAll) { createSwapchain(true); }
     }
 
     bool update() {
         //TODO: Add multithreading support throughout the engine
+        //TODO: Add better documentation to this function
+        if (window == nullptr) { return false; }
         if (assets.empty()) { return glfwWindowShouldClose(window) != 1; }
         vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         uint32_t imageIndex = 0;
@@ -58,7 +66,6 @@ public:
         clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         if (settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
-        //Setup render pass to clear
         VkRenderPassBeginInfo renderPassBeginInfo{};
         renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassBeginInfo.renderArea.offset = {0, 0};
@@ -79,31 +86,20 @@ public:
         scissor.extent = swapchain.extent;
         vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
         vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
-        std::vector<Vertex> vertices{};
-        std::vector<uint32_t> indices{};
-        AllocatedBuffer vertexBuffer{};
-        AllocatedBuffer indexBuffer{};
-        vertexBuffer.linkedRenderEngine = renderEngineLink;
-        indexBuffer.linkedRenderEngine = renderEngineLink;
-        //TODO: Only recreate the vertex and index buffers if the assets vector was updated
-        for (Asset *asset : assets) {
-            //update asset
-            asset->update();
-            //update vertex and index buffers
-            asset->vertexOffset = vertices.size();
-            vertices.insert(vertices.end(), asset->vertices.begin(), asset->vertices.end());
-            indices.insert(indices.end(), asset->indices.begin(), asset->indices.end());
-        }
-        memcpy(vertexBuffer.create(sizeof(vertices[0]) * vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), vertices.data(), sizeof(vertices[0]) * vertices.size());
-        memcpy(indexBuffer.create(sizeof(indices[0]) * indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), indices.data(), sizeof(indices[0]) * indices.size());
-        //record command buffers
+        camera.update();
+        //record command buffer
         vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindVertexBuffers(commandBuffers[imageIndex], 0, 1, &vertexBuffer.buffer, offsets);
-        vkCmdBindIndexBuffer(commandBuffers[imageIndex], indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
         for (Asset *asset : assets) {
-            vkCmdBindPipeline(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->graphicsPipeline);
-            vkCmdBindDescriptorSets(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &asset->descriptorSet, 0, nullptr);
-            vkCmdDrawIndexed(commandBuffers[imageIndex], asset->indices.size(), 1, 0, asset->vertexOffset, 0);
+            if (asset->render) {
+                //update asset
+                asset->update(camera);
+                //record command buffer for this asset
+                vkCmdBindVertexBuffers(commandBuffers[imageIndex], 0, 1, &asset->vertexBuffer.buffer, offsets);
+                vkCmdBindIndexBuffer(commandBuffers[imageIndex], asset->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+                vkCmdBindPipeline(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->graphicsPipeline);
+                vkCmdBindDescriptorSets(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &asset->descriptorSet, 0, nullptr);
+                vkCmdDrawIndexed(commandBuffers[imageIndex], asset->indices.size(), 1, 0, 0, 0);
+            }
         }
         vkCmdEndRenderPass(commandBuffers[imageIndex]);
         if (vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record command buffer!"); }
@@ -138,13 +134,17 @@ public:
             createSwapchain();
         } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
         currentFrame = (currentFrame + 1) % settings.MAX_FRAMES_IN_FLIGHT;
-        vertexBuffer.destroy();
-        indexBuffer.destroy();
         return glfwWindowShouldClose(window) != 1;
     }
 
     void uploadAsset(Asset *asset, bool append = true) {
+        //destroy previously created asset if any
         asset->destroy();
+        //upload mesh and vertex data
+        asset->vertexBuffer.setEngineLink(renderEngineLink);
+        memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
+        asset->indexBuffer.setEngineLink(renderEngineLink);
+        memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
         //upload textures
         stagingBuffer.destroy();
         memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->textures[0], asset->width * asset->height * 4);
@@ -323,6 +323,7 @@ public:
     Settings settings{};
     GLFWwindow *window{};
     std::vector<Asset *> assets{};
+    Camera camera{};
 
 private:
     void initializeVulkan(GLFWwindow *attachWindow) {
@@ -333,9 +334,14 @@ private:
         vkb::Instance vkb_inst = inst_ret.value();
         instance = inst_ret.value();
         engineDeletionQueue.emplace_front([&]{ vkb::destroy_instance(instance); });
-        if (attachWindow == nullptr) { glfwInit(); }
+        if (attachWindow == nullptr) {
+            glfwInit();
+            settings.monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode *mode = glfwGetVideoMode(settings.monitor);
+            settings.defaultMonitorResolution = {mode->width, mode->height};
+        }
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+        window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? settings.monitor : nullptr, attachWindow);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         glfwSetWindowUserPointer(window, this);
         if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS) { throw std::runtime_error("failed to create window surface!"); }
@@ -390,7 +396,6 @@ private:
     }
 
     void createSwapchain(bool fullRecreate = false) {
-        //TODO: Create an option to reload all assets to the scene with updated settings
         int width = 0, height = 0;
         glfwGetFramebufferSize(window, &width, &height);
         //Make sure no other GPU operations are on-going
@@ -530,6 +535,10 @@ private:
             if (vkCreateFramebuffer(device.device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
         }
         recreationDeletionQueue.emplace_front([&]{ for  (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(device.device, framebuffer, nullptr); } });
+        //update camera
+        camera.resolution = settings.resolution;
+        camera.fov = settings.fov;
+        camera.renderDistance = settings.renderDistance;
     }
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
