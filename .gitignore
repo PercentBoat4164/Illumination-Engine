@@ -1,6 +1,7 @@
 # Project exclude paths
 /debug-build/
 /release-build/
+/build/
 /cmake-build-debug-coverage/
 /CMakeFiles/
 /.idea/
