@@ -141,7 +141,9 @@ public:
         //destroy previously created asset if any
         asset->destroy();
         //upload mesh and vertex data
+        asset->vertexBuffer.setEngineLink(renderEngineLink);
         memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
+        asset->indexBuffer.setEngineLink(renderEngineLink);
         memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
         //upload textures
         stagingBuffer.destroy();
