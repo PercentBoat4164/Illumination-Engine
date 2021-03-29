@@ -6,6 +6,8 @@
 /.vs/
 /.vscode/
 /out/
+/sources/glew32d.dll
+/sources/vulkan-1.dll
 /sources/glfw
 /sources/glew
 /sources/glm
