@@ -128,6 +128,12 @@ public:
         presentInfo.pSwapchains = swapchains;
         presentInfo.pImageIndices = &imageIndex;
         result = vkQueuePresentKHR(device.get_queue(vkb::QueueType::present).value(), &presentInfo);
+        //update frameTime and frameNumber
+        double currentTime = glfwGetTime();
+        frameTime = currentTime - previousTime;
+        previousTime = currentTime;
+        frameNumber++;
+        //Check if window has been resized
         vkQueueWaitIdle(device.get_queue(vkb::QueueType::present).value());
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
             framebufferResized = false;
@@ -182,7 +188,7 @@ public:
         uboBufferInfo.buffer = asset->uniformBuffer.buffer;
         uboBufferInfo.offset = 0;
         uboBufferInfo.range = sizeof(UniformBufferObject);
-        //TODO: Rework descriptor set management.
+        //TODO: Rework descriptor set management?
         std::vector<VkWriteDescriptorSet> descriptorWrites{2};
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = asset->descriptorSet;
@@ -324,6 +330,8 @@ public:
     GLFWwindow *window{};
     std::vector<Asset *> assets{};
     Camera camera{};
+    unsigned long frameNumber{};
+    float frameTime{};
 
 private:
     void initializeVulkan(GLFWwindow *attachWindow) {
@@ -570,6 +578,7 @@ private:
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     std::vector<VkFence> inFlightFences{};
     std::vector<VkFence> imagesInFlight{};
-    size_t currentFrame = 0;
+    size_t currentFrame{0};
     bool framebufferResized{false};
+    double previousTime{0};
 };

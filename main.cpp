@@ -6,27 +6,15 @@
 #include "OpenGLRenderEngine.hpp"
 
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+void cursorCallback(GLFWwindow *window, double xpos, double ypos) {
     auto vulkanRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        vulkanRenderEngine->settings.resolution = vulkanRenderEngine->settings.defaultMonitorResolution;
-        vulkanRenderEngine->settings.fullscreen = true;
-        glfwSetWindowShouldClose(window, 1);
-    } else if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
-        vulkanRenderEngine->settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-        vulkanRenderEngine->updateSettings(vulkanRenderEngine->settings, true);
-    } else if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
-        vulkanRenderEngine->settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-        vulkanRenderEngine->updateSettings(vulkanRenderEngine->settings, true);
-    } else if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
-        for (Asset *asset : vulkanRenderEngine->assets) { asset->reloadAsset(); }
-        vulkanRenderEngine->updateSettings(vulkanRenderEngine->settings, false);
-    } else if (key == GLFW_KEY_F2 && action == GLFW_PRESS) {
-        Settings newSettings{};
-        newSettings = vulkanRenderEngine->settings;
-        newSettings.fullscreen = !vulkanRenderEngine->settings.fullscreen;
-        vulkanRenderEngine->updateSettings(newSettings, true);
-    }
+    xpos *= vulkanRenderEngine->camera.mouseSensitivity;
+    ypos *= vulkanRenderEngine->camera.mouseSensitivity;
+    vulkanRenderEngine->camera.yaw -= (float)xpos;
+    vulkanRenderEngine->camera.pitch -= (float)ypos;
+    if (vulkanRenderEngine->camera.pitch > 89.0f) { vulkanRenderEngine->camera.pitch = 89.0f; }
+    if (vulkanRenderEngine->camera.pitch < -89.0f) { vulkanRenderEngine->camera.pitch = -89.0f; }
+    glfwSetCursorPos(window, 0, 0);
 }
 
 int main(int argc, char **argv) {
@@ -40,20 +28,55 @@ int main(int argc, char **argv) {
     if (input == 'v') {
         try {
             VulkanRenderEngine renderEngine = VulkanRenderEngine();
-            glfwSetKeyCallback(renderEngine.window, keyCallback);
             Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
             Asset ancientStatue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
             renderEngine.uploadAsset(&ancientStatue);
-            int frameNumber{};
+            renderEngine.camera.position = {0, 0, 2};
+            double lastTab{0};
+            double lastF2{0};
             while (renderEngine.update()) {
-                frameNumber++;
+                //Process inputs
                 glfwPollEvents();
-                static auto startTime = std::chrono::high_resolution_clock::now();
-                auto currentTime = std::chrono::high_resolution_clock::now();
-                float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-                renderEngine.camera.position = {1, 1, 1};
-                renderEngine.camera.subjectPosition = {vikingRoom.position};
-                if (frameNumber == 1000) { renderEngine.uploadAsset(&vikingRoom); }
+                float velocity = renderEngine.frameTime * renderEngine.camera.movementSpeed;
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
+                    for (Asset *asset : renderEngine.assets) { asset->reloadAsset(); }
+                    renderEngine.updateSettings(renderEngine.settings, false);
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
+                    Settings newSettings{};
+                    newSettings = renderEngine.settings;
+                    newSettings.fullscreen = !renderEngine.settings.fullscreen;
+                    renderEngine.updateSettings(newSettings, true);
+                    lastF2 = glfwGetTime();
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
+                    renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+                    renderEngine.updateSettings(renderEngine.settings, true);
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
+                    renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
+                    renderEngine.updateSettings(renderEngine.settings, true);
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_W)) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_A)) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_S)) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_D)) { renderEngine.camera.position += renderEngine.camera.right * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT)) { renderEngine.camera.position -= renderEngine.camera.up * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_SPACE)) { renderEngine.camera.position += renderEngine.camera.up * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastTab > .2)) {
+                    int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
+                    if (mode == GLFW_CURSOR_DISABLED) {
+                        glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                        glfwSetCursorPosCallback(renderEngine.window, nullptr);
+                    }
+                    if (mode == GLFW_CURSOR_NORMAL) {
+                        glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                        glfwSetCursorPosCallback(renderEngine.window, cursorCallback);
+                    }
+                    lastTab = glfwGetTime();
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE)) { glfwSetWindowShouldClose(renderEngine.window, 1); }
+                if (renderEngine.frameNumber == 1000) { renderEngine.uploadAsset(&vikingRoom); }
             }
             vikingRoom.destroy();
             ancientStatue.destroy();
@@ -67,7 +90,6 @@ int main(int argc, char **argv) {
     else if (input == 'o') {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
-            glfwSetKeyCallback(renderEngine.window, keyCallback);
             while (renderEngine.update() != 1) {
                 glfwPollEvents();
             }

@@ -53,19 +53,27 @@ struct UniformBufferObject {
 
 struct Camera {
     std::array<glm::mat4, 2> update() {
-        view = {glm::lookAt(position, subjectPosition, glm::vec3(0.0f, 0.0f, 1.0f))};
+        front = glm::normalize(glm::vec3{cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch))});
+        right = glm::normalize(glm::cross(front, up));
+        view = {glm::lookAt(position, position + front, up)};
         proj = {glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
         proj[1][1] *= -1;
         return {view, proj};
     }
 
-    glm::vec3 position{};
-    glm::vec3 subjectPosition{};
+    float movementSpeed{2.5};
+    glm::vec3 position{0, 0, 2};
+    glm::vec3 front{0, 1, 0};
+    glm::vec3 up{0, 0, 1};
+    glm::vec3 right{glm::cross(front, up)};
+    float yaw{-90};
+    float pitch{};
     std::array<int, 2> resolution{};
     double renderDistance{10};
     double fov{90};
-    glm::mat4 view{glm::lookAt(position, subjectPosition, glm::vec3(0.0f, 0.0f, 1.0f))};
+    glm::mat4 view{glm::lookAt(position, position + front, glm::vec3(0.0f, 0.0f, 1.0f))};
     glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
+    double mouseSensitivity{0.1};
 };
 
 struct AllocatedBuffer {
