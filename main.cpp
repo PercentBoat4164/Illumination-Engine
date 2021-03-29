@@ -6,16 +6,15 @@
 #include "OpenGLRenderEngine.hpp"
 #include "Physics.hpp"
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    auto RenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {glfwSetWindowShouldClose(window, 1);}
-    else if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
-        RenderEngine->settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-        RenderEngine->updateSettings(RenderEngine->settings, true);
-    } else if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
-        RenderEngine->settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-        RenderEngine->updateSettings(RenderEngine->settings, true);
-    }
+void cursorCallback(GLFWwindow *window, double xpos, double ypos) {
+    auto vulkanRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
+    xpos *= vulkanRenderEngine->camera.mouseSensitivity;
+    ypos *= vulkanRenderEngine->camera.mouseSensitivity;
+    vulkanRenderEngine->camera.yaw -= (float)xpos;
+    vulkanRenderEngine->camera.pitch -= (float)ypos;
+    if (vulkanRenderEngine->camera.pitch > 89.0f) { vulkanRenderEngine->camera.pitch = 89.0f; }
+    if (vulkanRenderEngine->camera.pitch < -89.0f) { vulkanRenderEngine->camera.pitch = -89.0f; }
+    glfwSetCursorPos(window, 0, 0);
 }
 
 int main(int argc, char **argv) {
@@ -34,27 +33,55 @@ int main(int argc, char **argv) {
             float g = 0.001;
             //rendering init
             VulkanRenderEngine renderEngine = VulkanRenderEngine();
-            glfwSetKeyCallback(renderEngine.window, keyCallback);
-            Asset ancientStatue = Asset("models\\ancientStatue.obj", {"models\\ancientStatue.png"}, {"shaders\\vertexShader.vert", "shaders\\fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {0, 0, 0});
+            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
+            Asset ancientStatue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
             renderEngine.uploadAsset(&ancientStatue);
-            auto currentTime = std::chrono::high_resolution_clock::now();
+            renderEngine.camera.position = {0, 0, 2};
+            double lastTab{0};
+            double lastF2{0};
             while (renderEngine.update()) {
-
-                sphere.applyImpulse(0, 0, -g * sphere.m);
-                if(sphere.pos.z < -2) {
-                    sphere.applyImpulse(0,0, sphere.v.z * -1.91f);
-                }
-                sphere.step();
+                //Process inputs
                 glfwPollEvents();
-                static auto startTime = std::chrono::high_resolution_clock::now();
-                auto lastTime = currentTime;
-                currentTime = std::chrono::high_resolution_clock::now();
-                std::cout << "\nTime per frame" << (currentTime - lastTime);
-                float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-                ancientStatue.rotation = {0, 0, 0};
-                ancientStatue.position = {sphere.pos};
-                ancientStatue.scale = {1, 1, 1};
-
+                float velocity = renderEngine.frameTime * renderEngine.camera.movementSpeed;
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
+                    for (Asset *asset : renderEngine.assets) { asset->reloadAsset(); }
+                    renderEngine.updateSettings(renderEngine.settings, false);
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
+                    Settings newSettings{};
+                    newSettings = renderEngine.settings;
+                    newSettings.fullscreen = !renderEngine.settings.fullscreen;
+                    renderEngine.updateSettings(newSettings, true);
+                    lastF2 = glfwGetTime();
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
+                    renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+                    renderEngine.updateSettings(renderEngine.settings, true);
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
+                    renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
+                    renderEngine.updateSettings(renderEngine.settings, true);
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_W)) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_A)) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_S)) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_D)) { renderEngine.camera.position += renderEngine.camera.right * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT)) { renderEngine.camera.position -= renderEngine.camera.up * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_SPACE)) { renderEngine.camera.position += renderEngine.camera.up * velocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastTab > .2)) {
+                    int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
+                    if (mode == GLFW_CURSOR_DISABLED) {
+                        glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                        glfwSetCursorPosCallback(renderEngine.window, nullptr);
+                    }
+                    if (mode == GLFW_CURSOR_NORMAL) {
+                        glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                        glfwSetCursorPosCallback(renderEngine.window, cursorCallback);
+                    }
+                    lastTab = glfwGetTime();
+                }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE)) { glfwSetWindowShouldClose(renderEngine.window, 1); }
+                if (renderEngine.frameNumber == 1000) { renderEngine.uploadAsset(&vikingRoom); }
             }
             ancientStatue.destroy();
             renderEngine.cleanUp();
@@ -67,7 +94,6 @@ int main(int argc, char **argv) {
     else if (input == 'o') {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
-            glfwSetKeyCallback(renderEngine.window, keyCallback);
             while (renderEngine.update() != 1) {
                 glfwPollEvents();
             }

@@ -23,7 +23,7 @@ add_subdirectory(sources/glfw)
 add_subdirectory(sources/glew/build/cmake)
 add_subdirectory(sources/vk-bootstrap)
 
-set(data_SHADOW shaders models)
+set(data_SHADOW shaders models sources/glew32d.dll sources/vulkan-1.dll)
 foreach(item IN LISTS data_SHADOW)
     message("Copying '" ${item} "'")
     FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")

@@ -1,11 +1,14 @@
 # Project exclude paths
-/build/
+/debug-build/
+/release-build/
 /cmake-build-debug-coverage/
 /CMakeFiles/
 /.idea/
 /.vs/
 /.vscode/
 /out/
+/sources/glew32d.dll
+/sources/vulkan-1.dll
 /sources/glfw
 /sources/glew
 /sources/glm
