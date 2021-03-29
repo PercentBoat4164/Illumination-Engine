@@ -2,6 +2,7 @@
 /debug-build/
 /release-build/
 /cmake-build-debug-coverage/
+/build/
 /CMakeFiles/
 /.idea/
 /.vs/
