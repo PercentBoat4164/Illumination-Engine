@@ -7,6 +7,7 @@
 /.vs/
 /.vscode/
 /out/
+/sources/json.hpp
 /sources/glew32d.dll
 /sources/vulkan-1.dll
 /sources/glfw

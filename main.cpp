@@ -28,10 +28,9 @@ int main(int argc, char **argv) {
     if (input == 'v') {
         try {
             VulkanRenderEngine renderEngine = VulkanRenderEngine();
-            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
-            Asset ancientStatue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
-            renderEngine.uploadAsset(&ancientStatue);
             renderEngine.camera.position = {0, 0, 2};
+            Asset ball = Asset("models/sphere.obj", {"models/sphere_diffuse.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
+            renderEngine.uploadAsset(&ball);
             double lastTab{0};
             double lastF2{0};
             while (renderEngine.update()) {
@@ -76,10 +75,8 @@ int main(int argc, char **argv) {
                     lastTab = glfwGetTime();
                 }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE)) { glfwSetWindowShouldClose(renderEngine.window, 1); }
-                if (renderEngine.frameNumber == 1000) { renderEngine.uploadAsset(&vikingRoom); }
             }
-            vikingRoom.destroy();
-            ancientStatue.destroy();
+            ball.destroy();
             renderEngine.cleanUp();
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;

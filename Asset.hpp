@@ -75,7 +75,6 @@ public:
     glm::vec3 position{};
     glm::vec3 rotation{};
     glm::vec3 scale{};
-    unsigned long vertexOffset{};
     bool render{true};
 
 private:
@@ -108,7 +107,7 @@ private:
 
     void loadTextures(const std::vector<const char *>& filenames) {
         textures.clear();
-        textures.resize(0);
+        textures.reserve(filenames.size());
         for (const char *filename : filenames) {
             int channels{};
             stbi_uc *pixels = stbi_load((absolutePath + (std::string)filename).c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -119,7 +118,7 @@ private:
 
     void loadShaders(const std::vector<const char *>& filenames, bool compile = true) {
         shaderData.clear();
-        shaderData.resize(0);
+        shaderData.reserve(filenames.size());
         for (const char *shaderName : shaderNames) {
             std::string compiledFileName = ((std::string) shaderName).substr(0, sizeof(shaderName) - 4) + "spv";
             if (compile) { system((GLSLC + absolutePath + shaderName + " -o " + absolutePath + compiledFileName).c_str()); }
@@ -134,8 +133,8 @@ private:
         }
     }
 
-    std::string absolutePath{};
     std::vector<const char *> shaderNames{};
     std::vector<const char *> textureNames{};
+    std::string absolutePath{};
     const char *modelName{};
 };
