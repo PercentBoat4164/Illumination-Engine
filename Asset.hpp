@@ -33,7 +33,7 @@ public:
         loadShaders(shaderFileNames);
     }
 
-    void reloadAsset(const char *modelFileName = nullptr, const std::vector<const char *>* textureFileNames = nullptr, const std::vector<const char *>* shaderFileNames = nullptr) {
+    void reloadAsset(const char *modelFileName = nullptr, const std::vector<const char *> *textureFileNames = nullptr, const std::vector<const char *> *shaderFileNames = nullptr) {
         if (modelFileName != nullptr) { modelName = modelFileName; }
         if (textureFileNames != nullptr) { textureNames = *textureFileNames; }
         if (shaderFileNames != nullptr) { shaderNames = *shaderFileNames; }
@@ -121,7 +121,7 @@ private:
         shaderData.reserve(filenames.size());
         for (const char *shaderName : shaderNames) {
             std::string compiledFileName = ((std::string) shaderName).substr(0, sizeof(shaderName) - 4) + "spv";
-            if (compile) { system((GLSLC + absolutePath + shaderName + " -o " + absolutePath + compiledFileName).c_str()); }
+            if (compile) { if (system((GLSLC + absolutePath + shaderName + " -o " + absolutePath + compiledFileName).c_str()) != 0) { throw std::runtime_error("failed to compile shaders!"); } }
             std::ifstream file(absolutePath + compiledFileName, std::ios::ate | std::ios::binary);
             if (!file.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName.append("\n as file: " + absolutePath + compiledFileName)); }
             size_t fileSize = (size_t) file.tellg();

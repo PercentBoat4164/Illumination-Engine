@@ -13,6 +13,7 @@ public:
     explicit VulkanRenderEngine(Settings &initialSettings = *new Settings{}, GLFWwindow *attachWindow = nullptr) {
         settings = initialSettings;
         renderEngineLink.device = &device;
+        renderEngineLink.swapchain = &swapchain;
         renderEngineLink.settings = &settings;
         renderEngineLink.commandPool = &commandPool;
         renderEngineLink.allocator = &allocator;
@@ -91,8 +92,8 @@ public:
                 //record command buffer for this asset
                 vkCmdBindVertexBuffers(commandBuffers[imageIndex], 0, 1, &asset->vertexBuffer.buffer, offsets);
                 vkCmdBindIndexBuffer(commandBuffers[imageIndex], asset->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-                vkCmdBindPipeline(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->graphicsPipeline);
                 vkCmdBindDescriptorSets(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &asset->descriptorSet, 0, nullptr);
+                vkCmdBindPipeline(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->graphicsPipeline);
                 vkCmdDrawIndexed(commandBuffers[imageIndex], asset->indices.size(), 1, 0, 0, 0);
             }
         }
@@ -112,7 +113,7 @@ public:
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
         vkResetFences(device.device, 1, &inFlightFences[currentFrame]);
-        if (vkQueueSubmit(device.get_queue(vkb::QueueType::graphics).value(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command buffer!"); }
+        if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command buffer!"); }
         //Present
         VkSwapchainKHR swapchains[] = {swapchain.swapchain};
         VkPresentInfoKHR presentInfo{};
@@ -122,14 +123,14 @@ public:
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapchains;
         presentInfo.pImageIndices = &imageIndex;
-        result = vkQueuePresentKHR(device.get_queue(vkb::QueueType::present).value(), &presentInfo);
+        result = vkQueuePresentKHR(presentQueue, &presentInfo);
         //update frameTime and frameNumber
         auto currentTime = (float)glfwGetTime();
         frameTime = currentTime - previousTime;
         previousTime = currentTime;
         frameNumber++;
         //Check if window has been resized
-        vkQueueWaitIdle(device.get_queue(vkb::QueueType::present).value());
+        vkQueueWaitIdle(presentQueue);
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
             framebufferResized = false;
             createSwapchain();
@@ -149,7 +150,6 @@ public:
         //upload textures
         stagingBuffer.destroy();
         memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->textures[0], asset->width * asset->height * 4);
-        asset->textureImages.resize(1);
         asset->textureImages[0].setEngineLink(renderEngineLink);
         asset->textureImages[0].create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, asset->width, asset->height, false, true, &stagingBuffer);
         //prepare data for shader
@@ -360,6 +360,8 @@ private:
         if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
         device = dev_ret.value();
         engineDeletionQueue.emplace_front([&]{ vkb::destroy_device(device); });
+        graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
+        presentQueue = device.get_queue(vkb::QueueType::present).value();
         //create vma allocator
         VmaAllocatorCreateInfo allocatorInfo{};
         allocatorInfo.physicalDevice = device.physical_device.physical_device;
@@ -574,6 +576,8 @@ private:
     VkDescriptorSetLayout descriptorSetLayout{};
     VkPipelineLayout pipelineLayout{};
     VkRenderPass renderPass{};
+    VkQueue presentQueue{};
+    VkQueue graphicsQueue{};
     std::vector<VkCommandBuffer> commandBuffers{};
     std::vector<VkFramebuffer> framebuffers{};
     std::vector<VkImageView> swapchainImageViews{};

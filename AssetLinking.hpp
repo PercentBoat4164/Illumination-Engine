@@ -19,6 +19,7 @@
 struct RenderEngineLink {
     Settings *settings = nullptr;
     vkb::Device *device;
+    vkb::Swapchain *swapchain;
     VkCommandPool *commandPool;
     VmaAllocator *allocator;
 
@@ -29,7 +30,7 @@ struct RenderEngineLink {
         allocInfo.commandPool = *commandPool;
         allocInfo.commandBufferCount = 1;
         VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers((*device).device, &allocInfo, &commandBuffer);
+        vkAllocateCommandBuffers(device->device, &allocInfo, &commandBuffer);
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -43,9 +44,9 @@ struct RenderEngineLink {
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
-        vkQueueSubmit((*device).get_queue(vkb::QueueType::graphics).value(), 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle((*device).get_queue(vkb::QueueType::graphics).value());
-        vkFreeCommandBuffers((*device).device, *commandPool, 1, &commandBuffer);
+        vkQueueSubmit(device->get_queue(vkb::QueueType::graphics).value(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(device->get_queue(vkb::QueueType::graphics).value());
+        vkFreeCommandBuffers(device->device, *commandPool, 1, &commandBuffer);
     }
 };
 
@@ -70,13 +71,14 @@ struct Camera {
     double renderDistance{10};
     double fov{90};
     glm::mat4 view{glm::lookAt(position, position + front, glm::vec3(0.0f, 0.0f, 1.0f))};
-    glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.0001, renderDistance)};
+    glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
     double mouseSensitivity{0.1};
 };
 
 struct AllocatedBuffer {
     void *data{};
     VkBuffer buffer{};
+    VkDeviceSize bufferSize{};
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
@@ -89,6 +91,7 @@ struct AllocatedBuffer {
     }
 
     void *create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage) {
+        bufferSize = size;
         VkBufferCreateInfo bufferCreateInfo{};
         bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bufferCreateInfo.size = size;
@@ -167,8 +170,8 @@ struct AllocatedImage {
         imageViewCreateInfo.subresourceRange.levelCount = 1;
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         imageViewCreateInfo.subresourceRange.layerCount = 1;
-        if (vkCreateImageView((*linkedRenderEngine.device).device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView((*linkedRenderEngine.device).device, view, nullptr); view = VK_NULL_HANDLE; });
+        if (vkCreateImageView(linkedRenderEngine.device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
+        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine.device->device, view, nullptr); view = VK_NULL_HANDLE; });
         if (dataSource != nullptr) {
             transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             dataSource->toImage(image, width, height);
@@ -180,7 +183,7 @@ struct AllocatedImage {
                 samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
                 samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
                 samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.anisotropyEnable = (*linkedRenderEngine.settings).anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
+                samplerInfo.anisotropyEnable = linkedRenderEngine.settings->anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
                 samplerInfo.maxAnisotropy = linkedRenderEngine.settings->anisotropicFilterLevel;
                 samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
                 samplerInfo.unnormalizedCoordinates = VK_FALSE;
@@ -190,8 +193,8 @@ struct AllocatedImage {
                 samplerInfo.mipLodBias = 0.0f;
                 samplerInfo.minLod = 0.0f;
                 samplerInfo.maxLod = 0.0f;
-                if (vkCreateSampler((*linkedRenderEngine.device).device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
-                deletionQueue.emplace_front([&] { vkDestroySampler((*linkedRenderEngine.device).device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
+                if (vkCreateSampler(linkedRenderEngine.device->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
+                deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine.device->device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
                 transition(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             }
         }
@@ -264,30 +267,85 @@ struct UniformBufferObject {
 struct DescriptorSetManager {
     VkDescriptorSetLayout descriptorSetLayout{};
     VkDescriptorPool descriptorPool{};
-    VkDescriptorSet imagesDescriptorSet{};
-    VkDescriptorSet cameraDescriptorSet{};
-    VkDescriptorSet sceneDataDescriptorSet{};
 
-    AllocatedBuffer lightsBuffer{};
-    AllocatedBuffer uniformBuffer{};
-    AllocatedImage albedo{};
-    AllocatedImage merh{};
-    AllocatedImage normal{};
-
-    RenderEngineLink linkedRenderEngine{};
-
-    void createDescriptorPool() {
-        VkDescriptorPoolSize uboDescriptorPoolSize{};
-        uboDescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    DescriptorSetManager(const std::vector<VkDescriptorType>& setupDescriptorTypes, const std::vector<VkShaderStageFlagBits>& setupShaderFlags, uint32_t setupSwapchainImageCount, VkDevice device) {
+        if (descriptorTypes.size() != setupShaderFlags.size()) { throw std::runtime_error("number of descriptor types does not equal number of shader flags!"); }
+        swapchainImageCount = setupSwapchainImageCount;
+        descriptorTypes = setupDescriptorTypes;
+        creationDevice = device;
+        descriptorSetLayoutBindings.reserve(setupDescriptorTypes.size());
+        descriptorPoolSizes.reserve(setupDescriptorTypes.size());
+        VkDescriptorSetLayoutBinding descriptorSetLayoutBinding{};
+        descriptorSetLayoutBinding.descriptorCount = 1;
+        VkDescriptorPoolSize descriptorPoolSize{};
+        descriptorPoolSize.descriptorCount = swapchainImageCount;
+        for (unsigned int i = 0; i > setupDescriptorTypes.size(); i++) {
+            descriptorSetLayoutBinding.descriptorType = setupDescriptorTypes[i];
+            descriptorSetLayoutBinding.stageFlags = setupShaderFlags[i];
+            descriptorSetLayoutBinding.binding = i;
+            descriptorSetLayoutBindings.push_back(descriptorSetLayoutBinding);
+            descriptorPoolSize.type = setupDescriptorTypes[i];
+            descriptorPoolSizes.push_back(descriptorPoolSize);
+        }
+        VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
+        descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptorSetLayoutCreateInfo.bindingCount = descriptorSetLayoutBindings.size();
+        descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
+        if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor set layout!"); }
+        deletionQueue.emplace_front([&]{ vkDestroyDescriptorSetLayout(creationDevice, descriptorSetLayout, nullptr); descriptorSetLayout = VK_NULL_HANDLE; });
+        VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
+        descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        descriptorPoolCreateInfo.poolSizeCount = descriptorPoolSizes.size();
+        descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
+        descriptorPoolCreateInfo.maxSets = swapchainImageCount;
+        if (vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); };
+        deletionQueue.emplace_front([&]{ vkDestroyDescriptorPool(device, descriptorPool, nullptr); descriptorPool = VK_NULL_HANDLE; });
     }
 
-    void allocatedDescriptorSets() {
-
+    VkDescriptorSet createDescriptorSet(const std::vector<AllocatedBuffer>& buffers, const std::vector<AllocatedImage>& images, const std::vector<bool>& indices) {
+        if (buffers.size() + images.size() != indices.size()) { throw std::runtime_error("number of indices does not equal number of images plus number of buffers!"); }
+        VkDescriptorSet descriptorSet{};
+        int bufferCounter{}, imageCounter{};
+        std::vector<VkWriteDescriptorSet> descriptorWrites{indices.size()};
+        for (int i = 0; i > indices.size(); i++) {
+            descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[i].dstSet = descriptorSet;
+            descriptorWrites[i].dstBinding = i;
+            descriptorWrites[i].dstArrayElement = 0;
+            descriptorWrites[i].descriptorType = descriptorTypes[i];
+            descriptorWrites[i].descriptorCount = 1;
+            if (indices[i]) {
+                VkDescriptorBufferInfo descriptorBufferInfo{};
+                descriptorBufferInfo.buffer = buffers[bufferCounter].buffer;
+                descriptorBufferInfo.offset = 0;
+                descriptorBufferInfo.range = buffers[bufferCounter].bufferSize;
+                descriptorWrites[i].pBufferInfo = &descriptorBufferInfo;
+                bufferCounter++;
+            } else {
+                VkDescriptorImageInfo descriptorImageInfo{};
+                descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                descriptorImageInfo.sampler = images[imageCounter].sampler;
+                descriptorImageInfo.imageView = images[imageCounter].view;
+                descriptorWrites[i].pImageInfo = &descriptorImageInfo;
+                imageCounter++;
+            }
+        }
+        vkUpdateDescriptorSets(creationDevice, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+        return descriptorSet;
     }
 
-    void updateDescriptorSets() {
-
+    void destroy() {
+        for (std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
     }
+
+private:
+    std::deque<std::function<void()>> deletionQueue{};
+    std::vector<VkDescriptorType> descriptorTypes{};
+    std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings{};
+    std::vector<VkDescriptorPoolSize> descriptorPoolSizes{};
+    VkDevice creationDevice{};
+    uint32_t swapchainImageCount{};
 };
 
 struct Vertex {
