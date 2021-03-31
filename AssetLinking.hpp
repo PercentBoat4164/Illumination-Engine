@@ -20,10 +20,14 @@
 #define GLSLC "glslc "
 #endif
 
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
+
 struct RenderEngineLink {
     Settings *settings = nullptr;
     vkb::Device *device;
     VkCommandPool *commandPool;
+    VmaAllocator *allocator;
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
         VkCommandBufferAllocateInfo allocInfo{};
@@ -79,13 +83,14 @@ struct Camera {
     double renderDistance{10};
     double fov{90};
     glm::mat4 view{glm::lookAt(position, position + front, glm::vec3(0.0f, 0.0f, 1.0f))};
-    glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
+    glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.0001, renderDistance)};
     double mouseSensitivity{0.1};
 };
 
 struct AllocatedBuffer {
     void *data{};
     VkBuffer buffer{};
+    VmaAllocation allocation{};
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
@@ -97,29 +102,19 @@ struct AllocatedBuffer {
         linkedRenderEngine = renderEngineLink;
     }
 
-    void *create(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
-        VkBufferCreateInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        if (vkCreateBuffer((*linkedRenderEngine.device).device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
-        VkMemoryRequirements memoryRequirements;
-        vkGetBufferMemoryRequirements((*linkedRenderEngine.device).device, buffer, &memoryRequirements);
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memoryRequirements.size;
-        VkPhysicalDeviceMemoryProperties memoryProperties{};
-        vkGetPhysicalDeviceMemoryProperties((*linkedRenderEngine.device).physical_device.physical_device, &memoryProperties);
-        for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {if ((memoryRequirements.memoryTypeBits & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) { allocInfo.memoryTypeIndex = i; break;}}
-        if (vkAllocateMemory((*linkedRenderEngine.device).device, &allocInfo, nullptr, &memory) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer memory!"); }
-        vkBindBufferMemory((*linkedRenderEngine.device).device, buffer, memory, 0);
-        vkMapMemory((*linkedRenderEngine.device).device, memory, 0, size, 0, &data);
-        deletionQueue.emplace_front([&]{ vkFreeMemory((*linkedRenderEngine.device).device, memory, nullptr); memory = VK_NULL_HANDLE; });
-        vkUnmapMemory((*linkedRenderEngine.device).device, memory);
-        deletionQueue.emplace_front([&]{ vkDestroyBuffer((*linkedRenderEngine.device).device, buffer, nullptr); buffer = VK_NULL_HANDLE; });
+    void *create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage) {
+        VkBufferCreateInfo bufferCreateInfo{};
+        bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferCreateInfo.size = size;
+        bufferCreateInfo.usage = usage;
+        VmaAllocationCreateInfo allocationCreateInfo{};
+        allocationCreateInfo.usage = allocationUsage;
+        if (vmaCreateBuffer(*linkedRenderEngine.allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer"); }
+        deletionQueue.emplace_front([&]{ vmaDestroyBuffer(*linkedRenderEngine.allocator, buffer, allocation); });
+        vmaMapMemory(*linkedRenderEngine.allocator, allocation, &data);
+        deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine.allocator, allocation); });
         return data;
-    };
+    }
 
     void toImage(VkImage image, uint32_t width, uint32_t height) const {
         VkBufferImageCopy region{};
@@ -140,13 +135,13 @@ struct AllocatedBuffer {
 private:
     std::deque<std::function<void()>> deletionQueue{};
     RenderEngineLink linkedRenderEngine{};
-    VkDeviceMemory memory{};
 };
 
 struct AllocatedImage {
     VkImage image{};
     VkImageView view{};
     VkSampler sampler{};
+    VmaAllocation allocation{};
 
     void destroy() {
         for (std::function<void()>& function : deletionQueue) { function(); }
@@ -157,7 +152,7 @@ struct AllocatedImage {
         linkedRenderEngine = renderEngineLink;
     }
 
-    void create(VkFormat format, VkImageTiling tiling, VkMemoryPropertyFlagBits properties, VkSampleCountFlagBits msaaSamples, int usage, int mipLevels, int width, int height, bool depth, bool asTexture, AllocatedBuffer *dataSource = nullptr) {
+    void create(VkFormat format, VkImageTiling tiling, VkSampleCountFlagBits msaaSamples, VkImageUsageFlags usage, VmaMemoryUsage allocationUsage, int mipLevels, int width, int height, bool depth, bool asTexture, AllocatedBuffer *dataSource = nullptr) {
         VkImageCreateInfo imageCreateInfo{};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -172,19 +167,10 @@ struct AllocatedImage {
         imageCreateInfo.usage = usage;
         imageCreateInfo.samples = msaaSamples;
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        if (vkCreateImage((*linkedRenderEngine.device).device, &imageCreateInfo, nullptr, &image) != VK_SUCCESS) { throw std::runtime_error("failed to create image!"); }
-        deletionQueue.emplace_front([&]{ vkDestroyImage((*linkedRenderEngine.device).device, image, nullptr); image = VK_NULL_HANDLE; });
-        VkMemoryRequirements memoryRequirements{};
-        vkGetImageMemoryRequirements((*linkedRenderEngine.device).device, image, &memoryRequirements);
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memoryRequirements.size;
-        VkPhysicalDeviceMemoryProperties memoryProperties{};
-        vkGetPhysicalDeviceMemoryProperties((*linkedRenderEngine.device).physical_device.physical_device, &memoryProperties);
-        for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {if ((memoryRequirements.memoryTypeBits & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) { allocInfo.memoryTypeIndex = i; break;}}
-        if (vkAllocateMemory((*linkedRenderEngine.device).device, &allocInfo, nullptr, &memory) != VK_SUCCESS) { throw std::runtime_error("failed to create image memory!"); }
-        vkBindImageMemory((*linkedRenderEngine.device).device, image, memory, 0);
-        deletionQueue.emplace_front([&]{ vkFreeMemory((*linkedRenderEngine.device).device, memory, nullptr); memory = VK_NULL_HANDLE; });
+        VmaAllocationCreateInfo allocationCreateInfo{};
+        allocationCreateInfo.usage = allocationUsage;
+        vmaCreateImage(*linkedRenderEngine.allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
+        deletionQueue.emplace_front([&]{ vmaDestroyImage(*linkedRenderEngine.allocator, image, allocation); });
         VkImageViewCreateInfo imageViewCreateInfo{};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.image = image;
@@ -280,7 +266,6 @@ struct AllocatedImage {
 private:
     std::deque<std::function<void()>> deletionQueue{};
     RenderEngineLink linkedRenderEngine{};
-    VkDeviceMemory memory{};
 };
 
 struct Vertex {

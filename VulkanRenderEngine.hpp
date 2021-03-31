@@ -21,6 +21,7 @@ public:
         renderEngineLink.device = &device;
         renderEngineLink.settings = &settings;
         renderEngineLink.commandPool = &commandPool;
+        renderEngineLink.allocator = &allocator;
         initializeVulkan(attachWindow);
     }
 
@@ -129,7 +130,7 @@ public:
         presentInfo.pImageIndices = &imageIndex;
         result = vkQueuePresentKHR(device.get_queue(vkb::QueueType::present).value(), &presentInfo);
         //update frameTime and frameNumber
-        double currentTime = glfwGetTime();
+        auto currentTime = (float)glfwGetTime();
         frameTime = currentTime - previousTime;
         previousTime = currentTime;
         frameNumber++;
@@ -148,19 +149,19 @@ public:
         asset->destroy();
         //upload mesh and vertex data
         asset->vertexBuffer.setEngineLink(renderEngineLink);
-        memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
+        memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
         asset->indexBuffer.setEngineLink(renderEngineLink);
-        memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
+        memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
         //upload textures
         stagingBuffer.destroy();
-        memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), asset->textures[0], asset->width * asset->height * 4);
+        memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->textures[0], asset->width * asset->height * 4);
         asset->textureImages.resize(1);
         asset->textureImages[0].setEngineLink(renderEngineLink);
-        asset->textureImages[0].create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 1, asset->width, asset->height, false, true, &stagingBuffer);
+        asset->textureImages[0].create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, asset->width, asset->height, false, true, &stagingBuffer);
         //prepare data for shader
         //build uniform buffers
         asset->uniformBuffer.setEngineLink(renderEngineLink);
-        memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), &asset->uniformBufferObject, sizeof(UniformBufferObject));
+        memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->uniformBufferObject, sizeof(UniformBufferObject));
         //build descriptor sets
         VkDescriptorPoolSize uboDescriptorPoolSize{};
         uboDescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -365,6 +366,13 @@ private:
         if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
         device = dev_ret.value();
         engineDeletionQueue.emplace_front([&]{ vkb::destroy_device(device); });
+        //create vma allocator
+        VmaAllocatorCreateInfo allocatorInfo{};
+        allocatorInfo.physicalDevice = device.physical_device.physical_device;
+        allocatorInfo.device = device.device;
+        allocatorInfo.instance = instance.instance;
+        vmaCreateAllocator(&allocatorInfo, &allocator);
+        engineDeletionQueue.emplace_front([&]{ vmaDestroyAllocator(allocator); });
         //Create commandPool
         VkCommandPoolCreateInfo commandPoolCreateInfo{};
         commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -422,10 +430,10 @@ private:
         recreationDeletionQueue.emplace_front([&]{ swapchain.destroy_image_views(swapchainImageViews); });
         //Create output images
         colorImage.setEngineLink(renderEngineLink);
-        colorImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, settings.msaaSamples, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 1, swapchain.extent.width, swapchain.extent.height, false, false);
+        colorImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, settings.msaaSamples, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, swapchain.extent.width, swapchain.extent.height, false, false);
         recreationDeletionQueue.emplace_front([&]{ colorImage.destroy(); });
         depthImage.setEngineLink(renderEngineLink);
-        depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, settings.msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 1, swapchain.extent.width, swapchain.extent.height, true, false);
+        depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, settings.msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, swapchain.extent.width, swapchain.extent.height, true, false);
         depthImage.transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
         recreationDeletionQueue.emplace_front([&]{ depthImage.destroy(); });
         //clear images marked as in flight
@@ -562,6 +570,7 @@ private:
     vkb::Device device{};
     vkb::Instance instance{};
     vkb::Swapchain swapchain{};
+    VmaAllocator allocator{};
     RenderEngineLink renderEngineLink{};
     AllocatedBuffer stagingBuffer{};
     AllocatedImage colorImage{};
@@ -580,5 +589,5 @@ private:
     std::vector<VkFence> imagesInFlight{};
     size_t currentFrame{0};
     bool framebufferResized{false};
-    double previousTime{0};
+    float previousTime{0};
 };
