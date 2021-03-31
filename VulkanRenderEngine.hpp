@@ -180,7 +180,7 @@ public:
         VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
         vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         VkVertexInputBindingDescription bindingDescription = Vertex::getBindingDescription();
-        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = Vertex::getAttributeDescriptions();
+        std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = Vertex::getAttributeDescriptions();
         vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
         vertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
         vertexInputStateCreateInfo.pVertexBindingDescriptions = &bindingDescription;
