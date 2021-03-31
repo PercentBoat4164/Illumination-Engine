@@ -76,7 +76,6 @@ int main(int argc, char **argv) {
                 }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE)) { glfwSetWindowShouldClose(renderEngine.window, 1); }
             }
-            ancientStatue.destroy();
             renderEngine.cleanUp();
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;

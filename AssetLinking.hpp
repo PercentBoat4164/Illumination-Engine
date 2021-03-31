@@ -16,12 +16,23 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
+enum ImageType {
+    DEPTH = 0,
+    COLOR = 1,
+    TEXTURE = 2
+};
+
+enum DescriptorAttachmentType {
+    BUFFER = 0,
+    IMAGE = 1
+};
+
 struct RenderEngineLink {
     Settings *settings = nullptr;
-    vkb::Device *device;
-    vkb::Swapchain *swapchain;
-    VkCommandPool *commandPool;
-    VmaAllocator *allocator;
+    vkb::Device *device{};
+    vkb::Swapchain *swapchain{};
+    VkCommandPool *commandPool{};
+    VmaAllocator *allocator{};
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
         VkCommandBufferAllocateInfo allocInfo{};
@@ -55,7 +66,7 @@ struct Camera {
         front = glm::normalize(glm::vec3{cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch))});
         right = glm::normalize(glm::cross(front, up));
         view = {glm::lookAt(position, position + front, up)};
-        proj = {glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.0001, renderDistance)};
+        proj = {glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.01, renderDistance)};
         proj[1][1] *= -1;
         return {view, proj};
     }
@@ -71,7 +82,7 @@ struct Camera {
     double renderDistance{10};
     double fov{90};
     glm::mat4 view{glm::lookAt(position, position + front, glm::vec3(0.0f, 0.0f, 1.0f))};
-    glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
+    glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.01, renderDistance)};
     double mouseSensitivity{0.1};
 };
 
@@ -86,7 +97,7 @@ struct AllocatedBuffer {
         data = nullptr;
     }
 
-    void setEngineLink(const RenderEngineLink& renderEngineLink) {
+    void setEngineLink(RenderEngineLink *renderEngineLink) {
         linkedRenderEngine = renderEngineLink;
     }
 
@@ -98,10 +109,10 @@ struct AllocatedBuffer {
         bufferCreateInfo.usage = usage;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = allocationUsage;
-        if (vmaCreateBuffer(*linkedRenderEngine.allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer"); }
-        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine.allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
-        vmaMapMemory(*linkedRenderEngine.allocator, allocation, &data);
-        deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine.allocator, allocation); });
+        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer"); }
+        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
+        vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
+        deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); });
         return data;
     }
 
@@ -116,14 +127,14 @@ struct AllocatedBuffer {
         region.imageSubresource.layerCount = 1;
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {width, height, 1};
-        VkCommandBuffer commandBuffer = linkedRenderEngine.beginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
         vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-        linkedRenderEngine.endSingleTimeCommands(commandBuffer);
+        linkedRenderEngine->endSingleTimeCommands(commandBuffer);
     }
 
 private:
     std::deque<std::function<void()>> deletionQueue{};
-    RenderEngineLink linkedRenderEngine{};
+    RenderEngineLink *linkedRenderEngine{};
     VmaAllocation allocation{};
 };
 
@@ -133,15 +144,19 @@ struct AllocatedImage {
     VkSampler sampler{};
 
     void destroy() {
-        for (std::function<void()>& function : deletionQueue) { function(); }
-        deletionQueue.clear();
+        vkDestroySampler(linkedRenderEngine->device->device, sampler, nullptr);
+        vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr);
+        if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); }
+        //TODO: Possibly get the deletionQueue working once more. OPTIONAL
+//        for (std::function<void()>& function : deletionQueue) { function(); }
+//        deletionQueue.clear();
     }
 
-    void setEngineLink(const RenderEngineLink& renderEngineLink) {
+    void setEngineLink(RenderEngineLink *renderEngineLink) {
         linkedRenderEngine = renderEngineLink;
     }
 
-    void create(VkFormat format, VkImageTiling tiling, VkSampleCountFlagBits msaaSamples, VkImageUsageFlags usage, VmaMemoryUsage allocationUsage, int mipLevels, int width, int height, bool depth, bool asTexture, AllocatedBuffer *dataSource = nullptr) {
+    void create(VkFormat format, VkImageTiling tiling, VkSampleCountFlagBits msaaSamples, VkImageUsageFlags usage, VmaMemoryUsage allocationUsage, int mipLevels, int width, int height, ImageType imageType, AllocatedBuffer *dataSource = nullptr) {
         VkImageCreateInfo imageCreateInfo{};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -158,24 +173,24 @@ struct AllocatedImage {
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = allocationUsage;
-        vmaCreateImage(*linkedRenderEngine.allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
-        deletionQueue.emplace_front([&]{ if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine.allocator, image, allocation); image = VK_NULL_HANDLE; } });
+        vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
+//        deletionQueue.emplace_front([&]{ if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); image = VK_NULL_HANDLE; } });
         VkImageViewCreateInfo imageViewCreateInfo{};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.image = image;
         imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         imageViewCreateInfo.format = format;
-        imageViewCreateInfo.subresourceRange.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        imageViewCreateInfo.subresourceRange.aspectMask = imageType == ImageType::DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
         imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
         imageViewCreateInfo.subresourceRange.levelCount = 1;
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         imageViewCreateInfo.subresourceRange.layerCount = 1;
-        if (vkCreateImageView(linkedRenderEngine.device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine.device->device, view, nullptr); view = VK_NULL_HANDLE; });
+        if (vkCreateImageView(linkedRenderEngine->device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
+//        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr); view = VK_NULL_HANDLE; });
         if (dataSource != nullptr) {
             transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             dataSource->toImage(image, width, height);
-            if (asTexture) {
+            if (imageType == ImageType::TEXTURE) {
                 VkSamplerCreateInfo samplerInfo{};
                 samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
                 samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -183,8 +198,8 @@ struct AllocatedImage {
                 samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
                 samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
                 samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.anisotropyEnable = linkedRenderEngine.settings->anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
-                samplerInfo.maxAnisotropy = linkedRenderEngine.settings->anisotropicFilterLevel;
+                samplerInfo.anisotropyEnable = linkedRenderEngine->settings->anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
+                samplerInfo.maxAnisotropy = linkedRenderEngine->settings->anisotropicFilterLevel;
                 samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
                 samplerInfo.unnormalizedCoordinates = VK_FALSE;
                 samplerInfo.compareEnable = VK_FALSE;
@@ -193,8 +208,8 @@ struct AllocatedImage {
                 samplerInfo.mipLodBias = 0.0f;
                 samplerInfo.minLod = 0.0f;
                 samplerInfo.maxLod = 0.0f;
-                if (vkCreateSampler(linkedRenderEngine.device->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
-                deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine.device->device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
+                if (vkCreateSampler(linkedRenderEngine->device->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
+//                deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine->device->device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
                 transition(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             }
         }
@@ -211,9 +226,9 @@ struct AllocatedImage {
         region.imageSubresource.layerCount = 1;
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {width, height, 1};
-        VkCommandBuffer commandBuffer = linkedRenderEngine.beginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
         vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer, 1, &region);
-        linkedRenderEngine.endSingleTimeCommands(commandBuffer);
+        linkedRenderEngine->endSingleTimeCommands(commandBuffer);
     }
 
     void transition(VkImageLayout oldLayout, VkImageLayout newLayout) const {
@@ -247,14 +262,14 @@ struct AllocatedImage {
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         } else { throw std::invalid_argument("unsupported layout transition!"); }
-        VkCommandBuffer commandBuffer = linkedRenderEngine.beginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-        linkedRenderEngine.endSingleTimeCommands(commandBuffer);
+        linkedRenderEngine->endSingleTimeCommands(commandBuffer);
     }
 
 private:
     std::deque<std::function<void()>> deletionQueue{};
-    RenderEngineLink linkedRenderEngine{};
+    RenderEngineLink *linkedRenderEngine{};
     VmaAllocation allocation{};
 };
 
@@ -268,18 +283,20 @@ struct DescriptorSetManager {
     VkDescriptorSetLayout descriptorSetLayout{};
     VkDescriptorPool descriptorPool{};
 
-    DescriptorSetManager(const std::vector<VkDescriptorType>& setupDescriptorTypes, const std::vector<VkShaderStageFlagBits>& setupShaderFlags, uint32_t setupSwapchainImageCount, VkDevice device) {
-        if (descriptorTypes.size() != setupShaderFlags.size()) { throw std::runtime_error("number of descriptor types does not equal number of shader flags!"); }
+    void setup(const std::vector<VkDescriptorType>& setupDescriptorTypes, const std::vector<VkShaderStageFlagBits>& setupShaderFlags, uint32_t setupSwapchainImageCount, VkDevice device) {
+        if (setupDescriptorTypes.size() != setupShaderFlags.size()) { throw std::runtime_error("number of descriptor types does not equal number of shader flags!"); }
         swapchainImageCount = setupSwapchainImageCount;
         descriptorTypes = setupDescriptorTypes;
         creationDevice = device;
+        descriptorSetLayoutBindings.clear();
+        descriptorPoolSizes.clear();
         descriptorSetLayoutBindings.reserve(setupDescriptorTypes.size());
         descriptorPoolSizes.reserve(setupDescriptorTypes.size());
         VkDescriptorSetLayoutBinding descriptorSetLayoutBinding{};
         descriptorSetLayoutBinding.descriptorCount = 1;
         VkDescriptorPoolSize descriptorPoolSize{};
         descriptorPoolSize.descriptorCount = swapchainImageCount;
-        for (unsigned int i = 0; i > setupDescriptorTypes.size(); i++) {
+        for (unsigned long i = 0; i < setupDescriptorTypes.size(); i++) {
             descriptorSetLayoutBinding.descriptorType = setupDescriptorTypes[i];
             descriptorSetLayoutBinding.stageFlags = setupShaderFlags[i];
             descriptorSetLayoutBinding.binding = i;
@@ -298,35 +315,47 @@ struct DescriptorSetManager {
         descriptorPoolCreateInfo.poolSizeCount = descriptorPoolSizes.size();
         descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
         descriptorPoolCreateInfo.maxSets = swapchainImageCount;
-        if (vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); };
-        deletionQueue.emplace_front([&]{ vkDestroyDescriptorPool(device, descriptorPool, nullptr); descriptorPool = VK_NULL_HANDLE; });
+        if (vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); }
+        deletionQueue.emplace_front([&]{ vkDestroyDescriptorPool(creationDevice, descriptorPool, nullptr); descriptorPool = VK_NULL_HANDLE; });
     }
 
     VkDescriptorSet createDescriptorSet(const std::vector<AllocatedBuffer>& buffers, const std::vector<AllocatedImage>& images, const std::vector<bool>& indices) {
         if (buffers.size() + images.size() != indices.size()) { throw std::runtime_error("number of indices does not equal number of images plus number of buffers!"); }
+        VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
+        descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        descriptorSetAllocateInfo.descriptorPool = descriptorPool;
+        descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
+        descriptorSetAllocateInfo.descriptorSetCount = 1;
         VkDescriptorSet descriptorSet{};
+        vkAllocateDescriptorSets(creationDevice, &descriptorSetAllocateInfo, &descriptorSet);
         int bufferCounter{}, imageCounter{};
         std::vector<VkWriteDescriptorSet> descriptorWrites{indices.size()};
-        for (int i = 0; i > indices.size(); i++) {
+        std::vector<VkDescriptorBufferInfo> descriptorBuffers{};
+        descriptorBuffers.reserve(buffers.size());
+        std::vector<VkDescriptorImageInfo> descriptorImages{};
+        descriptorImages.reserve(images.size());
+        for (int i = 0; i < indices.size(); i++) {
             descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[i].dstSet = descriptorSet;
             descriptorWrites[i].dstBinding = i;
             descriptorWrites[i].dstArrayElement = 0;
             descriptorWrites[i].descriptorType = descriptorTypes[i];
             descriptorWrites[i].descriptorCount = 1;
-            if (indices[i]) {
+            if (!indices[i]) {
                 VkDescriptorBufferInfo descriptorBufferInfo{};
                 descriptorBufferInfo.buffer = buffers[bufferCounter].buffer;
                 descriptorBufferInfo.offset = 0;
                 descriptorBufferInfo.range = buffers[bufferCounter].bufferSize;
-                descriptorWrites[i].pBufferInfo = &descriptorBufferInfo;
+                descriptorBuffers.push_back(descriptorBufferInfo);
+                descriptorWrites[i].pBufferInfo = &descriptorBuffers[bufferCounter];
                 bufferCounter++;
             } else {
                 VkDescriptorImageInfo descriptorImageInfo{};
                 descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 descriptorImageInfo.sampler = images[imageCounter].sampler;
                 descriptorImageInfo.imageView = images[imageCounter].view;
-                descriptorWrites[i].pImageInfo = &descriptorImageInfo;
+                descriptorImages.push_back(descriptorImageInfo);
+                descriptorWrites[i].pImageInfo = &descriptorImages[imageCounter];
                 imageCounter++;
             }
         }
@@ -378,8 +407,8 @@ struct Vertex {
         attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
         attributeDescriptions[3].binding = 0;
         attributeDescriptions[3].location = 3;
-        attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[3].offset = offsetof(Vertex, texCoord);
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(Vertex, normal);
         return attributeDescriptions;
     }
 

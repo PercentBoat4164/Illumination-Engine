@@ -34,7 +34,7 @@ public:
         else { glfwSetWindowSize(window, settings.resolution[0], settings.resolution[0]); }
         glfwSetWindowTitle(window, newSettings.applicationName.c_str());
         settings = newSettings;
-        if (updateAll) { createSwapchain(true); }
+        if (updateAll) { createSwapchain(false); }
     }
 
     bool update() {
@@ -143,69 +143,23 @@ public:
         //destroy previously created asset if any
         asset->destroy();
         //upload mesh and vertex data
-        asset->vertexBuffer.setEngineLink(renderEngineLink);
+        asset->vertexBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
-        asset->indexBuffer.setEngineLink(renderEngineLink);
+        asset->indexBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
         //upload textures
         stagingBuffer.destroy();
         memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->textures[0], asset->width * asset->height * 4);
-        asset->textureImages[0].setEngineLink(renderEngineLink);
-        asset->textureImages[0].create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, asset->width, asset->height, false, true, &stagingBuffer);
+        AllocatedImage texture{};
+        texture.setEngineLink(&renderEngineLink);
+        texture.create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, asset->width, asset->height, TEXTURE, &stagingBuffer);
+        asset->textureImages.push_back(texture);
         //prepare data for shader
         //build uniform buffers
-        asset->uniformBuffer.setEngineLink(renderEngineLink);
+        asset->uniformBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->uniformBufferObject, sizeof(UniformBufferObject));
         //build descriptor sets
-        VkDescriptorPoolSize uboDescriptorPoolSize{};
-        uboDescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboDescriptorPoolSize.descriptorCount = swapchain.image_count;
-        //do this for every image needed by the shader
-        VkDescriptorPoolSize albedoDescriptorPoolSize{};
-        albedoDescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        albedoDescriptorPoolSize.descriptorCount = swapchain.image_count;
-        VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
-        std::vector<VkDescriptorPoolSize> descriptorPoolSizes{uboDescriptorPoolSize, albedoDescriptorPoolSize};
-        descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        descriptorPoolCreateInfo.poolSizeCount = descriptorPoolSizes.size();
-        descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
-        descriptorPoolCreateInfo.maxSets = swapchain.image_count;
-        vkCreateDescriptorPool(device.device, &descriptorPoolCreateInfo, nullptr, &asset->descriptorPool);
-        asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ vkDestroyDescriptorPool(device.device, thisAsset.descriptorPool, nullptr); });
-        std::vector<VkDescriptorSetLayout> layouts(swapchain.image_count, descriptorSetLayout);
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = asset->descriptorPool;
-        allocInfo.descriptorSetCount = 1;
-        allocInfo.pSetLayouts = layouts.data();
-        if (vkAllocateDescriptorSets(device.device, &allocInfo, &asset->descriptorSet) != VK_SUCCESS) { throw std::runtime_error("failed to allocate descriptor sets!"); }
-        VkDescriptorBufferInfo uboBufferInfo{};
-        uboBufferInfo.buffer = asset->uniformBuffer.buffer;
-        uboBufferInfo.offset = 0;
-        uboBufferInfo.range = sizeof(UniformBufferObject);
-        //TODO: Rework descriptor set management?
-        std::vector<VkWriteDescriptorSet> descriptorWrites{2};
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = asset->descriptorSet;
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &uboBufferInfo;
-        //Iterate this part for the number of textures used
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = asset->textureImages[0].view;
-        imageInfo.sampler = asset->textureImages[0].sampler;
-        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = asset->descriptorSet;
-        descriptorWrites[1].dstBinding = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pImageInfo = &imageInfo;
-        //End the iterations here
-        vkUpdateDescriptorSets(device.device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+        asset->descriptorSet = descriptorSetManager.createDescriptorSet({asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
         //prepare shaders
         std::vector<VkPipelineShaderStageCreateInfo> shaders{};
         for (unsigned int i = 0; i < asset->shaderData.size(); i++) {
@@ -313,6 +267,7 @@ public:
     }
 
     void cleanUp() {
+        for (Asset *asset : assets) { asset->destroy(); }
         for (std::function<void()>& function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
         for (std::function<void()>& function : oneTimeOptionalDeletionQueue) { function(); }
@@ -353,7 +308,7 @@ private:
         VkPhysicalDeviceFeatures deviceFeatures{}; //Request device features here
         deviceFeatures.samplerAnisotropy = VK_TRUE;
         deviceFeatures.sampleRateShading = VK_TRUE;
-        vkb::detail::Result<vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).set_minimum_version(settings.requiredVulkanVersion[0], settings.requiredVulkanVersion[1]).require_dedicated_transfer_queue().set_required_features(deviceFeatures).select();
+        vkb::detail::Result<vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).set_minimum_version(settings.requiredVulkanVersion[0], settings.requiredVulkanVersion[1]).require_dedicated_transfer_queue().set_required_features(deviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
         if (!phys_ret) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + phys_ret.error().message() + "\n"); }
         vkb::DeviceBuilder device_builder{ phys_ret.value() };
         vkb::detail::Result<vkb::Device> dev_ret = device_builder.build();
@@ -377,34 +332,9 @@ private:
         if (vkCreateCommandPool(device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) { throw std::runtime_error("failed to create command pool!"); }
         engineDeletionQueue.emplace_front([&]{ vkDestroyCommandPool(device.device, commandPool, nullptr); });
         //delete staging buffer
-        stagingBuffer.setEngineLink(renderEngineLink);
+        stagingBuffer.setEngineLink(&renderEngineLink);
         engineDeletionQueue.emplace_front([&]{ stagingBuffer.destroy(); });
         createSwapchain(true);
-        //Create descriptor set layouts
-        VkDescriptorSetLayoutBinding uboLayoutBinding{};
-        uboLayoutBinding.binding = 0;
-        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        VkDescriptorSetLayoutBinding albedoLayoutBinding{};
-        albedoLayoutBinding.binding = 1;
-        albedoLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        albedoLayoutBinding.descriptorCount = 1;
-        albedoLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        std::vector<VkDescriptorSetLayoutBinding> bindings{uboLayoutBinding, albedoLayoutBinding};
-        VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
-        descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        descriptorSetLayoutCreateInfo.bindingCount = bindings.size();
-        descriptorSetLayoutCreateInfo.pBindings = bindings.data();
-        if (vkCreateDescriptorSetLayout(device.device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor set layout!"); }
-        engineDeletionQueue.emplace_front([&]{ vkDestroyDescriptorSetLayout(device.device, descriptorSetLayout, nullptr); });
-        //Create pipelineLayout
-        VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
-        pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutCreateInfo.setLayoutCount = 1;
-        pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
-        if (vkCreatePipelineLayout(device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
-        engineDeletionQueue.emplace_front([&]{ vkDestroyPipelineLayout(device.device, pipelineLayout, nullptr); });
     }
 
     void createSwapchain(bool fullRecreate = false) {
@@ -425,11 +355,11 @@ private:
         recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
         recreationDeletionQueue.emplace_front([&]{ swapchain.destroy_image_views(swapchainImageViews); });
         //Create output images
-        colorImage.setEngineLink(renderEngineLink);
-        colorImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, settings.msaaSamples, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, swapchain.extent.width, swapchain.extent.height, false, false);
+        colorImage.setEngineLink(&renderEngineLink);
+        colorImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, settings.msaaSamples, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, swapchain.extent.width, swapchain.extent.height, ImageType{COLOR});
         recreationDeletionQueue.emplace_front([&]{ colorImage.destroy(); });
-        depthImage.setEngineLink(renderEngineLink);
-        depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, settings.msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, swapchain.extent.width, swapchain.extent.height, true, false);
+        depthImage.setEngineLink(&renderEngineLink);
+        depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, settings.msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, swapchain.extent.width, swapchain.extent.height, ImageType{DEPTH});
         depthImage.transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
         recreationDeletionQueue.emplace_front([&]{ depthImage.destroy(); });
         //clear images marked as in flight
@@ -439,6 +369,16 @@ private:
         if (fullRecreate) {
             for (std::function<void()>& function : oneTimeOptionalDeletionQueue) { function(); }
             oneTimeOptionalDeletionQueue.clear();
+            //Create descriptorSetManager
+            descriptorSetManager.setup({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, device.device);
+            oneTimeOptionalDeletionQueue.emplace_front([&]{ descriptorSetManager.destroy(); });
+            //Create pipelineLayout
+            VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+            pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutCreateInfo.setLayoutCount = 1;
+            pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetManager.descriptorSetLayout;
+            if (vkCreatePipelineLayout(device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
+            engineDeletionQueue.emplace_front([&]{ vkDestroyPipelineLayout(device.device, pipelineLayout, nullptr); });
             //Create commandBuffers
             commandBuffers.resize(swapchain.image_count);
             VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
@@ -571,9 +511,9 @@ private:
     AllocatedBuffer stagingBuffer{};
     AllocatedImage colorImage{};
     AllocatedImage depthImage{};
+    DescriptorSetManager descriptorSetManager{};
     VkCommandPool commandPool{};
     VkSurfaceKHR surface{};
-    VkDescriptorSetLayout descriptorSetLayout{};
     VkPipelineLayout pipelineLayout{};
     VkRenderPass renderPass{};
     VkQueue presentQueue{};

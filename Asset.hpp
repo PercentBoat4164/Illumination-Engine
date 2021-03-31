@@ -18,7 +18,6 @@
 
 
 class Asset {
-
 public:
     Asset(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, Settings *EngineSettings = new Settings{}, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
         position = initialPosition;
@@ -46,7 +45,7 @@ public:
         uniformBuffer.destroy();
         vertexBuffer.destroy();
         indexBuffer.destroy();
-        for (AllocatedImage textureImage : textureImages) { textureImage.destroy(); }
+        for (AllocatedImage &textureImage : textureImages) { textureImage.destroy(); }
         for (const std::function<void(Asset)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
     }
@@ -57,7 +56,7 @@ public:
         memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(UniformBufferObject));
     }
 
-    std::deque<std::function<void(Asset asset)>> deletionQueue;
+    std::deque<std::function<void(Asset asset)>> deletionQueue{};
     std::vector<uint32_t> indices{};
     std::vector<Vertex> vertices{};
     AllocatedBuffer uniformBuffer{};
@@ -71,7 +70,6 @@ public:
     int height{};
     VkPipeline graphicsPipeline{};
     VkDescriptorSet descriptorSet{};
-    VkDescriptorPool descriptorPool{};
     glm::vec3 position{};
     glm::vec3 rotation{};
     glm::vec3 scale{};
@@ -94,7 +92,7 @@ private:
                 Vertex vertex{};
                 vertex.pos = { attrib.vertices[3 * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
                 vertex.texCoord = { attrib.texcoords[2 * index.texcoord_index], 1.f - attrib.texcoords[2 * index.texcoord_index + 1] };
-                //vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
+                vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
                 vertex.color = {1.f, 1.f, 1.f};
                 if (uniqueVertices.count(vertex) == 0) {
                     uniqueVertices[vertex] = vertices.size();

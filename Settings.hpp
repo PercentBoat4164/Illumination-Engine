@@ -18,7 +18,7 @@
 #include <unistd.h>
 #endif
 
-struct Settings {
+class Settings {
 public:
     std::string applicationName = "Crystal Engine";
     std::array<int, 3> applicationVersion = {0, 0, 1};
@@ -35,7 +35,7 @@ public:
     int MAX_FRAMES_IN_FLIGHT = 2;
     std::string absolutePath = getProgramPath().string();
     float fov{90};
-    double renderDistance{1000};
+    double renderDistance{1000000};
 
     static std::filesystem::path getProgramPath() {
         #ifdef _WIN32
