@@ -49,18 +49,12 @@ struct RenderEngineLink {
     }
 };
 
-struct UniformBufferObject {
-    alignas(16) glm::mat4 model{};
-    alignas(16) glm::mat4 view{};
-    alignas(16) glm::mat4 proj{};
-};
-
 struct Camera {
     std::array<glm::mat4, 2> update() {
         front = glm::normalize(glm::vec3{cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch))});
         right = glm::normalize(glm::cross(front, up));
         view = {glm::lookAt(position, position + front, up)};
-        proj = {glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.1, renderDistance)};
+        proj = {glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.0001, renderDistance)};
         proj[1][1] *= -1;
         return {view, proj};
     }
@@ -83,7 +77,6 @@ struct Camera {
 struct AllocatedBuffer {
     void *data{};
     VkBuffer buffer{};
-    VmaAllocation allocation{};
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
@@ -103,7 +96,7 @@ struct AllocatedBuffer {
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = allocationUsage;
         if (vmaCreateBuffer(*linkedRenderEngine.allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer"); }
-        deletionQueue.emplace_front([&]{ vmaDestroyBuffer(*linkedRenderEngine.allocator, buffer, allocation); });
+        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine.allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
         vmaMapMemory(*linkedRenderEngine.allocator, allocation, &data);
         deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine.allocator, allocation); });
         return data;
@@ -128,13 +121,13 @@ struct AllocatedBuffer {
 private:
     std::deque<std::function<void()>> deletionQueue{};
     RenderEngineLink linkedRenderEngine{};
+    VmaAllocation allocation{};
 };
 
 struct AllocatedImage {
     VkImage image{};
     VkImageView view{};
     VkSampler sampler{};
-    VmaAllocation allocation{};
 
     void destroy() {
         for (std::function<void()>& function : deletionQueue) { function(); }
@@ -163,7 +156,7 @@ struct AllocatedImage {
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = allocationUsage;
         vmaCreateImage(*linkedRenderEngine.allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
-        deletionQueue.emplace_front([&]{ vmaDestroyImage(*linkedRenderEngine.allocator, image, allocation); });
+        deletionQueue.emplace_front([&]{ if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine.allocator, image, allocation); image = VK_NULL_HANDLE; } });
         VkImageViewCreateInfo imageViewCreateInfo{};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.image = image;
@@ -259,6 +252,42 @@ struct AllocatedImage {
 private:
     std::deque<std::function<void()>> deletionQueue{};
     RenderEngineLink linkedRenderEngine{};
+    VmaAllocation allocation{};
+};
+
+struct UniformBufferObject {
+    alignas(16) glm::mat4 model{};
+    alignas(16) glm::mat4 view{};
+    alignas(16) glm::mat4 proj{};
+};
+
+struct DescriptorSetManager {
+    VkDescriptorSetLayout descriptorSetLayout{};
+    VkDescriptorPool descriptorPool{};
+    VkDescriptorSet imagesDescriptorSet{};
+    VkDescriptorSet cameraDescriptorSet{};
+    VkDescriptorSet sceneDataDescriptorSet{};
+
+    AllocatedBuffer lightsBuffer{};
+    AllocatedBuffer uniformBuffer{};
+    AllocatedImage albedo{};
+    AllocatedImage merh{};
+    AllocatedImage normal{};
+
+    RenderEngineLink linkedRenderEngine{};
+
+    void createDescriptorPool() {
+        VkDescriptorPoolSize uboDescriptorPoolSize{};
+        uboDescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    }
+
+    void allocatedDescriptorSets() {
+
+    }
+
+    void updateDescriptorSets() {
+
+    }
 };
 
 struct Vertex {

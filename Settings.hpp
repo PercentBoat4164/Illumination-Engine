@@ -37,7 +37,6 @@ public:
     float fov{90};
     double renderDistance{1000};
 
-
     static std::filesystem::path getProgramPath() {
         #ifdef _WIN32
         wchar_t buffer[MAX_PATH]{};

@@ -8,12 +8,6 @@
 
 #include <vk-bootstrap/src/VkBootstrap.h>
 
-/*
- * Priorities:
- *  - Multithreading
- *  - Shadows
- */
-
 class VulkanRenderEngine {
 public:
     explicit VulkanRenderEngine(Settings &initialSettings = *new Settings{}, GLFWwindow *attachWindow = nullptr) {
