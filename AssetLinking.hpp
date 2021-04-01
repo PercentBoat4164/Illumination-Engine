@@ -144,12 +144,8 @@ struct AllocatedImage {
     VkSampler sampler{};
 
     void destroy() {
-        vkDestroySampler(linkedRenderEngine->device->device, sampler, nullptr);
-        vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr);
-        if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); }
-        //TODO: Possibly get the deletionQueue working once more. OPTIONAL
-//        for (std::function<void()>& function : deletionQueue) { function(); }
-//        deletionQueue.clear();
+        for (std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
     }
 
     void setEngineLink(RenderEngineLink *renderEngineLink) {
@@ -174,7 +170,7 @@ struct AllocatedImage {
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = allocationUsage;
         vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
-//        deletionQueue.emplace_front([&]{ if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); image = VK_NULL_HANDLE; } });
+        deletionQueue.emplace_front([&]{ if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); image = VK_NULL_HANDLE; } });
         VkImageViewCreateInfo imageViewCreateInfo{};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.image = image;
@@ -186,7 +182,7 @@ struct AllocatedImage {
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         imageViewCreateInfo.subresourceRange.layerCount = 1;
         if (vkCreateImageView(linkedRenderEngine->device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-//        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr); view = VK_NULL_HANDLE; });
+        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr); view = VK_NULL_HANDLE; });
         if (dataSource != nullptr) {
             transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             dataSource->toImage(image, width, height);
@@ -209,7 +205,7 @@ struct AllocatedImage {
                 samplerInfo.minLod = 0.0f;
                 samplerInfo.maxLod = 0.0f;
                 if (vkCreateSampler(linkedRenderEngine->device->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
-//                deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine->device->device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
+                deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine->device->device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
                 transition(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             }
         }
@@ -334,7 +330,7 @@ struct DescriptorSetManager {
         descriptorBuffers.reserve(buffers.size());
         std::vector<VkDescriptorImageInfo> descriptorImages{};
         descriptorImages.reserve(images.size());
-        for (int i = 0; i < indices.size(); i++) {
+        for (unsigned long i = 0; i < indices.size(); i++) {
             descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[i].dstSet = descriptorSet;
             descriptorWrites[i].dstBinding = i;
