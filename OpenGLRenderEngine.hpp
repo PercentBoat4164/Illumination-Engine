@@ -22,17 +22,17 @@ public:
 
     explicit OpenGLRenderEngine(Settings &initialSettings = *new Settings{}) {
         settings = initialSettings;
-        if(!glfwInit()) {throw std::runtime_error("failed to initialize GLFW");}
+        if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), nullptr, nullptr);
-        if (window == nullptr) {throw std::runtime_error("failed to open GLFW window!");}
+        if (window == nullptr) { throw std::runtime_error("failed to open GLFW window!"); }
         glfwMakeContextCurrent(window);
         glewExperimental = true;
-        if (glewInit() != GLEW_OK) {throw std::runtime_error("failed to initialize GLEW!");}
+        if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
         GLuint VertexArrayID;
         glGenVertexArrays(1, &VertexArrayID);
         glBindVertexArray(VertexArrayID);

@@ -31,10 +31,10 @@ public:
             glfwSetWindowMonitor(window, newSettings.monitor, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], GLFW_DONT_CARE);
             glfwSetWindowMonitor(window, nullptr, 0, 0, newSettings.defaultWindowResolution[0], newSettings.defaultWindowResolution[1], GLFW_DONT_CARE);
         }
-        else { glfwSetWindowSize(window, settings.resolution[0], settings.resolution[0]); }
+        else { glfwSetWindowSize(window, settings.resolution[0], settings.resolution[1]); }
         glfwSetWindowTitle(window, newSettings.applicationName.c_str());
         settings = newSettings;
-        if (updateAll) { createSwapchain(false); }
+        if (updateAll) { createSwapchain(true); }
     }
 
     bool update() {
@@ -147,6 +147,8 @@ public:
         memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
         asset->indexBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
+        //clear textures
+        asset->textureImages.clear();
         //upload textures
         stagingBuffer.destroy();
         memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->textures[0], asset->width * asset->height * 4);
@@ -171,7 +173,7 @@ public:
             shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             shaderStageInfo.module = shaderModule;
             shaderStageInfo.pName = "main";
-            shaderStageInfo.stage = i ? VK_SHADER_STAGE_FRAGMENT_BIT : VK_SHADER_STAGE_VERTEX_BIT;
+            shaderStageInfo.stage = i % 2 ? VK_SHADER_STAGE_FRAGMENT_BIT : VK_SHADER_STAGE_VERTEX_BIT;
             shaders.push_back(shaderStageInfo);
         }
         //create graphics pipeline for this asset
@@ -332,6 +334,46 @@ private:
         //delete staging buffer
         stagingBuffer.setEngineLink(&renderEngineLink);
         engineDeletionQueue.emplace_front([&]{ stagingBuffer.destroy(); });
+        //create shadow renderPass
+        VkAttachmentDescription attachmentDescription{};
+        attachmentDescription.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
+        attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+        attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
+        VkAttachmentReference depthAttachmentReference{};
+        depthAttachmentReference.attachment = 0;
+        depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        VkSubpassDescription subpassDescription{};
+        subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassDescription.colorAttachmentCount = 0;
+        subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+        std::array<VkSubpassDependency, 2> subpassDependencies{};
+        subpassDependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDependencies[0].dstSubpass = 0;
+        subpassDependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        subpassDependencies[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        subpassDependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        subpassDependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        subpassDependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+        subpassDependencies[1].srcSubpass = 0;
+        subpassDependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDependencies[1].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        subpassDependencies[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        subpassDependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        subpassDependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+        VkRenderPassCreateInfo renderPassCreateInfo{};
+        renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassCreateInfo.attachmentCount = 1;
+        renderPassCreateInfo.pAttachments = &attachmentDescription;
+        renderPassCreateInfo.subpassCount = 1;
+        renderPassCreateInfo.pSubpasses = &subpassDescription;
+        renderPassCreateInfo.dependencyCount = subpassDependencies.size();
+        renderPassCreateInfo.pDependencies = subpassDependencies.data();
         createSwapchain(true);
     }
 
@@ -376,7 +418,7 @@ private:
             pipelineLayoutCreateInfo.setLayoutCount = 1;
             pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetManager.descriptorSetLayout;
             if (vkCreatePipelineLayout(device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
-            engineDeletionQueue.emplace_front([&]{ vkDestroyPipelineLayout(device.device, pipelineLayout, nullptr); });
+            oneTimeOptionalDeletionQueue.emplace_front([&]{ vkDestroyPipelineLayout(device.device, pipelineLayout, nullptr);});
             //Create commandBuffers
             commandBuffers.resize(swapchain.image_count);
             VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
@@ -514,6 +556,7 @@ private:
     VkSurfaceKHR surface{};
     VkPipelineLayout pipelineLayout{};
     VkRenderPass renderPass{};
+    VkRenderPass shadowRenderPass{};
     VkQueue presentQueue{};
     VkQueue graphicsQueue{};
     std::vector<VkCommandBuffer> commandBuffers{};

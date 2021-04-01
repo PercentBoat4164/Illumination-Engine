@@ -29,5 +29,5 @@ foreach(item IN LISTS data_SHADOW)
     FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
 endforeach()
 
-add_executable(Main main.cpp)
-target_link_libraries(Main glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
+add_executable(CrystalEngine main.cpp)
+target_link_libraries(CrystalEngine glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)

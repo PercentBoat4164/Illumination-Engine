@@ -29,8 +29,12 @@ int main(int argc, char **argv) {
         try {
             VulkanRenderEngine renderEngine = VulkanRenderEngine();
             renderEngine.camera.position = {0, 0, 2};
-            Asset ancientStatue = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            renderEngine.uploadAsset(&ancientStatue);
+            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            Asset quad = Asset("models/quad.obj", {"models/quad_Color.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
+            Asset cube = Asset("models/cube.obj", {"models/cube.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {-6, 6, 1});
+            renderEngine.uploadAsset(&cube);
+            renderEngine.uploadAsset(&quad);
+            renderEngine.uploadAsset(&vikingRoom);
             double lastTab{0};
             double lastF2{0};
             while (renderEngine.update()) {
@@ -56,6 +60,7 @@ int main(int argc, char **argv) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
                     renderEngine.updateSettings(renderEngine.settings, true);
                 }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL)) { velocity *= 6; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_W)) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_A)) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_S)) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
