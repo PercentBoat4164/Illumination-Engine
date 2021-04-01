@@ -52,13 +52,40 @@ public:
         if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) { vkWaitForFences(device.device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX); }
         imagesInFlight[imageIndex] = inFlightFences[currentFrame];
         //update state of frame
+        VkDeviceSize offsets[] = {0};
+        std::vector<VkClearValue> clearValues{static_cast<size_t>(settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3)};
+        clearValues[0].depthStencil = {1.0f, 0};
+        //record command buffers
         VkCommandBufferBeginInfo commandBufferBeginInfo{};
         commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         VkCommandBufferResetFlags commandBufferResetFlags{};
         vkResetCommandBuffer(commandBuffers[(imageIndex + (swapchain.image_count - 1)) % swapchain.image_count], commandBufferResetFlags);
         if (vkBeginCommandBuffer(commandBuffers[imageIndex], &commandBufferBeginInfo) != VK_SUCCESS) { throw std::runtime_error("failed to begin recording command buffer!"); }
-        VkDeviceSize offsets[] = {0};
-        std::vector<VkClearValue> clearValues{static_cast<size_t>(settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3)};
+        //shadow pass
+        VkRenderPassBeginInfo shadowRenderPassBeginInfo{};
+        shadowRenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        shadowRenderPassBeginInfo.renderPass = shadowRenderPass;
+        shadowRenderPassBeginInfo.framebuffer = shadowFramebuffer;
+        shadowRenderPassBeginInfo.renderArea.extent.width = settings.shadowMapResolution[0];
+        shadowRenderPassBeginInfo.renderArea.extent.height = settings.shadowMapResolution[1];
+        shadowRenderPassBeginInfo.clearValueCount = 1;
+        shadowRenderPassBeginInfo.pClearValues = clearValues.data();
+        VkViewport viewport{};
+        viewport.x = 0.f;
+        viewport.y = 0.f;
+        viewport.width = (float)settings.shadowMapResolution[0];
+        viewport.height = (float)settings.shadowMapResolution[1];
+        viewport.minDepth = 0.f;
+        viewport.maxDepth = 1.f;
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = {static_cast<uint32_t>(settings.shadowMapResolution[0]), static_cast<uint32_t>(settings.shadowMapResolution[1])};
+        vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
+        vkCmdBeginRenderPass(commandBuffers[imageIndex], &shadowRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdSetDepthBias(commandBuffers[imageIndex], 1.25f, 0, 1.75f);
+        vkCmdEndRenderPass(commandBuffers[imageIndex]);
+        //color pass
         clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         if (settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
@@ -70,20 +97,12 @@ public:
         renderPassBeginInfo.pClearValues = clearValues.data();
         renderPassBeginInfo.renderPass = renderPass;
         renderPassBeginInfo.framebuffer = framebuffers[imageIndex];
-        VkViewport viewport{};
-        viewport.x = 0.f;
-        viewport.y = 0.f;
         viewport.width = (float)swapchain.extent.width;
         viewport.height = (float)swapchain.extent.height;
-        viewport.minDepth = 0.f;
-        viewport.maxDepth = 1.f;
-        VkRect2D scissor{};
-        scissor.offset = {0, 0};
         scissor.extent = swapchain.extent;
         vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
         vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
         camera.update();
-        //record command buffer
         vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         for (Asset *asset : assets) {
             if (asset->render) {
@@ -334,6 +353,10 @@ private:
         //delete staging buffer
         stagingBuffer.setEngineLink(&renderEngineLink);
         engineDeletionQueue.emplace_front([&]{ stagingBuffer.destroy(); });
+        //create shadow depth image
+        shadowImage.setEngineLink(&renderEngineLink);
+        shadowImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, settings.shadowMapResolution[0], settings.shadowMapResolution[1], DEPTH);
+        engineDeletionQueue.emplace_front([&]{ shadowImage.destroy(); });
         //create shadow renderPass
         VkAttachmentDescription attachmentDescription{};
         attachmentDescription.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
@@ -366,14 +389,27 @@ private:
         subpassDependencies[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         subpassDependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         subpassDependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-        VkRenderPassCreateInfo renderPassCreateInfo{};
-        renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassCreateInfo.attachmentCount = 1;
-        renderPassCreateInfo.pAttachments = &attachmentDescription;
-        renderPassCreateInfo.subpassCount = 1;
-        renderPassCreateInfo.pSubpasses = &subpassDescription;
-        renderPassCreateInfo.dependencyCount = subpassDependencies.size();
-        renderPassCreateInfo.pDependencies = subpassDependencies.data();
+        VkRenderPassCreateInfo shadowRenderPassCreateInfo{};
+        shadowRenderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        shadowRenderPassCreateInfo.attachmentCount = 1;
+        shadowRenderPassCreateInfo.pAttachments = &attachmentDescription;
+        shadowRenderPassCreateInfo.subpassCount = 1;
+        shadowRenderPassCreateInfo.pSubpasses = &subpassDescription;
+        shadowRenderPassCreateInfo.dependencyCount = subpassDependencies.size();
+        shadowRenderPassCreateInfo.pDependencies = subpassDependencies.data();
+        vkCreateRenderPass(device.device, &shadowRenderPassCreateInfo, nullptr, &shadowRenderPass);
+        engineDeletionQueue.emplace_front([&]{ vkDestroyRenderPass(device.device, shadowRenderPass, nullptr); });
+        //create shadow framebuffer
+        VkFramebufferCreateInfo framebufferCreateInfo{};
+        framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferCreateInfo.renderPass = shadowRenderPass;
+        framebufferCreateInfo.attachmentCount = 1;
+        framebufferCreateInfo.pAttachments = &shadowImage.view;
+        framebufferCreateInfo.width = settings.shadowMapResolution[0];
+        framebufferCreateInfo.height = settings.shadowMapResolution[1];
+        framebufferCreateInfo.layers = 1;
+        if (vkCreateFramebuffer(device.device, &framebufferCreateInfo, nullptr, &shadowFramebuffer) != VK_SUCCESS) { throw std::runtime_error("failed to create shadow framebuffer!"); }
+        engineDeletionQueue.emplace_front([&]{ vkDestroyFramebuffer(device.device, shadowFramebuffer, nullptr); });
         createSwapchain(true);
     }
 
@@ -551,7 +587,9 @@ private:
     AllocatedBuffer stagingBuffer{};
     AllocatedImage colorImage{};
     AllocatedImage depthImage{};
+    AllocatedImage shadowImage{};
     DescriptorSetManager descriptorSetManager{};
+    VkFramebuffer shadowFramebuffer{};
     VkCommandPool commandPool{};
     VkSurfaceKHR surface{};
     VkPipelineLayout pipelineLayout{};

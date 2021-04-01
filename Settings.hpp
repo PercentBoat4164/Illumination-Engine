@@ -32,6 +32,7 @@ public:
     bool fullscreen = false;
     int refreshRate = 144;
     std::array<int, 2> resolution = defaultWindowResolution;
+    std::array<int, 2> shadowMapResolution{2048, 2048};
     int MAX_FRAMES_IN_FLIGHT = 2;
     std::string absolutePath = getProgramPath().string();
     float fov{90};
