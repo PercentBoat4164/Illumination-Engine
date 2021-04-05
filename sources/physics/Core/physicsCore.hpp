@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../glm/glm.hpp"
-#include "geometry.hpp"
+#include "Geometry.hpp"
 #include <list>
 
 struct Force {
