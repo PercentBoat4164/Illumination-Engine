@@ -1,5 +1,11 @@
 #pragma once
 
+#if defined(_WIN32)
+#define GLSLC "glslc.exe "
+#else
+#define GLSLC "glslc "
+#endif
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
@@ -10,12 +16,14 @@
 #include <cstring>
 #include <valarray>
 
-#if defined(_WIN32)
-#define GLSLC "glslc.exe "
-#else
-#define GLSLC "glslc "
-#endif
+#include <glm/glm.hpp>
 
+#include "ImageManager.hpp"
+#include "BufferManager.hpp"
+#include "Camera.hpp"
+
+#include "Vertex.hpp"
+#include "GPUData.hpp"
 
 class Asset {
 public:
@@ -45,7 +53,7 @@ public:
         uniformBuffer.destroy();
         vertexBuffer.destroy();
         indexBuffer.destroy();
-        for (AllocatedImage &textureImage : textureImages) { textureImage.destroy(); }
+        for (ImageManager &textureImage : textureImages) { textureImage.destroy(); }
         for (const std::function<void(Asset)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
     }
@@ -59,11 +67,11 @@ public:
     std::deque<std::function<void(Asset asset)>> deletionQueue{};
     std::vector<uint32_t> indices{};
     std::vector<Vertex> vertices{};
-    AllocatedBuffer uniformBuffer{};
-    AllocatedBuffer vertexBuffer{};
-    AllocatedBuffer indexBuffer{};
+    BufferManager uniformBuffer{};
+    BufferManager vertexBuffer{};
+    BufferManager indexBuffer{};
     UniformBufferObject uniformBufferObject{};
-    std::vector<AllocatedImage> textureImages{};
+    std::vector<ImageManager> textureImages{};
     std::vector<stbi_uc *> textures{};
     std::vector<std::vector<char>> shaderData{};
     int width{};
@@ -125,7 +133,7 @@ private:
             size_t fileSize = (size_t) file.tellg();
             std::vector<char> buffer(fileSize);
             file.seekg(0);
-            file.read(buffer.data(), fileSize);
+            file.read(buffer.data(), (std::streamsize)fileSize);
             file.close();
             shaderData.push_back(buffer);
         }

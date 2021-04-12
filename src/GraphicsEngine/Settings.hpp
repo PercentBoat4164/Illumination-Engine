@@ -22,7 +22,7 @@ class Settings {
 public:
     std::string applicationName = "Crystal Engine";
     std::array<int, 3> applicationVersion = {0, 0, 1};
-    std::array<int, 2> requiredVulkanVersion = {1, 2};
+    std::array<int, 3> requiredVulkanVersion = {1, 2, 0};
     VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_8_BIT;
     GLFWmonitor *monitor{glfwGetPrimaryMonitor()};
     std::array<int, 2> defaultMonitorResolution{2560, 1440};
