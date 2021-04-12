@@ -43,7 +43,7 @@ set(hppFiles
         src/GraphicsEngine/Vulkan/VulkanRenderEngine.hpp
         src/GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp
         src/GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp
-    )
+        src/GraphicsEngine/Vulkan/FramebufferManager.hpp)
 
 add_executable(CrystalEngine main.cpp ${hppFiles})
 target_link_libraries(CrystalEngine glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)

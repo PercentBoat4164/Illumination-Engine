@@ -79,7 +79,7 @@ public:
         deletionQueue.emplace_front([&]{ vkDestroyRenderPass(linkedRenderEngine->device.device, ); });
     }
 
-    void beginRenderPass() {
+    void beginRenderPass(int framebufferIndex = 0) {
         VkRenderPassBeginInfo renderPassBeginInfo{};
         renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassBeginInfo.renderArea.offset = {0, 0};
@@ -87,6 +87,7 @@ public:
         renderPassBeginInfo.clearValueCount = clearValues.size();
         renderPassBeginInfo.pClearValues = clearValues.data();
         renderPassBeginInfo.renderPass = renderPass;
+        renderPassBeginInfo.framebuffer = linkedRenderEngine->framebufferManager.framebuffers[framebufferIndex];
     }
 
 private:
