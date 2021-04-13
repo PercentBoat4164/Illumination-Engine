@@ -218,6 +218,7 @@ public:
         //build descriptor sets
         asset->descriptorSet = descriptorSetManager.createDescriptorSet({asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
         //build graphics pipeline for this asset
+        asset->pipelineManagers.clear();
         PipelineManager graphicsPipelineManager{};
         graphicsPipelineManager.setup(&renderEngineLink, renderPassManager.renderPass, asset->shaderData, descriptorSetManager);
         asset->pipelineManagers.push_back(graphicsPipelineManager);
@@ -227,9 +228,9 @@ public:
 
     void updateSettings(Settings newSettings, bool updateAll) {
         //TODO: Fix fov scaling bug.
-        if (!settings->fullscreen & newSettings.fullscreen) { glfwSetWindowMonitor(window, newSettings.monitor, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], GLFW_DONT_CARE); }
+        if (!settings->fullscreen & newSettings.fullscreen) { glfwSetWindowMonitor(window, nullptr, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], newSettings.refreshRate); }
         else if (settings->fullscreen & !newSettings.fullscreen) {
-            glfwSetWindowMonitor(window, nullptr, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], newSettings.refreshRate);
+            glfwSetWindowMonitor(window, newSettings.monitor, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], GLFW_DONT_CARE);
             glfwSetWindowMonitor(window, nullptr, 0, 0, newSettings.defaultWindowResolution[0], newSettings.defaultWindowResolution[1], GLFW_DONT_CARE);
         }
         else { glfwSetWindowSize(window, settings->resolution[0], settings->resolution[1]); }

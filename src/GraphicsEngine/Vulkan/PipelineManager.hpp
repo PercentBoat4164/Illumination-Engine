@@ -14,30 +14,30 @@ public:
     VkPipeline pipeline{};
 
     void destroy() {
-        for (const std::function<void()>& function : deletionQueue) { function(); }
-        deletionQueue.clear();
+        //TODO: Enable the usage of the deletionQueue if possible.
+        vkDestroyPipeline(linkedRenderEngine->device->device, pipeline, nullptr); pipeline = VK_NULL_HANDLE;
+        vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr);
+//        for (const std::function<void()>& function : deletionQueue) { function(); }
+//        deletionQueue.clear();
     }
 
     void setup(VulkanGraphicsEngineLink *engineLink, VkRenderPass renderPass, std::vector<std::vector<char>> shaderData, const DescriptorSetManager& descriptorSetManager) {
         linkedRenderEngine = engineLink;
         //Create pipelineLayout
-        VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
-        pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         pipelineLayoutCreateInfo.setLayoutCount = 1;
         pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetManager.descriptorSetLayout;
         if (vkCreatePipelineLayout(linkedRenderEngine->device->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
-        deletionQueue.emplace_front([&]{ vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr);});
+        deletionQueue.emplace_front([&]{ vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr); pipelineLayout = VK_NULL_HANDLE; });
         //prepare shaders
         std::vector<VkPipelineShaderStageCreateInfo> shaders{};
         for (unsigned int i = 0; i < shaderData.size(); i++) {
             VkShaderModule shaderModule;
-            VkShaderModuleCreateInfo shaderModuleCreateInfo{};
-            shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
             shaderModuleCreateInfo.codeSize = shaderData[i].size();
             shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(shaderData[i].data());
             if (vkCreateShaderModule(linkedRenderEngine->device->device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
-            VkPipelineShaderStageCreateInfo shaderStageInfo{};
-            shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            VkPipelineShaderStageCreateInfo shaderStageInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
             shaderStageInfo.module = shaderModule;
             shaderStageInfo.pName = "main";
             shaderStageInfo.stage = i % 2 ? VK_SHADER_STAGE_FRAGMENT_BIT : VK_SHADER_STAGE_VERTEX_BIT;
