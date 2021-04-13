@@ -137,6 +137,11 @@ protected:
         //clear images marked as in flight
         imagesInFlight.clear();
         imagesInFlight.resize(swapchain.image_count, VK_NULL_HANDLE);
+        //Create render pass
+        renderPassManager.setup(&renderEngineLink);
+        recreationDeletionQueue.emplace_front([&]{ renderPassManager.destroy(); });
+        //recreate framebuffers
+        renderPassManager.recreateFramebuffers();
         //do the other stuff only if needed
         if (fullRecreate) {
             for (std::function<void()>& function : oneTimeOptionalDeletionQueue) { function(); }
@@ -170,15 +175,10 @@ protected:
             oneTimeOptionalDeletionQueue.emplace_front([&]{ for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(device.device, imageAvailableSemaphore, nullptr); } });
             oneTimeOptionalDeletionQueue.emplace_front([&]{ for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); } });
             oneTimeOptionalDeletionQueue.emplace_front([&]{ for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); } });
-            //Create render pass
-            renderPassManager.setup(&renderEngineLink);
-            oneTimeOptionalDeletionQueue.emplace_front([&]{ renderPassManager.destroy(); });
             for (Asset *asset : assets) {
                 uploadAsset(asset, false);
             }
         }
-        //recreate framebuffers
-        renderPassManager.recreateFramebuffers();
         //update camera
         camera.resolution = settings->resolution;
         camera.fov = settings->fov;
@@ -323,14 +323,16 @@ public:
     }
 
     void updateSettings(Settings newSettings, bool updateAll) {
-        if (!settings->fullscreen & newSettings.fullscreen) { glfwSetWindowMonitor(window, nullptr, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], newSettings.refreshRate); }
+        //TODO: Fix fov scaling bug.
+        if (!settings->fullscreen & newSettings.fullscreen) { glfwSetWindowMonitor(window, newSettings.monitor, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], GLFW_DONT_CARE); }
         else if (settings->fullscreen & !newSettings.fullscreen) {
-            glfwSetWindowMonitor(window, newSettings.monitor, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], GLFW_DONT_CARE);
+            glfwSetWindowMonitor(window, nullptr, 0, 0, newSettings.defaultMonitorResolution[0], newSettings.defaultMonitorResolution[1], newSettings.refreshRate);
             glfwSetWindowMonitor(window, nullptr, 0, 0, newSettings.defaultWindowResolution[0], newSettings.defaultWindowResolution[1], GLFW_DONT_CARE);
         }
         else { glfwSetWindowSize(window, settings->resolution[0], settings->resolution[1]); }
         glfwSetWindowTitle(window, newSettings.applicationName.c_str());
         settings = &newSettings;
+        renderEngineLink.settings = settings;
         if (updateAll) { createSwapchain(true); }
     }
 
