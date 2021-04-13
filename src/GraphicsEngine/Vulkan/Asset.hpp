@@ -22,8 +22,9 @@
 #include "BufferManager.hpp"
 #include "Camera.hpp"
 
-#include "Vertex.hpp"
 #include "GPUData.hpp"
+#include "PipelineManager.hpp"
+#include "Vertex.hpp"
 
 class Asset {
 public:
@@ -70,13 +71,13 @@ public:
     BufferManager uniformBuffer{};
     BufferManager vertexBuffer{};
     BufferManager indexBuffer{};
+    std::vector<PipelineManager> pipelineManagers{};
     UniformBufferObject uniformBufferObject{};
     std::vector<ImageManager> textureImages{};
     std::vector<stbi_uc *> textures{};
     std::vector<std::vector<char>> shaderData{};
     int width{};
     int height{};
-    VkPipeline graphicsPipeline{};
     VkDescriptorSet descriptorSet{};
     glm::vec3 position{};
     glm::vec3 rotation{};
