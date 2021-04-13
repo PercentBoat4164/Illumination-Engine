@@ -29,6 +29,7 @@ foreach(item IN LISTS data_SHADOW)
 endforeach()
 
 set(hppFiles
+        src/GraphicsEngine/Settings.hpp
         src/GraphicsEngine/Vulkan/Asset.hpp
         src/GraphicsEngine/Vulkan/BufferManager.hpp
         src/GraphicsEngine/Vulkan/Camera.hpp
@@ -42,8 +43,8 @@ set(hppFiles
         src/GraphicsEngine/Vulkan/VulkanRenderEngine.hpp
         src/GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp
         src/GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp
-        src/GraphicsEngine/Vulkan/FramebufferManager.hpp
-        src/GraphicsEngine/Vulkan/PipelineManager.hpp)
+        src/GraphicsEngine/Vulkan/PipelineManager.hpp
+    )
 
 add_executable(CrystalEngine main.cpp ${hppFiles})
 target_link_libraries(CrystalEngine glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
