@@ -29,37 +29,30 @@ public:
         imagesInFlight[imageIndex] = inFlightFences[currentFrame];
         //update state of frame
         VkDeviceSize offsets[] = {0};
-        std::vector<VkClearValue> clearValues{static_cast<size_t>(settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3)};
-        clearValues[0].depthStencil = {1.0f, 0};
-        //record command buffers
+        //record command buffers for color pass
         commandBufferManager.resetCommandBuffer((int)(imageIndex + (swapchain.image_count - 1)) % (int)swapchain.image_count);
         commandBufferManager.recordCommandBuffer((int)imageIndex);
         VkViewport viewport{};
         viewport.x = 0.f;
         viewport.y = 0.f;
+        viewport.width = (float)swapchain.extent.width;
+        viewport.height = (float)swapchain.extent.height;
         viewport.minDepth = 0.f;
         viewport.maxDepth = 1.f;
+        vkCmdSetViewport(commandBufferManager.commandBuffers[imageIndex], 0, 1, &viewport);
         VkRect2D scissor{};
         scissor.offset = {0, 0};
-        //color pass
+        scissor.extent = swapchain.extent;
+        vkCmdSetScissor(commandBufferManager.commandBuffers[imageIndex], 0, 1, &scissor);
+        std::vector<VkClearValue> clearValues{static_cast<size_t>(settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3)};
+        clearValues[0].depthStencil = {1.0f, 0};
         clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         if (settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
-        VkRenderPassBeginInfo renderPassBeginInfo{};
-        renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassBeginInfo.renderArea.offset = {0, 0};
-        renderPassBeginInfo.renderArea.extent = swapchain.extent;
-        renderPassBeginInfo.clearValueCount = clearValues.size();
-        renderPassBeginInfo.pClearValues = clearValues.data();
-        renderPassBeginInfo.renderPass = renderPass;
-        renderPassBeginInfo.framebuffer = framebuffers[imageIndex];
-        viewport.width = (float)swapchain.extent.width;
-        viewport.height = (float)swapchain.extent.height;
-        scissor.extent = swapchain.extent;
-        vkCmdSetViewport(commandBufferManager.commandBuffers[imageIndex], 0, 1, &viewport);
-        vkCmdSetScissor(commandBufferManager.commandBuffers[imageIndex], 0, 1, &scissor);
-        camera.update();
+        renderPassManager.clearValues = clearValues;
+        VkRenderPassBeginInfo renderPassBeginInfo = renderPassManager.beginRenderPass(imageIndex);
         vkCmdBeginRenderPass(commandBufferManager.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        camera.update();
         for (Asset *asset : assets) {
             if (asset->render) {
                 //update asset

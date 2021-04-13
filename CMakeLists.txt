@@ -22,12 +22,11 @@ add_subdirectory(sources/glfw)
 add_subdirectory(sources/glew/build/cmake)
 add_subdirectory(sources/vk-bootstrap)
 
-set(data_SHADOW shaders models sources/glew32d.dll sources/vulkan-1.dll sources/libvulkan.so.1)
+set(data_SHADOW shaders models sources/glew32d.dll sources/glew32.dll sources/vulkan-1.dll sources/libvulkan.so.1)
 foreach(item IN LISTS data_SHADOW)
     message("Copying '" ${item} "'")
     FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
 endforeach()
-
 
 set(hppFiles
         src/GraphicsEngine/Vulkan/Asset.hpp
@@ -43,7 +42,8 @@ set(hppFiles
         src/GraphicsEngine/Vulkan/VulkanRenderEngine.hpp
         src/GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp
         src/GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp
-        src/GraphicsEngine/Vulkan/FramebufferManager.hpp)
+        src/GraphicsEngine/Vulkan/FramebufferManager.hpp
+        src/GraphicsEngine/Vulkan/PipelineManager.hpp)
 
 add_executable(CrystalEngine main.cpp ${hppFiles})
 target_link_libraries(CrystalEngine glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)

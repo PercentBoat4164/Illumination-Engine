@@ -3,7 +3,6 @@
 #include <deque>
 #include <functional>
 #include <vector>
-#include <dlfcn.h>
 
 #include <VkBootstrap.h>
 
@@ -11,13 +10,15 @@
 #include <vk_mem_alloc.h>
 
 #include "Asset.hpp"
+#include "BufferManager.hpp"
+#include "Camera.hpp"
+#include "CommandBufferManager.hpp"
+#include "DescriptorSetManager.hpp"
+#include "GPUData.hpp"
+#include "ImageManager.hpp"
+#include "RenderPassManager.hpp"
 #include "Vertex.hpp"
 #include "VulkanGraphicsEngineLink.hpp"
-#include "ImageManager.hpp"
-#include "DescriptorSetManager.hpp"
-#include "Camera.hpp"
-#include "GPUData.hpp"
-#include "CommandBufferManager.hpp"
 
 class VulkanRenderEngine {
 private:
@@ -25,15 +26,13 @@ private:
     std::deque<std::function<void()>> engineDeletionQueue{};
     VulkanGraphicsEngineLink renderEngineLink{};
     BufferManager stagingBuffer{};
-    ImageManager colorImage{};
-    ImageManager depthImage{};
     VmaAllocator allocator{};
     bool framebufferResized{false};
     VkSurfaceKHR surface{};
     std::deque<std::function<void()>> recreationDeletionQueue{};
     std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
-    std::vector<VkImageView> swapchainImageViews{};
     DescriptorSetManager descriptorSetManager{};
+    std::vector<VkImageView> swapchainImageViews{};
     void *vulkan_library{};
 
 protected:
@@ -119,7 +118,7 @@ protected:
     }
 
     void createSwapchain(bool fullRecreate = false) {
-        int width = 0, height = 0;
+        int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         //Make sure no other GPU operations are on-going
         vkDeviceWaitIdle(device.device);
@@ -131,18 +130,10 @@ protected:
         vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         swapchain = swap_ret.value();
-        std::vector<VkImage> swapchainImages = swapchain.get_images().value();
         swapchainImageViews = swapchain.get_image_views().value();
+        renderEngineLink.swapchainImageViews = &swapchainImageViews;
         recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
         recreationDeletionQueue.emplace_front([&]{ swapchain.destroy_image_views(swapchainImageViews); });
-        //Create output images
-        colorImage.setEngineLink(&renderEngineLink);
-        colorImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, settings->msaaSamples, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)swapchain.extent.width, (int)swapchain.extent.height, ImageType{COLOR});
-        recreationDeletionQueue.emplace_front([&]{ colorImage.destroy(); });
-        depthImage.setEngineLink(&renderEngineLink);
-        depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, settings->msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)swapchain.extent.width, (int)swapchain.extent.height, ImageType{DEPTH});
-        depthImage.transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-        recreationDeletionQueue.emplace_front([&]{ depthImage.destroy(); });
         //clear images marked as in flight
         imagesInFlight.clear();
         imagesInFlight.resize(swapchain.image_count, VK_NULL_HANDLE);
@@ -180,88 +171,14 @@ protected:
             oneTimeOptionalDeletionQueue.emplace_front([&]{ for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); } });
             oneTimeOptionalDeletionQueue.emplace_front([&]{ for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); } });
             //Create render pass
-            VkAttachmentDescription colorAttachmentDescription{};
-            colorAttachmentDescription.format = swapchain.image_format;
-            colorAttachmentDescription.samples = settings->msaaSamples;
-            colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            colorAttachmentDescription.finalLayout = settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            VkAttachmentDescription depthAttachmentDescription{};
-            depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
-            depthAttachmentDescription.samples = settings->msaaSamples;
-            depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            VkAttachmentDescription colorResolveAttachmentDescription{};
-            colorResolveAttachmentDescription.format = swapchain.image_format;
-            colorResolveAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-            colorResolveAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            colorResolveAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            colorResolveAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            colorResolveAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            colorResolveAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            colorResolveAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-            VkAttachmentReference colorAttachmentReference{};
-            colorAttachmentReference.attachment = 0;
-            colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            VkAttachmentReference depthAttachmentReference{};
-            depthAttachmentReference.attachment = 1;
-            depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            VkAttachmentReference colorResolveAttachmentReference{};
-            colorResolveAttachmentReference.attachment = 2;
-            colorResolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            VkSubpassDescription subpassDescription{};
-            subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            subpassDescription.colorAttachmentCount = 1;
-            subpassDescription.pColorAttachments = &colorAttachmentReference;
-            subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
-            subpassDescription.pResolveAttachments = settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? nullptr : &colorResolveAttachmentReference;
-            VkSubpassDependency subpassDependency{};
-            subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-            subpassDependency.dstSubpass = 0;
-            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-            subpassDependency.srcAccessMask = 0;
-            subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-            subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            std::vector<VkAttachmentDescription> attachmentDescriptions{};
-            if (settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription, colorResolveAttachmentDescription}; } else { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription}; }
-            VkRenderPassCreateInfo renderPassCreateInfo{};
-            renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-            renderPassCreateInfo.attachmentCount = attachmentDescriptions.size();
-            renderPassCreateInfo.pAttachments = attachmentDescriptions.data();
-            renderPassCreateInfo.subpassCount = 1;
-            renderPassCreateInfo.pSubpasses = &subpassDescription;
-            renderPassCreateInfo.dependencyCount = 1;
-            renderPassCreateInfo.pDependencies = &subpassDependency;
-            if (vkCreateRenderPass(device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
-            oneTimeOptionalDeletionQueue.emplace_front([&]{ vkDestroyRenderPass(device.device, renderPass, nullptr); });
+            renderPassManager.setup(&renderEngineLink);
+            oneTimeOptionalDeletionQueue.emplace_front([&]{ renderPassManager.destroy(); });
             for (Asset *asset : assets) {
                 uploadAsset(asset, false);
             }
         }
         //recreate framebuffers
-        framebuffers.resize(swapchain.image_count);
-        std::vector<VkImageView> framebufferAttachments{};
-        for (unsigned int i = 0; i < framebuffers.size(); i++) {
-            if (settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT) { framebufferAttachments = {swapchainImageViews[i], depthImage.view}; }
-            else { framebufferAttachments = {colorImage.view, depthImage.view, swapchainImageViews[i]}; }
-            VkFramebufferCreateInfo framebufferCreateInfo{};
-            framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferCreateInfo.renderPass = renderPass;
-            framebufferCreateInfo.attachmentCount = framebufferAttachments.size();
-            framebufferCreateInfo.pAttachments = framebufferAttachments.data();
-            framebufferCreateInfo.width = swapchain.extent.width;
-            framebufferCreateInfo.height = swapchain.extent.height;
-            framebufferCreateInfo.layers = 1;
-            if (vkCreateFramebuffer(device.device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
-        }
-        recreationDeletionQueue.emplace_front([&]{ for  (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(device.device, framebuffer, nullptr); } });
+        renderPassManager.recreateFramebuffers();
         //update camera
         camera.resolution = settings->resolution;
         camera.fov = settings->fov;
@@ -280,12 +197,11 @@ protected:
     vkb::Swapchain swapchain{};
     std::vector<VkFence> imagesInFlight{};
     std::vector<VkSemaphore> imageAvailableSemaphores{};
-    std::vector<VkFramebuffer> framebuffers{};
-    VkRenderPass renderPass{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     VkQueue graphicsQueue{};
     VkQueue presentQueue{};
     VkPipelineLayout pipelineLayout{};
+    RenderPassManager renderPassManager{};
 
 public:
     virtual void uploadAsset(Asset *asset, bool append) {
@@ -326,16 +242,14 @@ public:
             shaders.push_back(shaderStageInfo);
         }
         //create graphics pipeline for this asset
-        VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
-        vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
         VkVertexInputBindingDescription bindingDescription = Vertex::getBindingDescription();
         std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = Vertex::getAttributeDescriptions();
         vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
         vertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
         vertexInputStateCreateInfo.pVertexBindingDescriptions = &bindingDescription;
         vertexInputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-        VkPipelineInputAssemblyStateCreateInfo  inputAssemblyStateCreateInfo{};
-        inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        VkPipelineInputAssemblyStateCreateInfo  inputAssemblyStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};
         inputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
         VkViewport viewport{};
@@ -348,14 +262,12 @@ public:
         VkRect2D scissor{};
         scissor.offset = {0, 0};
         scissor.extent = swapchain.extent;
-        VkPipelineViewportStateCreateInfo viewportStateCreateInfo{};
-        viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        VkPipelineViewportStateCreateInfo viewportStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO};
         viewportStateCreateInfo.viewportCount = 1;
         viewportStateCreateInfo.pViewports = &viewport;
         viewportStateCreateInfo.scissorCount = 1;
         viewportStateCreateInfo.pScissors = &scissor;
-        VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
-        rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO};
         rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
         rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
         rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL; //Controls fill mode (e.g. wireframe mode)
@@ -363,12 +275,10 @@ public:
         rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
         rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
-        VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
-        multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
         multisampleStateCreateInfo.sampleShadingEnable = settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? VK_FALSE : VK_TRUE;
         multisampleStateCreateInfo.rasterizationSamples = settings->msaaSamples;
-        VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{};
-        pipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
         pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
         pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
         pipelineDepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
@@ -383,18 +293,15 @@ public:
         colorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
         colorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
         colorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
-        VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo{};
-        colorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO};
         colorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
         colorBlendStateCreateInfo.attachmentCount = 1;
         colorBlendStateCreateInfo.pAttachments = &colorBlendAttachmentState;
-        VkDynamicState dynamicStates[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-        VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo{};
-        pipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
         pipelineDynamicStateCreateInfo.dynamicStateCount = 2;
         pipelineDynamicStateCreateInfo.pDynamicStates = dynamicStates;
-        VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
-        pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        VkGraphicsPipelineCreateInfo pipelineCreateInfo{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
         pipelineCreateInfo.stageCount = 2;
         pipelineCreateInfo.pStages = shaders.data();
         pipelineCreateInfo.pVertexInputState = &vertexInputStateCreateInfo;
@@ -406,7 +313,7 @@ public:
         pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
         pipelineCreateInfo.pDynamicState = &pipelineDynamicStateCreateInfo;
         pipelineCreateInfo.layout = pipelineLayout;
-        pipelineCreateInfo.renderPass = renderPass;
+        pipelineCreateInfo.renderPass = renderPassManager.renderPass;
         pipelineCreateInfo.subpass = 0;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &asset->graphicsPipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }

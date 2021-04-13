@@ -10,12 +10,24 @@
 
 class RenderPassManager {
 public:
-    void destroy() {
+    VkRenderPass renderPass{};
+    std::vector<VkFramebuffer> framebuffers{};
+    std::vector<VkClearValue> clearValues{};
 
+    void destroy() {
+        for (std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
+        for (std::function<void()>& function : secondaryDeletionQueue) { function(); }
+        secondaryDeletionQueue.clear();
     }
 
     void setup(VulkanGraphicsEngineLink *engineLink) {
+        //destroy all old stuffs
+        for (std::function<void()>& function : secondaryDeletionQueue) { function(); }
+        secondaryDeletionQueue.clear();
+        //update engine link
         linkedRenderEngine = engineLink;
+        //create renderPass
         VkAttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format = linkedRenderEngine->swapchain->image_format;
         colorAttachmentDescription.samples = linkedRenderEngine->settings->msaaSamples;
@@ -66,31 +78,67 @@ public:
         subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         std::vector<VkAttachmentDescription> attachmentDescriptions{};
-        if (settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription, colorResolveAttachmentDescription}; } else { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription}; }
-        VkRenderPassCreateInfo renderPassCreateInfo{};
-        renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription, colorResolveAttachmentDescription}; } else { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription}; }
+        VkRenderPassCreateInfo renderPassCreateInfo{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
         renderPassCreateInfo.attachmentCount = attachmentDescriptions.size();
         renderPassCreateInfo.pAttachments = attachmentDescriptions.data();
         renderPassCreateInfo.subpassCount = 1;
         renderPassCreateInfo.pSubpasses = &subpassDescription;
         renderPassCreateInfo.dependencyCount = 1;
         renderPassCreateInfo.pDependencies = &subpassDependency;
-        if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
-        deletionQueue.emplace_front([&]{ vkDestroyRenderPass(linkedRenderEngine->device.device, ); });
+        if (vkCreateRenderPass(linkedRenderEngine->device->device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
+        secondaryDeletionQueue.emplace_front([&]{ vkDestroyRenderPass(linkedRenderEngine->device->device, renderPass, nullptr); });
     }
 
-    void beginRenderPass(int framebufferIndex = 0) {
-        VkRenderPassBeginInfo renderPassBeginInfo{};
-        renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    void createFramebuffers() {
+        for (std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
+        //Create output images
+        colorImage.setEngineLink(linkedRenderEngine);
+        colorImage.create(linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, linkedRenderEngine->settings->msaaSamples, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)linkedRenderEngine->swapchain->extent.width, (int)linkedRenderEngine->swapchain->extent.height, ImageType{COLOR});
+        deletionQueue.emplace_front([&]{ colorImage.destroy(); });
+        depthImage.setEngineLink(linkedRenderEngine);
+        depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, linkedRenderEngine->settings->msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)linkedRenderEngine->swapchain->extent.width, (int)linkedRenderEngine->swapchain->extent.height, ImageType{DEPTH});
+        depthImage.transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        deletionQueue.emplace_front([&]{ depthImage.destroy(); });
+        //create framebuffers
+        framebuffers.resize(linkedRenderEngine->swapchain->image_count);
+        std::vector<VkImageView> framebufferAttachments{};
+        for (unsigned int i = 0; i < framebuffers.size(); i++) {
+            if (linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT) { framebufferAttachments = {(*linkedRenderEngine->swapchainImageViews)[i], depthImage.view}; }
+            else { framebufferAttachments = {colorImage.view, depthImage.view, (*linkedRenderEngine->swapchainImageViews)[i]}; }
+            VkFramebufferCreateInfo framebufferCreateInfo{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+            framebufferCreateInfo.renderPass = renderPass;
+            framebufferCreateInfo.attachmentCount = framebufferAttachments.size();
+            framebufferCreateInfo.pAttachments = framebufferAttachments.data();
+            framebufferCreateInfo.width = linkedRenderEngine->swapchain->extent.width;
+            framebufferCreateInfo.height = linkedRenderEngine->swapchain->extent.height;
+            framebufferCreateInfo.layers = 1;
+            if (vkCreateFramebuffer(linkedRenderEngine->device->device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
+        }
+        deletionQueue.emplace_front([&]{ for  (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(linkedRenderEngine->device->device, framebuffer, nullptr); } });
+    }
+
+    void recreateFramebuffers() {
+        createFramebuffers();
+    }
+
+    VkRenderPassBeginInfo beginRenderPass(unsigned int framebufferIndex = 0) {
+        VkRenderPassBeginInfo renderPassBeginInfo{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         renderPassBeginInfo.renderArea.offset = {0, 0};
-        renderPassBeginInfo.renderArea.extent = swapchain.extent;
+        renderPassBeginInfo.renderArea.extent = linkedRenderEngine->swapchain->extent;
         renderPassBeginInfo.clearValueCount = clearValues.size();
         renderPassBeginInfo.pClearValues = clearValues.data();
         renderPassBeginInfo.renderPass = renderPass;
-        renderPassBeginInfo.framebuffer = linkedRenderEngine->framebufferManager.framebuffers[framebufferIndex];
+        if (framebufferIndex > framebuffers.size()) { throw std::runtime_error(std::string("framebuffers[") + std::to_string(framebufferIndex) + "] does not exist!"); }
+        renderPassBeginInfo.framebuffer = framebuffers[framebufferIndex];
+        return renderPassBeginInfo;
     }
 
 private:
     std::deque<std::function<void()>> deletionQueue{};
+    std::deque<std::function<void()>> secondaryDeletionQueue{};
     VulkanGraphicsEngineLink *linkedRenderEngine{};
+    ImageManager colorImage{};
+    ImageManager depthImage{};
 };
