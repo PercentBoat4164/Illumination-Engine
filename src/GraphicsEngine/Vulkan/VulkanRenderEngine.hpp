@@ -13,7 +13,6 @@
 #include "BufferManager.hpp"
 #include "Camera.hpp"
 #include "CommandBufferManager.hpp"
-#include "DescriptorSetManager.hpp"
 #include "GPUData.hpp"
 #include "ImageManager.hpp"
 #include "PipelineManager.hpp"
@@ -33,7 +32,6 @@ private:
     VkSurfaceKHR surface{};
     std::deque<std::function<void()>> recreationDeletionQueue{};
     std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
-    DescriptorSetManager descriptorSetManager{};
     std::vector<VkImageView> swapchainImageViews{};
     void *vulkan_library{};
 
@@ -136,19 +134,14 @@ protected:
         if (fullRecreate) {
             for (std::function<void()>& function : oneTimeOptionalDeletionQueue) { function(); }
             oneTimeOptionalDeletionQueue.clear();
-            //Create descriptorSetManager
-            descriptorSetManager.setup({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, device.device);
-            oneTimeOptionalDeletionQueue.emplace_front([&]{ descriptorSetManager.destroy(); });
             //Create commandBuffers
             commandBufferManager.createCommandBuffers((int)swapchain.image_count);
             //Create sync objects
             imageAvailableSemaphores.resize(swapchain.image_count);
             renderFinishedSemaphores.resize(swapchain.image_count);
             inFlightFences.resize(swapchain.image_count);
-            VkSemaphoreCreateInfo semaphoreCreateInfo{};
-            semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            VkFenceCreateInfo fenceCreateInfo{};
-            fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            VkSemaphoreCreateInfo semaphoreCreateInfo{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+            VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
             fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
             for (unsigned int i = 0; i < swapchain.image_count; i++) {
                 if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
@@ -211,11 +204,12 @@ public:
         //build uniform buffers
         asset->uniformBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->uniformBufferObject, sizeof(UniformBufferObject));
-        //build descriptor sets
-        asset->descriptorSet = descriptorSetManager.createDescriptorSet(asset->descriptorSet, {asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
-        //build graphics pipeline for this asset
+        //build graphics pipeline and descriptor set for this asset
         asset->pipelineManagers.resize(1);
-        for (unsigned int i = 0; i < asset->pipelineManagers.size(); ++i) { asset->pipelineManagers[i].setup(&renderEngineLink, renderPassManager.renderPass, asset->shaderData, descriptorSetManager); }
+        for (unsigned int i = 0; i < asset->pipelineManagers.size(); ++i) {
+            asset->pipelineManagers[i].setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, asset->shaderData);
+            asset->pipelineManagers[0].createDescriptorSet({asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
+        }
         asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ for (PipelineManager pipelineManager : thisAsset.pipelineManagers) { pipelineManager.destroy(); } });
         if (append) { assets.push_back(asset); }
     }

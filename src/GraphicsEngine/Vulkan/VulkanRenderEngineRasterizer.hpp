@@ -58,7 +58,7 @@ public:
                 //record command buffer for this asset
                 vkCmdBindVertexBuffers(commandBufferManager.commandBuffers[imageIndex], 0, 1, &asset->vertexBuffer.buffer, offsets);
                 vkCmdBindIndexBuffer(commandBufferManager.commandBuffers[imageIndex], asset->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->pipelineManagers[0].pipelineLayout, 0, 1, &asset->descriptorSet, 0, nullptr);
+                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->pipelineManagers[0].pipelineLayout, 0, 1, &asset->pipelineManagers[0].descriptorSet, 0, nullptr);
                 vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->pipelineManagers[0].pipeline);
                 vkCmdDrawIndexed(commandBufferManager.commandBuffers[imageIndex], asset->indices.size(), 1, 0, 0, 0);
             }
