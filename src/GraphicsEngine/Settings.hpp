@@ -24,15 +24,13 @@ public:
     std::array<int, 3> applicationVersion = {0, 0, 1};
     std::array<int, 3> requiredVulkanVersion = {1, 2, 0};
     VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-    GLFWmonitor *monitor{glfwGetPrimaryMonitor()};
-    std::array<int, 2> defaultMonitorResolution{2560, 1440};
     std::array<int, 2> defaultWindowResolution{800, 600};
+    std::array<int, 2> windowPosition{10, 10};
     float anisotropicFilterLevel = 0;
     int mipLevels = 1;
     bool fullscreen = false;
     int refreshRate = 144;
     std::array<int, 2> resolution = defaultWindowResolution;
-    std::array<int, 2> shadowMapResolution{2048, 2048};
     int MAX_FRAMES_IN_FLIGHT = 2;
     std::string absolutePath = getProgramPath().string();
     float fov{90};

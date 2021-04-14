@@ -14,11 +14,8 @@ public:
     VkPipeline pipeline{};
 
     void destroy() {
-        //TODO: Enable the usage of the deletionQueue if possible.
-        vkDestroyPipeline(linkedRenderEngine->device->device, pipeline, nullptr); pipeline = VK_NULL_HANDLE;
-        vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr);
-//        for (const std::function<void()>& function : deletionQueue) { function(); }
-//        deletionQueue.clear();
+        for (const std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
     }
 
     void setup(VulkanGraphicsEngineLink *engineLink, VkRenderPass renderPass, std::vector<std::vector<char>> shaderData, const DescriptorSetManager& descriptorSetManager) {

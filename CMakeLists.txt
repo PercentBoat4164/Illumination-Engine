@@ -28,23 +28,5 @@ foreach(item IN LISTS data_SHADOW)
     FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
 endforeach()
 
-set(hppFiles
-        src/GraphicsEngine/Settings.hpp
-        src/GraphicsEngine/Vulkan/Asset.hpp
-        src/GraphicsEngine/Vulkan/BufferManager.hpp
-        src/GraphicsEngine/Vulkan/Camera.hpp
-        src/GraphicsEngine/Vulkan/CommandBufferManager.hpp
-        src/GraphicsEngine/Vulkan/DescriptorSetManager.hpp
-        src/GraphicsEngine/Vulkan/GPUData.hpp
-        src/GraphicsEngine/Vulkan/ImageManager.hpp
-        src/GraphicsEngine/Vulkan/RenderPassManager.hpp
-        src/GraphicsEngine/Vulkan/Vertex.hpp
-        src/GraphicsEngine/Vulkan/VulkanGraphicsEngineLink.hpp
-        src/GraphicsEngine/Vulkan/VulkanRenderEngine.hpp
-        src/GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp
-        src/GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp
-        src/GraphicsEngine/Vulkan/PipelineManager.hpp
-    )
-
-add_executable(CrystalEngine main.cpp ${hppFiles})
+add_executable(CrystalEngine main.cpp)
 target_link_libraries(CrystalEngine glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
