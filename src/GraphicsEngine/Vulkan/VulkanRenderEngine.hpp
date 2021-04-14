@@ -21,6 +21,7 @@
 #include "Vertex.hpp"
 #include "VulkanGraphicsEngineLink.hpp"
 
+//TODO: Add multithreading support throughout the engine
 class VulkanRenderEngine {
 private:
     vkb::Instance instance{};
@@ -66,21 +67,22 @@ protected:
         if (attachWindow == nullptr) { glfwInit(); }
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+        glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         glfwSetWindowUserPointer(window, this);
         if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS) { throw std::runtime_error("failed to create window surface!"); }
         engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(instance.instance, surface, nullptr); });
         //select physical device
         vkb::PhysicalDeviceSelector selector{instance};
-        std::vector<const char *> extensionNames{systemInfo->available_extensions.size()};
-        for (int i = 0; i < systemInfo->available_extensions.size(); ++i) { extensionNames[i] = systemInfo->available_extensions[i].extensionName; } //Enable all available extensions
-        extensionNames.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
-        extensionNames.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME); //^
-        extensionNames.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME); //^^
-        extensionNames.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME); //^^^
-        extensionNames.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
-        extensionNames.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME); //^
-        extensionNames.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME); //^
+        std::vector<const char *> extensionNames{
+                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+                VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
+        };
         for (const char *name : extensionNames) { std::cout << "Using extension: " << name << std::endl; }
         VkPhysicalDeviceFeatures deviceFeatures{}; //Request device features here
         deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -120,7 +122,7 @@ protected:
         recreationDeletionQueue.clear();
         //Create swapchain
         vkb::SwapchainBuilder swapchainBuilder{ device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_FIFO_RELAXED_KHR).build();
+        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         swapchain = swap_ret.value();
         recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
@@ -210,7 +212,7 @@ public:
         asset->uniformBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->uniformBufferObject, sizeof(UniformBufferObject));
         //build descriptor sets
-        asset->descriptorSet = descriptorSetManager.createDescriptorSet({asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
+        asset->descriptorSet = descriptorSetManager.createDescriptorSet(asset->descriptorSet, {asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
         //build graphics pipeline for this asset
         asset->pipelineManagers.resize(1);
         for (unsigned int i = 0; i < asset->pipelineManagers.size(); ++i) { asset->pipelineManagers[i].setup(&renderEngineLink, renderPassManager.renderPass, asset->shaderData, descriptorSetManager); }
@@ -225,8 +227,8 @@ public:
             glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);
             //find monitor that window is on.
             int monitorCount{}, i, windowX{}, windowY{}, windowWidth{}, windowHeight{}, monitorX{}, monitorY{}, monitorWidth, monitorHeight, bestMonitorWidth{}, bestMonitorHeight{}, bestMonitorRefreshRate{}, overlap, bestOverlap{0};
-            GLFWmonitor **monitors{};
-            const GLFWvidmode *mode{};
+            GLFWmonitor **monitors;
+            const GLFWvidmode *mode;
             glfwGetWindowPos(window, &windowX, &windowY);
             glfwGetWindowSize(window, &windowWidth, &windowHeight);
             monitors = glfwGetMonitors(&monitorCount);

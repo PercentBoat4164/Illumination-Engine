@@ -40,7 +40,7 @@ public:
             shaderStageInfo.stage = i % 2 ? VK_SHADER_STAGE_FRAGMENT_BIT : VK_SHADER_STAGE_VERTEX_BIT;
             shaders.push_back(shaderStageInfo);
         }
-        //create graphics pipeline for this asset
+        //create graphics pipeline
         VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
         VkVertexInputBindingDescription bindingDescription = Vertex::getBindingDescription();
         std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = Vertex::getAttributeDescriptions();

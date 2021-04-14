@@ -13,8 +13,6 @@
 class VulkanRenderEngineRasterizer : public VulkanRenderEngine {
 public:
     bool update() override {
-        //TODO: Add multithreading support throughout the engine
-        //TODO: Add better documentation to this function
         //GPU synchronization
         if (window == nullptr) { return false; }
         if (assets.empty()) { return glfwWindowShouldClose(window) != 1; }

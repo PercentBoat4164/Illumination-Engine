@@ -10,8 +10,8 @@ void cursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     yOffset *= vulkanRenderEngine->camera.mouseSensitivity;
     vulkanRenderEngine->camera.yaw -= (float) xOffset;
     vulkanRenderEngine->camera.pitch -= (float) yOffset;
-    if (vulkanRenderEngine->camera.pitch > 89.0f) { vulkanRenderEngine->camera.pitch = 89.0f; }
-    if (vulkanRenderEngine->camera.pitch < -89.0f) { vulkanRenderEngine->camera.pitch = -89.0f; }
+    if (vulkanRenderEngine->camera.pitch > 89.99f) { vulkanRenderEngine->camera.pitch = 89.99f; }
+    if (vulkanRenderEngine->camera.pitch < -89.99f) { vulkanRenderEngine->camera.pitch = -89.99f; }
     glfwSetCursorPos(window, 0, 0);
 }
 
@@ -29,10 +29,12 @@ int main(int argc, char **argv) {
             renderEngine.camera.position = {0, 0, 2};
             Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
             Asset quad = Asset("models/quad.obj", {"models/quad_Color.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
-            Asset cube = Asset("models/cube.obj", {"models/cube.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {-6, 6, 1});
+            Asset cube = Asset("models/cube.obj", {"models/cube.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0});
+            //Asset statue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
             renderEngine.uploadAsset(&cube, true);
             renderEngine.uploadAsset(&quad, true);
             renderEngine.uploadAsset(&vikingRoom, true);
+            //renderEngine.uploadAsset(&statue, true);
             double lastTab{0};
             double lastF2{0};
             double lastCursorPosX{0};
@@ -83,6 +85,8 @@ int main(int argc, char **argv) {
                     lastTab = glfwGetTime();
                     captureInput = !captureInput;
                 } if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE)) { glfwSetWindowShouldClose(renderEngine.window, 1); }
+                //move assets
+                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
             }
             renderEngine.cleanUp();
         } catch (const std::exception& e) {

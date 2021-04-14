@@ -37,29 +37,26 @@ public:
             descriptorPoolSize.type = setupDescriptorTypes[i];
             descriptorPoolSizes.push_back(descriptorPoolSize);
         }
-        VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
-        descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
         descriptorSetLayoutCreateInfo.bindingCount = descriptorSetLayoutBindings.size();
         descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
-        if (vkCreateDescriptorSetLayout(engineDevice, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor set layout!"); }
+        if (vkCreateDescriptorSetLayout(creationDevice, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor set layout!"); }
         deletionQueue.emplace_front([&]{ vkDestroyDescriptorSetLayout(creationDevice, descriptorSetLayout, nullptr); descriptorSetLayout = VK_NULL_HANDLE; });
         VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
         descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         descriptorPoolCreateInfo.poolSizeCount = descriptorPoolSizes.size();
         descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
         descriptorPoolCreateInfo.maxSets = swapchainImageCount;
-        if (vkCreateDescriptorPool(engineDevice, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); }
+        if (vkCreateDescriptorPool(creationDevice, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); }
         deletionQueue.emplace_front([&]{ vkDestroyDescriptorPool(creationDevice, descriptorPool, nullptr); descriptorPool = VK_NULL_HANDLE; });
     }
 
-    VkDescriptorSet createDescriptorSet(const std::vector<BufferManager>& buffers, const std::vector<ImageManager>& images, const std::vector<bool>& indices) {
+    VkDescriptorSet createDescriptorSet(VkDescriptorSet descriptorSet, const std::vector<BufferManager>& buffers, const std::vector<ImageManager>& images, const std::vector<bool>& indices) {
         if (buffers.size() + images.size() != indices.size()) { throw std::runtime_error("number of indices does not equal number of images plus number of buffers!"); }
-        VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
-        descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
         descriptorSetAllocateInfo.descriptorPool = descriptorPool;
         descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
         descriptorSetAllocateInfo.descriptorSetCount = 1;
-        VkDescriptorSet descriptorSet{};
         vkAllocateDescriptorSets(creationDevice, &descriptorSetAllocateInfo, &descriptorSet);
         int bufferCounter{}, imageCounter{};
         std::vector<VkWriteDescriptorSet> descriptorWrites{indices.size()};
