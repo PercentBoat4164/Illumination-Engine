@@ -72,24 +72,27 @@ protected:
         engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(instance.instance, surface, nullptr); });
         //select physical device
         vkb::PhysicalDeviceSelector selector{instance};
-        std::vector<const char *> extensionNames{
-                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-                VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
-                VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
-        };
+        std::vector<const char *> extensionNames{};
+        if (settings.pathTracing) {
+            extensionNames.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+            extensionNames.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+            extensionNames.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+            extensionNames.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+            extensionNames.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+            extensionNames.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+            extensionNames.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+        }
         for (const char *name : extensionNames) { std::cout << "Using extension: " << name << std::endl; }
-        VkPhysicalDeviceFeatures deviceFeatures{}; //Request device features here
+        VkPhysicalDeviceFeatures deviceFeatures{}; //require device features here
         deviceFeatures.samplerAnisotropy = VK_TRUE;
         deviceFeatures.sampleRateShading = VK_TRUE;
         vkb::detail::Result <vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).require_dedicated_transfer_queue().add_desired_extensions(extensionNames).set_required_features(deviceFeatures).select();
         if (!phys_ret) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + phys_ret.error().message() + "\n"); }
         //create logical device
+        VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES};
+        physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
         vkb::DeviceBuilder device_builder{phys_ret.value()};
-        vkb::detail::Result <vkb::Device> dev_ret = device_builder.build();
+        vkb::detail::Result <vkb::Device> dev_ret = device_builder.add_pNext(&physicalDeviceBufferDeviceAddressFeatures).build();
         if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
         device = dev_ret.value();
         engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });

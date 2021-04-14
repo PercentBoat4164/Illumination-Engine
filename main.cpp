@@ -30,11 +30,11 @@ int main(int argc, char **argv) {
             Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
             Asset quad = Asset("models/quad.obj", {"models/quad_Color.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
             Asset cube = Asset("models/cube.obj", {"models/cube.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0});
-            //Asset statue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings);
+            Asset statue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {7, 2, 0});
             renderEngine.uploadAsset(&cube, true);
             renderEngine.uploadAsset(&quad, true);
             renderEngine.uploadAsset(&vikingRoom, true);
-            //renderEngine.uploadAsset(&statue, true);
+            renderEngine.uploadAsset(&statue, true);
             double lastTab{0};
             double lastF2{0};
             double lastCursorPosX{0};
