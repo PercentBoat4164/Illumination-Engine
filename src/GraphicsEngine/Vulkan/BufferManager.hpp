@@ -12,6 +12,7 @@ public:
     void *data{};
     VkBuffer buffer{};
     VkDeviceSize bufferSize{};
+    VkDeviceAddress bufferAddress{VK_NULL_HANDLE};
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
@@ -35,6 +36,11 @@ public:
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); });
+        if (usage == (VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)) {
+            VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
+            bufferDeviceAddressInfo.buffer = buffer;
+            bufferAddress = vkGetBufferDeviceAddress(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
+        }
         return data;
     }
 

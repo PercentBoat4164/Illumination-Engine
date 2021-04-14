@@ -1,9 +1,11 @@
 #pragma once
 
+#include <vector>
+
 #include <VkBootstrap.h>
 #include <vk_mem_alloc.h>
 
-class FramebufferManager{};
+#include "CommandBufferManager.hpp"
 
 class VulkanGraphicsEngineLink {
 public:
@@ -12,7 +14,7 @@ public:
     vkb::Swapchain *swapchain{};
     VkCommandPool *commandPool{};
     VmaAllocator *allocator{};
-    FramebufferManager *framebufferManager{};
+    std::vector<VkImageView> *swapchainImageViews{};
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
         VkCommandBufferAllocateInfo allocInfo{};

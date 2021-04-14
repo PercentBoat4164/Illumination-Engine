@@ -4,14 +4,14 @@
 #include "src/GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
 #include "src/GraphicsEngine/OpenGL/OpenGLRenderEngine.hpp"
 
-void cursorCallback(GLFWwindow *window, double xpos, double ypos) {
+void cursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     auto vulkanRenderEngine = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
-    xpos *= vulkanRenderEngine->camera.mouseSensitivity;
-    ypos *= vulkanRenderEngine->camera.mouseSensitivity;
-    vulkanRenderEngine->camera.yaw -= (float)xpos;
-    vulkanRenderEngine->camera.pitch -= (float)ypos;
-    if (vulkanRenderEngine->camera.pitch > 89.0f) { vulkanRenderEngine->camera.pitch = 89.0f; }
-    if (vulkanRenderEngine->camera.pitch < -89.0f) { vulkanRenderEngine->camera.pitch = -89.0f; }
+    xOffset *= vulkanRenderEngine->camera.mouseSensitivity;
+    yOffset *= vulkanRenderEngine->camera.mouseSensitivity;
+    vulkanRenderEngine->camera.yaw -= (float) xOffset;
+    vulkanRenderEngine->camera.pitch -= (float) yOffset;
+    if (vulkanRenderEngine->camera.pitch > 89.99f) { vulkanRenderEngine->camera.pitch = 89.99f; }
+    if (vulkanRenderEngine->camera.pitch < -89.99f) { vulkanRenderEngine->camera.pitch = -89.99f; }
     glfwSetCursorPos(window, 0, 0);
 }
 
@@ -27,14 +27,18 @@ int main(int argc, char **argv) {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
             renderEngine.camera.position = {0, 0, 2};
-            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            Asset quad = Asset("models/quad.obj", {"models/quad_Color.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, renderEngine.settings, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
-            Asset cube = Asset("models/cube.obj", {"models/cube.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, renderEngine.settings, {-6, 6, 1});
+            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            Asset quad = Asset("models/quad.obj", {"models/quad_Color.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
+            Asset cube = Asset("models/cube.obj", {"models/cube.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0});
+            Asset statue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {7, 2, 0});
             renderEngine.uploadAsset(&cube, true);
             renderEngine.uploadAsset(&quad, true);
             renderEngine.uploadAsset(&vikingRoom, true);
+            renderEngine.uploadAsset(&statue, true);
             double lastTab{0};
             double lastF2{0};
+            double lastCursorPosX{0};
+            double lastCursorPosY{0};
             bool captureInput{};
             while (renderEngine.update()) {
                 //Process inputs
@@ -42,24 +46,18 @@ int main(int argc, char **argv) {
                 float velocity = renderEngine.frameTime * renderEngine.camera.movementSpeed;
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
                     for (Asset *asset : renderEngine.assets) { asset->reloadAsset(); }
-                    renderEngine.updateSettings(*renderEngine.settings, false);
-                }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
-                    Settings newSettings{};
-                    newSettings = *renderEngine.settings;
-                    newSettings.fullscreen = !renderEngine.settings->fullscreen;
-                    renderEngine.updateSettings(newSettings, true);
+                    renderEngine.updateSettings(false);
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
+                    renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
+                    renderEngine.updateSettings(true);
                     lastF2 = glfwGetTime();
-                }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
-                    renderEngine.settings->msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-                    renderEngine.updateSettings(*renderEngine.settings, true);
-                }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
-                    renderEngine.settings->msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-                    renderEngine.updateSettings(*renderEngine.settings, true);
-                }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
+                    renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+                    renderEngine.updateSettings(true);
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
+                    renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
+                    renderEngine.updateSettings(true);
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
@@ -69,17 +67,26 @@ int main(int argc, char **argv) {
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastTab > .2)) {
                     int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
                     if (mode == GLFW_CURSOR_DISABLED) {
+                        glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                         glfwSetCursorPosCallback(renderEngine.window, nullptr);
-                    }
-                    if (mode == GLFW_CURSOR_NORMAL) {
-                        glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                        glfwSetCursorPosCallback(renderEngine.window, cursorCallback);
+                    } else if (mode == GLFW_CURSOR_NORMAL) {
+                        if (glfwGetWindowAttrib(renderEngine.window, GLFW_HOVERED)) {
+                            glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                            glfwSetCursorPos(renderEngine.window, 0, 0);
+                            glfwSetCursorPosCallback(renderEngine.window, cursorCallback);
+                            glfwSetCursorPos(renderEngine.window, lastCursorPosX, lastCursorPosY);
+                        } else {
+                            glfwSetCursorPos(renderEngine.window, 0, 0);
+                            glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                            glfwSetCursorPosCallback(renderEngine.window, cursorCallback);
+                        }
                     }
                     lastTab = glfwGetTime();
                     captureInput = !captureInput;
-                }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE)) { glfwSetWindowShouldClose(renderEngine.window, 1); }
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE)) { glfwSetWindowShouldClose(renderEngine.window, 1); }
+                //move assets
+                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
             }
             renderEngine.cleanUp();
         } catch (const std::exception& e) {

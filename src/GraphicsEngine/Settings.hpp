@@ -20,21 +20,20 @@
 
 class Settings {
 public:
-    std::string applicationName = "Crystal Engine";
-    std::array<int, 3> applicationVersion = {0, 0, 1};
-    std::array<int, 3> requiredVulkanVersion = {1, 2, 0};
-    VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-    GLFWmonitor *monitor{glfwGetPrimaryMonitor()};
-    std::array<int, 2> defaultMonitorResolution{2560, 1440};
+    bool pathTracing{true};
+    std::string applicationName{"Crystal Engine"};
+    std::array<int, 3> applicationVersion{0, 0, 1};
+    std::array<int, 3> requiredVulkanVersion{1, 2, 0};
+    VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_8_BIT};
     std::array<int, 2> defaultWindowResolution{800, 600};
-    float anisotropicFilterLevel = 0;
-    int mipLevels = 1;
-    bool fullscreen = false;
-    int refreshRate = 144;
-    std::array<int, 2> resolution = defaultWindowResolution;
-    std::array<int, 2> shadowMapResolution{2048, 2048};
-    int MAX_FRAMES_IN_FLIGHT = 2;
-    std::string absolutePath = getProgramPath().string();
+    std::array<int, 2> windowPosition{10, 10};
+    float anisotropicFilterLevel{16};
+    int mipLevels{1};
+    bool fullscreen{false};
+    int refreshRate{60};
+    std::array<int, 2> resolution{defaultWindowResolution};
+    int MAX_FRAMES_IN_FLIGHT{2};
+    std::string absolutePath{getProgramPath().string()};
     float fov{90};
     double renderDistance{1000000};
 
@@ -48,8 +47,8 @@ public:
         std::string path = std::string(chars);
         #else
         char result[PATH_MAX];
-        ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-        std::string path = std::string(result, (count > 0) ? count : 0);
+        ssize_t count{readlink("/proc/self/exe", result, PATH_MAX)};
+        std::string path{std::string(result, (count > 0) ? count : 0)};
         #endif
         return path.substr(0, path.find_last_of('\\') + 1);
     }
@@ -59,7 +58,7 @@ public:
         vkGetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);
         VkPhysicalDeviceProperties physicalDeviceProperties{};
         vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
-        const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        const GLFWvidmode* mode{glfwGetVideoMode(glfwGetPrimaryMonitor())};
         refreshRate = mode->refreshRate;
         resolution[0] = mode->width;
         resolution[1] = mode->height;
