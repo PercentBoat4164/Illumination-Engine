@@ -15,7 +15,6 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf otherSources.tar.xz WORKING_
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf vk-bootstrap.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/sources)
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf glfw.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/sources)
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf glm.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/sources)
-
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf glew.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/sources)
 
 add_subdirectory(sources/glm)
@@ -23,7 +22,7 @@ add_subdirectory(sources/glfw)
 add_subdirectory(sources/glew/build/cmake)
 add_subdirectory(sources/vk-bootstrap)
 
-set(data_SHADOW shaders models sources/glew32d.dll sources/vulkan-1.dll)
+set(data_SHADOW shaders models sources/glew32d.dll sources/glew32.dll sources/vulkan-1.dll sources/libvulkan.so.1)
 foreach(item IN LISTS data_SHADOW)
     message("Copying '" ${item} "'")
     FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")

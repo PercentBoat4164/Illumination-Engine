@@ -1,20 +1,22 @@
 # Project exclude paths
-/debug-build/
-/release-build/
-/cmake-build-debug-coverage/
-/build/
-/CMakeFiles/
 /.idea/
 /.vs/
 /.vscode/
+/CMakeFiles/
+/build/
+/cmake-build-debug-coverage/
+/debug-build/
 /out/
-/sources/json.hpp
-/sources/glew32d.dll
-/sources/vulkan-1.dll
-/sources/glfw
+/release-build/
+#sources extracted from sources/otherSources.tar.xz
 /sources/glew
+/sources/glfw
 /sources/glm
 /sources/vk-bootstrap
 /sources/stb_image.h
 /sources/tiny_obj_loader.h
 /sources/vk_mem_alloc.h
+/sources/glew32.dll
+/sources/glew32d.dll
+/sources/vulkan-1.dll
+/sources/libvulkan.so.1
