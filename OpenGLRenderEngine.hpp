@@ -89,7 +89,7 @@ private:
             glCompileShader(shaderIDs[i]);
             glGetShaderiv(shaderIDs[i], GL_COMPILE_STATUS, &Result);
             glGetShaderiv(shaderIDs[i], GL_INFO_LOG_LENGTH, &InfoLogLength);
-            if (InfoLogLength > 1) { throw std::runtime_error("failed to compile shader: " + settings.absolutePath + paths[i]); }
+            if (Result > 1) { throw std::runtime_error("failed to compile shader: " + settings.absolutePath + paths[i]); }
         }
         GLuint ProgramID = glCreateProgram();
         glAttachShader(ProgramID, vertexShaderID);
