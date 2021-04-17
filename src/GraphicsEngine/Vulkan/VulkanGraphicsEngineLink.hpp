@@ -9,8 +9,13 @@
 
 class VulkanGraphicsEngineLink {
 public:
+    struct PhysicalDeviceInfo {
+        VkPhysicalDeviceRayTracingPipelinePropertiesKHR physicalDeviceRayTracingPipelineProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR};
+    };
+
     Settings *settings = nullptr;
     vkb::Device *device{};
+    PhysicalDeviceInfo *physicalDeviceInfo{};
     vkb::Swapchain *swapchain{};
     VkCommandPool *commandPool{};
     VmaAllocator *allocator{};

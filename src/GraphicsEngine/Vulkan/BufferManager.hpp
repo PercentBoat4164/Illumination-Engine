@@ -12,7 +12,6 @@ public:
     void *data{};
     VkBuffer buffer{};
     VkDeviceSize bufferSize{};
-    VkDeviceAddress bufferAddress{VK_NULL_HANDLE};
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
@@ -24,7 +23,7 @@ public:
         linkedRenderEngine = engineLink;
     }
 
-    void *create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage) {
+    virtual void *create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage) {
         bufferSize = size;
         VkBufferCreateInfo bufferCreateInfo{};
         bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -36,11 +35,6 @@ public:
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); });
-        if (usage == (VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)) {
-            VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
-            bufferDeviceAddressInfo.buffer = buffer;
-            bufferAddress = vkGetBufferDeviceAddress(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
-        }
         return data;
     }
 
@@ -59,8 +53,7 @@ public:
         vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
     }
-
-private:
+protected:
     std::deque<std::function<void()>> deletionQueue{};
     VulkanGraphicsEngineLink *linkedRenderEngine{};
     VmaAllocation allocation{};

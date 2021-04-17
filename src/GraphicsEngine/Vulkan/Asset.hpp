@@ -83,18 +83,20 @@ public:
     glm::vec3 rotation{};
     glm::vec3 scale{};
     bool render{true};
+    uint32_t triangleCount{};
 
 private:
     void loadModel(const char *filename) {
         vertices.clear();
-        vertices.resize(0);
         indices.clear();
-        indices.resize(0);
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, (absolutePath + (std::string)filename).c_str())) { throw std::runtime_error(warn + err); }
+        uint32_t reserveCount{};
+        for (const auto& shape : shapes) { reserveCount += shape.mesh.indices.size(); }
+        indices.reserve(reserveCount);
         std::unordered_map<Vertex, uint32_t> uniqueVertices{};
         for (const auto& shape : shapes) {
             for (const auto& index : shape.mesh.indices) {
@@ -110,6 +112,7 @@ private:
                 indices.push_back(uniqueVertices[vertex]);
             }
         }
+        triangleCount = indices.size() / 3;
     }
 
     void loadTextures(const std::vector<const char *>& filenames) {

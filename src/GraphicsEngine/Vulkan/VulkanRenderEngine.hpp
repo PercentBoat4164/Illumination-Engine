@@ -46,6 +46,7 @@ protected:
         #endif
         if( vulkan_library == nullptr ) { throw std::runtime_error("Could not connect with a Vulkan Runtime library."); }
         renderEngineLink.device = &device;
+        renderEngineLink.physicalDeviceInfo = &physicalDeviceInfo;
         renderEngineLink.swapchain = &swapchain;
         renderEngineLink.settings = &settings;
         renderEngineLink.commandPool = &commandBufferManager.commandPool;
@@ -89,13 +90,24 @@ protected:
         vkb::detail::Result <vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).require_dedicated_transfer_queue().add_desired_extensions(extensionNames).set_required_features(deviceFeatures).select();
         if (!phys_ret) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + phys_ret.error().message() + "\n"); }
         //create logical device
-        VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES};
-        physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
         vkb::DeviceBuilder device_builder{phys_ret.value()};
-        vkb::detail::Result <vkb::Device> dev_ret = device_builder.add_pNext(&physicalDeviceBufferDeviceAddressFeatures).build();
-        if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
-        device = dev_ret.value();
-        engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
+        if (settings.pathTracing) {
+            VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES};
+            physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
+            vkb::detail::Result<vkb::Device> dev_ret = device_builder.add_pNext(&physicalDeviceBufferDeviceAddressFeatures).build();
+            if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
+            device = dev_ret.value();
+            engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
+            //get physical device features and properties
+            VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+            deviceProperties2.pNext = &physicalDeviceInfo.physicalDeviceRayTracingPipelineProperties;
+            vkGetPhysicalDeviceProperties2(device.physical_device.physical_device, &deviceProperties2);
+        } else {
+            vkb::detail::Result<vkb::Device> dev_ret = device_builder.build();
+            if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
+            device = dev_ret.value();
+            engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
+        }
         //get queues
         graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
         presentQueue = device.get_queue(vkb::QueueType::present).value();
@@ -222,7 +234,7 @@ public:
         //TODO: Fix view jerk when exiting fullscreen.
         if (settings.fullscreen) {
             glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);
-            //find monitor that window is on.
+            //find monitor that window is on
             int monitorCount{}, i, windowX{}, windowY{}, windowWidth{}, windowHeight{}, monitorX{}, monitorY{}, monitorWidth, monitorHeight, bestMonitorWidth{}, bestMonitorHeight{}, bestMonitorRefreshRate{}, overlap, bestOverlap{0};
             GLFWmonitor **monitors;
             const GLFWvidmode *mode;
@@ -243,11 +255,9 @@ public:
                     bestMonitorRefreshRate = mode->refreshRate;
                 }
             }
+            //put window in fullscreen on that monitor
             glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
-        }
-        else {
-            glfwSetWindowMonitor(window, nullptr, settings.windowPosition[0], settings.windowPosition[1], settings.defaultWindowResolution[0], settings.defaultWindowResolution[1], settings.refreshRate);
-        }
+        } else { glfwSetWindowMonitor(window, nullptr, settings.windowPosition[0], settings.windowPosition[1], settings.defaultWindowResolution[0], settings.defaultWindowResolution[1], settings.refreshRate); }
         glfwSetWindowTitle(window, settings.applicationName.c_str());
         renderEngineLink.settings = &settings;
         if (updateAll) { createSwapchain(true); }
@@ -275,4 +285,5 @@ public:
     GLFWwindow *window{};
     std::vector<Asset *> assets{};
     CommandBufferManager commandBufferManager{};
+    VulkanGraphicsEngineLink::PhysicalDeviceInfo physicalDeviceInfo{};
 };

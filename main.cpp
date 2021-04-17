@@ -2,6 +2,7 @@
 #include "src/GraphicsEngine/Settings.hpp"
 #include "src/GraphicsEngine/Vulkan/Asset.hpp"
 #include "src/GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
+#include "src/GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp"
 #include "src/GraphicsEngine/OpenGL/OpenGLRenderEngine.hpp"
 
 void cursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
@@ -27,9 +28,9 @@ int main(int argc, char **argv) {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
             renderEngine.camera.position = {0, 0, 2};
-            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            Asset quad = Asset("models/quad.obj", {"models/quad_Color.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
             Asset cube = Asset("models/cube.obj", {"models/cube.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0});
+            Asset quad = Asset("models/quad.obj", {"models/quad_Color.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
+            Asset vikingRoom = Asset("models/vikingRoom.obj", {"models/vikingRoom.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
             Asset statue = Asset("models/ancientStatue.obj", {"models/ancientStatue.png"}, {"shaders/vertexShader.vert", "shaders/fragmentShader.frag"}, &renderEngine.settings, {7, 2, 0});
             renderEngine.uploadAsset(&cube, true);
             renderEngine.uploadAsset(&quad, true);
@@ -37,6 +38,7 @@ int main(int argc, char **argv) {
             renderEngine.uploadAsset(&statue, true);
             double lastTab{0};
             double lastF2{0};
+            double lastEsc{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
@@ -84,7 +86,19 @@ int main(int argc, char **argv) {
                     }
                     lastTab = glfwGetTime();
                     captureInput = !captureInput;
-                } if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE)) { glfwSetWindowShouldClose(renderEngine.window, 1); }
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastEsc > .2)) {
+                    if (renderEngine.settings.fullscreen) {
+                        renderEngine.settings.fullscreen = false;
+                        renderEngine.updateSettings(true);
+                        lastEsc = glfwGetTime();
+                    }
+                    int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
+                    if (mode == GLFW_CURSOR_DISABLED) {
+                        glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
+                        glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                        glfwSetCursorPosCallback(renderEngine.window, nullptr);
+                        captureInput = false;
+                    } else { glfwSetWindowShouldClose(renderEngine.window, 1); } }
                 //move assets
                 cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
             }
