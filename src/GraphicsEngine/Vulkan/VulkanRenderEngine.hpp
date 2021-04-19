@@ -83,7 +83,6 @@ protected:
             extensionNames.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
             extensionNames.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
         }
-        for (const char *name : extensionNames) { std::cout << "Using extension: " << name << std::endl; }
         VkPhysicalDeviceFeatures deviceFeatures{}; //require device features here
         deviceFeatures.samplerAnisotropy = VK_TRUE;
         deviceFeatures.sampleRateShading = VK_TRUE;

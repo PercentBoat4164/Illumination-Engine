@@ -71,6 +71,7 @@ public:
     BufferManager uniformBuffer{};
     BufferManager vertexBuffer{};
     BufferManager indexBuffer{};
+    BufferManager transformationBuffer{};
     std::vector<PipelineManager> pipelineManagers{};
     UniformBufferObject uniformBufferObject{};
     std::vector<ImageManager> textureImages{};
@@ -84,6 +85,8 @@ public:
     glm::vec3 scale{};
     bool render{true};
     uint32_t triangleCount{};
+    VkTransformMatrixKHR transformationMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
+
 
 private:
     void loadModel(const char *filename) {
@@ -131,7 +134,7 @@ private:
         shaderData.reserve(filenames.size());
         for (const char *shaderName : shaderNames) {
             std::string compiledFileName = ((std::string) shaderName).substr(0, sizeof(shaderName) - 4) + "spv";
-            if (compile) { if (system((GLSLC + absolutePath + shaderName + " -o " + absolutePath + compiledFileName).c_str()) != 0) { throw std::runtime_error("failed to compile shaders!"); } }
+            if (compile) { if (system((GLSLC + absolutePath + shaderName + " -o " + absolutePath + compiledFileName).c_str()) != 0) { throw std::runtime_error("failed to compile Shaders!"); } }
             std::ifstream file(absolutePath + compiledFileName, std::ios::ate | std::ios::binary);
             if (!file.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName.append("\n as file: " + absolutePath + compiledFileName)); }
             size_t fileSize = (size_t) file.tellg();
