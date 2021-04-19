@@ -31,7 +31,7 @@ add_subdirectory(deps/vk-bootstrap)
 
 # Download Models if they don't already exist
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/Models")
-    execute_process(COMMAND python3 "${CMAKE_SOURCE_DIR}/src/DownloadModels.py" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
+    execute_process(COMMAND python3 "${CMAKE_SOURCE_DIR}/DownloadModels.py" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
 # Copy data files and dlls
