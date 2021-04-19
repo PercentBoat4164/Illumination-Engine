@@ -9,7 +9,7 @@ except ImportError:
     os.system("python3 -m pip install gdown")
     print("Please run the program again.")
     exit()
-# gdown.download("https://drive.google.com/uc?id=1m4obHW53rdjeoW_RKvNURFT8cFA3x_jb", "Models.tar.xz", quiet=False)
+gdown.download("https://drive.google.com/uc?id=1m4obHW53rdjeoW_RKvNURFT8cFA3x_jb", "Models.tar.xz", quiet=False)
 print("Download finished\nExtracting...\nFrom: "+os.getcwd()+"Models.tar.xz\nTo: "+os.getcwd()+"/Models")
 file = tarfile.open("Models.tar.xz", "r")
 file.extractall("src/Models")
