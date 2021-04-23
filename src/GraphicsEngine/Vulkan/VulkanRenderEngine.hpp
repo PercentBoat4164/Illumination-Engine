@@ -25,8 +25,7 @@ class VulkanRenderEngine {
 private:
     vkb::Instance instance{};
     std::deque<std::function<void()>> engineDeletionQueue{};
-    VulkanGraphicsEngineLink renderEngineLink{};
-    BufferManager stagingBuffer{};
+    BufferManager scratchBuffer{};
     VmaAllocator allocator{};
     bool framebufferResized{false};
     VkSurfaceKHR surface{};
@@ -101,6 +100,9 @@ protected:
             VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
             deviceProperties2.pNext = &physicalDeviceInfo.physicalDeviceRayTracingPipelineProperties;
             vkGetPhysicalDeviceProperties2(device.physical_device.physical_device, &deviceProperties2);
+            VkPhysicalDeviceFeatures2 deviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+            deviceFeatures2.pNext = &physicalDeviceInfo.physicalDeviceAccelerationStructureFeatures;
+            vkGetPhysicalDeviceFeatures2(device.physical_device.physical_device, &deviceFeatures2);
         } else {
             vkb::detail::Result<vkb::Device> dev_ret = device_builder.build();
             if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
@@ -121,8 +123,8 @@ protected:
         commandBufferManager.setup(device, vkb::QueueType::graphics);
         engineDeletionQueue.emplace_front([&] { commandBufferManager.destroy(); });
         //delete staging buffer
-        stagingBuffer.setEngineLink(&renderEngineLink);
-        engineDeletionQueue.emplace_front([&] { stagingBuffer.destroy(); });
+        scratchBuffer.setEngineLink(&renderEngineLink);
+        engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
         createSwapchain(true);
     }
 
@@ -197,23 +199,26 @@ protected:
     VkQueue presentQueue{};
     VkPipelineLayout pipelineLayout{};
     RenderPassManager renderPassManager{};
+    VulkanGraphicsEngineLink renderEngineLink{};
 
 public:
     virtual void uploadAsset(Asset *asset, bool append) {
         //destroy previously created asset if any
         asset->destroy();
-        //upload mesh and vertex data
+        //upload mesh, vertex, and transform data
         asset->vertexBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
         asset->indexBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
+        asset->transformationBuffer.setEngineLink(&renderEngineLink);
+        memcpy(asset->transformationBuffer.create(sizeof(asset->transformationMatrix), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_GPU_ONLY), &asset->transformationMatrix, sizeof(asset->transformationMatrix));
         //upload textures
         asset->textureImages.resize(asset->textures.size());
         for (unsigned int i = 0; i < asset->textures.size(); ++i) {
-            stagingBuffer.destroy();
-            memcpy(stagingBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->textures[i], asset->width * asset->height * 4);
+            scratchBuffer.destroy();
+            memcpy(scratchBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->textures[i], asset->width * asset->height * 4);
             asset->textureImages[i].setEngineLink(&renderEngineLink);
-            asset->textureImages[i].create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, asset->width, asset->height, TEXTURE, &stagingBuffer);
+            asset->textureImages[i].create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, asset->width, asset->height, TEXTURE, &scratchBuffer);
         }
         //build uniform buffers
         asset->uniformBuffer.setEngineLink(&renderEngineLink);
@@ -229,7 +234,7 @@ public:
     }
 
     void updateSettings(bool updateAll) {
-        //TODO: Fix fov scaling on fullscreen bug.
+        //TODO: Fix fov scaling on fullscreen change bug.
         //TODO: Fix view jerk when exiting fullscreen.
         if (settings.fullscreen) {
             glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);

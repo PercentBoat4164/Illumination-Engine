@@ -6,13 +6,12 @@ class AccelerationStructureManager : public BufferManager {
 public:
     VkAccelerationStructureKHR accelerationStructure{};
     VkStridedDeviceAddressRegionKHR stridedDeviceAddressRegion{};
-    uint32_t bufferAddress{};
 
-    void *create (VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage, VkAccelerationStructureTypeKHR type, VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo) {
-        bufferSize = size;
+    void *create (VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage, VkAccelerationStructureTypeKHR type, VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo) {
+        bufferSize = accelerationStructureBuildSizesInfo.accelerationStructureSize;
         VkBufferCreateInfo bufferCreateInfo{};
         bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferCreateInfo.size = size;
+        bufferCreateInfo.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
         bufferCreateInfo.usage = usage;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = allocationUsage;
@@ -21,18 +20,18 @@ public:
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); });
         if (usage == (VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR)) {
-            VkAccelerationStructureCreateInfoKHR accelerationStructureCreate_info{};
-            accelerationStructureCreate_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
-            accelerationStructureCreate_info.buffer = buffer;
-            accelerationStructureCreate_info.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
-            accelerationStructureCreate_info.type = type;
-            vkCreateAccelerationStructureKHR(linkedRenderEngine->device->device, &accelerationStructureCreate_info, nullptr, &accelerationStructure);
+            VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{};
+            accelerationStructureCreateInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
+            accelerationStructureCreateInfo.buffer = buffer;
+            accelerationStructureCreateInfo.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
+            accelerationStructureCreateInfo.type = type;
+            vkCreateAccelerationStructureKHR(linkedRenderEngine->device->device, &accelerationStructureCreateInfo, nullptr, &accelerationStructure);
         }
         deletionQueue.emplace_front([&]{ vkDestroyAccelerationStructureKHR(linkedRenderEngine->device->device, accelerationStructure, nullptr); });
         if (usage == (VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)) {
             VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
             bufferDeviceAddressInfo.buffer = buffer;
-            bufferAddress = vkGetBufferDeviceAddress(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
+            bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         }
         return data;
     }

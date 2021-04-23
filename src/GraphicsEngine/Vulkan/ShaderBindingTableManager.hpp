@@ -5,6 +5,7 @@
 class ShaderBindingTableManager : public BufferManager {
 public:
     VkDeviceAddress bufferAddress{};
+    VkStridedDeviceAddressRegionKHR stridedDeviceAddressRegion{};
 
     void *create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage, uint32_t handleCount) {
         bufferSize = size;
@@ -19,7 +20,7 @@ public:
         if (usage == (VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)) {
             VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
             bufferDeviceAddressInfo.buffer = buffer;
-            bufferAddress = vkGetBufferDeviceAddress(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
+            bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         } if (usage == (VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR)) {
             const uint32_t handleSizeAligned = (linkedRenderEngine->physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + linkedRenderEngine->physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(linkedRenderEngine->physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
             stridedDeviceAddressRegion.deviceAddress = bufferAddress;
