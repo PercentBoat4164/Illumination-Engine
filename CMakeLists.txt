@@ -10,10 +10,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 # Get packages
 find_package(Vulkan)
 find_package(OpenGL REQUIRED)
-find_program(CCACHE_FOUND ccache)
-if(CCACHE_FOUND)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-endif(CCACHE_FOUND)
 
 # Specify no docs, tests, or examples from GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -46,5 +42,5 @@ foreach(item IN LISTS data_SHADOW)
 endforeach()
 
 # Generate executable
-add_executable(CrystalEngine src/main.cpp src/GraphicsEngine/Vulkan/AccelerationStructureManager.hpp src/GraphicsEngine/Vulkan/ShaderBindingTableManager.hpp src/GraphicsEngine/Vulkan/DescriptorSetManager.hpp)
+add_executable(CrystalEngine src/main.cpp)
 target_link_libraries(CrystalEngine PUBLIC glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)

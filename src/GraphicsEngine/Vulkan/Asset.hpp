@@ -51,9 +51,6 @@ public:
     }
 
     void destroy() {
-        uniformBuffer.destroy();
-        vertexBuffer.destroy();
-        indexBuffer.destroy();
         for (ImageManager &textureImage : textureImages) { textureImage.destroy(); }
         for (const std::function<void(Asset)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();

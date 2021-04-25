@@ -28,7 +28,7 @@ public:
             stridedDeviceAddressRegion.size = handleCount * handleSizeAligned;
         }
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
-        deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); });
+        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
         return data;
     }
 };

@@ -14,7 +14,6 @@ public:
     VkDeviceSize bufferSize{};
     VkDeviceAddress bufferAddress{};
 
-
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
@@ -38,12 +37,11 @@ public:
         if (usage == (VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)) {
             VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
             bufferDeviceAddressInfo.buffer = buffer;
-            bufferAddress = bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
+            bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         }
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
-        deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); });
+        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
         return data;
-
     }
 
     void toImage(VkImage image, uint32_t width, uint32_t height) const {
@@ -61,6 +59,7 @@ public:
         vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
     }
+
 protected:
     std::deque<std::function<void()>> deletionQueue{};
     VulkanGraphicsEngineLink *linkedRenderEngine{};

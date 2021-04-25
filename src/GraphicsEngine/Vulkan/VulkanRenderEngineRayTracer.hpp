@@ -28,6 +28,11 @@ public:
     std::vector<uint32_t> geometryCounts{};
     std::vector<VkAccelerationStructureGeometryKHR> accelerationStructureGeometries{};
     VkPipeline pipeline{};
+    float frameTime{};
+
+    bool update() override {
+       return true;
+    }
 
     VulkanRenderEngineRayTracer() {
         //One bottom level acceleration structure for each asset.
@@ -81,7 +86,7 @@ public:
         if (renderEngineLink.physicalDeviceInfo->physicalDeviceAccelerationStructureFeatures.accelerationStructureHostCommands) { renderEngineLink.vkBuildAccelerationStructuresKHR(renderEngineLink.device->device, VK_NULL_HANDLE, 1, &bottomLevelAccelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfos.data()); }
         else {
             VkCommandBuffer commandBuffer = renderEngineLink.beginSingleTimeCommands();
-            vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &bottomLevelAccelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfos.data());
+            renderEngineLink.vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &bottomLevelAccelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfos.data());
             renderEngineLink.endSingleTimeCommands(commandBuffer);
         }
         // Destroy original scratch buffer here

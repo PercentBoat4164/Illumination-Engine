@@ -32,25 +32,17 @@ private:
     std::deque<std::function<void()>> recreationDeletionQueue{};
     std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
     std::vector<VkImageView> swapchainImageViews{};
-    void *vulkan_library{};
 
 protected:
     virtual bool update() { return false; }
 
     explicit VulkanRenderEngine(GLFWwindow *attachWindow = nullptr) {
-        #if defined _WIN32
-        vulkan_library = LoadLibrary("vulkan-1.dll");
-        #else
-        vulkan_library = dlopen("libvulkan.so.1", RTLD_NOW);
-        #endif
-        if( vulkan_library == nullptr ) { throw std::runtime_error("Could not connect with a Vulkan Runtime library."); }
         renderEngineLink.device = &device;
         renderEngineLink.physicalDeviceInfo = &physicalDeviceInfo;
         renderEngineLink.swapchain = &swapchain;
         renderEngineLink.settings = &settings;
         renderEngineLink.commandPool = &commandBufferManager.commandPool;
         renderEngineLink.allocator = &allocator;
-        framebufferResized = false;
         vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
         //build instance
         vkb::InstanceBuilder builder;
@@ -117,6 +109,7 @@ protected:
         allocatorInfo.physicalDevice = device.physical_device.physical_device;
         allocatorInfo.device = device.device;
         allocatorInfo.instance = instance.instance;
+        allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
         vmaCreateAllocator(&allocatorInfo, &allocator);
         engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(allocator); });
         //Create commandPool
@@ -126,10 +119,11 @@ protected:
         scratchBuffer.setEngineLink(&renderEngineLink);
         engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
         createSwapchain(true);
+        renderEngineLink.build();
     }
 
     void createSwapchain(bool fullRecreate = false) {
-        //Make sure no other GPU operations are on-going
+        //Make sure no other GPU operations are ongoing
         vkDeviceWaitIdle(device.device);
         //Clear recreationDeletionQueue
         for (std::function<void()>& function : recreationDeletionQueue) { function(); }
@@ -205,13 +199,16 @@ public:
     virtual void uploadAsset(Asset *asset, bool append) {
         //destroy previously created asset if any
         asset->destroy();
-        //upload mesh, vertex, and transform data
+        //upload mesh, vertex, and transformation data
         asset->vertexBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
+        asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.vertexBuffer.destroy(); });
         asset->indexBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
+        asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.indexBuffer.destroy(); });
         asset->transformationBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->transformationBuffer.create(sizeof(asset->transformationMatrix), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_GPU_ONLY), &asset->transformationMatrix, sizeof(asset->transformationMatrix));
+        memcpy(asset->transformationBuffer.create(sizeof(asset->transformationMatrix), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->transformationMatrix, sizeof(asset->transformationMatrix));
+        asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.transformationBuffer.destroy(); });
         //upload textures
         asset->textureImages.resize(asset->textures.size());
         for (unsigned int i = 0; i < asset->textures.size(); ++i) {
@@ -223,6 +220,7 @@ public:
         //build uniform buffers
         asset->uniformBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->uniformBufferObject, sizeof(UniformBufferObject));
+        asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.uniformBuffer.destroy(); });
         //build graphics pipeline and descriptor set for this asset
         asset->pipelineManagers.resize(1);
         for (unsigned int i = 0; i < asset->pipelineManagers.size(); ++i) {
@@ -275,12 +273,6 @@ public:
         oneTimeOptionalDeletionQueue.clear();
         for (std::function<void()>& function : engineDeletionQueue) { function(); }
         engineDeletionQueue.clear();
-        #if defined _WIN32
-        FreeLibrary( vulkan_library );
-        #else
-        dlclose( vulkan_library );
-        #endif
-        vulkan_library = nullptr;
     }
 
     GLFWmonitor *monitor{};

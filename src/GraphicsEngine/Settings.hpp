@@ -35,7 +35,7 @@ public:
     int MAX_FRAMES_IN_FLIGHT{2};
     std::string absolutePath{getProgramPath().string()};
     float fov{90};
-    double renderDistance{1000000};
+    double renderDistance{100000};
 
     static std::filesystem::path getProgramPath() {
         #ifdef _WIN32

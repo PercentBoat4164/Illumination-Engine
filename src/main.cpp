@@ -2,7 +2,7 @@
 #include "GraphicsEngine/Settings.hpp"
 #include "GraphicsEngine/Vulkan/Asset.hpp"
 #include "GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
-#include "GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp"
+// #include "GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp"
 #include "GraphicsEngine/OpenGL/OpenGLRenderEngine.hpp"
 
 void cursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
