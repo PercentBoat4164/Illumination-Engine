@@ -40,6 +40,12 @@ public:
             bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         }
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
+        deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); });
+        if (usage == (VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)) {
+            VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
+            bufferDeviceAddressInfo.buffer = buffer;
+            bufferAddress = vkGetBufferDeviceAddress(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
+        }
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
         return data;
     }

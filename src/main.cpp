@@ -46,27 +46,27 @@ int main(int argc, char **argv) {
                 //Process inputs
                 glfwPollEvents();
                 float velocity = renderEngine.frameTime * renderEngine.camera.movementSpeed;
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
                     for (Asset *asset : renderEngine.assets) { asset->reloadAsset(); }
                     renderEngine.updateSettings(false);
-                } if (glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
                     renderEngine.updateSettings(true);
                     lastF2 = glfwGetTime();
-                } if (glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
                     renderEngine.updateSettings(true);
-                } if (glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
                     renderEngine.updateSettings(true);
-                } if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_D) & captureInput) { renderEngine.camera.position += renderEngine.camera.right * velocity; }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * velocity; }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * velocity; }
-                if (glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastTab > .2)) {
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_D) & captureInput) { renderEngine.camera.position += renderEngine.camera.right * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastTab > .2)) {
                     int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
                     if (mode == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
                     }
                     lastTab = glfwGetTime();
                     captureInput = !captureInput;
-                } if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastEsc > .2)) {
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastEsc > .2)) {
                     if (renderEngine.settings.fullscreen) {
                         renderEngine.settings.fullscreen = false;
                         renderEngine.updateSettings(true);

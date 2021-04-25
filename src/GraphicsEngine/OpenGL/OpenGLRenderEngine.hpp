@@ -44,9 +44,7 @@ public:
     }
 
     [[nodiscard]] int update() const {
-        if (glfwWindowShouldClose(window)) {
-            return 1;
-        }
+        if (glfwWindowShouldClose(window)) { return 1; }
         glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(programID);
@@ -76,7 +74,7 @@ private:
         GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
         std::array<GLuint, 2> shaderIDs = {vertexShaderID, fragmentShaderID};
         GLint Result = GL_FALSE;
-        int InfoLogLength;
+        int InfoLogLength{0};
         for (unsigned int i = 0; i < paths.size(); i++) {
             std::ifstream file(paths[i], std::ios::in);
             if (!file.is_open()) { throw std::runtime_error("failed to load shader: " + paths[i]); }
@@ -84,7 +82,7 @@ private:
             stringStream << file.rdbuf();
             std::string shaderCode = stringStream.str();
             file.close();
-            char const * sourcePointer = shaderCode.c_str();
+            char const *sourcePointer = shaderCode.c_str();
             glShaderSource(shaderIDs[i], 1, &sourcePointer, nullptr);
             glCompileShader(shaderIDs[i]);
             glGetShaderiv(shaderIDs[i], GL_COMPILE_STATUS, &Result);

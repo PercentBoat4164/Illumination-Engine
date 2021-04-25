@@ -20,7 +20,7 @@
 
 class Settings {
 public:
-    bool pathTracing{true};
+    bool pathTracing{false};
     std::string applicationName{"Crystal Engine"};
     std::array<int, 3> applicationVersion{0, 0, 1};
     std::array<int, 3> requiredVulkanVersion{1, 2, 0};
