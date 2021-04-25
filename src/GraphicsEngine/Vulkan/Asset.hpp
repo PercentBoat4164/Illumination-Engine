@@ -28,10 +28,9 @@
 
 class Asset {
 public:
-    Asset(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, Settings *EngineSettings = new Settings{}, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
+    Asset(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
         position = initialPosition;
         rotation = initialRotation;
-        absolutePath = EngineSettings->absolutePath;
         scale = initialScale;
         modelName = modelFileName;
         textureNames = textureFileNames;
@@ -51,9 +50,6 @@ public:
     }
 
     void destroy() {
-        uniformBuffer.destroy();
-        vertexBuffer.destroy();
-        indexBuffer.destroy();
         for (ImageManager &textureImage : textureImages) { textureImage.destroy(); }
         for (const std::function<void(Asset)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
@@ -71,6 +67,7 @@ public:
     BufferManager uniformBuffer{};
     BufferManager vertexBuffer{};
     BufferManager indexBuffer{};
+    BufferManager transformationBuffer{};
     std::vector<PipelineManager> pipelineManagers{};
     UniformBufferObject uniformBufferObject{};
     std::vector<ImageManager> textureImages{};
@@ -83,18 +80,21 @@ public:
     glm::vec3 rotation{};
     glm::vec3 scale{};
     bool render{true};
+    uint32_t triangleCount{};
+    VkTransformMatrixKHR transformationMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 
 private:
     void loadModel(const char *filename) {
         vertices.clear();
-        vertices.resize(0);
         indices.clear();
-        indices.resize(0);
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, (absolutePath + (std::string)filename).c_str())) { throw std::runtime_error(warn + err); }
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename)) { throw std::runtime_error(warn + err); }
+        uint32_t reserveCount{};
+        for (const auto& shape : shapes) { reserveCount += shape.mesh.indices.size(); }
+        indices.reserve(reserveCount);
         std::unordered_map<Vertex, uint32_t> uniqueVertices{};
         for (const auto& shape : shapes) {
             for (const auto& index : shape.mesh.indices) {
@@ -110,6 +110,7 @@ private:
                 indices.push_back(uniqueVertices[vertex]);
             }
         }
+        triangleCount = indices.size() / 3;
     }
 
     void loadTextures(const std::vector<const char *>& filenames) {
@@ -117,8 +118,8 @@ private:
         textures.reserve(filenames.size());
         for (const char *filename : filenames) {
             int channels{};
-            stbi_uc *pixels = stbi_load((absolutePath + (std::string)filename).c_str(), &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) { throw std::runtime_error(("failed to load texture image from file: " + absolutePath + (std::string)filename).c_str()); }
+            stbi_uc *pixels = stbi_load(((std::string)filename).c_str(), &width, &height, &channels, STBI_rgb_alpha);
+            if (!pixels) { throw std::runtime_error(("failed to load texture image from file: " + (std::string)filename).c_str()); }
             textures.push_back(pixels);
         }
     }
@@ -128,9 +129,9 @@ private:
         shaderData.reserve(filenames.size());
         for (const char *shaderName : shaderNames) {
             std::string compiledFileName = ((std::string) shaderName).substr(0, sizeof(shaderName) - 4) + "spv";
-            if (compile) { if (system((GLSLC + absolutePath + shaderName + " -o " + absolutePath + compiledFileName).c_str()) != 0) { throw std::runtime_error("failed to compile shaders!"); } }
-            std::ifstream file(absolutePath + compiledFileName, std::ios::ate | std::ios::binary);
-            if (!file.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName.append("\n as file: " + absolutePath + compiledFileName)); }
+            if (compile) { if (system((GLSLC + (std::string)shaderName + " -o " + compiledFileName).c_str()) != 0) { throw std::runtime_error("failed to compile Shaders!"); } }
+            std::ifstream file(compiledFileName, std::ios::ate | std::ios::binary);
+            if (!file.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName.append("\n as file: " + compiledFileName)); }
             size_t fileSize = (size_t) file.tellg();
             std::vector<char> buffer(fileSize);
             file.seekg(0);
@@ -142,6 +143,5 @@ private:
 
     std::vector<const char *> shaderNames{};
     std::vector<const char *> textureNames{};
-    std::string absolutePath{};
     const char *modelName{};
 };

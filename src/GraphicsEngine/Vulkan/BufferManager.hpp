@@ -12,7 +12,7 @@ public:
     void *data{};
     VkBuffer buffer{};
     VkDeviceSize bufferSize{};
-    VkDeviceAddress bufferAddress{VK_NULL_HANDLE};
+    VkDeviceAddress bufferAddress{};
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
@@ -24,7 +24,7 @@ public:
         linkedRenderEngine = engineLink;
     }
 
-    void *create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage) {
+    virtual void *create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage) {
         bufferSize = size;
         VkBufferCreateInfo bufferCreateInfo{};
         bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -32,15 +32,21 @@ public:
         bufferCreateInfo.usage = usage;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = allocationUsage;
-        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer"); }
+        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
+        if (usage == VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+            VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
+            bufferDeviceAddressInfo.buffer = buffer;
+            bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
+        }
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); });
-        if (usage == (VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)) {
+        if (usage == VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
             VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
             bufferDeviceAddressInfo.buffer = buffer;
             bufferAddress = vkGetBufferDeviceAddress(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         }
+        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
         return data;
     }
 
@@ -60,7 +66,7 @@ public:
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
     }
 
-private:
+protected:
     std::deque<std::function<void()>> deletionQueue{};
     VulkanGraphicsEngineLink *linkedRenderEngine{};
     VmaAllocation allocation{};

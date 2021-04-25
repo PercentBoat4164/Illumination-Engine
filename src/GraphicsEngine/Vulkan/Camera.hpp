@@ -24,7 +24,7 @@ public:
     float yaw{-90};
     float pitch{};
     std::array<int, 2> resolution{};
-    double renderDistance{10};
+    double renderDistance{0};
     double fov{90};
     glm::mat4 view{glm::lookAt(position, position + front, glm::vec3(0.0f, 0.0f, 1.0f))};
     glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.01, renderDistance)};

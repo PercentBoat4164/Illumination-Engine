@@ -8,15 +8,19 @@
 /debug-build/
 /out/
 /release-build/
-#sources extracted from sources/otherSources.tar.xz
-/sources/glew
-/sources/glfw
-/sources/glm
-/sources/vk-bootstrap
-/sources/stb_image.h
-/sources/tiny_obj_loader.h
-/sources/vk_mem_alloc.h
-/sources/glew32.dll
-/sources/glew32d.dll
-/sources/vulkan-1.dll
-/sources/libvulkan.so.1
+/venv/
+# Dependencies extracted from deps/otherSources.tar.xz
+/deps/glew
+/deps/glfw
+/deps/glm
+/deps/vk-bootstrap
+/deps/stb_image.h
+/deps/tiny_obj_loader.h
+/deps/vk_mem_alloc.h
+/deps/glew32.dll
+/deps/glew32d.dll
+/deps/vulkan-1.dll
+/deps/libvulkan.so.1
+# Downloaded models
+/src/Models.tar.xz
+/src/Models

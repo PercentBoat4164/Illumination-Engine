@@ -11,16 +11,16 @@
 #include <vector>
 
 
-#include "../Settings.hpp"
+#include "../OpenGL/OpenGLSettings.hpp"
 
 class OpenGLRenderEngine {
 public:
-    Settings settings{};
+    OpenGLSettings settings{};
     GLFWwindow *window{};
     GLuint vertexBuffer{};
     GLuint programID{};
 
-    explicit OpenGLRenderEngine(Settings &initialSettings = *new Settings{}) {
+    explicit OpenGLRenderEngine(OpenGLSettings &initialSettings = *new OpenGLSettings{}) {
         settings = initialSettings;
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
@@ -40,13 +40,11 @@ public:
         glGenBuffers(1, &vertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-         programID = loadShaders({"shaders/vertexShader.glsl", "shaders/fragmentShader.glsl"});
+         programID = loadShaders({"Shaders/vertexShader.glsl", "Shaders/fragmentShader.glsl"});
     }
 
     [[nodiscard]] int update() const {
-        if (glfwWindowShouldClose(window)) {
-            return 1;
-        }
+        if (glfwWindowShouldClose(window)) { return 1; }
         glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(programID);
@@ -71,25 +69,25 @@ private:
         glfwTerminate();
     }
 
-    [[nodiscard]] GLuint loadShaders(const std::array<std::string, 2>& paths) const {
+    static GLuint loadShaders(const std::array<std::string, 2>& paths) {
         GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
         std::array<GLuint, 2> shaderIDs = {vertexShaderID, fragmentShaderID};
         GLint Result = GL_FALSE;
-        int InfoLogLength;
+        int InfoLogLength{0};
         for (unsigned int i = 0; i < paths.size(); i++) {
-            std::ifstream file(settings.absolutePath + paths[i], std::ios::in);
-            if (!file.is_open()) { throw std::runtime_error("failed to load shader: " + settings.absolutePath + paths[i]); }
+            std::ifstream file(paths[i], std::ios::in);
+            if (!file.is_open()) { throw std::runtime_error("failed to load shader: " + paths[i]); }
             std::stringstream stringStream;
             stringStream << file.rdbuf();
             std::string shaderCode = stringStream.str();
             file.close();
-            char const * sourcePointer = shaderCode.c_str();
+            char const *sourcePointer = shaderCode.c_str();
             glShaderSource(shaderIDs[i], 1, &sourcePointer, nullptr);
             glCompileShader(shaderIDs[i]);
             glGetShaderiv(shaderIDs[i], GL_COMPILE_STATUS, &Result);
             glGetShaderiv(shaderIDs[i], GL_INFO_LOG_LENGTH, &InfoLogLength);
-            if (Result > 1) { throw std::runtime_error("failed to compile shader: " + settings.absolutePath + paths[i]); }
+            if (InfoLogLength > 1) { throw std::runtime_error("failed to compile shader: " + paths[i]); }
         }
         GLuint ProgramID = glCreateProgram();
         glAttachShader(ProgramID, vertexShaderID);
