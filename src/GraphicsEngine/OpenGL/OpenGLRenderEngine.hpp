@@ -11,16 +11,16 @@
 #include <vector>
 
 
-#include "../OpenGL/Settings.hpp"
+#include "../OpenGL/OpenGLSettings.hpp"
 
 class OpenGLRenderEngine {
 public:
-    Settings settings{};
+    OpenGLSettings settings{};
     GLFWwindow *window{};
     GLuint vertexBuffer{};
     GLuint programID{};
 
-    explicit OpenGLRenderEngine(Settings &initialSettings = *new Settings{}) {
+    explicit OpenGLRenderEngine(OpenGLSettings &initialSettings = *new OpenGLSettings{}) {
         settings = initialSettings;
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);

@@ -17,7 +17,7 @@
 #include <unistd.h>
 #endif
 
-class Settings {
+class OpenGLSettings {
 public:
     bool pathTracing{false};
     std::string applicationName{"Crystal Engine"};
@@ -31,7 +31,7 @@ public:
     float fov{90};
     double renderDistance{1000000};
 
-    Settings findMaxSettings() {
+    OpenGLSettings findMaxSettings() {
         const GLFWvidmode* mode{glfwGetVideoMode(glfwGetPrimaryMonitor())};
         refreshRate = mode->refreshRate;
         resolution[0] = mode->width;

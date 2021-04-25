@@ -9,6 +9,7 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
+#include "VulkanSettings.hpp"
 #include "Asset.hpp"
 #include "BufferManager.hpp"
 #include "Camera.hpp"
@@ -278,7 +279,7 @@ public:
     }
 
     GLFWmonitor *monitor{};
-    Settings settings{};
+    VulkanSettings settings{};
     Camera camera{};
     GLFWwindow *window{};
     std::vector<Asset *> assets{};

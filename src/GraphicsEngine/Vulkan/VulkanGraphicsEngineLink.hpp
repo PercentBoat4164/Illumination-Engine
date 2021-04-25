@@ -5,6 +5,7 @@
 #include <VkBootstrap.h>
 #include <vk_mem_alloc.h>
 
+#include "VulkanSettings.hpp"
 #include "CommandBufferManager.hpp"
 
 class VulkanGraphicsEngineLink {
@@ -14,7 +15,7 @@ public:
         VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR};
     } *physicalDeviceInfo{};
 
-    Settings *settings = nullptr;
+    VulkanSettings *settings = nullptr;
     vkb::Device *device{};
     vkb::Swapchain *swapchain{};
     VkCommandPool *commandPool{};

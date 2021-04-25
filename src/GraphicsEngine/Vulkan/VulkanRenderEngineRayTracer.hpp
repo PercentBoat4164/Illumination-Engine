@@ -9,6 +9,7 @@
 #include "AccelerationStructureManager.hpp"
 #include "Vertex.hpp"
 #include "ShaderBindingTableManager.hpp"
+#include "DescriptorSetManager.hpp"
 
 class VulkanRenderEngineRayTracer : public VulkanRenderEngine {
 private:

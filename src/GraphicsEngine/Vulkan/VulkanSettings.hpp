@@ -18,7 +18,7 @@
 #include <unistd.h>
 #endif
 
-class Settings {
+class VulkanSettings {
 public:
     bool pathTracing{false};
     std::string applicationName{"Crystal Engine"};
@@ -36,7 +36,7 @@ public:
     float fov{90};
     double renderDistance{1000000};
 
-    Settings findMaxSettings(VkPhysicalDevice physicalDevice) {
+    VulkanSettings findMaxSettings(VkPhysicalDevice physicalDevice) {
         VkPhysicalDeviceFeatures physicalDeviceFeatures{};
         vkGetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);
         VkPhysicalDeviceProperties physicalDeviceProperties{};

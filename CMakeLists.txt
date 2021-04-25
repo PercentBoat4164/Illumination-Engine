@@ -39,7 +39,6 @@ endif()
 # Copy data files and dlls
 set(data_SHADOW src/Shaders src/Models deps/glew32d.dll deps/glew32.dll)
 foreach(item IN LISTS data_SHADOW)
-    message("Copying '" ${item} "'")
     FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
 endforeach()
 

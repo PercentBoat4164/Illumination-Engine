@@ -1,6 +1,6 @@
 #include <iostream>
 #ifdef CRYSTAL_ENGINE_VULKAN
-#include "GraphicsEngine/Vulkan/Settings.hpp"
+#include "GraphicsEngine/Vulkan/VulkanSettings.hpp"
 #include "GraphicsEngine/Vulkan/Asset.hpp"
 #include "GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
 #ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
@@ -8,7 +8,7 @@
 #endif
 #endif
 #ifdef CRYSTAL_ENGINE_OPENGL
-#include "GraphicsEngine/OpenGL/Settings.hpp"
+#include "GraphicsEngine/OpenGL/OpenGLSettings.hpp"
 #include "GraphicsEngine/OpenGL/OpenGLRenderEngine.hpp"
 #endif
 
