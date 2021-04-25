@@ -109,7 +109,7 @@ protected:
         allocatorInfo.physicalDevice = device.physical_device.physical_device;
         allocatorInfo.device = device.device;
         allocatorInfo.instance = instance.instance;
-        allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+        allocatorInfo.flags = settings.pathTracing ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0;
         vmaCreateAllocator(&allocatorInfo, &allocator);
         engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(allocator); });
         //Create commandPool
@@ -206,9 +206,11 @@ public:
         asset->indexBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.indexBuffer.destroy(); });
-        asset->transformationBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->transformationBuffer.create(sizeof(asset->transformationMatrix), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->transformationMatrix, sizeof(asset->transformationMatrix));
-        asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.transformationBuffer.destroy(); });
+        if (settings.pathTracing) {
+            asset->transformationBuffer.setEngineLink(&renderEngineLink);
+            memcpy(asset->transformationBuffer.create(sizeof(asset->transformationMatrix), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->transformationMatrix, sizeof(asset->transformationMatrix));
+            asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.transformationBuffer.destroy(); });
+        }
         //upload textures
         asset->textureImages.resize(asset->textures.size());
         for (unsigned int i = 0; i < asset->textures.size(); ++i) {
