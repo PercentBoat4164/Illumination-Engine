@@ -12,7 +12,7 @@
 
 #if defined(_WIN32)
 #define NOMINMAX
-#include <windows.h>
+#include <Windows.h>
 #else
 #include <climits>
 #include <unistd.h>
