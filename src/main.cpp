@@ -28,10 +28,10 @@ int main(int argc, char **argv) {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
             renderEngine.camera.position = {0, 0, 2};
-            Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0});
-            Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
-            Asset vikingRoom = Asset("Models/vikingRoom.obj", {"Models/vikingRoom.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, &renderEngine.settings, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            Asset statue = Asset("Models/ancientStatue.obj", {"Models/ancientStatue.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, &renderEngine.settings, {7, 2, 0});
+            Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0});
+            Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
+            Asset vikingRoom = Asset("Models/vikingRoom.obj", {"Models/vikingRoom.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            Asset statue = Asset("Models/ancientStatue.obj", {"Models/ancientStatue.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {7, 2, 0});
             renderEngine.uploadAsset(&cube, true);
             renderEngine.uploadAsset(&quad, true);
             renderEngine.uploadAsset(&vikingRoom, true);

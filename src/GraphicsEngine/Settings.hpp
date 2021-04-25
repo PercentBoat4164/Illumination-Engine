@@ -33,25 +33,8 @@ public:
     int refreshRate{60};
     std::array<int, 2> resolution{defaultWindowResolution};
     int MAX_FRAMES_IN_FLIGHT{2};
-    std::string absolutePath{getProgramPath().string()};
     float fov{90};
-    double renderDistance{100000};
-
-    static std::filesystem::path getProgramPath() {
-        #ifdef _WIN32
-        wchar_t buffer[MAX_PATH]{};
-        GetModuleFileNameW(nullptr, buffer, MAX_PATH);
-        char chars[sizeof(buffer) / 8];
-        char defChar = ' ';
-        WideCharToMultiByte(CP_ACP, 0, buffer, -1, chars, sizeof(buffer) / 8, &defChar, nullptr);
-        std::string path = std::string(chars);
-        #else
-        char result[PATH_MAX];
-        ssize_t count{readlink("/proc/self/exe", result, PATH_MAX)};
-        std::string path{std::string(result, (count > 0) ? count : 0)};
-        #endif
-        return path.substr(0, path.find_last_of('\\') + 1);
-    }
+    double renderDistance{1000000};
 
     Settings findMaxSettings(VkPhysicalDevice physicalDevice) {
         VkPhysicalDeviceFeatures physicalDeviceFeatures{};

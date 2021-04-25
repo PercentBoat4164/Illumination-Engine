@@ -78,8 +78,8 @@ private:
         GLint Result = GL_FALSE;
         int InfoLogLength;
         for (unsigned int i = 0; i < paths.size(); i++) {
-            std::ifstream file(settings.absolutePath + paths[i], std::ios::in);
-            if (!file.is_open()) { throw std::runtime_error("failed to load shader: " + settings.absolutePath + paths[i]); }
+            std::ifstream file(paths[i], std::ios::in);
+            if (!file.is_open()) { throw std::runtime_error("failed to load shader: " + paths[i]); }
             std::stringstream stringStream;
             stringStream << file.rdbuf();
             std::string shaderCode = stringStream.str();
@@ -89,7 +89,7 @@ private:
             glCompileShader(shaderIDs[i]);
             glGetShaderiv(shaderIDs[i], GL_COMPILE_STATUS, &Result);
             glGetShaderiv(shaderIDs[i], GL_INFO_LOG_LENGTH, &InfoLogLength);
-            if (InfoLogLength > 1) { throw std::runtime_error("failed to compile shader: " + settings.absolutePath + paths[i]); }
+            if (InfoLogLength > 1) { throw std::runtime_error("failed to compile shader: " + paths[i]); }
         }
         GLuint ProgramID = glCreateProgram();
         glAttachShader(ProgramID, vertexShaderID);
