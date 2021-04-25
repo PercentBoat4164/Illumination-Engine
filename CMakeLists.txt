@@ -27,7 +27,9 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf glew.tar.xz WORKING_DIRECTOR
 add_subdirectory(deps/glm)
 add_subdirectory(deps/glfw)
 add_subdirectory(deps/glew/build/cmake)
-add_subdirectory(deps/vk-bootstrap)
+if (Vulkan_FOUND)
+    add_subdirectory(deps/vk-bootstrap)
+endif()
 
 # Download Models if they don't already exist
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/Models")
@@ -35,12 +37,23 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/Models")
 endif()
 
 # Copy data files and dlls
-set(data_SHADOW src/Shaders src/Models deps/glew32d.dll deps/glew32.dll deps/vulkan-1.dll deps/libvulkan.so.1)
+set(data_SHADOW src/Shaders src/Models deps/glew32d.dll deps/glew32.dll)
 foreach(item IN LISTS data_SHADOW)
     message("Copying '" ${item} "'")
     FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
 endforeach()
 
+# Add compile definitions based on supported features
+add_compile_definitions(CRYSTAL_ENGINE_OPENGL)
+if (Vulkan_FOUND)
+    add_compile_definitions(CRYSTAL_ENGINE_VULKAN)
+    add_compile_definitions(CRYSTAL_ENGINE_VULKAN_RAY_TRACING)
+endif()
+
 # Generate executable
 add_executable(CrystalEngine src/main.cpp)
-target_link_libraries(CrystalEngine PUBLIC glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
+if (Vulkan_FOUND)
+    target_link_libraries(CrystalEngine PUBLIC glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
+else()
+    target_link_libraries(CrystalEngine PUBLIC glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES})
+endif()

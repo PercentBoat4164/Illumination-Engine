@@ -11,7 +11,7 @@
 #include <vector>
 
 
-#include "../Settings.hpp"
+#include "../OpenGL/Settings.hpp"
 
 class OpenGLRenderEngine {
 public:
@@ -69,7 +69,7 @@ private:
         glfwTerminate();
     }
 
-    [[nodiscard]] GLuint loadShaders(const std::array<std::string, 2>& paths) const {
+    static GLuint loadShaders(const std::array<std::string, 2>& paths) {
         GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
         std::array<GLuint, 2> shaderIDs = {vertexShaderID, fragmentShaderID};

@@ -1,10 +1,18 @@
 #include <iostream>
-#include "GraphicsEngine/Settings.hpp"
+#ifdef CRYSTAL_ENGINE_VULKAN
+#include "GraphicsEngine/Vulkan/Settings.hpp"
 #include "GraphicsEngine/Vulkan/Asset.hpp"
 #include "GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
-// #include "GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp"
+#ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
+#include "GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp"
+#endif
+#endif
+#ifdef CRYSTAL_ENGINE_OPENGL
+#include "GraphicsEngine/OpenGL/Settings.hpp"
 #include "GraphicsEngine/OpenGL/OpenGLRenderEngine.hpp"
+#endif
 
+#ifdef CRYSTAL_ENGINE_VULKAN
 void cursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     auto vulkanRenderEngine = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
     xOffset *= vulkanRenderEngine->camera.mouseSensitivity;
@@ -15,15 +23,18 @@ void cursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     if (vulkanRenderEngine->camera.pitch < -89.99f) { vulkanRenderEngine->camera.pitch = -89.99f; }
     glfwSetCursorPos(window, 0, 0);
 }
+#endif
 
 int main(int argc, char **argv) {
     std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics engine\n";
     std::string selection;
     char input;
-    if (argc > 1) { input = *argv[1]; } else {
+    if (argc > 1) { input = *argv[1]; }
+    else {
         std::cin >> selection;
         input = selection[0];
     }
+#ifdef CRYSTAL_ENGINE_VULKAN
     if (input == 'v') {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
@@ -109,7 +120,9 @@ int main(int argc, char **argv) {
         }
         return EXIT_SUCCESS;
     }
-    else if (input == 'o') {
+#endif
+#ifdef CRYSTAL_ENGINE_OPENGL
+    if (input == 'o') {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
             while (renderEngine.update() != 1) {
@@ -121,4 +134,5 @@ int main(int argc, char **argv) {
         }
         return EXIT_SUCCESS;
     }
+#endif
 }
