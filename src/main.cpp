@@ -1,6 +1,5 @@
 #include <iostream>
 #ifdef CRYSTAL_ENGINE_VULKAN
-#include "GraphicsEngine/Vulkan/VulkanSettings.hpp"
 #include "GraphicsEngine/Vulkan/Asset.hpp"
 #include "GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
 #ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
@@ -101,15 +100,14 @@ int main(int argc, char **argv) {
                     if (renderEngine.settings.fullscreen) {
                         renderEngine.settings.fullscreen = false;
                         renderEngine.updateSettings(true);
-                        lastEsc = glfwGetTime();
-                    }
-                    int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
-                    if (mode == GLFW_CURSOR_DISABLED) {
+                    } if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                         glfwSetCursorPosCallback(renderEngine.window, nullptr);
                         captureInput = false;
-                    } else { glfwSetWindowShouldClose(renderEngine.window, 1); } }
+                    } else if (!captureInput) { glfwSetWindowShouldClose(renderEngine.window, 1); }
+                    lastEsc = glfwGetTime();
+                }
                 //move assets
                 cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
             }

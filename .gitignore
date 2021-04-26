@@ -19,8 +19,6 @@
 /deps/vk_mem_alloc.h
 /deps/glew32.dll
 /deps/glew32d.dll
-/deps/vulkan-1.dll
-/deps/libvulkan.so.1
 # Downloaded models
-/src/Models.tar.xz
+/Models.tar.xz
 /src/Models

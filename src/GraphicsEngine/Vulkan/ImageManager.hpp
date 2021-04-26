@@ -20,6 +20,8 @@ public:
     VkImage image{};
     VkImageView view{};
     VkSampler sampler{};
+    VkFormat imageFormat{};
+    VkImageLayout imageLayout{};
 
     void destroy() {
         for (std::function<void()>& function : deletionQueue) { function(); }
@@ -49,6 +51,8 @@ public:
         allocationCreateInfo.usage = allocationUsage;
         vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
         deletionQueue.emplace_front([&]{ if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); image = VK_NULL_HANDLE; } });
+        imageFormat = format;
+        imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageViewCreateInfo imageViewCreateInfo{};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.image = image;
@@ -105,7 +109,7 @@ public:
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
     }
 
-    void transition(VkImageLayout oldLayout, VkImageLayout newLayout) const {
+    void transition(VkImageLayout oldLayout, VkImageLayout newLayout) {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = oldLayout;
@@ -139,6 +143,7 @@ public:
         VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
+        imageLayout = newLayout;
     }
 
 private:
