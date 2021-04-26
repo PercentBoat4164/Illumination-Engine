@@ -5,28 +5,26 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "VulkanSettings.hpp"
+
 class Camera {
 public:
     std::array<glm::mat4, 2> update() {
         front = glm::normalize(glm::vec3{cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch))});
         right = glm::normalize(glm::cross(front, up));
         view = {glm::lookAt(position, position + front, up)};
-        proj = {glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.01, renderDistance)};
+        proj = {glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / std::max(settings->resolution[1], 1), 0.01, settings->renderDistance)};
         proj[1][1] *= -1;
         return {view, proj};
     }
 
-    float movementSpeed{2.5};
     glm::vec3 position{0, 0, 2};
     glm::vec3 front{0, 1, 0};
     glm::vec3 up{0, 0, 1};
     glm::vec3 right{glm::cross(front, up)};
     float yaw{-90};
     float pitch{};
-    std::array<int, 2> resolution{};
-    double renderDistance{0};
-    double fov{90};
-    glm::mat4 view{glm::lookAt(position, position + front, glm::vec3(0.0f, 0.0f, 1.0f))};
-    glm::mat4 proj{glm::perspective(glm::radians(fov), double(resolution[0]) / std::max(resolution[1], 1), 0.01, renderDistance)};
-    double mouseSensitivity{0.1};
+    glm::mat4 view{glm::lookAt(position, position + front, up)};
+    glm::mat4 proj{glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / std::max(settings->resolution[1], 1), 0.01, settings->renderDistance)};
+    VulkanSettings *settings{};
 };

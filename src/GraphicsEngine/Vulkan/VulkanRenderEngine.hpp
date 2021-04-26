@@ -38,6 +38,7 @@ protected:
     virtual bool update() { return false; }
 
     explicit VulkanRenderEngine(GLFWwindow *attachWindow = nullptr) {
+        camera.settings = &settings;
         renderEngineLink.device = &device;
         renderEngineLink.physicalDeviceInfo = &physicalDeviceInfo;
         renderEngineLink.swapchain = &swapchain;
@@ -58,6 +59,10 @@ protected:
         if (attachWindow == nullptr) { glfwInit(); }
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+        glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+        int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
+        glfwGetWindowPos(window, &xPos, &yPos);
+        settings.windowPosition = {xPos, yPos};
         glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         glfwSetWindowUserPointer(window, this);
@@ -131,7 +136,7 @@ protected:
         recreationDeletionQueue.clear();
         //Create swapchain
         vkb::SwapchainBuilder swapchainBuilder{ device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR).build();
+        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         swapchain = swap_ret.value();
         recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
@@ -170,10 +175,6 @@ protected:
         }
         //recreate framebuffers
         renderPassManager.recreateFramebuffers();
-        //update camera
-        camera.resolution = settings.resolution;
-        camera.fov = settings.fov;
-        camera.renderDistance = settings.renderDistance;
         camera.update();
     }
 
@@ -264,7 +265,6 @@ public:
             glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
         } else { glfwSetWindowMonitor(window, nullptr, settings.windowPosition[0], settings.windowPosition[1], settings.defaultWindowResolution[0], settings.defaultWindowResolution[1], settings.refreshRate); }
         glfwSetWindowTitle(window, settings.applicationName.c_str());
-        renderEngineLink.settings = &settings;
         if (updateAll) { createSwapchain(true); }
     }
 

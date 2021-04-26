@@ -17,6 +17,9 @@
 #include <valarray>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 #include "ImageManager.hpp"
 #include "BufferManager.hpp"
@@ -57,7 +60,8 @@ public:
 
     void update(Camera camera) {
         uniformBufferObject = {glm::mat4(1.0f), camera.view, camera.proj};
-        uniformBufferObject.model = glm::translate(glm::rotate(glm::rotate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::abs(scale)), rotation[0], glm::vec3(1.f, 0.f, 0.f)), rotation[1], glm::vec3(0.f, 1.f, 0.f)), rotation[2], glm::vec3(0.f, 0.f, 1.f)), position);
+        glm::quat quaternion = glm::quat(glm::radians(rotation));
+        uniformBufferObject.model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
         memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(UniformBufferObject));
     }
 

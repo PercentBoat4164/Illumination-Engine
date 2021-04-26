@@ -12,6 +12,8 @@
 
 class VulkanRenderEngineRasterizer : public VulkanRenderEngine {
 public:
+    explicit VulkanRenderEngineRasterizer(GLFWwindow *attachWindow = nullptr) : VulkanRenderEngine(attachWindow) {}
+
     bool update() override {
         //GPU synchronization
         if (window == nullptr) { return false; }

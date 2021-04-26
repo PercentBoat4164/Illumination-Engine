@@ -24,17 +24,19 @@ public:
     std::string applicationName{"Crystal Engine"};
     std::array<int, 3> applicationVersion{0, 0, 1};
     std::array<int, 3> requiredVulkanVersion{1, 2, 0};
-    VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_8_BIT};
-    std::array<int, 2> defaultWindowResolution{800, 600};
+    VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_1_BIT};
+    std::array<int, 2> defaultWindowResolution{100, 100};
     std::array<int, 2> windowPosition{10, 10};
-    float anisotropicFilterLevel{16};
+    float anisotropicFilterLevel{0};
     int mipLevels{1};
     bool fullscreen{false};
     int refreshRate{60};
     std::array<int, 2> resolution{defaultWindowResolution};
     int MAX_FRAMES_IN_FLIGHT{2};
-    float fov{90};
+    double fov{90};
     double renderDistance{1000000};
+    double mouseSensitivity{0.1};
+    float movementSpeed{2.5};
 
     VulkanSettings findMaxSettings(VkPhysicalDevice physicalDevice) {
         VkPhysicalDeviceFeatures physicalDeviceFeatures{};
