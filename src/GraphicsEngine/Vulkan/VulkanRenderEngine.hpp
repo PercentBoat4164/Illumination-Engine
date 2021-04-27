@@ -16,7 +16,7 @@
 #include "CommandBufferManager.hpp"
 #include "GPUData.hpp"
 #include "ImageManager.hpp"
-#include "PipelineManager.hpp"
+#include "RasterizationPipelineManager.hpp"
 #include "RenderPassManager.hpp"
 #include "Vertex.hpp"
 #include "VulkanGraphicsEngineLink.hpp"
@@ -136,7 +136,7 @@ protected:
         recreationDeletionQueue.clear();
         //Create swapchain
         vkb::SwapchainBuilder swapchainBuilder{ device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).build();
+        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         swapchain = swap_ret.value();
         recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
@@ -231,12 +231,11 @@ public:
             asset->pipelineManagers[i].setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, asset->shaderData);
             asset->pipelineManagers[0].createDescriptorSet({asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
         }
-        asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ for (PipelineManager pipelineManager : thisAsset.pipelineManagers) { pipelineManager.destroy(); } });
+        asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ for (RasterizationPipelineManager pipelineManager : thisAsset.pipelineManagers) { pipelineManager.destroy(); } });
         if (append) { assets.push_back(asset); }
     }
 
     void updateSettings(bool updateAll) {
-        //TODO: Fix fov scaling on fullscreen change bug.
         //TODO: Fix view jerk when exiting fullscreen.
         if (settings.fullscreen) {
             glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);

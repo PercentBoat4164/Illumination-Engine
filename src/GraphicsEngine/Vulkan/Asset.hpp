@@ -18,15 +18,12 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/euler_angles.hpp>
 
 #include "ImageManager.hpp"
 #include "BufferManager.hpp"
 #include "Camera.hpp"
-
 #include "GPUData.hpp"
-#include "PipelineManager.hpp"
+#include "RasterizationPipelineManager.hpp"
 #include "Vertex.hpp"
 
 class Asset {
@@ -72,7 +69,7 @@ public:
     BufferManager vertexBuffer{};
     BufferManager indexBuffer{};
     BufferManager transformationBuffer{};
-    std::vector<PipelineManager> pipelineManagers{};
+    std::vector<RasterizationPipelineManager> pipelineManagers{};
     UniformBufferObject uniformBufferObject{};
     std::vector<ImageManager> textureImages{};
     std::vector<stbi_uc *> textures{};
@@ -99,6 +96,7 @@ private:
         uint32_t reserveCount{};
         for (const auto& shape : shapes) { reserveCount += shape.mesh.indices.size(); }
         indices.reserve(reserveCount);
+        vertices.reserve(reserveCount); // Allocates too much space!
         std::unordered_map<Vertex, uint32_t> uniqueVertices{};
         for (const auto& shape : shapes) {
             for (const auto& index : shape.mesh.indices) {
@@ -107,13 +105,16 @@ private:
                 vertex.texCoord = { attrib.texcoords[2 * index.texcoord_index], 1.f - attrib.texcoords[2 * index.texcoord_index + 1] };
                 vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
                 vertex.color = {1.f, 1.f, 1.f};
-                if (uniqueVertices.count(vertex) == 0) {
+                if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
                     uniqueVertices[vertex] = vertices.size();
                     vertices.push_back(vertex);
                 }
                 indices.push_back(uniqueVertices[vertex]);
             }
         }
+        // Remove unneeded space at end of vertices
+        std::vector<Vertex> tmp = vertices;
+        vertices.swap(tmp);
         triangleCount = indices.size() / 3;
     }
 
