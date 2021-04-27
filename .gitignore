@@ -1,21 +1,24 @@
 # Project exclude paths
-/debug-build/
-/release-build/
-/build/
-/cmake-build-debug-coverage/
-/build/
-/CMakeFiles/
 /.idea/
 /.vs/
 /.vscode/
+/CMakeFiles/
+/build/
+/cmake-build-debug-coverage/
+/debug-build/
 /out/
-/sources/json.hpp
-/sources/glew32d.dll
-/sources/vulkan-1.dll
-/sources/glfw
-/sources/glew
-/sources/glm
-/sources/vk-bootstrap
-/sources/stb_image.h
-/sources/tiny_obj_loader.h
-/sources/vk_mem_alloc.h
+/release-build/
+/venv/
+# Dependencies extracted from deps/otherSources.tar.xz
+/deps/glew
+/deps/glfw
+/deps/glm
+/deps/vk-bootstrap
+/deps/stb_image.h
+/deps/tiny_obj_loader.h
+/deps/vk_mem_alloc.h
+/deps/glew32.dll
+/deps/glew32d.dll
+# Downloaded models
+/Models.tar.xz
+/src/Models
