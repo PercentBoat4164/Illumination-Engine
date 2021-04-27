@@ -1,4 +1,5 @@
 #include <iostream>
+#include "PhysicsEngine/Core/PhysicsCore.hpp"
 #ifdef CRYSTAL_ENGINE_VULKAN
 #include "GraphicsEngine/Vulkan/Asset.hpp"
 #include "GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
