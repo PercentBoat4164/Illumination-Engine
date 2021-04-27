@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../glm/glm.hpp"
+#include <glm/glm.hpp>
 
 //a set of relevant geometry functions
 namespace geometryFunctions {
@@ -77,8 +77,6 @@ class LineSegment : Shape {
         glm::vec3 segment; //a vector representing the line segment, starting from the linesegment's position
 
         LineSegment(glm::vec3 pos, glm::vec3 segmentVector);
-
-        LineSegment(glm::vec3 p1, glm::vec3 p2);
 
         bool isInside(glm::vec3 target);
 
