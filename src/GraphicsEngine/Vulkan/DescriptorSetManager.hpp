@@ -13,6 +13,7 @@
 struct DescriptorSetManagerCreateInfo {
     std::vector<VkDescriptorPoolSize> poolSizes{};
     std::vector<VkShaderStageFlagBits> shaderStages{};
+    std::vector<const char *> filenames{};
     std::vector<AccelerationStructureManager> accelerationStructures{};
     std::vector<ImageManager> images{};
     std::vector<BufferManager> buffers{};
@@ -29,7 +30,7 @@ public:
         deletionQueue.clear();
     }
 
-    void setup(VulkanGraphicsEngineLink *renderEngineLink, DescriptorSetManagerCreateInfo createInfo) {
+    void create(VulkanGraphicsEngineLink *renderEngineLink, DescriptorSetManagerCreateInfo createInfo) {
         linkedRenderEngine = renderEngineLink;
         //Create descriptor layout from bindings
         std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings{};

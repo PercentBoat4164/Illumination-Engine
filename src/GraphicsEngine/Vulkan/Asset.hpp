@@ -96,8 +96,9 @@ private:
         size_t reserveCount{};
         for (const auto& shape : shapes) { reserveCount += shape.mesh.indices.size(); }
         indices.reserve(reserveCount);
-        vertices.reserve(reserveCount); // Allocates too much space!
+        vertices.reserve(reserveCount * (2 / 3)); // Allocates too much space!
         std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+        uniqueVertices.reserve(reserveCount * (2 / 3)); // Also allocates too much space, but it will be deleted at the end of the function, so we don't care
         for (const auto& shape : shapes) {
             for (const auto& index : shape.mesh.indices) {
                 Vertex vertex{};
@@ -106,7 +107,7 @@ private:
                 vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
                 vertex.color = {1.f, 1.f, 1.f};
                 if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
-                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+                    uniqueVertices.insert({vertex, static_cast<uint32_t>(vertices.size())});
                     vertices.push_back(vertex);
                 }
                 indices.push_back(uniqueVertices[vertex]);

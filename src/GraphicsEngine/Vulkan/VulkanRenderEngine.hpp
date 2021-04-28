@@ -21,7 +21,7 @@
 #include "Vertex.hpp"
 #include "VulkanGraphicsEngineLink.hpp"
 
-//TODO: Add multithreading support throughout the engine
+//TODO: Add multithreading support throughout the engine - LOW PRIORITY
 class VulkanRenderEngine {
 private:
     vkb::Instance instance{};
@@ -236,7 +236,7 @@ public:
     }
 
     void updateSettings(bool updateAll) {
-        //TODO: Fix view jerk when exiting fullscreen.
+        //TODO: Fix view jerk when exiting fullscreen. - LOW PRIORITY
         if (settings.fullscreen) {
             glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);
             //find monitor that window is on

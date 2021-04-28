@@ -10,6 +10,7 @@
 #include "Vertex.hpp"
 #include "ShaderBindingTableManager.hpp"
 #include "DescriptorSetManager.hpp"
+#include "RayTracingPipelineManager.hpp"
 
 class VulkanRenderEngineRayTracer : public VulkanRenderEngine {
 private:
