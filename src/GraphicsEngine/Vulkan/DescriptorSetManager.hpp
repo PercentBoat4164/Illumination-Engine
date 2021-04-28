@@ -45,7 +45,7 @@ public:
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
         if (vkCreateDescriptorSetLayout(linkedRenderEngine->device->device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor layout!"); }
         VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
-        descriptorPoolCreateInfo.poolSizeCount = createInfo.poolSizes.size();
+        descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(createInfo.poolSizes.size());
         descriptorPoolCreateInfo.pPoolSizes = createInfo.poolSizes.data();
         descriptorPoolCreateInfo.maxSets = 1;
         if (vkCreateDescriptorPool(linkedRenderEngine->device->device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); }
@@ -98,7 +98,7 @@ public:
             } else { throw std::runtime_error("unsupported descriptor type!"); }
             descriptorWrites.push_back(writeDescriptorSet);
         }
-        vkUpdateDescriptorSets(linkedRenderEngine->device->device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+        vkUpdateDescriptorSets(linkedRenderEngine->device->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
 
 private:

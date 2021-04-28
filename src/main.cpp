@@ -31,18 +31,18 @@ void windowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
 #endif
 
 int main(int argc, char **argv) {
-    std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics engine\n";
     std::string selection;
     char input;
     if (argc > 1) { input = *argv[1]; }
     else {
+        std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics engine\n";
         std::cin >> selection;
         input = selection[0];
     }
 #ifdef CRYSTAL_ENGINE_VULKAN
     if (input == 'v') {
         try {
-            VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer{};
+            VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
             glfwSetWindowPosCallback(renderEngine.window, windowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
             Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});

@@ -93,7 +93,7 @@ private:
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename)) { throw std::runtime_error(warn + err); }
-        uint32_t reserveCount{};
+        size_t reserveCount{};
         for (const auto& shape : shapes) { reserveCount += shape.mesh.indices.size(); }
         indices.reserve(reserveCount);
         vertices.reserve(reserveCount); // Allocates too much space!
@@ -106,7 +106,7 @@ private:
                 vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
                 vertex.color = {1.f, 1.f, 1.f};
                 if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
-                    uniqueVertices[vertex] = vertices.size();
+                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
                     vertices.push_back(vertex);
                 }
                 indices.push_back(uniqueVertices[vertex]);
@@ -115,7 +115,7 @@ private:
         // Remove unneeded space at end of vertices
         std::vector<Vertex> tmp = vertices;
         vertices.swap(tmp);
-        triangleCount = indices.size() / 3;
+        triangleCount = static_cast<uint32_t>(indices.size()) / 3;
     }
 
     void loadTextures(const std::vector<const char *>& filenames) {

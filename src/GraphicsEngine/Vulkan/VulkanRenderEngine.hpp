@@ -279,7 +279,7 @@ public:
 
     GLFWmonitor *monitor{};
     VulkanSettings settings{};
-    Camera camera{};
+    Camera camera = Camera(&settings);
     GLFWwindow *window{};
     std::vector<Asset *> assets{};
     CommandBufferManager commandBufferManager{};
