@@ -18,7 +18,7 @@ namespace geometryFunctions {
 namespace geometryConstants {
 
     //used when checking for equals between floats
-    const float minError = 0.001;
+    const float minError = 0.001f;
 }
 
 //A three-dimensional shape that can check for collisions with other shapes
