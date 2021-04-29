@@ -9,6 +9,11 @@
 
 class Camera {
 public:
+    explicit Camera(VulkanSettings *vulkanSettings) {
+        settings = vulkanSettings;
+        proj = glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / std::max(settings->resolution[1], 1), 0.01, settings->renderDistance);
+    }
+
     std::array<glm::mat4, 2> update() {
         front = glm::normalize(glm::vec3{cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch))});
         right = glm::normalize(glm::cross(front, up));
@@ -18,6 +23,7 @@ public:
         return {view, proj};
     }
 
+    VulkanSettings *settings{};
     glm::vec3 position{0, 0, 2};
     glm::vec3 front{0, 1, 0};
     glm::vec3 up{0, 0, 1};
@@ -25,6 +31,5 @@ public:
     float yaw{-90};
     float pitch{};
     glm::mat4 view{glm::lookAt(position, position + front, up)};
-    glm::mat4 proj{glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / std::max(settings->resolution[1], 1), 0.01, settings->renderDistance)};
-    VulkanSettings *settings{};
+    glm::mat4 proj{};
 };

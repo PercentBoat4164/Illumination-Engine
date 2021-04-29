@@ -43,7 +43,7 @@ public:
          programID = loadShaders({"Shaders/vertexShader.glsl", "Shaders/fragmentShader.glsl"});
     }
 
-    [[nodiscard]] int update() const {
+    [[nodiscard]] int update() {
         if (glfwWindowShouldClose(window)) { return 1; }
         glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -54,12 +54,20 @@ public:
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glDisableVertexAttribArray(0);
         glfwSwapBuffers(window);
+        auto currentTime = (float)glfwGetTime();
+        frameTime = currentTime - previousTime;
+        previousTime = currentTime;
+        ++frameNumber;
         return 0;
     }
 
     ~OpenGLRenderEngine() {
         cleanUp();
     }
+
+    float frameTime{};
+    float previousTime{};
+    int frameNumber{};
 
 private:
     constexpr static const GLfloat g_vertex_buffer_data[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f};

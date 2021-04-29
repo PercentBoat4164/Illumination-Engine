@@ -32,15 +32,9 @@ if (Vulkan_FOUND)
 endif()
 
 # Download Models if they don't already exist
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/Models")
+if (NOT EXISTS "${CMAKE_SOURCE_DIR}/src/Models")
     execute_process(COMMAND python3 "${CMAKE_SOURCE_DIR}/DownloadModels.py" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
-
-# Copy data files and dlls
-set(data_SHADOW src/Shaders src/Models deps/glew32d.dll deps/glew32.dll)
-foreach(item IN LISTS data_SHADOW)
-    FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
-endforeach()
 
 # Add compile definitions based on supported features
 add_compile_definitions(CRYSTAL_ENGINE_OPENGL)
@@ -56,3 +50,15 @@ if (Vulkan_FOUND)
 else()
     target_link_libraries(CrystalEngine PUBLIC glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES})
 endif()
+
+# Copy files and dlls in post build phase
+if ($ENV{CLION_IDE})
+    set(build_LOCATION ${CMAKE_BINARY_DIR})
+    set(data_SHADOW ${CMAKE_SOURCE_DIR}/src/Shaders ${CMAKE_SOURCE_DIR}/src/Models ${CMAKE_SOURCE_DIR}/deps/glew32d.dll)
+else()
+    set(build_LOCATION ${CMAKE_BINARY_DIR}/Debug)
+    set(data_SHADOW ${CMAKE_SOURCE_DIR}/src/Shaders ${CMAKE_SOURCE_DIR}/src/Models ${CMAKE_SOURCE_DIR}/build/bin/Debug/glew32d.dll)
+endif()
+foreach (item IN LISTS data_SHADOW)
+    add_custom_command(TARGET CrystalEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${item} ${CMAKE_BINARY_DIR})
+endforeach()

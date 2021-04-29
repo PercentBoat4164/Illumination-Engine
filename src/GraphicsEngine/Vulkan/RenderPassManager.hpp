@@ -80,7 +80,7 @@ public:
         std::vector<VkAttachmentDescription> attachmentDescriptions{};
         if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription, colorResolveAttachmentDescription}; } else { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription}; }
         VkRenderPassCreateInfo renderPassCreateInfo{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
-        renderPassCreateInfo.attachmentCount = attachmentDescriptions.size();
+        renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
         renderPassCreateInfo.pAttachments = attachmentDescriptions.data();
         renderPassCreateInfo.subpassCount = 1;
         renderPassCreateInfo.pSubpasses = &subpassDescription;
@@ -109,7 +109,7 @@ public:
             else { framebufferAttachments = {colorImage.view, depthImage.view, (*linkedRenderEngine->swapchainImageViews)[i]}; }
             VkFramebufferCreateInfo framebufferCreateInfo{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
             framebufferCreateInfo.renderPass = renderPass;
-            framebufferCreateInfo.attachmentCount = framebufferAttachments.size();
+            framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(framebufferAttachments.size());
             framebufferCreateInfo.pAttachments = framebufferAttachments.data();
             framebufferCreateInfo.width = linkedRenderEngine->swapchain->extent.width;
             framebufferCreateInfo.height = linkedRenderEngine->swapchain->extent.height;
@@ -127,7 +127,7 @@ public:
         VkRenderPassBeginInfo renderPassBeginInfo{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         renderPassBeginInfo.renderArea.offset = {0, 0};
         renderPassBeginInfo.renderArea.extent = linkedRenderEngine->swapchain->extent;
-        renderPassBeginInfo.clearValueCount = clearValues.size();
+        renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
         renderPassBeginInfo.pClearValues = clearValues.data();
         renderPassBeginInfo.renderPass = renderPass;
         if (framebufferIndex > framebuffers.size()) { throw std::runtime_error(std::string("framebuffers[") + std::to_string(framebufferIndex) + "] does not exist!"); }

@@ -32,18 +32,19 @@ void windowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
 #endif
 
 int main(int argc, char **argv) {
-    std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics engine\n";
+    glfwWindowHint(GLFW_MAXIMIZED, 1);
     std::string selection;
     char input;
     if (argc > 1) { input = *argv[1]; }
     else {
+        std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics engine\n";
         std::cin >> selection;
         input = selection[0];
     }
 #ifdef CRYSTAL_ENGINE_VULKAN
     if (input == 'v') {
         try {
-            VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer{};
+            VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
             glfwSetWindowPosCallback(renderEngine.window, windowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
             Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
@@ -60,6 +61,9 @@ int main(int argc, char **argv) {
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
+            std::vector<float> recordedFPS{};
+            float recordedFPSCount{200};
+            recordedFPS.resize((size_t)recordedFPSCount);
             while (renderEngine.update()) {
                 //Process inputs
                 glfwPollEvents();
@@ -119,6 +123,11 @@ int main(int argc, char **argv) {
                 }
                 //move assets
                 cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
+                //update framerate gathered over past 'recordedFPSCount' frames
+                recordedFPS[(size_t)fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
+                int sum{0};
+                std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
+                glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
             }
             renderEngine.cleanUp();
         } catch (const std::exception& e) {
@@ -132,8 +141,17 @@ int main(int argc, char **argv) {
     if (input == 'o') {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
+            glfwSwapInterval(1);
+            std::vector<float> recordedFPS{};
+            float recordedFPSCount{200};
+            recordedFPS.resize((size_t)recordedFPSCount);
             while (renderEngine.update() != 1) {
                 glfwPollEvents();
+                //update framerate gathered over past 'recordedFPSCount' frames
+                recordedFPS[(size_t)fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
+                int sum{0};
+                std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
+                glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
             }
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
