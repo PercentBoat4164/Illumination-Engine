@@ -19,12 +19,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include "ImageManager.hpp"
-#include "BufferManager.hpp"
-#include "Camera.hpp"
-#include "GPUData.hpp"
-#include "RasterizationPipelineManager.hpp"
-#include "Vertex.hpp"
+#include "imageManager.hpp"
+#include "bufferManager.hpp"
+#include "camera.hpp"
+#include "gpuData.hpp"
+#include "rasterizationPipelineManager.hpp"
+#include "vertex.hpp"
 
 class Asset {
 public:

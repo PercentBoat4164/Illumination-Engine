@@ -5,8 +5,8 @@
 #include <VkBootstrap.h>
 #include <vk_mem_alloc.h>
 
-#include "VulkanSettings.hpp"
-#include "CommandBufferManager.hpp"
+#include "vulkanSettings.hpp"
+#include "commandBufferManager.hpp"
 
 class VulkanGraphicsEngineLink {
 public:

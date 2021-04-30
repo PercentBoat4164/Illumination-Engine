@@ -2,15 +2,15 @@
 
 #include <vector>
 
-#include "BufferManager.hpp"
-#include "GPUData.hpp"
-#include "Asset.hpp"
-#include "VulkanRenderEngine.hpp"
-#include "AccelerationStructureManager.hpp"
-#include "Vertex.hpp"
-#include "ShaderBindingTableManager.hpp"
-#include "DescriptorSetManager.hpp"
-#include "RayTracingPipelineManager.hpp"
+#include "bufferManager.hpp"
+#include "gpuData.hpp"
+#include "asset.hpp"
+#include "vulkanRenderEngine.hpp"
+#include "accelerationStructureManager.hpp"
+#include "vertex.hpp"
+#include "shaderBindingTableManager.hpp"
+#include "descriptorSetManager.hpp"
+#include "rayTracingPipelineManager.hpp"
 
 class VulkanRenderEngineRayTracer : public VulkanRenderEngine {
 private:

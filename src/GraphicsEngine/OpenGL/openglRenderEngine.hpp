@@ -11,7 +11,7 @@
 #include <vector>
 
 
-#include "../OpenGL/OpenGLSettings.hpp"
+#include "../OpenGL/openglSettings.hpp"
 
 class OpenGLRenderEngine {
 public:

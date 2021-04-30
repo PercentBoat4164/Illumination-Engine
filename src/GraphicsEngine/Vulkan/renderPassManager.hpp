@@ -6,7 +6,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "VulkanGraphicsEngineLink.hpp"
+#include "vulkanGraphicsEngineLink.hpp"
 
 class RenderPassManager {
 public:

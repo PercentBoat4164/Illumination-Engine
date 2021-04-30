@@ -5,7 +5,7 @@
 
 #include <vk_mem_alloc.h>
 
-#include "VulkanGraphicsEngineLink.hpp"
+#include "vulkanGraphicsEngineLink.hpp"
 
 class BufferManager {
 public:

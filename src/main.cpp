@@ -1,15 +1,15 @@
 #include <iostream>
 
 #ifdef CRYSTAL_ENGINE_VULKAN
-#include "GraphicsEngine/Vulkan/Asset.hpp"
-#include "GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
+#include "GraphicsEngine/Vulkan/asset.hpp"
+#include "GraphicsEngine/Vulkan/vulkanRenderEngineRasterizer.hpp"
 #ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
-#include "GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp"
+#include "GraphicsEngine/Vulkan/vulkanRenderEngineRayTracer.hpp"
 #endif
 #endif
 #ifdef CRYSTAL_ENGINE_OPENGL
-#include "GraphicsEngine/OpenGL/OpenGLSettings.hpp"
-#include "GraphicsEngine/OpenGL/OpenGLRenderEngine.hpp"
+#include "GraphicsEngine/OpenGL/openglSettings.hpp"
+#include "GraphicsEngine/OpenGL/openglRenderEngine.hpp"
 #endif
 
 #ifdef CRYSTAL_ENGINE_VULKAN

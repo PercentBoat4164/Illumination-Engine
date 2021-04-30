@@ -9,17 +9,17 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
-#include "VulkanSettings.hpp"
-#include "Asset.hpp"
-#include "BufferManager.hpp"
-#include "Camera.hpp"
-#include "CommandBufferManager.hpp"
-#include "GPUData.hpp"
-#include "ImageManager.hpp"
-#include "RasterizationPipelineManager.hpp"
-#include "RenderPassManager.hpp"
-#include "Vertex.hpp"
-#include "VulkanGraphicsEngineLink.hpp"
+#include "vulkanSettings.hpp"
+#include "asset.hpp"
+#include "bufferManager.hpp"
+#include "camera.hpp"
+#include "commandBufferManager.hpp"
+#include "gpuData.hpp"
+#include "imageManager.hpp"
+#include "rasterizationPipelineManager.hpp"
+#include "renderPassManager.hpp"
+#include "vertex.hpp"
+#include "vulkanGraphicsEngineLink.hpp"
 
 //TODO: Add multithreading support throughout the engine - LOW PRIORITY
 class VulkanRenderEngine {

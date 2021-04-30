@@ -6,8 +6,8 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "Asset.hpp"
-#include "Vertex.hpp"
+#include "asset.hpp"
+#include "vertex.hpp"
 
 enum DescriptorAttachmentType {
     BUFFER = 0,

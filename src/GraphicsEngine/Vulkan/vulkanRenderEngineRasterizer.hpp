@@ -8,7 +8,7 @@
 
 #include <VkBootstrap.h>
 
-#include "VulkanRenderEngine.hpp"
+#include "vulkanRenderEngine.hpp"
 
 class VulkanRenderEngineRasterizer : public VulkanRenderEngine {
 public:

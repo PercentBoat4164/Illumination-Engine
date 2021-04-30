@@ -2,8 +2,8 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "DescriptorSetManager.hpp"
-#include "VulkanGraphicsEngineLink.hpp"
+#include "descriptorSetManager.hpp"
+#include "vulkanGraphicsEngineLink.hpp"
 
 class RayTracingPipelineManager {
     VkPipelineLayout pipelineLayout{};

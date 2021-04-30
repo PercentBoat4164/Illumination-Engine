@@ -6,9 +6,9 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "AccelerationStructureManager.hpp"
-#include "Asset.hpp"
-#include "Vertex.hpp"
+#include "accelerationStructureManager.hpp"
+#include "asset.hpp"
+#include "vertex.hpp"
 
 struct DescriptorSetManagerCreateInfo {
     std::vector<VkDescriptorPoolSize> poolSizes{};

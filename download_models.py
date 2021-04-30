@@ -17,5 +17,5 @@ print("Cleaning up...\nRemoving: "+os.getcwd()+"/Models.tar.xz")
 if platform.system() == "Linux":
     os.system("rm "+os.getcwd()+"/Models.tar.xz")
 elif platform.system() == "Windows":
-    os.system("del /f Models.tar.xz")
+    os.system("del /f "+os.getcwd()+"Models.tar.xz")
 print("Done")
