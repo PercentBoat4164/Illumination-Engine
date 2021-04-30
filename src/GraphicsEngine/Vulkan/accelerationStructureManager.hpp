@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BufferManager.hpp"
+#include "bufferManager.hpp"
 
 class AccelerationStructureManager : public BufferManager {
 public:

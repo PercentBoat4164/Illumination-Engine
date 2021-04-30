@@ -1,13 +1,15 @@
 # Project exclude paths
+# Visual Studio Code
 /.idea/
 /.vs/
 /.vscode/
 /CMakeFiles/
 /build/
-/cmake-build-debug-coverage/
-/debug-build/
 /out/
+# CLion
+/debug-build/
 /release-build/
+/coverage-build/
 /venv/
 # Dependencies extracted from deps/otherSources.tar.xz
 /deps/glew

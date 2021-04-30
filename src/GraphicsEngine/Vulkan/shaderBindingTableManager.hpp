@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BufferManager.hpp"
+#include "bufferManager.hpp"
 
 class ShaderBindingTableManager : public BufferManager {
 public:

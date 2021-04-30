@@ -1,35 +1,43 @@
 #include <iostream>
+
 #ifdef CRYSTAL_ENGINE_VULKAN
-#include "GraphicsEngine/Vulkan/Asset.hpp"
-#include "GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
+#include "GraphicsEngine/Vulkan/asset.hpp"
+#include "GraphicsEngine/Vulkan/vulkanRenderEngineRasterizer.hpp"
 #ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
-#include "GraphicsEngine/Vulkan/VulkanRenderEngineRayTracer.hpp"
+#include "GraphicsEngine/Vulkan/vulkanRenderEngineRayTracer.hpp"
 #endif
 #endif
 #ifdef CRYSTAL_ENGINE_OPENGL
-#include "GraphicsEngine/OpenGL/OpenGLSettings.hpp"
-#include "GraphicsEngine/OpenGL/OpenGLRenderEngine.hpp"
+#include "GraphicsEngine/OpenGL/openglSettings.hpp"
+#include "GraphicsEngine/OpenGL/openglRenderEngine.hpp"
 #endif
 
 #ifdef CRYSTAL_ENGINE_VULKAN
 void cursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto vulkanRenderEngine = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
-    xOffset *= vulkanRenderEngine->camera.mouseSensitivity;
-    yOffset *= vulkanRenderEngine->camera.mouseSensitivity;
-    vulkanRenderEngine->camera.yaw -= (float) xOffset;
-    vulkanRenderEngine->camera.pitch -= (float) yOffset;
-    if (vulkanRenderEngine->camera.pitch > 89.99f) { vulkanRenderEngine->camera.pitch = 89.99f; }
-    if (vulkanRenderEngine->camera.pitch < -89.99f) { vulkanRenderEngine->camera.pitch = -89.99f; }
+    auto vulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
+    xOffset *= vulkanRenderEngineRasterizer->settings.mouseSensitivity;
+    yOffset *= vulkanRenderEngineRasterizer->settings.mouseSensitivity;
+    vulkanRenderEngineRasterizer->camera.yaw -= (float) xOffset;
+    vulkanRenderEngineRasterizer->camera.pitch -= (float) yOffset;
+    if (vulkanRenderEngineRasterizer->camera.pitch > 89.99f) { vulkanRenderEngineRasterizer->camera.pitch = 89.99f; }
+    if (vulkanRenderEngineRasterizer->camera.pitch < -89.99f) { vulkanRenderEngineRasterizer->camera.pitch = -89.99f; }
     glfwSetCursorPos(window, 0, 0);
 }
+
+void windowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
+    auto vulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
+    if (!vulkanRenderEngineRasterizer->settings.fullscreen) { vulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
+}
+
 #endif
 
 int main(int argc, char **argv) {
-    std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics engine\n";
+    glfwWindowHint(GLFW_MAXIMIZED, 1);
     std::string selection;
     char input;
     if (argc > 1) { input = *argv[1]; }
     else {
+        std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n'p': Run Physics engine\n";
         std::cin >> selection;
         input = selection[0];
     }
@@ -37,25 +45,31 @@ int main(int argc, char **argv) {
     if (input == 'v') {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
+            glfwSetWindowPosCallback(renderEngine.window, windowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
-            Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0});
-            Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {glm::radians(90.0), 0, 0}, {100, 100, 0});
+            Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+            Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
             Asset vikingRoom = Asset("Models/vikingRoom.obj", {"Models/vikingRoom.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            Asset statue = Asset("Models/ancientStatue.obj", {"Models/ancientStatue.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {7, 2, 0});
+            Asset statue = Asset("Models/ancientStatue.obj", {"Models/ancientStatue.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {7, 2, 0}, {0, 0, 0});
+            Asset ball = Asset("Models/sphere.obj", {"Models/sphere_diffuse.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"});
             renderEngine.uploadAsset(&cube, true);
             renderEngine.uploadAsset(&quad, true);
             renderEngine.uploadAsset(&vikingRoom, true);
             renderEngine.uploadAsset(&statue, true);
+            renderEngine.uploadAsset(&ball, true);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
+            std::vector<float> recordedFPS{};
+            float recordedFPSCount{200};
+            recordedFPS.resize((size_t)recordedFPSCount);
             while (renderEngine.update()) {
                 //Process inputs
                 glfwPollEvents();
-                float velocity = renderEngine.frameTime * renderEngine.camera.movementSpeed;
+                float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
                     for (Asset *asset : renderEngine.assets) { asset->reloadAsset(); }
                     renderEngine.updateSettings(false);
@@ -97,6 +111,7 @@ int main(int argc, char **argv) {
                     lastTab = glfwGetTime();
                     captureInput = !captureInput;
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastEsc > .2)) {
+                    if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
                     if (renderEngine.settings.fullscreen) {
                         renderEngine.settings.fullscreen = false;
                         renderEngine.updateSettings(true);
@@ -105,11 +120,18 @@ int main(int argc, char **argv) {
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                         glfwSetCursorPosCallback(renderEngine.window, nullptr);
                         captureInput = false;
-                    } else if (!captureInput) { glfwSetWindowShouldClose(renderEngine.window, 1); }
+                    }
                     lastEsc = glfwGetTime();
                 }
                 //move assets
                 cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
+                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
+                statue.position = {5, 5 * std::max(std::min(sin(3 * glfwGetTime()), -2.5), 2.5), 0};
+                //update framerate gathered over past 'recordedFPSCount' frames
+                recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
+                int sum{0};
+                std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
+                glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
             }
             renderEngine.cleanUp();
         } catch (const std::exception& e) {
@@ -123,8 +145,17 @@ int main(int argc, char **argv) {
     if (input == 'o') {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
+            glfwSwapInterval(1);
+            std::vector<float> recordedFPS{};
+            float recordedFPSCount{200};
+            recordedFPS.resize((size_t)recordedFPSCount);
             while (renderEngine.update() != 1) {
                 glfwPollEvents();
+                //update framerate gathered over past 'recordedFPSCount' frames
+                recordedFPS[(size_t)fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
+                int sum{0};
+                std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
+                glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
             }
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;

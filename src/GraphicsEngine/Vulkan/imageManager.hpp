@@ -6,8 +6,8 @@
 
 #include <vk_mem_alloc.h>
 
-#include "VulkanGraphicsEngineLink.hpp"
-#include "BufferManager.hpp"
+#include "vulkanGraphicsEngineLink.hpp"
+#include "bufferManager.hpp"
 
 enum ImageType {
     DEPTH = 0,

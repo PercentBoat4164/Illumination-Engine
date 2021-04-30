@@ -32,15 +32,22 @@ if (Vulkan_FOUND)
 endif()
 
 # Download Models if they don't already exist
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/Models")
+if (NOT EXISTS "${CMAKE_SOURCE_DIR}/src/Models")
     execute_process(COMMAND python3 "${CMAKE_SOURCE_DIR}/DownloadModels.py" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
 # Copy data files and dlls
-set(data_SHADOW src/Shaders src/Models deps/glew32d.dll deps/glew32.dll)
-foreach(item IN LISTS data_SHADOW)
-    FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
-endforeach()
+if ($ENV{CLION_IDE})
+    set(data_SHADOW src/Shaders src/Models deps/glew32d.dll)
+    foreach (item IN LISTS data_SHADOW)
+        FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
+    endforeach()
+else()
+    set(data_SHADOW src/Shaders src/Models build/bin/Debug/glew32d.dll)
+    foreach (item IN LISTS data_SHADOW)
+        FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}/Debug")
+    endforeach()
+endif()
 
 # Add compile definitions based on supported features
 add_compile_definitions(CRYSTAL_ENGINE_OPENGL)
