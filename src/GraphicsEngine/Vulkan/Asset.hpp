@@ -96,7 +96,7 @@ private:
         size_t reserveCount{};
         for (const auto& shape : shapes) { reserveCount += shape.mesh.indices.size(); }
         indices.reserve(reserveCount);
-        vertices.reserve(reserveCount * (2 / 3)); // Allocates too much space!
+        vertices.reserve(reserveCount * (2 / 3)); // Allocates too much space! Let's procrastinate cutting it down.
         std::unordered_map<Vertex, uint32_t> uniqueVertices{};
         uniqueVertices.reserve(reserveCount * (2 / 3)); // Also allocates too much space, but it will be deleted at the end of the function, so we don't care
         for (const auto& shape : shapes) {
@@ -113,7 +113,7 @@ private:
                 indices.push_back(uniqueVertices[vertex]);
             }
         }
-        // Remove unneeded space at end of vertices
+        // Remove unneeded space at end of vertices at the last minute
         std::vector<Vertex> tmp = vertices;
         vertices.swap(tmp);
         triangleCount = static_cast<uint32_t>(indices.size()) / 3;

@@ -63,33 +63,33 @@ public:
             writeDescriptorSet.dstSet = descriptorSet;
             writeDescriptorSet.descriptorType = createInfo.poolSizes[i].type;
             writeDescriptorSet.dstBinding = i;
-            if (createInfo.poolSizes[i].type == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
+            if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
                 VkWriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAccelerationStructure{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR};
                 writeDescriptorSetAccelerationStructure.accelerationStructureCount = 1;
                 writeDescriptorSetAccelerationStructure.pAccelerationStructures = &createInfo.accelerationStructures[i].accelerationStructure;
                 writeDescriptorSet.pNext = &writeDescriptorSetAccelerationStructure;
-            } else if (createInfo.poolSizes[i].type == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
+            } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
                 VkDescriptorImageInfo storageImageDescriptorInfo{};
                 storageImageDescriptorInfo.imageView = createInfo.images[i].view;
                 storageImageDescriptorInfo.sampler = createInfo.images[i].sampler;
                 storageImageDescriptorInfo.imageLayout = createInfo.images[i].imageLayout;
                 if (storageImageDescriptorInfo.imageView == VK_NULL_HANDLE) { throw std::runtime_error("given image does not have an associated view!"); }
                 writeDescriptorSet.pImageInfo = &storageImageDescriptorInfo;
-            } else if (createInfo.poolSizes[i].type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+            } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
                 VkDescriptorImageInfo combinedImageSamplerDescriptorInfo{};
                 combinedImageSamplerDescriptorInfo.imageView = createInfo.images[i].view;
                 combinedImageSamplerDescriptorInfo.sampler = createInfo.images[i].sampler;
                 combinedImageSamplerDescriptorInfo.imageLayout = createInfo.images[i].imageLayout;
                 if (combinedImageSamplerDescriptorInfo.sampler == VK_NULL_HANDLE) { throw std::runtime_error("given image does not have an associated sampler!"); }
                 writeDescriptorSet.pImageInfo = &combinedImageSamplerDescriptorInfo;
-            } else if (createInfo.poolSizes[i].type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
+            } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
                 VkDescriptorBufferInfo storageBufferDescriptorInfo{};
                 storageBufferDescriptorInfo.buffer = createInfo.buffers[i].buffer;
                 storageBufferDescriptorInfo.offset = 0;
                 storageBufferDescriptorInfo.range = VK_WHOLE_SIZE;
                 if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("given buffer has not been created!"); }
                 writeDescriptorSet.pBufferInfo = &storageBufferDescriptorInfo;
-            } else if (createInfo.poolSizes[i].type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+            } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
                 VkDescriptorBufferInfo storageBufferDescriptorInfo{};
                 storageBufferDescriptorInfo.buffer = createInfo.buffers[i].buffer;
                 storageBufferDescriptorInfo.offset = 0;

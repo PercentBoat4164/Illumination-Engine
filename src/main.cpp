@@ -51,10 +51,12 @@ int main(int argc, char **argv) {
             Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
             Asset vikingRoom = Asset("Models/vikingRoom.obj", {"Models/vikingRoom.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
             Asset statue = Asset("Models/ancientStatue.obj", {"Models/ancientStatue.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {7, 2, 0}, {0, 0, 0});
+            Asset ball = Asset("Models/sphere.obj", {"Models/sphere_diffuse.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"});
             renderEngine.uploadAsset(&cube, true);
             renderEngine.uploadAsset(&quad, true);
             renderEngine.uploadAsset(&vikingRoom, true);
             renderEngine.uploadAsset(&statue, true);
+            renderEngine.uploadAsset(&ball, true);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
@@ -123,8 +125,10 @@ int main(int argc, char **argv) {
                 }
                 //move assets
                 cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
+                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
+                statue.position = {5, 5 * std::max(std::min(sin(3 * glfwGetTime()), -2.5), 2.5), 0};
                 //update framerate gathered over past 'recordedFPSCount' frames
-                recordedFPS[(size_t)fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
+                recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};
                 std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
                 glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
