@@ -12,12 +12,8 @@ class RayTracingPipelineManager {
     std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
     VkPipeline pipeline{};
 
-    void destroy() {
-        for (const std::function<void()>& function : deletionQueue) { function(); }
-        deletionQueue.clear();
-    }
-
-    void create(VulkanGraphicsEngineLink *renderEngineLink, DescriptorSetManagerCreateInfo *descriptorSetManagerCreateInfo) {
+public:
+    void create(VulkanGraphicsEngineLink *renderEngineLink, DescriptorSetManager::DescriptorSetManagerCreateInfo *descriptorSetManagerCreateInfo) {
         linkedRenderEngine = renderEngineLink;
         descriptorSetManager.create(linkedRenderEngine, descriptorSetManagerCreateInfo);
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
@@ -69,8 +65,13 @@ class RayTracingPipelineManager {
         rayTracingPipelineCreateInfo.pGroups = shaderGroups.data();
         rayTracingPipelineCreateInfo.maxPipelineRayRecursionDepth = 2;
         rayTracingPipelineCreateInfo.layout = pipelineLayout;
-        vkCreateRayTracingPipelinesKHR(linkedRenderEngine->device->device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCreateInfo, nullptr, &pipeline);
+        linkedRenderEngine->vkCreateRayTracingPipelinesKHR(linkedRenderEngine->device->device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCreateInfo, nullptr, &pipeline);
         for (VkPipelineShaderStageCreateInfo shader : shaderStages) { vkDestroyShaderModule(linkedRenderEngine->device->device, shader.module, nullptr); }
+    }
+
+    void destroy() {
+        for (const std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
     }
 
 private:

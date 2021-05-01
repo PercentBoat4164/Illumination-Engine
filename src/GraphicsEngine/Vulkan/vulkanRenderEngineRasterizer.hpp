@@ -60,8 +60,8 @@ public:
                 //record command buffer for this asset
                 vkCmdBindVertexBuffers(commandBufferManager.commandBuffers[imageIndex], 0, 1, &asset->vertexBuffer.buffer, offsets);
                 vkCmdBindIndexBuffer(commandBufferManager.commandBuffers[imageIndex], asset->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->pipelineManagers[0].pipelineLayout, 0, 1, &asset->pipelineManagers[0].descriptorSet, 0, nullptr);
-                vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->pipelineManagers[0].pipeline);
+                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->pipelineManager.pipelineLayout, 0, 1, &asset->pipelineManager.descriptorSet, 0, nullptr);
+                vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->pipelineManager.pipeline);
                 vkCmdDrawIndexed(commandBufferManager.commandBuffers[imageIndex], static_cast<uint32_t>(asset->indices.size()), 1, 0, 0, 0);
             }
         }
@@ -99,7 +99,7 @@ public:
         frameNumber++;
         //Check if window has been resized
         vkQueueWaitIdle(presentQueue);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             framebufferResized = false;
             createSwapchain();
         } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }

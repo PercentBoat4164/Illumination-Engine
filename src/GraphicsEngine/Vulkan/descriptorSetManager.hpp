@@ -10,17 +10,17 @@
 #include "asset.hpp"
 #include "vertex.hpp"
 
-struct DescriptorSetManagerCreateInfo {
-    std::vector<VkDescriptorPoolSize> poolSizes{};
-    std::vector<VkShaderStageFlagBits> shaderStages{};
-    std::vector<std::vector<char>> shaderData{};
-    std::vector<AccelerationStructureManager> accelerationStructures{};
-    std::vector<ImageManager> images{};
-    std::vector<BufferManager> buffers{};
-};
-
 class DescriptorSetManager {
 public:
+    struct DescriptorSetManagerCreateInfo {
+        std::vector<VkDescriptorPoolSize> poolSizes{};
+        std::vector<VkShaderStageFlagBits> shaderStages{};
+        std::vector<std::vector<char>> shaderData{};
+        std::vector<AccelerationStructureManager *> accelerationStructures{};
+        std::vector<ImageManager *> images{};
+        std::vector<BufferManager *> buffers{};
+    };
+
     VkDescriptorPool descriptorPool{};
     VkDescriptorSet descriptorSet{};
     VkDescriptorSetLayout descriptorSetLayout{};
@@ -33,6 +33,7 @@ public:
 
     void create(VulkanGraphicsEngineLink *renderEngineLink, DescriptorSetManagerCreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
+        createdWith = createInfo;
         //Create descriptor layout from bindings
         std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings{};
         descriptorSetLayoutBindings.reserve(createdWith->poolSizes.size());
@@ -67,32 +68,32 @@ public:
             if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
                 VkWriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAccelerationStructure{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR};
                 writeDescriptorSetAccelerationStructure.accelerationStructureCount = 1;
-                writeDescriptorSetAccelerationStructure.pAccelerationStructures = &createdWith->accelerationStructures[i].accelerationStructure;
+                writeDescriptorSetAccelerationStructure.pAccelerationStructures = &createdWith->accelerationStructures[i]->accelerationStructure;
                 writeDescriptorSet.pNext = &writeDescriptorSetAccelerationStructure;
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
                 VkDescriptorImageInfo storageImageDescriptorInfo{};
-                storageImageDescriptorInfo.imageView = createdWith->images[i].view;
-                storageImageDescriptorInfo.sampler = createdWith->images[i].sampler;
-                storageImageDescriptorInfo.imageLayout = createdWith->images[i].imageLayout;
+                storageImageDescriptorInfo.imageView = createdWith->images[i]->view;
+                storageImageDescriptorInfo.sampler = createdWith->images[i]->sampler;
+                storageImageDescriptorInfo.imageLayout = createdWith->images[i]->imageLayout;
                 if (storageImageDescriptorInfo.imageView == VK_NULL_HANDLE) { throw std::runtime_error("given image does not have an associated view!"); }
                 writeDescriptorSet.pImageInfo = &storageImageDescriptorInfo;
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
                 VkDescriptorImageInfo combinedImageSamplerDescriptorInfo{};
-                combinedImageSamplerDescriptorInfo.imageView = createdWith->images[i].view;
-                combinedImageSamplerDescriptorInfo.sampler = createdWith->images[i].sampler;
-                combinedImageSamplerDescriptorInfo.imageLayout = createdWith->images[i].imageLayout;
+                combinedImageSamplerDescriptorInfo.imageView = createdWith->images[i]->view;
+                combinedImageSamplerDescriptorInfo.sampler = createdWith->images[i]->sampler;
+                combinedImageSamplerDescriptorInfo.imageLayout = createdWith->images[i]->imageLayout;
                 if (combinedImageSamplerDescriptorInfo.sampler == VK_NULL_HANDLE) { throw std::runtime_error("given image does not have an associated sampler!"); }
                 writeDescriptorSet.pImageInfo = &combinedImageSamplerDescriptorInfo;
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
                 VkDescriptorBufferInfo storageBufferDescriptorInfo{};
-                storageBufferDescriptorInfo.buffer = createdWith->buffers[i].buffer;
+                storageBufferDescriptorInfo.buffer = createdWith->buffers[i]->buffer;
                 storageBufferDescriptorInfo.offset = 0;
                 storageBufferDescriptorInfo.range = VK_WHOLE_SIZE;
                 if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("given buffer has not been created!"); }
                 writeDescriptorSet.pBufferInfo = &storageBufferDescriptorInfo;
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
                 VkDescriptorBufferInfo storageBufferDescriptorInfo{};
-                storageBufferDescriptorInfo.buffer = createdWith->buffers[i].buffer;
+                storageBufferDescriptorInfo.buffer = createdWith->buffers[i]->buffer;
                 storageBufferDescriptorInfo.offset = 0;
                 storageBufferDescriptorInfo.range = VK_WHOLE_SIZE;
                 if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("given buffer has not been created!"); }

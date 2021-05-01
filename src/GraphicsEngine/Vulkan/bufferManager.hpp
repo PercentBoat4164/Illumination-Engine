@@ -39,17 +39,14 @@ public:
             bufferDeviceAddressInfo.buffer = buffer;
             bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         }
-        if (usage == VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
-            VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
-            bufferDeviceAddressInfo.buffer = buffer;
-            bufferAddress = vkGetBufferDeviceAddress(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
-        }
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
         return data;
     }
 
-    void toImage(VkImage image, uint32_t width, uint32_t height) const {
+    void toImage(VkImage image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
+        bool noCommandBuffer{false};
+        if (commandBuffer == nullptr) { noCommandBuffer = true; }
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
@@ -60,9 +57,9 @@ public:
         region.imageSubresource.layerCount = 1;
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {width, height, 1};
-        VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
+        if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
         vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-        linkedRenderEngine->endSingleTimeCommands(commandBuffer);
+        if (noCommandBuffer) { linkedRenderEngine->endSingleTimeCommands(commandBuffer); }
     }
 
 protected:

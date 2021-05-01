@@ -93,7 +93,9 @@ public:
         }
     }
 
-    [[maybe_unused]] void toBuffer(VkBuffer buffer, uint32_t width, uint32_t height) const {
+    [[maybe_unused]] void toBuffer(VkBuffer buffer, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
+        bool noCommandBuffer{false};
+        if (commandBuffer == nullptr) { noCommandBuffer = true; }
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
@@ -104,12 +106,14 @@ public:
         region.imageSubresource.layerCount = 1;
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {width, height, 1};
-        VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
+        if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
         vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer, 1, &region);
-        linkedRenderEngine->endSingleTimeCommands(commandBuffer);
+        if (noCommandBuffer) { linkedRenderEngine->endSingleTimeCommands(commandBuffer); }
     }
 
-    void transition(VkImageLayout oldLayout, VkImageLayout newLayout) {
+    void transition(VkImageLayout oldLayout, VkImageLayout newLayout, VkCommandBuffer commandBuffer = nullptr) {
+        bool noCommandBuffer{false};
+        if (commandBuffer == nullptr) { noCommandBuffer = true; }
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = oldLayout;
@@ -140,10 +144,12 @@ public:
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         } else { throw std::invalid_argument("unsupported layout transition!"); }
-        VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
+        if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-        linkedRenderEngine->endSingleTimeCommands(commandBuffer);
-        imageLayout = newLayout;
+        if (noCommandBuffer) {
+            linkedRenderEngine->endSingleTimeCommands(commandBuffer);
+            imageLayout = newLayout;
+        }
     }
 
 private:

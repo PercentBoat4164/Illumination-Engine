@@ -26,7 +26,6 @@ class VulkanRenderEngine {
 private:
     vkb::Instance instance{};
     std::deque<std::function<void()>> engineDeletionQueue{};
-    BufferManager scratchBuffer{};
     VmaAllocator allocator{};
     bool framebufferResized{false};
     VkSurfaceKHR surface{};
@@ -197,6 +196,7 @@ protected:
     RenderPassManager renderPassManager{};
     VulkanGraphicsEngineLink renderEngineLink{};
 
+    BufferManager scratchBuffer{};
 public:
     virtual void uploadAsset(Asset *asset, bool append) {
         //destroy previously created asset if any
@@ -226,12 +226,9 @@ public:
         memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->uniformBufferObject, sizeof(UniformBufferObject));
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.uniformBuffer.destroy(); });
         //build graphics pipeline and descriptor set for this asset
-        asset->pipelineManagers.resize(1);
-        for (unsigned int i = 0; i < asset->pipelineManagers.size(); ++i) {
-            asset->pipelineManagers[i].setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, asset->shaderData);
-            asset->pipelineManagers[0].createDescriptorSet({asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
-        }
-        asset->deletionQueue.emplace_front([&](const Asset& thisAsset){ for (RasterizationPipelineManager pipelineManager : thisAsset.pipelineManagers) { pipelineManager.destroy(); } });
+        asset->pipelineManager.setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, asset->shaderData);
+        asset->pipelineManager.createDescriptorSet({asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
+        asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.pipelineManager.destroy(); });
         if (append) { assets.push_back(asset); }
     }
 

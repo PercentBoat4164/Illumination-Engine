@@ -25,6 +25,8 @@
 #include "gpuData.hpp"
 #include "rasterizationPipelineManager.hpp"
 #include "vertex.hpp"
+#include "accelerationStructureManager.hpp"
+#include "rayTracingPipelineManager.hpp"
 
 class Asset {
 public:
@@ -69,7 +71,9 @@ public:
     BufferManager vertexBuffer{};
     BufferManager indexBuffer{};
     BufferManager transformationBuffer{};
-    std::vector<RasterizationPipelineManager> pipelineManagers{};
+    RasterizationPipelineManager pipelineManager{};
+    RayTracingPipelineManager rayTracingPipelineManager{};
+    AccelerationStructureManager bottomLevelAccelerationStructure{};
     UniformBufferObject uniformBufferObject{};
     std::vector<ImageManager> textureImages{};
     std::vector<stbi_uc *> textures{};
