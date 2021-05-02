@@ -95,10 +95,10 @@ public:
         deletionQueue.clear();
         //Create output images
         colorImage.setEngineLink(linkedRenderEngine);
-        colorImage.create(linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, linkedRenderEngine->settings->msaaSamples, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)linkedRenderEngine->swapchain->extent.width, (int)linkedRenderEngine->swapchain->extent.height, ImageType{COLOR});
+        colorImage.create(linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, linkedRenderEngine->settings->msaaSamples, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)linkedRenderEngine->swapchain->extent.width, (int)linkedRenderEngine->swapchain->extent.height, COLOR);
         deletionQueue.emplace_front([&]{ colorImage.destroy(); });
         depthImage.setEngineLink(linkedRenderEngine);
-        depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, linkedRenderEngine->settings->msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)linkedRenderEngine->swapchain->extent.width, (int)linkedRenderEngine->swapchain->extent.height, ImageType{DEPTH});
+        depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, linkedRenderEngine->settings->msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)linkedRenderEngine->swapchain->extent.width, (int)linkedRenderEngine->swapchain->extent.height, DEPTH);
         depthImage.transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
         deletionQueue.emplace_front([&]{ depthImage.destroy(); });
         //create framebuffers

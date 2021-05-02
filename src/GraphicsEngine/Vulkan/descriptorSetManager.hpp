@@ -65,6 +65,7 @@ public:
             writeDescriptorSet.dstSet = descriptorSet;
             writeDescriptorSet.descriptorType = createdWith->poolSizes[i].type;
             writeDescriptorSet.dstBinding = i;
+            writeDescriptorSet.descriptorCount = 1;
             if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
                 VkWriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAccelerationStructure{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR};
                 writeDescriptorSetAccelerationStructure.accelerationStructureCount = 1;

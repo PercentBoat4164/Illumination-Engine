@@ -48,7 +48,10 @@ protected:
         //build instance
         vkb::InstanceBuilder builder;
         builder.set_app_name(settings.applicationName.c_str()).set_app_version(settings.applicationVersion[0], settings.applicationVersion[1], settings.applicationVersion[2]).require_api_version(settings.requiredVulkanVersion[0], settings.requiredVulkanVersion[1], settings.requiredVulkanVersion[2]);
+        #ifndef _NDEBUG
+        /* Validation layers hamper performance. Therefore to eek out extra speed from the GPU they will be turned off if the program is run in 'Release' mode. */
         if (systemInfo->validation_layers_available) { builder.request_validation_layers(); }
+        #endif
         if (systemInfo->debug_utils_available) { builder.use_default_debug_messenger(); }
         vkb::detail::Result <vkb::Instance> inst_ret = builder.build();
         if (!inst_ret) { throw std::runtime_error("Failed to create Vulkan instance. Error: " + inst_ret.error().message() + "\n"); }
@@ -82,14 +85,18 @@ protected:
         VkPhysicalDeviceFeatures deviceFeatures{}; //require device features here
         deviceFeatures.samplerAnisotropy = VK_TRUE;
         deviceFeatures.sampleRateShading = VK_TRUE;
-        vkb::detail::Result <vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).require_dedicated_transfer_queue().add_desired_extensions(extensionNames).set_required_features(deviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
+        vkb::detail::Result <vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).require_dedicated_transfer_queue().add_required_extensions(extensionNames).set_required_features(deviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
         if (!phys_ret) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + phys_ret.error().message() + "\n"); }
         //create logical device
         vkb::DeviceBuilder device_builder{phys_ret.value()};
         if (settings.pathTracing) {
             VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES};
             physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
-            vkb::detail::Result<vkb::Device> dev_ret = device_builder.add_pNext(&physicalDeviceBufferDeviceAddressFeatures).build();
+            VkPhysicalDeviceRayTracingPipelineFeaturesKHR physicalDeviceRayTracingPipelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR};
+            physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR};
+            physicalDeviceAccelerationStructureFeatures.accelerationStructure = VK_TRUE;
+            vkb::detail::Result<vkb::Device> dev_ret = device_builder.add_pNext(&physicalDeviceBufferDeviceAddressFeatures).add_pNext(&physicalDeviceRayTracingPipelineFeatures).add_pNext(&physicalDeviceAccelerationStructureFeatures).build();
             if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
             device = dev_ret.value();
             engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
@@ -120,7 +127,7 @@ protected:
         //Create commandPool
         commandBufferManager.setup(device, vkb::QueueType::graphics);
         engineDeletionQueue.emplace_front([&] { commandBufferManager.destroy(); });
-        //delete staging buffer
+        //delete scratch buffer
         scratchBuffer.setEngineLink(&renderEngineLink);
         engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
         createSwapchain(true);

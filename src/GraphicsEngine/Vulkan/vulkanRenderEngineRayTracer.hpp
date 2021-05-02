@@ -24,6 +24,7 @@ private:
 public:
     ShaderBindingTables shaderBindingTables{};
     UniformBufferObject uniformBufferObject{};
+    ImageManager rayTracingImage{};
     std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
     float frameTime{};
     int frameNumber{};
@@ -66,27 +67,28 @@ public:
         //build acceleration structures for this asset
 
         //TODO: add this section to the accelerationStructureManager.hpp file
-        VkAccelerationStructureGeometryKHR accelerationStructureGeometry{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR};
-        accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
-        accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
-        accelerationStructureGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
-        accelerationStructureGeometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
-        accelerationStructureGeometry.geometry.triangles.vertexData = {asset->vertexBuffer.bufferAddress};
-        accelerationStructureGeometry.geometry.triangles.maxVertex = 3;
-        accelerationStructureGeometry.geometry.triangles.vertexStride = sizeof(Vertex);
-        accelerationStructureGeometry.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32;
-        accelerationStructureGeometry.geometry.triangles.indexData = {asset->indexBuffer.bufferAddress};
-        accelerationStructureGeometry.geometry.triangles.transformData = {asset->transformationBuffer.bufferAddress};
+        VkAccelerationStructureGeometryKHR bottomLevelAccelerationStructureGeometry{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR};
+        bottomLevelAccelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
+        bottomLevelAccelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
+        bottomLevelAccelerationStructureGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
+        bottomLevelAccelerationStructureGeometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
+        bottomLevelAccelerationStructureGeometry.geometry.triangles.vertexData = {asset->vertexBuffer.bufferAddress};
+        bottomLevelAccelerationStructureGeometry.geometry.triangles.maxVertex = 3;
+        bottomLevelAccelerationStructureGeometry.geometry.triangles.vertexStride = sizeof(Vertex);
+        bottomLevelAccelerationStructureGeometry.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32;
+        bottomLevelAccelerationStructureGeometry.geometry.triangles.indexData = {asset->indexBuffer.bufferAddress};
+        bottomLevelAccelerationStructureGeometry.geometry.triangles.transformData = {asset->transformationBuffer.bufferAddress};
         uint32_t geometryCount = 1;
         VkAccelerationStructureBuildGeometryInfoKHR bottomLevelAccelerationStructureBuildGeometryInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR};
         bottomLevelAccelerationStructureBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
         bottomLevelAccelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
-        bottomLevelAccelerationStructureBuildGeometryInfo.geometryCount = 1;
-        bottomLevelAccelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
+        bottomLevelAccelerationStructureBuildGeometryInfo.geometryCount = geometryCount;
+        bottomLevelAccelerationStructureBuildGeometryInfo.pGeometries = &bottomLevelAccelerationStructureGeometry;
         VkAccelerationStructureBuildSizesInfoKHR bottomLevelAccelerationStructureBuildSizesInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR};
         renderEngineLink.vkGetAccelerationStructureBuildSizesKHR(device.device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &bottomLevelAccelerationStructureBuildGeometryInfo, &geometryCount, &bottomLevelAccelerationStructureBuildSizesInfo);
 
         //This will stay here
+        asset->bottomLevelAccelerationStructure.setEngineLink(&renderEngineLink);
         asset->bottomLevelAccelerationStructure.create(VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR, bottomLevelAccelerationStructureBuildSizesInfo);
 
         //TODO: this part also goes into accelerationStructureManager.hpp
@@ -96,15 +98,12 @@ public:
         bottomLevelAccelerationStructureBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
         bottomLevelAccelerationStructureBuildGeometryInfo.dstAccelerationStructure = asset->bottomLevelAccelerationStructure.accelerationStructure;
         bottomLevelAccelerationStructureBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.bufferAddress;
-        VkAccelerationStructureBuildRangeInfoKHR bottomLevelAccelerationStructureBuildRangeInfo{};
-        bottomLevelAccelerationStructureBuildRangeInfo.primitiveCount = asset->triangleCount;
-        bottomLevelAccelerationStructureBuildRangeInfo.primitiveOffset = 0;
-        bottomLevelAccelerationStructureBuildRangeInfo.firstVertex = 0;
-        bottomLevelAccelerationStructureBuildRangeInfo.transformOffset = 0;
-        if (renderEngineLink.physicalDeviceInfo->physicalDeviceAccelerationStructureFeatures.accelerationStructureHostCommands) { renderEngineLink.vkBuildAccelerationStructuresKHR(renderEngineLink.device->device, VK_NULL_HANDLE, 1, &bottomLevelAccelerationStructureBuildGeometryInfo, reinterpret_cast<const VkAccelerationStructureBuildRangeInfoKHR *const *>(&bottomLevelAccelerationStructureBuildRangeInfo)); }
+        VkAccelerationStructureBuildRangeInfoKHR bottomLevelAccelerationStructureBuildRangeInfo{asset->triangleCount};
+        std::vector<VkAccelerationStructureBuildRangeInfoKHR *> pBottomLevelAccelerationStructureBuildRangeInfo{&bottomLevelAccelerationStructureBuildRangeInfo};
+        if (renderEngineLink.physicalDeviceInfo->physicalDeviceAccelerationStructureFeatures.accelerationStructureHostCommands) { renderEngineLink.vkBuildAccelerationStructuresKHR(device.device, VK_NULL_HANDLE, 1, &bottomLevelAccelerationStructureBuildGeometryInfo, pBottomLevelAccelerationStructureBuildRangeInfo.data()); }
         else {
             VkCommandBuffer commandBuffer = renderEngineLink.beginSingleTimeCommands();
-            renderEngineLink.vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &bottomLevelAccelerationStructureBuildGeometryInfo, reinterpret_cast<const VkAccelerationStructureBuildRangeInfoKHR *const *>(&bottomLevelAccelerationStructureBuildRangeInfo));
+            renderEngineLink.vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &bottomLevelAccelerationStructureBuildGeometryInfo, pBottomLevelAccelerationStructureBuildRangeInfo.data());
             renderEngineLink.endSingleTimeCommands(commandBuffer);
         }
         scratchBuffer.destroy();
@@ -115,7 +114,7 @@ public:
         descriptorSetManagerCreateInfo.shaderStages = {static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR), VK_SHADER_STAGE_RAYGEN_BIT_KHR, static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR), VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
         descriptorSetManagerCreateInfo.shaderData = asset->shaderData;
         descriptorSetManagerCreateInfo.accelerationStructures = {&asset->bottomLevelAccelerationStructure, nullptr, nullptr, nullptr, nullptr};
-        descriptorSetManagerCreateInfo.images = {nullptr, /*TODO: add image for writing results to*/nullptr, nullptr, nullptr, nullptr};
+        descriptorSetManagerCreateInfo.images = {nullptr, &rayTracingImage, nullptr, nullptr, nullptr};
         descriptorSetManagerCreateInfo.buffers = {nullptr, nullptr, &asset->uniformBuffer, &asset->vertexBuffer, &asset->indexBuffer};
         asset->rayTracingPipelineManager.create(&renderEngineLink, &descriptorSetManagerCreateInfo);
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.rayTracingPipelineManager.destroy(); });
@@ -123,6 +122,8 @@ public:
     }
 
     explicit VulkanRenderEngineRayTracer(GLFWwindow *attachWindow = nullptr) : VulkanRenderEngine(attachWindow) {
+        rayTracingImage.setEngineLink(&renderEngineLink);
+        rayTracingImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)swapchain.extent.width, (int)swapchain.extent.height, COLOR);
 //        std::vector<uint32_t> geometryCounts{};
 //        std::vector<VkAccelerationStructureGeometryKHR> accelerationStructureGeometries{};
 //        //One bottom level acceleration structure for each asset.

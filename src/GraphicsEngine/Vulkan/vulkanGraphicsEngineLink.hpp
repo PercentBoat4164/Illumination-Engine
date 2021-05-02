@@ -66,8 +66,9 @@ public:
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
-        vkQueueSubmit(device->get_queue(vkb::QueueType::graphics).value(), 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(device->get_queue(vkb::QueueType::graphics).value());
+        VkQueue queue{device->get_queue(vkb::QueueType::graphics).value()};
+        vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(queue);
         vkFreeCommandBuffers(device->device, *commandPool, 1, &commandBuffer);
     }
 };

@@ -9,9 +9,8 @@ public:
 
     void *create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage, uint32_t handleCount) {
         bufferSize = size;
-        VkBufferCreateInfo bufferCreateInfo{};
-        bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferCreateInfo.size = size;
+        VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+        bufferCreateInfo.size = bufferSize;
         bufferCreateInfo.usage = usage;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = allocationUsage;
