@@ -9,29 +9,50 @@
 #include "vulkanGraphicsEngineLink.hpp"
 #include "bufferManager.hpp"
 
+/** These are a few variables set for the images.*/
 enum ImageType {
     DEPTH = 0,
     COLOR = 1,
     TEXTURE = 2
 };
 
+/** This is the ImageManager class*/
 class ImageManager {
 public:
+    /** This is a Vulkan image called image{}.*/
     VkImage image{};
+    /** This is a Vulkan image view called view{}*/
     VkImageView view{};
+    /** This is a Vulkan sampler called sampler{}.*/
     VkSampler sampler{};
+    /** This is a Vulkan format called imageFormat{}.*/
     VkFormat imageFormat{};
+    /** This is a Vulkan image layout called imageLayout{}.*/
     VkImageLayout imageLayout{};
 
+    /** This method destroys the items in the deletion queue and clears the deletion queue.*/
     void destroy() {
         for (std::function<void()>& function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
+    /** This method sets the graphics engine link.
+     * @param engineLink This is the Vulkan graphics engine that is being linked.*/
     void setEngineLink(VulkanGraphicsEngineLink *engineLink) {
         linkedRenderEngine = engineLink;
     }
 
+    /** This creates the image manager.
+     * @param format This is the Vulkan format.
+     * @param tiling This is the Vulkan image tilting.
+     * @param msaaSamples This is the Vulkan sample count flag bits.
+     * @param usage This is the Vulkan image usage.
+     * @param allocationUsage This is the Vulkan memory allocation usage.
+     * @param mipLevels This is the mip levels of the image.
+     * @param width This is the width of the image.
+     * @param height This is the height of the image.
+     * @param imageType This is the type of image.
+     * @param dataSource This is the data source.*/
     void create(VkFormat format, VkImageTiling tiling, VkSampleCountFlagBits msaaSamples, VkImageUsageFlags usage, VmaMemoryUsage allocationUsage, int mipLevels, int width, int height, ImageType imageType, BufferManager *dataSource = nullptr) {
         VkImageCreateInfo imageCreateInfo{};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -93,6 +114,8 @@ public:
         }
     }
 
+    /** I still don't know what this is...
+     * @todo @PercentBoat4164 tell @JoelLogan what this is and does.*/
     [[maybe_unused]] void toBuffer(VkBuffer buffer, uint32_t width, uint32_t height) const {
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
@@ -109,6 +132,9 @@ public:
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
     }
 
+    /** This method transitions from one layout to another layout.
+     * @param oldLayout This is the old layout.
+     * @param newLayout This is the new layout that will be set.*/
     void transition(VkImageLayout oldLayout, VkImageLayout newLayout) {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -147,7 +173,10 @@ public:
     }
 
 private:
+    /** This variable holds the items that will be deleted.*/
     std::deque<std::function<void()>> deletionQueue{};
+    /** This is the graphics engine link.*/
     VulkanGraphicsEngineLink *linkedRenderEngine{};
+    /** This is the Vulkan memory allocation.*/
     VmaAllocation allocation{};
 };

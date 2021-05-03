@@ -26,8 +26,16 @@
 #include "rasterizationPipelineManager.hpp"
 #include "vertex.hpp"
 
+/** This class holds the methods to manage the window that was created.*/
 class Asset {
 public:
+    /** This method sets the variables used in this class.
+     * @param initialPosition This variable holds the initial placement of the object.
+     * @param initialRotation This variable holds the initial rotation of the object.
+     * @param initialScale This variable holds the initial scale of the object.
+     * @param modelFileName This is the name of the model file.
+     * @param textureFileNames This is the name of the texture files.
+     * @param shaderFileNames This is the name of the shader files.*/
     Asset(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
         position = initialPosition;
         rotation = initialRotation;
@@ -40,6 +48,10 @@ public:
         loadShaders(shaderFileNames);
     }
 
+    /** This method reloads the model, textures, and shaders.
+     * @param modelFileName This is the name of the model file.
+     * @param textureFileNames This is the name of the texture files.
+     * @param shaderFileNames This is the name of the shader files.*/
     void reloadAsset(const char *modelFileName = nullptr, const std::vector<const char *> *textureFileNames = nullptr, const std::vector<const char *> *shaderFileNames = nullptr) {
         if (modelFileName != nullptr) { modelName = modelFileName; }
         if (textureFileNames != nullptr) { textureNames = *textureFileNames; }
@@ -49,12 +61,15 @@ public:
         loadShaders(shaderNames);
     }
 
+    /** This method destroys the program and loaded textures.*/
     void destroy() {
         for (ImageManager &textureImage : textureImages) { textureImage.destroy(); }
         for (const std::function<void(Asset)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
     }
 
+    /** This method updates/renders the program.
+     * @param camera This is the camera that the user is looking through in the program.*/
     void update(Camera camera) {
         uniformBufferObject = {glm::mat4(1.0f), camera.view, camera.proj};
         glm::quat quaternion = glm::quat(glm::radians(rotation));
@@ -62,29 +77,52 @@ public:
         memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(UniformBufferObject));
     }
 
+    /** This variable holds the deletion queue for the destroy() method.*/
     std::deque<std::function<void(Asset asset)>> deletionQueue{};
+    /** This variable holds the indices.*/
     std::vector<uint32_t> indices{};
+    /** This variable holds the vertices*/
     std::vector<Vertex> vertices{};
+    /** This is a buffer manager named uniformBuffer{}.*/
     BufferManager uniformBuffer{};
+    /** This is a buffer manager named vertexBuffer{}.*/
     BufferManager vertexBuffer{};
+    /** This is a buffer manager named indexBuffer{}.*/
     BufferManager indexBuffer{};
+    /** This is a buffer manager named transformationBuffer{}.*/
     BufferManager transformationBuffer{};
+    /** This variable holds the pipeline managers.*/
     std::vector<RasterizationPipelineManager> pipelineManagers{};
+    /** This is a uniform buffer object.*/
     UniformBufferObject uniformBufferObject{};
+    /** This variable holds the textures images.*/
     std::vector<ImageManager> textureImages{};
+    /** This variable holds the textures.*/
     std::vector<stbi_uc *> textures{};
+    /** This variable holds the shader data.*/
     std::vector<std::vector<char>> shaderData{};
+    /** This variable is used to set the width of the texture.*/
     int width{};
+    /** This variable is used to set the height of the texture.*/
     int height{};
+    /** This is a Vulkan descriptor set.*/
     VkDescriptorSet descriptorSet{};
+    /** This is a vector3 called position.*/
     glm::vec3 position{};
+    /** This is a vector3 called rotation.*/
     glm::vec3 rotation{};
+    /** This is a vector3 called scale.*/
     glm::vec3 scale{};
+    /** This variable tells the program whether or not to render.*/
     bool render{true};
+    /** This is the number of triangles.*/
     uint32_t triangleCount{};
+    /** This is a Vulkan transformation matrix.*/
     VkTransformMatrixKHR transformationMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 
 private:
+    /** This method loads the model that is inputted.
+     * @param filename This is the filename of the model.*/
     void loadModel(const char *filename) {
         vertices.clear();
         indices.clear();
@@ -119,6 +157,8 @@ private:
         triangleCount = static_cast<uint32_t>(indices.size()) / 3;
     }
 
+    /** This method loads the textures that are inputted into the program.
+     * @param filenames These are the filenames of the textures that are being loaded.*/
     void loadTextures(const std::vector<const char *>& filenames) {
         textures.clear();
         textures.reserve(filenames.size());
@@ -130,6 +170,9 @@ private:
         }
     }
 
+    /** This method loads the shaders that are inputted into the program
+     * @param filenames These are the filenames of the shaders that are being loaded.
+     * @param compile This variable tells the method whether or not to compile the shaders.*/
     void loadShaders(const std::vector<const char *>& filenames, bool compile = true) {
         shaderData.clear();
         shaderData.reserve(filenames.size());
@@ -147,7 +190,10 @@ private:
         }
     }
 
+    /** This variable holds the shader names.*/
     std::vector<const char *> shaderNames{};
+    /** This variable holds the texture names.*/
     std::vector<const char *> textureNames{};
+    /** This variable holds the model name.*/
     const char *modelName{};
 };

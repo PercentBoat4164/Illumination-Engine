@@ -17,6 +17,7 @@
 #include <unistd.h>
 #endif
 
+/** This class holds the settings used in the OpenglRenderEngine.*/
 class OpenGLSettings {
 public:
     bool pathTracing{false};
@@ -31,6 +32,8 @@ public:
     float fov{90};
     double renderDistance{1000000};
 
+    /** This method tries sets the window settings to the primary monitor's settings.
+     * @return *this*/
     OpenGLSettings findMaxSettings() {
         const GLFWvidmode* mode{glfwGetVideoMode(glfwGetPrimaryMonitor())};
         refreshRate = mode->refreshRate;

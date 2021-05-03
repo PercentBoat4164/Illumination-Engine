@@ -10,6 +10,7 @@
 #include "asset.hpp"
 #include "vertex.hpp"
 
+/** This creates/sets many of the local variables.*/
 struct DescriptorSetManagerCreateInfo {
     std::vector<VkDescriptorPoolSize> poolSizes{};
     std::vector<VkShaderStageFlagBits> shaderStages{};
@@ -19,17 +20,25 @@ struct DescriptorSetManagerCreateInfo {
     std::vector<BufferManager> buffers{};
 };
 
+/** This class holds everything to do with descriptors.*/
 class DescriptorSetManager {
 public:
-    VkDescriptorPool descriptorPool{};
+    /** This is a Vulkan descriptor pool.*/
+    VkDescriptorPool descriptorPool{};    /** This clears*/
+    /** This is a Vulkan descriptor set.*/
     VkDescriptorSet descriptorSet{};
+    /** This is a Vulkan descriptor set layout.*/
     VkDescriptorSetLayout descriptorSetLayout{};
 
+    /** This method destroys the items in the deletion queue and clears the deletion queue.*/
     void destroy() {
         for (const std::function<void()>& function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
+    /** This creates the descriptor set manager.
+     * @param createInfo This is the create info for a descriptor set.
+     * @param renderEngineLink This is the linked render engine.*/
     void create(VulkanGraphicsEngineLink *renderEngineLink, DescriptorSetManagerCreateInfo createInfo) {
         linkedRenderEngine = renderEngineLink;
         //Create descriptor layout from bindings
@@ -103,6 +112,8 @@ public:
     }
 
 private:
+    /** This is a Vulkan graphics engine link called linkedRenderEngine{}.*/
     VulkanGraphicsEngineLink *linkedRenderEngine{};
+    /** This variable holds the deletion queue.*/
     std::deque<std::function<void()>> deletionQueue{};
 };

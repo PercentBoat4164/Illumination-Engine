@@ -9,25 +9,33 @@
 #include "asset.hpp"
 #include "vertex.hpp"
 
+/** This enum holds a few variables used in this file.*/
 enum DescriptorAttachmentType {
     BUFFER = 0,
     IMAGE = 1
 };
 
+/** This class holds the rasterization pipeline manager*/
 class RasterizationPipelineManager {
 public:
+    /** This is a Vulkan pipeline layout.*/
     VkPipelineLayout pipelineLayout{};
+    /***/
     VkDescriptorSetLayout descriptorSetLayout{};
+    /***/
     VkPipeline pipeline{};
+    /***/
     VkDescriptorPool descriptorPool{};
+    /***/
     VkDescriptorSet descriptorSet{};
 
-
+    /***/
     void destroy() {
         for (const std::function<void()>& function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
+    /***/
     void setup(VulkanGraphicsEngineLink *engineLink, const std::vector<VkDescriptorType>& setupDescriptorTypes, const std::vector<VkShaderStageFlagBits>& setupShaderFlags, uint32_t setupSwapchainImageCount, VkRenderPass renderPass, std::vector<std::vector<char>> shaderData) {
         linkedRenderEngine = engineLink;
         //create descriptor layout
@@ -162,6 +170,7 @@ public:
         deletionQueue.emplace_front([&]{ vkDestroyPipeline(linkedRenderEngine->device->device, pipeline, nullptr); pipeline = VK_NULL_HANDLE; });
     }
 
+    /***/
     void createDescriptorSet(const std::vector<BufferManager>& buffers, const std::vector<ImageManager>& images, const std::vector<bool>& indices) {
         if (buffers.size() + images.size() != indices.size()) { throw std::runtime_error("number of indices does not equal number of images plus number of buffers!"); }
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
@@ -204,10 +213,16 @@ public:
     }
 
 private:
+    /***/
     VulkanGraphicsEngineLink *linkedRenderEngine{};
+    /***/
     std::deque<std::function<void()>> deletionQueue{};
+    /***/
     std::vector<VkDescriptorType> descriptorTypes{};
+    /***/
     std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings{};
+    /***/
     std::vector<VkDescriptorPoolSize> descriptorPoolSizes{};
+    /***/
     uint32_t swapchainImageCount{};
 };

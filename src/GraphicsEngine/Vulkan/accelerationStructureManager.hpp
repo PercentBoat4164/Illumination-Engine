@@ -2,11 +2,20 @@
 
 #include "bufferManager.hpp"
 
+/** This class sets up the acceleration structure for Vulkan*/
 class AccelerationStructureManager : public BufferManager {
 public:
+    /** This creates a local instance of the Vulkan acceleration structure.*/
     VkAccelerationStructureKHR accelerationStructure{};
+    /** This creates the a local instance of a Vulkan Strided Device Address Region*/
     VkStridedDeviceAddressRegionKHR stridedDeviceAddressRegion{};
 
+    /** This method creates the Vulkan Acceleration Structure Manager.
+     * @param accelerationStructureBuildSizesInfo
+     * @param allocationUsage This is the memory allocated.
+     * @param type This is the acceleration structure type.
+     * @param usage This is the buffer usage flags that hold the buffer info.
+     * @return data*/
     void *create (VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage, VkAccelerationStructureTypeKHR type, VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo) {
         bufferSize = accelerationStructureBuildSizesInfo.accelerationStructureSize;
         VkBufferCreateInfo bufferCreateInfo{};

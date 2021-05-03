@@ -1,15 +1,13 @@
 # Project exclude paths
-# Visual Studio Code
 /.idea/
 /.vs/
 /.vscode/
 /CMakeFiles/
 /build/
-/out/
-# CLion
+/cmake-build-debug-coverage/
 /debug-build/
+/out/
 /release-build/
-/coverage-build/
 /venv/
 # Dependencies extracted from deps/otherSources.tar.xz
 /deps/glew
@@ -23,3 +21,4 @@
 /deps/glew32d.dll
 # Downloaded models
 /Models.tar.xz
+/src/Models

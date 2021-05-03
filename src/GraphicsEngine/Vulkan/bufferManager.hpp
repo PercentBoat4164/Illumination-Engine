@@ -7,23 +7,35 @@
 
 #include "vulkanGraphicsEngineLink.hpp"
 
+/** This is the buffer manager class.*/
 class BufferManager {
 public:
+    /** This creates the data{} variable.*/
     void *data{};
+    /** This creates a Vulkan Buffer variable.*/
     VkBuffer buffer{};
+    /** This creates a Vulkan Buffer Size variable.*/
     VkDeviceSize bufferSize{};
+    /** This creates a Vulkan Buffer Address variable.*/
     VkDeviceAddress bufferAddress{};
 
+    /** This method clears the data and the deletion queue.*/
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
         data = nullptr;
     }
 
+    /** This method sets the linkedRenderEngine to the VulkanGraphicsEngineLink*/
     void setEngineLink(VulkanGraphicsEngineLink *engineLink) {
         linkedRenderEngine = engineLink;
     }
 
+    /** This creates the buffer manager for Vulkan.
+     * @param usage This is the Vulkan buffer usage.
+     * @param allocationUsage This is the Vulkan memory allocation usage.
+     * @param size This is the size of the buffer.
+     * @return data*/
     virtual void *create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage) {
         bufferSize = size;
         VkBufferCreateInfo bufferCreateInfo{};
@@ -49,6 +61,8 @@ public:
         return data;
     }
 
+    /** I have no idea what this does.
+     * @todo Figure out what this does for the documentation.*/
     void toImage(VkImage image, uint32_t width, uint32_t height) const {
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
@@ -66,7 +80,10 @@ public:
     }
 
 protected:
+    /** This variable is the deletion queue used earlier in the program.*/
     std::deque<std::function<void()>> deletionQueue{};
+    /** This is the Vulkan Graphics Engine Link.*/
     VulkanGraphicsEngineLink *linkedRenderEngine{};
+    /** This is the memory allocation variable.*/
     VmaAllocation allocation{};
 };
