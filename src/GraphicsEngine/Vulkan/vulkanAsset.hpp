@@ -51,7 +51,7 @@ public:
         deletionQueue.clear();
     }
 
-    void update(Camera camera) {
+    void update(VulkanCamera camera) {
         uniformBufferObject = {glm::mat4(1.0f), camera.view, camera.proj};
         glm::quat quaternion = glm::quat(glm::radians(rotation));
         uniformBufferObject.model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);

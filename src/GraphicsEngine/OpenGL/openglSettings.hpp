@@ -28,8 +28,10 @@ public:
     bool fullscreen{false};
     int refreshRate{60};
     std::array<int, 2> resolution{defaultWindowResolution};
-    float fov{90};
+    double fov{90};
     double renderDistance{1000000};
+    double movementSpeed{2.5};
+    double mouseSensitivity{0.1};
 
     OpenGLSettings findMaxSettings() {
         const GLFWvidmode* mode{glfwGetVideoMode(glfwGetPrimaryMonitor())};

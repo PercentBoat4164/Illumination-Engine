@@ -1,5 +1,8 @@
 #pragma once
 
+#include "openglSettings.hpp"
+#include "openglCamera.hpp"
+
 #define GLEW_IMPLEMENTATION
 #include "../../../deps/glew/include/GL/glew.h"
 
@@ -10,25 +13,24 @@
 #include <fstream>
 #include <vector>
 
-
-#include "../OpenGL/openglSettings.hpp"
-
 class OpenGLRenderEngine {
 public:
-    OpenGLSettings settings{};
     GLFWwindow *window{};
+    OpenGLSettings settings{};
+    OpenGLCamera camera{&settings};
     GLuint vertexBuffer{};
     GLuint programID{};
+    GLuint modelMatrixID{};
 
-    explicit OpenGLRenderEngine(OpenGLSettings &initialSettings = *new OpenGLSettings{}) {
-        settings = initialSettings;
-        if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
+    explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
+        if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW");}
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS.
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), nullptr, nullptr);
+        window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+        glfwSetWindowUserPointer(window, this);
         if (window == nullptr) { throw std::runtime_error("failed to open GLFW window!"); }
         glfwMakeContextCurrent(window);
         glewExperimental = true;
@@ -36,18 +38,20 @@ public:
         GLuint VertexArrayID;
         glGenVertexArrays(1, &VertexArrayID);
         glBindVertexArray(VertexArrayID);
+        programID = loadShaders({"Shaders/vertexShader.glsl", "Shaders/fragmentShader.glsl"});
+        modelMatrixID = glGetUniformLocation(programID, "MVP");
         //Create vertex buffer
         glGenBuffers(1, &vertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-         programID = loadShaders({"Shaders/vertexShader.glsl", "Shaders/fragmentShader.glsl"});
     }
 
-    [[nodiscard]] int update() {
-        if (glfwWindowShouldClose(window)) { return 1; }
+    bool update() {
+        if (glfwWindowShouldClose(window)) { return true; }
         glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(programID);
+        glUniformMatrix4fv((GLint)modelMatrixID, 1, GL_FALSE, &camera.update()[0][0]);
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
@@ -58,19 +62,56 @@ public:
         frameTime = currentTime - previousTime;
         previousTime = currentTime;
         ++frameNumber;
-        return 0;
+        return false;
     }
 
     ~OpenGLRenderEngine() {
         cleanUp();
     }
 
-    float frameTime{};
-    float previousTime{};
+    void updateSettings(bool updateAll = false) {
+        if (settings.fullscreen) {
+            glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);
+            //find monitor that window is on
+            int monitorCount{}, i, windowX{}, windowY{}, windowWidth{}, windowHeight{}, monitorX{}, monitorY{}, monitorWidth, monitorHeight, bestMonitorWidth{}, bestMonitorHeight{}, bestMonitorRefreshRate{}, overlap, bestOverlap{0};
+            GLFWmonitor **monitors;
+            const GLFWvidmode *mode;
+            glfwGetWindowPos(window, &windowX, &windowY);
+            glfwGetWindowSize(window, &windowWidth, &windowHeight);
+            monitors = glfwGetMonitors(&monitorCount);
+            for (i = 0; i < monitorCount; i++) {
+                mode = glfwGetVideoMode(monitors[i]);
+                glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
+                monitorWidth = mode->width;
+                monitorHeight = mode->height;
+                overlap = std::max(0, std::min(windowX + windowWidth, monitorX + monitorWidth) - std::max(windowX, monitorX)) * std::max(0, std::min(windowY + windowHeight, monitorY + monitorHeight) - std::max(windowY, monitorY));
+                if (bestOverlap < overlap) {
+                    bestOverlap = overlap;
+                    monitor = monitors[i];
+                    bestMonitorWidth = monitorWidth;
+                    bestMonitorHeight = monitorHeight;
+                    bestMonitorRefreshRate = mode->refreshRate;
+                }
+            }
+            //put window in fullscreen on that monitor
+            glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
+        } else { glfwSetWindowMonitor(window, nullptr, settings.windowPosition[0], settings.windowPosition[1], settings.defaultWindowResolution[0], settings.defaultWindowResolution[1], settings.refreshRate); }
+        glfwSetWindowTitle(window, settings.applicationName.c_str());
+        if (updateAll) { rebuildOpenGLInstance(); }
+    }
+
+    void rebuildOpenGLInstance() {
+        glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
+        glViewport(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
+        glScissor(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
+    }
+
+    double frameTime{};
+    double previousTime{};
     int frameNumber{};
 
 private:
-    constexpr static const GLfloat g_vertex_buffer_data[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f};
+    constexpr static const GLfloat g_vertex_buffer_data[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 
     static void cleanUp() {
         glFinish();
@@ -114,4 +155,6 @@ private:
         glDeleteShader(fragmentShaderID);
         return ProgramID;
     }
+
+    GLFWmonitor *monitor{};
 };

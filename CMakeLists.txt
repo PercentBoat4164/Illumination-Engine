@@ -52,7 +52,7 @@ if (Vulkan_FOUND)
 endif()
 
 # Generate executable
-add_executable(CrystalEngine src/main.cpp)
+add_executable(CrystalEngine src/main.cpp src/GraphicsEngine/OpenGL/openglCamera.hpp)
 target_link_libraries(CrystalEngine PUBLIC glew glfw glm)
 if (Vulkan_FOUND)
     target_link_libraries(CrystalEngine PUBLIC vk-bootstrap Vulkan::Vulkan)

@@ -28,7 +28,23 @@ void windowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
     auto vulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
     if (!vulkanRenderEngineRasterizer->settings.fullscreen) { vulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
 }
+#endif
+#ifdef CRYSTAL_ENGINE_OPENGL
+void openglCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
+    auto pRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
+    xOffset *= pRenderEngine->settings.mouseSensitivity;
+    yOffset *= pRenderEngine->settings.mouseSensitivity;
+    pRenderEngine->camera.yaw -= (float)xOffset;
+    pRenderEngine->camera.pitch += (float)yOffset;
+    if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
+    if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
+    glfwSetCursorPos(window, 0, 0);
+}
 
+void windowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
+    auto pRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
+    if (!pRenderEngine->settings.fullscreen) { pRenderEngine->settings.windowPosition = {xPos, yPos}; }
+}
 #endif
 
 int main(int argc, char **argv) {
@@ -237,14 +253,75 @@ int main(int argc, char **argv) {
     if (input == "o") {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
-            glfwSwapInterval(1);
+            double lastTab{0};
+            double lastF2{0};
+            double lastEsc{0};
+            double lastCursorPosX{0};
+            double lastCursorPosY{0};
+            bool captureInput{};
             std::vector<float> recordedFPS{};
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
             while (renderEngine.update() != 1) {
+                //Process inputs
                 glfwPollEvents();
+                float velocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
+//                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
+//                    for (Asset *asset : renderEngine.assets) { asset->reloadAsset(); }
+//                    renderEngine.updateSettings(false);
+                /*}*/ if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
+                    renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
+                    renderEngine.updateSettings(true);
+                    lastF2 = glfwGetTime();
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
+                    renderEngine.settings.msaaSamples = 1;
+                    renderEngine.updateSettings(true);
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_4)) {
+                    renderEngine.settings.msaaSamples = 4;
+                    renderEngine.updateSettings(true);
+                }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_D) & captureInput) { renderEngine.camera.position += renderEngine.camera.right * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * velocity; }
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastTab > .2)) {
+                    int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
+                    if (mode == GLFW_CURSOR_DISABLED) {
+                        glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
+                        glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                        glfwSetCursorPosCallback(renderEngine.window, nullptr);
+                    } else if (mode == GLFW_CURSOR_NORMAL) {
+                        if (glfwGetWindowAttrib(renderEngine.window, GLFW_HOVERED)) {
+                            glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                            glfwSetCursorPos(renderEngine.window, 0, 0);
+                            glfwSetCursorPosCallback(renderEngine.window, openglCursorCallback);
+                            glfwSetCursorPos(renderEngine.window, lastCursorPosX, lastCursorPosY);
+                        } else {
+                            glfwSetCursorPos(renderEngine.window, 0, 0);
+                            glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                            glfwSetCursorPosCallback(renderEngine.window, openglCursorCallback);
+                        }
+                    }
+                    lastTab = glfwGetTime();
+                    captureInput = !captureInput;
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastEsc > .2)) {
+                    if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
+                    if (renderEngine.settings.fullscreen) {
+                        renderEngine.settings.fullscreen = false;
+                        renderEngine.updateSettings(true);
+                    } if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
+                        glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
+                        glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                        glfwSetCursorPosCallback(renderEngine.window, nullptr);
+                        captureInput = false;
+                    }
+                    lastEsc = glfwGetTime();
+                }
                 //update framerate gathered over past 'recordedFPSCount' frames
-                recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
+                recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1.0f / (float)renderEngine.frameTime;
                 int sum{0};
                 std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
                 glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());

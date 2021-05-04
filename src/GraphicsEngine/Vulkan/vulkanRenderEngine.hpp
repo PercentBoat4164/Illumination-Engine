@@ -3,10 +3,10 @@
 #include "renderPassManager.hpp"
 #include "vulkanGraphicsEngineLink.hpp"
 #include "bufferManager.hpp"
+#include "vulkanCamera.hpp"
 #include "asset.hpp"
 #include "gpuData.hpp"
 #include "vulkanSettings.hpp"
-#include "camera.hpp"
 #include "commandBufferManager.hpp"
 
 #include <VkBootstrap.h>
@@ -280,7 +280,7 @@ public:
 
     GLFWmonitor *monitor{};
     VulkanSettings settings{};
-    Camera camera{&settings};
+    VulkanCamera camera{&settings};
     GLFWwindow *window{};
     std::vector<Asset *> assets{};
     CommandBufferManager commandBufferManager{};

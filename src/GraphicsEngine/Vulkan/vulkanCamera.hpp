@@ -2,9 +2,9 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-class Camera {
+class VulkanCamera {
 public:
-    explicit Camera(VulkanSettings *vulkanSettings) {
+    explicit VulkanCamera(VulkanSettings *vulkanSettings) {
         settings = vulkanSettings;
         proj = glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / std::max(settings->resolution[1], 1), 0.01, settings->renderDistance);
     }
