@@ -1,32 +1,26 @@
 #pragma once
 
+#include "camera.hpp"
+#include "vertex.hpp"
+#include "rasterizationPipelineManager.hpp"
+#include "rayTracingPipelineManager.hpp"
+#include "accelerationStructureManager.hpp"
+#include "gpuData.hpp"
+
+#include <glm/gtc/quaternion.hpp>
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <../../../deps/tiny_obj_loader.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <../../../deps/stb_image.h>
+
+#include <fstream>
+#include <cstring>
+
 #if defined(_WIN32)
 #define GLSLC "glslc.exe "
 #else
 #define GLSLC "glslc "
 #endif
-
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
-#include <fstream>
-#include <cstring>
-#include <valarray>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-
-#include "imageManager.hpp"
-#include "bufferManager.hpp"
-#include "camera.hpp"
-#include "gpuData.hpp"
-#include "rasterizationPipelineManager.hpp"
-#include "vertex.hpp"
-#include "accelerationStructureManager.hpp"
-#include "rayTracingPipelineManager.hpp"
 
 class Asset {
 public:
@@ -74,6 +68,7 @@ public:
     RasterizationPipelineManager pipelineManager{};
     RayTracingPipelineManager rayTracingPipelineManager{};
     AccelerationStructureManager bottomLevelAccelerationStructure{};
+    AccelerationStructureManager topLevelAccelerationStructure{};
     UniformBufferObject uniformBufferObject{};
     std::vector<ImageManager> textureImages{};
     std::vector<stbi_uc *> textures{};

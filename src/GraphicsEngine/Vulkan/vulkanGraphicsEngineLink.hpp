@@ -1,12 +1,12 @@
 #pragma once
 
-#include <vector>
+#include "vulkanSettings.hpp"
 
 #include <VkBootstrap.h>
-#include <vk_mem_alloc.h>
+#define VMA_IMPLEMENTATION
+#include "../../../deps/vk_mem_alloc.h"
 
-#include "vulkanSettings.hpp"
-#include "commandBufferManager.hpp"
+#include <vector>
 
 class VulkanGraphicsEngineLink {
 public:
@@ -20,6 +20,7 @@ public:
     vkb::Swapchain *swapchain{};
     VkCommandPool *commandPool{};
     VmaAllocator *allocator{};
+    VkQueue *graphicsQueue{};
     std::vector<VkImageView> *swapchainImageViews{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
     PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{};
@@ -46,15 +47,13 @@ public:
     }
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        VkCommandBufferAllocateInfo allocInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandPool = *commandPool;
         allocInfo.commandBufferCount = 1;
         VkCommandBuffer commandBuffer;
         vkAllocateCommandBuffers(device->device, &allocInfo, &commandBuffer);
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vkBeginCommandBuffer(commandBuffer, &beginInfo);
         return commandBuffer;
@@ -62,13 +61,17 @@ public:
 
     void endSingleTimeCommands(VkCommandBuffer commandBuffer) const {
         vkEndCommandBuffer(commandBuffer);
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
-        VkQueue queue{device->get_queue(vkb::QueueType::graphics).value()};
-        vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(queue);
+        vkQueueSubmit(*graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(*graphicsQueue);
+//        VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+//        VkFence fence{};
+//        if (vkCreateFence(device->device, &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS) { throw std::runtime_error("failed to create single time fence!"); }
+//        if (vkQueueSubmit(*graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) { throw std::runtime_error("failed to submit single time command buffer!"); }
+//        if (vkWaitForFences(device->device, 1, &fence, VK_TRUE, 100000000000) != VK_SUCCESS) { throw std::runtime_error("failed to wait for single time fence!"); }
+//        vkDestroyFence(device->device, fence, nullptr);
         vkFreeCommandBuffers(device->device, *commandPool, 1, &commandBuffer);
     }
 };

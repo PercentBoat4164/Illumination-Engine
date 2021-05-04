@@ -1,13 +1,5 @@
 #pragma once
 
-#include <functional>
-#include <deque>
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-#include <VkBootstrap.h>
-
 #include "vulkanRenderEngine.hpp"
 
 class VulkanRenderEngineRasterizer : public VulkanRenderEngine {

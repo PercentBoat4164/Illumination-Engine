@@ -1,14 +1,11 @@
 #pragma once
 
+#include <vulkan/vulkan.h>
 #define GLEW_IMPLEMENTATION
-#include <glew/include/GL/glew.h>
-
-#define GLFW_INCLUDE_VULKAN
+#include "../../../deps/glew/include/GL/glew.h"
 #include <GLFW/glfw3.h>
 
-#include <vector>
 #include <array>
-#include <filesystem>
 
 #if defined(_WIN32)
 #define NOMINMAX

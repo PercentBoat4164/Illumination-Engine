@@ -1,7 +1,5 @@
 #pragma once
 
-#include "bufferManager.hpp"
-
 class ShaderBindingTableManager : public BufferManager {
 public:
     VkDeviceAddress bufferAddress{};

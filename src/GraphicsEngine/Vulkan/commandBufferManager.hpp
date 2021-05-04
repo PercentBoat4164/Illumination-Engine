@@ -1,11 +1,5 @@
 #pragma once
 
-#include <deque>
-#include <functional>
-#include <vector>
-
-#include <VkBootstrap.h>
-
 class CommandBufferManager {
 public:
     VkCommandPool commandPool{};

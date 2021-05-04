@@ -1,7 +1,7 @@
 #pragma once
 
 #define GLEW_IMPLEMENTATION
-#include <glew/include/GL/glew.h>
+#include "../../../deps/glew/include/GL/glew.h"
 
 #include <GLFW/glfw3.h>
 

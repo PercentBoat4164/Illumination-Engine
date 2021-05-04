@@ -1,13 +1,9 @@
 #pragma once
 
+#include "vulkanGraphicsEngineLink.hpp"
+
 #include <deque>
 #include <functional>
-#include <vector>
-
-#include <vulkan/vulkan.hpp>
-
-#include "asset.hpp"
-#include "vertex.hpp"
 
 enum DescriptorAttachmentType {
     BUFFER = 0,

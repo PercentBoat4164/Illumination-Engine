@@ -1,12 +1,10 @@
 #pragma once
 
-#include <vector>
+#include "vulkanGraphicsEngineLink.hpp"
+#include "imageManager.hpp"
+
 #include <deque>
 #include <functional>
-
-#include <vulkan/vulkan.hpp>
-
-#include "vulkanGraphicsEngineLink.hpp"
 
 class RenderPassManager {
 public:

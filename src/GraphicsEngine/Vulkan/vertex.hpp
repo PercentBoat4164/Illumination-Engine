@@ -1,11 +1,10 @@
 #pragma once
 
-#include <array>
-
-#include <vulkan/vulkan.hpp>
-
-#include <glm/gtx/hash.hpp>
+#include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
+#include <glm/gtx/hash.hpp>
+
+#include <array>
 
 struct Vertex {
 public:

@@ -1,25 +1,21 @@
 #pragma once
 
-#include <deque>
-#include <functional>
-#include <vector>
-
-#include <VkBootstrap.h>
-
-#define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.h>
-
-#include "vulkanSettings.hpp"
-#include "asset.hpp"
+#include "renderPassManager.hpp"
+#include "vulkanGraphicsEngineLink.hpp"
 #include "bufferManager.hpp"
+#include "asset.hpp"
+#include "gpuData.hpp"
+#include "vulkanSettings.hpp"
 #include "camera.hpp"
 #include "commandBufferManager.hpp"
-#include "gpuData.hpp"
-#include "imageManager.hpp"
-#include "rasterizationPipelineManager.hpp"
-#include "renderPassManager.hpp"
-#include "vertex.hpp"
-#include "vulkanGraphicsEngineLink.hpp"
+
+#include <VkBootstrap.h>
+#define GLEW_IMPLEMENTATION
+#include "../../../deps/glew/include/GL/glew.h"
+#include <GLFW/glfw3.h>
+
+#include <deque>
+#include <functional>
 
 //TODO: Add multithreading support throughout the engine - LOW PRIORITY
 class VulkanRenderEngine {
@@ -44,6 +40,7 @@ protected:
         renderEngineLink.settings = &settings;
         renderEngineLink.commandPool = &commandBufferManager.commandPool;
         renderEngineLink.allocator = &allocator;
+        renderEngineLink.graphicsQueue = &graphicsQueue;
         vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
         //build instance
         vkb::InstanceBuilder builder;
@@ -85,7 +82,7 @@ protected:
         VkPhysicalDeviceFeatures deviceFeatures{}; //require device features here
         deviceFeatures.samplerAnisotropy = VK_TRUE;
         deviceFeatures.sampleRateShading = VK_TRUE;
-        vkb::detail::Result <vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).require_dedicated_transfer_queue().add_required_extensions(extensionNames).set_required_features(deviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
+        vkb::detail::Result<vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).require_dedicated_transfer_queue().add_required_extensions(extensionNames).set_required_features(deviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
         if (!phys_ret) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + phys_ret.error().message() + "\n"); }
         //create logical device
         vkb::DeviceBuilder device_builder{phys_ret.value()};
@@ -142,7 +139,7 @@ protected:
         recreationDeletionQueue.clear();
         //Create swapchain
         vkb::SwapchainBuilder swapchainBuilder{ device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).build();
+        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).set_desired_format({settings.pathTracing ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         swapchain = swap_ret.value();
         recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
@@ -202,8 +199,8 @@ protected:
     VkPipelineLayout pipelineLayout{};
     RenderPassManager renderPassManager{};
     VulkanGraphicsEngineLink renderEngineLink{};
-
     BufferManager scratchBuffer{};
+
 public:
     virtual void uploadAsset(Asset *asset, bool append) {
         //destroy previously created asset if any

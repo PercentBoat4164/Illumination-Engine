@@ -3,10 +3,6 @@
 #include <deque>
 #include <functional>
 
-#include <vk_mem_alloc.h>
-
-#include "vulkanGraphicsEngineLink.hpp"
-
 class BufferManager {
 public:
     void *data{};

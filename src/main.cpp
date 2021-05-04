@@ -1,14 +1,14 @@
 #include <iostream>
+#include <cmath>
 
 #ifdef CRYSTAL_ENGINE_VULKAN
-#include "GraphicsEngine/Vulkan/asset.hpp"
 #include "GraphicsEngine/Vulkan/vulkanRenderEngineRasterizer.hpp"
+#include "GraphicsEngine/Vulkan/asset.hpp"
 #ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
 #include "GraphicsEngine/Vulkan/vulkanRenderEngineRayTracer.hpp"
 #endif
 #endif
 #ifdef CRYSTAL_ENGINE_OPENGL
-#include "GraphicsEngine/OpenGL/openglSettings.hpp"
 #include "GraphicsEngine/OpenGL/openglRenderEngine.hpp"
 #endif
 
@@ -66,6 +66,8 @@ int main(int argc, char **argv) {
             std::vector<float> recordedFPS{};
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
+            renderEngine.settings.pathTracing = false;
+            renderEngine.updateSettings(true);
             while (renderEngine.update()) {
                 //Process inputs
                 glfwPollEvents();
@@ -157,6 +159,8 @@ int main(int argc, char **argv) {
                 std::vector<float> recordedFPS{};
                 float recordedFPSCount{200};
                 recordedFPS.resize((size_t)recordedFPSCount);
+                renderEngine.settings.pathTracing = true;
+                renderEngine.updateSettings(true);
                 while (renderEngine.update()) {
                     //Process inputs
                     glfwPollEvents();
@@ -240,7 +244,7 @@ int main(int argc, char **argv) {
             while (renderEngine.update() != 1) {
                 glfwPollEvents();
                 //update framerate gathered over past 'recordedFPSCount' frames
-                recordedFPS[(size_t)fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
+                recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};
                 std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
                 glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());

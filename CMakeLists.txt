@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 project(CrystalEngine)
 
 # Set CMake variables
@@ -31,14 +31,9 @@ if (Vulkan_FOUND)
     add_subdirectory(deps/vk-bootstrap)
 endif()
 
-# Download Models if they don't already exist
-if (NOT EXISTS "${CMAKE_SOURCE_DIR}/src/Models")
-    execute_process(COMMAND python3 "${CMAKE_SOURCE_DIR}/DownloadModels.py" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-endif()
-
 # Copy data files and dlls
 if ($ENV{CLION_IDE})
-    set(data_SHADOW src/Shaders src/Models deps/glew32d.dll)
+    set(data_SHADOW src/Shaders src/Models)
     foreach (item IN LISTS data_SHADOW)
         FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
     endforeach()
@@ -58,8 +53,7 @@ endif()
 
 # Generate executable
 add_executable(CrystalEngine src/main.cpp)
+target_link_libraries(CrystalEngine PUBLIC glew glfw glm)
 if (Vulkan_FOUND)
-    target_link_libraries(CrystalEngine PUBLIC glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES} vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
-else()
-    target_link_libraries(CrystalEngine PUBLIC glew ${GLEW_LIBRARIES} glfw ${GLFW_LIBRARIES} glm ${GLM_LIBRARIES})
+    target_link_libraries(CrystalEngine PUBLIC vk-bootstrap Vulkan::Vulkan)
 endif()

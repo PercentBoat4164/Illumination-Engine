@@ -1,9 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
 #include "descriptorSetManager.hpp"
-#include "vulkanGraphicsEngineLink.hpp"
 
 class RayTracingPipelineManager {
     VkPipelineLayout pipelineLayout{};
