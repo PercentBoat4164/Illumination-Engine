@@ -19,7 +19,7 @@ public:
         right = glm::normalize(glm::cross(front, up));
         view = glm::lookAt(position, position + front, up);
         proj = glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / settings->resolution[1], 0.01, settings->renderDistance);
-        proj[1][1] *= -1;
+        proj[1][1] *= 1;
         return proj * view;
     }
 

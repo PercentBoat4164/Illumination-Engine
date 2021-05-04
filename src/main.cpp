@@ -3,7 +3,6 @@
 
 #ifdef CRYSTAL_ENGINE_VULKAN
 #include "GraphicsEngine/Vulkan/vulkanRenderEngineRasterizer.hpp"
-#include "GraphicsEngine/Vulkan/asset.hpp"
 #ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
 #include "GraphicsEngine/Vulkan/vulkanRenderEngineRayTracer.hpp"
 #endif
@@ -13,37 +12,56 @@
 #endif
 
 #ifdef CRYSTAL_ENGINE_VULKAN
-void cursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto vulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
-    xOffset *= vulkanRenderEngineRasterizer->settings.mouseSensitivity;
-    yOffset *= vulkanRenderEngineRasterizer->settings.mouseSensitivity;
-    vulkanRenderEngineRasterizer->camera.yaw -= (float) xOffset;
-    vulkanRenderEngineRasterizer->camera.pitch -= (float) yOffset;
-    if (vulkanRenderEngineRasterizer->camera.pitch > 89.99f) { vulkanRenderEngineRasterizer->camera.pitch = 89.99f; }
-    if (vulkanRenderEngineRasterizer->camera.pitch < -89.99f) { vulkanRenderEngineRasterizer->camera.pitch = -89.99f; }
-    glfwSetCursorPos(window, 0, 0);
-}
-
-void windowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
-    auto vulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
-    if (!vulkanRenderEngineRasterizer->settings.fullscreen) { vulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
-}
-#endif
-#ifdef CRYSTAL_ENGINE_OPENGL
-void openglCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto pRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
+#ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
+void vulkanRayTracerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
+    auto pRenderEngine = static_cast<VulkanRenderEngineRayTracer *>(glfwGetWindowUserPointer(window));
     xOffset *= pRenderEngine->settings.mouseSensitivity;
     yOffset *= pRenderEngine->settings.mouseSensitivity;
-    pRenderEngine->camera.yaw -= (float)xOffset;
-    pRenderEngine->camera.pitch += (float)yOffset;
+    pRenderEngine->camera.yaw -= (float) xOffset;
+    pRenderEngine->camera.pitch -= (float) yOffset;
     if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
     if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
     glfwSetCursorPos(window, 0, 0);
 }
 
-void windowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
+void vulkanRayTracerWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
+    auto pVulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRayTracer *>(glfwGetWindowUserPointer(window));
+    if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
+}
+#endif
+
+void vulkanRasterizerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
+    auto pRenderEngine = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
+    xOffset *= pRenderEngine->settings.mouseSensitivity;
+    yOffset *= pRenderEngine->settings.mouseSensitivity;
+    pRenderEngine->camera.yaw -= (float) xOffset;
+    pRenderEngine->camera.pitch -= (float) yOffset;
+    if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
+    if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
+    glfwSetCursorPos(window, 0, 0);
+}
+
+void vulkanRasterizerWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
+    auto pVulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
+    if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
+}
+#endif
+
+#ifdef CRYSTAL_ENGINE_OPENGL
+void openglCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     auto pRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
-    if (!pRenderEngine->settings.fullscreen) { pRenderEngine->settings.windowPosition = {xPos, yPos}; }
+    xOffset *= pRenderEngine->settings.mouseSensitivity;
+    yOffset *= pRenderEngine->settings.mouseSensitivity;
+    pRenderEngine->camera.yaw -= (float) xOffset;
+    pRenderEngine->camera.pitch -= (float) yOffset;
+    if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
+    if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
+    glfwSetCursorPos(window, 0, 0);
+}
+
+void openglWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
+    auto pVulkanRenderEngineRasterizer = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
+    if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
 }
 #endif
 
@@ -61,7 +79,7 @@ int main(int argc, char **argv) {
     if (input == "v") {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
-            glfwSetWindowPosCallback(renderEngine.window, windowPositionCallback);
+            glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
             Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
             Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
@@ -118,12 +136,12 @@ int main(int argc, char **argv) {
                         if (glfwGetWindowAttrib(renderEngine.window, GLFW_HOVERED)) {
                             glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                             glfwSetCursorPos(renderEngine.window, 0, 0);
-                            glfwSetCursorPosCallback(renderEngine.window, cursorCallback);
+                            glfwSetCursorPosCallback(renderEngine.window, vulkanRayTracerCursorCallback);
                             glfwSetCursorPos(renderEngine.window, lastCursorPosX, lastCursorPosY);
                         } else {
                             glfwSetCursorPos(renderEngine.window, 0, 0);
                             glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                            glfwSetCursorPosCallback(renderEngine.window, cursorCallback);
+                            glfwSetCursorPosCallback(renderEngine.window, vulkanRayTracerCursorCallback);
                         }
                     }
                     lastTab = glfwGetTime();
@@ -162,7 +180,7 @@ int main(int argc, char **argv) {
         if (input == "r") {
             try {
                 VulkanRenderEngineRayTracer renderEngine = VulkanRenderEngineRayTracer();
-                glfwSetWindowPosCallback(renderEngine.window, windowPositionCallback);
+                glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
                 renderEngine.camera.position = {0, 0, 2};
                 Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
                 renderEngine.uploadAsset(&quad, true);
@@ -211,12 +229,12 @@ int main(int argc, char **argv) {
                             if (glfwGetWindowAttrib(renderEngine.window, GLFW_HOVERED)) {
                                 glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                                 glfwSetCursorPos(renderEngine.window, 0, 0);
-                                glfwSetCursorPosCallback(renderEngine.window, cursorCallback);
+                                glfwSetCursorPosCallback(renderEngine.window, vulkanRasterizerCursorCallback);
                                 glfwSetCursorPos(renderEngine.window, lastCursorPosX, lastCursorPosY);
                             } else {
                                 glfwSetCursorPos(renderEngine.window, 0, 0);
                                 glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                                glfwSetCursorPosCallback(renderEngine.window, cursorCallback);
+                                glfwSetCursorPosCallback(renderEngine.window, vulkanRasterizerCursorCallback);
                             }
                         }
                         lastTab = glfwGetTime();
@@ -253,6 +271,7 @@ int main(int argc, char **argv) {
     if (input == "o") {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
+            glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};

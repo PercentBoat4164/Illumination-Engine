@@ -4,7 +4,7 @@
 #include "vulkanGraphicsEngineLink.hpp"
 #include "bufferManager.hpp"
 #include "vulkanCamera.hpp"
-#include "asset.hpp"
+#include "vulkanAsset.hpp"
 #include "gpuData.hpp"
 #include "vulkanSettings.hpp"
 #include "commandBufferManager.hpp"

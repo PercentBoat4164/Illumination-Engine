@@ -24,6 +24,7 @@ public:
 
     explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW");}
+        glfwSwapInterval(1);
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "camera.hpp"
+#include "vulkanCamera.hpp"
 #include "vertex.hpp"
 #include "rasterizationPipelineManager.hpp"
 #include "rayTracingPipelineManager.hpp"
