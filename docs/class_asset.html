@@ -174,7 +174,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:aa73168d68b87bfbf0dbf56d3d55ea748"><td class="memItemLeft" align="right" valign="top">VkTransformMatrixKHR&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_asset.html#aa73168d68b87bfbf0dbf56d3d55ea748">transformationMatrix</a> {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f}</td></tr>
 <tr class="separator:aa73168d68b87bfbf0dbf56d3d55ea748"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p class="">This class holds the methods to manage the window that was created. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a7c83ec929d6a05e6e87ff1422f3d4841"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7c83ec929d6a05e6e87ff1422f3d4841">&#9670;&nbsp;</a></span>Asset()</h2>
 
@@ -232,6 +234,17 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method sets the variables used in this class. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">initialPosition</td><td>This variable holds the initial placement of the object. </td></tr>
+    <tr><td class="paramname">initialRotation</td><td>This variable holds the initial rotation of the object. </td></tr>
+    <tr><td class="paramname">initialScale</td><td>This variable holds the initial scale of the object. </td></tr>
+    <tr><td class="paramname">modelFileName</td><td>This is the name of the model file. </td></tr>
+    <tr><td class="paramname">textureFileNames</td><td>This is the name of the texture files. </td></tr>
+    <tr><td class="paramname">shaderFileNames</td><td>This is the name of the shader files. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -258,6 +271,7 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method destroys the program and loaded textures. </p>
 
 </div>
 </div>
@@ -300,6 +314,14 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method reloads the model, textures, and shaders. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">modelFileName</td><td>This is the name of the model file. </td></tr>
+    <tr><td class="paramname">textureFileNames</td><td>This is the name of the texture files. </td></tr>
+    <tr><td class="paramname">shaderFileNames</td><td>This is the name of the shader files. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -326,6 +348,12 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method updates/renders the program. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">camera</td><td>This is the camera that the user is looking through in the program. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -341,6 +369,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable holds the deletion queue for the <a class="el" href="class_asset.html#aa36459a1cbcdd58eb02ff181b73a9caf">destroy()</a> method. </p>
 
 </div>
 </div>
@@ -355,6 +384,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a Vulkan descriptor set. </p>
 
 </div>
 </div>
@@ -369,6 +399,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable is used to set the height of the texture. </p>
 
 </div>
 </div>
@@ -383,6 +414,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a buffer manager named indexBuffer{}. </p>
 
 </div>
 </div>
@@ -397,6 +429,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable holds the indices. </p>
 
 </div>
 </div>
@@ -411,6 +444,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable holds the pipeline managers. </p>
 
 </div>
 </div>
@@ -425,6 +459,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a vector3 called position. </p>
 
 </div>
 </div>
@@ -439,6 +474,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable tells the program whether or not to render. </p>
 
 </div>
 </div>
@@ -453,6 +489,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a vector3 called rotation. </p>
 
 </div>
 </div>
@@ -467,6 +504,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a vector3 called scale. </p>
 
 </div>
 </div>
@@ -481,6 +519,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable holds the shader data. </p>
 
 </div>
 </div>
@@ -495,6 +534,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable holds the textures images. </p>
 
 </div>
 </div>
@@ -509,6 +549,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable holds the textures. </p>
 
 </div>
 </div>
@@ -523,6 +564,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a buffer manager named transformationBuffer{}. </p>
 
 </div>
 </div>
@@ -537,6 +579,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a Vulkan transformation matrix. </p>
 
 </div>
 </div>
@@ -551,6 +594,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is the number of triangles. </p>
 
 </div>
 </div>
@@ -565,6 +609,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a buffer manager named uniformBuffer{}. </p>
 
 </div>
 </div>
@@ -579,6 +624,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a uniform buffer object. </p>
 
 </div>
 </div>
@@ -593,6 +639,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a buffer manager named vertexBuffer{}. </p>
 
 </div>
 </div>
@@ -607,6 +654,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable holds the vertices </p>
 
 </div>
 </div>
@@ -621,6 +669,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable is used to set the width of the texture. </p>
 
 </div>
 </div>

@@ -129,7 +129,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ad4d8d0178ffc7af915c91fbd2486f8f6"><td class="memItemLeft" align="right" valign="top">std::vector&lt; VkCommandBuffer &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_command_buffer_manager.html#ad4d8d0178ffc7af915c91fbd2486f8f6">commandBuffers</a> {}</td></tr>
 <tr class="separator:ad4d8d0178ffc7af915c91fbd2486f8f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p class="">This is the <a class="el" href="class_command_buffer_manager.html">CommandBufferManager</a> class. It holds the commands that start/stop everything pertaining to the buffers. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a0a21a8f82825bf5db8d1c2e136f62950"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0a21a8f82825bf5db8d1c2e136f62950">&#9670;&nbsp;</a></span>createCommandBuffers()</h2>
 
@@ -153,6 +155,12 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This creates the command buffers. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">commandBufferCount</td><td>This is the number of command buffers to create. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -178,6 +186,7 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method clears the deletion queue. </p>
 
 </div>
 </div>
@@ -204,6 +213,12 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This records a command buffer. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">recordIndex</td><td>This is the index that is recorded. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -230,6 +245,12 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This records the command buffers. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">recordIndices</td><td>These are the indices that are recorded. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -256,6 +277,12 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This resets a command buffer. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">resetIndex</td><td>This is the index that is reset. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -282,6 +309,12 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This resets the command buffers. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">resetIndices</td><td>These are the indices that are reset. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -318,6 +351,13 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method sets up the command buffer manager. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">commandQueue</td><td>This is the command pool queue. </td></tr>
+    <tr><td class="paramname">engineDevice</td><td>This is the device used in the creation of the command buffer manager. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -333,6 +373,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable is the Vulkan command buffers. </p>
 
 </div>
 </div>
@@ -347,6 +388,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This variable is a Vulkan Command Pool. </p>
 
 </div>
 </div>

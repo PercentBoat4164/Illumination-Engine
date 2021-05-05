@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['buffermanager_240',['BufferManager',['../class_buffer_manager.html',1,'']]]
+  ['buffermanager_242',['BufferManager',['../class_buffer_manager.html',1,'']]]
 ];

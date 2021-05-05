@@ -140,7 +140,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a880374257575be7c2aca61cc8d9577ce"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_open_g_l_render_engine.html#a880374257575be7c2aca61cc8d9577ce">frameNumber</a> {}</td></tr>
 <tr class="separator:a880374257575be7c2aca61cc8d9577ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p class="">This is the main OpenGL Render Engine Class. It is run when the user selects the "o" option at the runtime. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aaa4b30038ab358da568b8f7516de0f40"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaa4b30038ab358da568b8f7516de0f40">&#9670;&nbsp;</a></span>OpenGLRenderEngine()</h2>
 
@@ -164,6 +166,12 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This is the constructor and initializes the render engine </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">initialSettings</td><td>This is the variable where all of the settings/variables for the render engine can be accessed. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -189,6 +197,7 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This finishes the program and calls the cleanUp() method. </p>
 
 </div>
 </div>
@@ -215,6 +224,7 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method updates/renders the screen and is run multiple times per second. </p><dl class="section return"><dt>Returns</dt><dd>This method returns either a 0 or 1 depending on if the window is open or closed and if the program is running correctly. </dd></dl>
 
 </div>
 </div>
@@ -230,6 +240,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is the variable that contains the number of frames that have been displayed. </p>
 
 </div>
 </div>
@@ -244,6 +255,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is the variable that contains the frames per second. </p>
 
 </div>
 </div>
@@ -258,6 +270,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is the previous time variable that is used to determine the frames per second. </p>
 
 </div>
 </div>
@@ -272,6 +285,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This creates the programID{} variable. </p>
 
 </div>
 </div>
@@ -286,6 +300,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This creates a local instance of the settings{} class. </p>
 
 </div>
 </div>
@@ -300,6 +315,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This creates the vertexBuffer{} variable. </p>
 
 </div>
 </div>
@@ -314,6 +330,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This creates the window{} variable. </p>
 
 </div>
 </div>

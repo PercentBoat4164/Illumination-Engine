@@ -131,7 +131,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a51a24d6a897c069b2fcd06464bb3f5f7"><td class="memItemLeft" align="right" valign="top">VkImageLayout&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_image_manager.html#a51a24d6a897c069b2fcd06464bb3f5f7">imageLayout</a> {}</td></tr>
 <tr class="separator:a51a24d6a897c069b2fcd06464bb3f5f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p class="">This is the <a class="el" href="class_image_manager.html">ImageManager</a> class </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="ae6a3b634b6e8396f8092035dd1d7f841"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae6a3b634b6e8396f8092035dd1d7f841">&#9670;&nbsp;</a></span>create()</h2>
 
@@ -213,6 +215,21 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This creates the image manager. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">format</td><td>This is the Vulkan format. </td></tr>
+    <tr><td class="paramname">tiling</td><td>This is the Vulkan image tilting. </td></tr>
+    <tr><td class="paramname">msaaSamples</td><td>This is the Vulkan sample count flag bits. </td></tr>
+    <tr><td class="paramname">usage</td><td>This is the Vulkan image usage. </td></tr>
+    <tr><td class="paramname">allocationUsage</td><td>This is the Vulkan memory allocation usage. </td></tr>
+    <tr><td class="paramname">mipLevels</td><td>This is the mip levels of the image. </td></tr>
+    <tr><td class="paramname">width</td><td>This is the width of the image. </td></tr>
+    <tr><td class="paramname">height</td><td>This is the height of the image. </td></tr>
+    <tr><td class="paramname">imageType</td><td>This is the type of image. </td></tr>
+    <tr><td class="paramname">dataSource</td><td>This is the data source. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -238,6 +255,7 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method destroys the items in the deletion queue and clears the deletion queue. </p>
 
 </div>
 </div>
@@ -264,6 +282,12 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method sets the graphics engine link. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">engineLink</td><td>This is the Vulkan graphics engine that is being linked. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -306,6 +330,7 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">I still don't know what this is... </p><dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>@PercentBoat4164 tell @JoelLogan what this is and does. </dd></dl>
 
 </div>
 </div>
@@ -342,6 +367,13 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p class="">This method transitions from one layout to another layout. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">oldLayout</td><td>This is the old layout. </td></tr>
+    <tr><td class="paramname">newLayout</td><td>This is the new layout that will be set. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -357,6 +389,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a Vulkan image called image{}. </p>
 
 </div>
 </div>
@@ -371,6 +404,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a Vulkan format called imageFormat{}. </p>
 
 </div>
 </div>
@@ -385,6 +419,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a Vulkan image layout called imageLayout{}. </p>
 
 </div>
 </div>
@@ -399,6 +434,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a Vulkan sampler called sampler{}. </p>
 
 </div>
 </div>
@@ -413,6 +449,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p class="">This is a Vulkan image view called view{} </p>
 
 </div>
 </div>
