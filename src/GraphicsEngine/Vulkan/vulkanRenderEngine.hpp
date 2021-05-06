@@ -1,13 +1,13 @@
 #pragma once
 
-#include "renderPassManager.hpp"
+#include "vulkanRenderPass.hpp"
 #include "vulkanGraphicsEngineLink.hpp"
-#include "bufferManager.hpp"
+#include "vulkanBuffer.hpp"
 #include "vulkanCamera.hpp"
 #include "vulkanAsset.hpp"
-#include "gpuData.hpp"
+#include "vulkanUniformBufferObject.hpp"
 #include "vulkanSettings.hpp"
-#include "commandBufferManager.hpp"
+#include "vulkanCommandBuffer.hpp"
 
 #include <VkBootstrap.h>
 #define GLEW_IMPLEMENTATION

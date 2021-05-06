@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vulkanGraphicsEngineLink.hpp"
-#include "imageManager.hpp"
+#include "vulkanImage.hpp"
 
 #include <deque>
 #include <functional>

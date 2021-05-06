@@ -1,11 +1,12 @@
 #pragma once
 
+#include "vulkanShader.hpp"
 #include "vulkanCamera.hpp"
-#include "vertex.hpp"
-#include "rasterizationPipelineManager.hpp"
-#include "rayTracingPipelineManager.hpp"
-#include "accelerationStructureManager.hpp"
-#include "gpuData.hpp"
+#include "vulkanVertex.hpp"
+#include "vulkanRasterizationPipeline.hpp"
+#include "vulkanRayTracingPipeline.hpp"
+#include "vulkanAccelerationStructure.hpp"
+#include "vulkanUniformBufferObject.hpp"
 
 #include <glm/gtc/quaternion.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -16,12 +17,7 @@
 #include <fstream>
 #include <cstring>
 
-#if defined(_WIN32)
-#define GLSLC "glslc.exe "
-#else
-#define GLSLC "glslc "
-#endif
-
+//TODO: Use vulkanShader.hpp and vulkanTexture.hpp when it is done
 class Asset {
 public:
     Asset(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
@@ -67,6 +63,7 @@ public:
     BufferManager transformationBuffer{};
     RasterizationPipelineManager pipelineManager{};
     RayTracingPipelineManager rayTracingPipelineManager{};
+    DescriptorSetManager descriptorSetManager{};
     AccelerationStructureManager bottomLevelAccelerationStructure{};
     AccelerationStructureManager topLevelAccelerationStructure{};
     UniformBufferObject uniformBufferObject{};

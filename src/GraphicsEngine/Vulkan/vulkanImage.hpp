@@ -1,6 +1,8 @@
 #pragma once
 
-#include "bufferManager.hpp"
+#include "vulkanBuffer.hpp"
+
+//TODO: Create texture subclass
 
 enum ImageType {
     DEPTH = 0,

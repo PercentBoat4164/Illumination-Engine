@@ -1,10 +1,10 @@
 #pragma once
 
-#include "shaderBindingTableManager.hpp"
-#include "imageManager.hpp"
-#include "accelerationStructureManager.hpp"
-#include "descriptorSetManager.hpp"
-#include "rayTracingPipelineManager.hpp"
+#include "vulkanShaderBindingTable.hpp"
+#include "vulkanImage.hpp"
+#include "vulkanAccelerationStructure.hpp"
+#include "vulkanDescriptorSet.hpp"
+#include "vulkanRayTracingPipeline.hpp"
 
 class VulkanRenderEngineRayTracer : public VulkanRenderEngine {
 private:
@@ -36,10 +36,10 @@ public:
         asset->destroy();
         //upload mesh, vertex, and transformation data if path tracing
         asset->vertexBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
+        memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.vertexBuffer.destroy(); });
         asset->indexBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
+        memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.indexBuffer.destroy(); });
         asset->transformationBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->transformationBuffer.create(sizeof(asset->transformationMatrix), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->transformationMatrix, sizeof(asset->transformationMatrix));
@@ -56,27 +56,43 @@ public:
         asset->uniformBuffer.setEngineLink(&renderEngineLink);
         memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->uniformBufferObject, sizeof(UniformBufferObject));
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.uniformBuffer.destroy(); });
-        //build acceleration structures for this asset
-        AccelerationStructureManager::BottomLevelAccelerationStructureManagerCreateInfo accelerationStructureManagerCreateInfo{};
-        accelerationStructureManagerCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
-        accelerationStructureManagerCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        //build bottom level acceleration structure
+        AccelerationStructureManager::AccelerationStructureManagerCreateInfo accelerationStructureManagerCreateInfo{};
         accelerationStructureManagerCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
         accelerationStructureManagerCreateInfo.vertexBufferAddress = asset->vertexBuffer.bufferAddress;
         accelerationStructureManagerCreateInfo.indexBufferAddress = asset->indexBuffer.bufferAddress;
         accelerationStructureManagerCreateInfo.transformationBufferAddress = asset->transformationBuffer.bufferAddress;
         accelerationStructureManagerCreateInfo.triangleCount = asset->triangleCount;
         asset->bottomLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
+        asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.bottomLevelAccelerationStructure.destroy(); });
+        //build top level acceleration structure
         accelerationStructureManagerCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
         accelerationStructureManagerCreateInfo.bottomLevelAccelerationStructure = &asset->bottomLevelAccelerationStructure;
         accelerationStructureManagerCreateInfo.transformationMatrix = &asset->transformationMatrix;
         asset->topLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
-        //build graphics pipeline and descriptor set for this asset
+        asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.topLevelAccelerationStructure.destroy(); });
+        //build descriptor set
         DescriptorSetManager::DescriptorSetManagerCreateInfo descriptorSetManagerCreateInfo{};
         descriptorSetManagerCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}, {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}};
         descriptorSetManagerCreateInfo.shaderStages = {static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR), VK_SHADER_STAGE_RAYGEN_BIT_KHR, static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR), VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
-        descriptorSetManagerCreateInfo.shaderData = asset->shaderData;
-        descriptorSetManagerCreateInfo.data = {&asset->bottomLevelAccelerationStructure, &rayTracingImage, &asset->uniformBuffer, &asset->vertexBuffer, &asset->indexBuffer};
-        asset->rayTracingPipelineManager.create(&renderEngineLink, &descriptorSetManagerCreateInfo);
+        descriptorSetManagerCreateInfo.data = {&asset->topLevelAccelerationStructure, &rayTracingImage, &asset->uniformBuffer, &asset->vertexBuffer, &asset->indexBuffer};
+        asset->descriptorSetManager.create(&renderEngineLink, &descriptorSetManagerCreateInfo);
+        asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.descriptorSetManager.destroy(); });
+        //build raytracing shaders
+        std::vector<VulkanShader *> shaders{4};
+        VulkanShader::VulkanShaderCreateInfo raygenShaderCreateInfo{"../../Shaders/raygen.rgen", VK_SHADER_STAGE_RAYGEN_BIT_KHR};
+        shaders[0]->create(&renderEngineLink, &raygenShaderCreateInfo);
+        VulkanShader::VulkanShaderCreateInfo missShaderCreateInfo{"../../Shaders/miss.miss", VK_SHADER_STAGE_MISS_BIT_KHR};
+        shaders[1]->create(&renderEngineLink, &missShaderCreateInfo);
+        VulkanShader::VulkanShaderCreateInfo chitShaderCreateInfo{"../../Shaders/closestHit.chit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
+        shaders[2]->create(&renderEngineLink, &chitShaderCreateInfo);
+        VulkanShader::VulkanShaderCreateInfo callShaderCreateInfo{"../../Shaders/callable.call", VK_SHADER_STAGE_CALLABLE_BIT_KHR};
+        shaders[3]->create(&renderEngineLink, &callShaderCreateInfo);
+        //build raytracing pipeline
+        RayTracingPipelineManager::RayTracingPipelineManagerCreateInfo rayTracingPipelineManagerCreateInfo{};
+        rayTracingPipelineManagerCreateInfo.shaders = static_cast<std::vector<VulkanShader *>>(shaders);
+        rayTracingPipelineManagerCreateInfo.descriptorSetManager = &asset->descriptorSetManager;
+        asset->rayTracingPipelineManager.create(&renderEngineLink, &rayTracingPipelineManagerCreateInfo);
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.rayTracingPipelineManager.destroy(); });
         if (append) { assets.push_back(asset); }
     }

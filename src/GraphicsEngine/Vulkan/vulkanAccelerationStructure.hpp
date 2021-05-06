@@ -2,9 +2,7 @@
 
 class AccelerationStructureManager : public BufferManager {
 public:
-    struct BottomLevelAccelerationStructureManagerCreateInfo {
-        VkBufferUsageFlags usage{};
-        VmaMemoryUsage allocationUsage{};
+    struct AccelerationStructureManagerCreateInfo {
         VkAccelerationStructureTypeKHR type{};
         VkDeviceAddress vertexBufferAddress{};
         VkDeviceAddress indexBufferAddress{};
@@ -15,9 +13,9 @@ public:
     };
 
     VkAccelerationStructureKHR accelerationStructure{};
-    BottomLevelAccelerationStructureManagerCreateInfo *createdWith{};
+    AccelerationStructureManagerCreateInfo *createdWith{};
 
-    void *create (VulkanGraphicsEngineLink *renderEngineLink, BottomLevelAccelerationStructureManagerCreateInfo *createInfo) {
+    void *create (VulkanGraphicsEngineLink *renderEngineLink, AccelerationStructureManagerCreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = createInfo;
         VkAccelerationStructureGeometryKHR accelerationStructureGeometry{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR};
@@ -58,9 +56,9 @@ public:
         bufferSize = accelerationStructureBuildSizesInfo.accelerationStructureSize;
         VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
         bufferCreateInfo.size = bufferSize;
-        bufferCreateInfo.usage = createdWith->usage;
+        bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
         VmaAllocationCreateInfo allocationCreateInfo{};
-        allocationCreateInfo.usage = createdWith->allocationUsage;
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer"); }
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
         VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR};
@@ -69,11 +67,9 @@ public:
         accelerationStructureCreateInfo.type = createdWith->type;
         linkedRenderEngine->vkCreateAccelerationStructureKHR(linkedRenderEngine->device->device, &accelerationStructureCreateInfo, nullptr, &accelerationStructure);
         deletionQueue.emplace_front([&]{ linkedRenderEngine->vkDestroyAccelerationStructureKHR(linkedRenderEngine->device->device, accelerationStructure, nullptr); });
-        if (createdWith->usage == (VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)) {
-            VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
-            bufferDeviceAddressInfo.buffer = buffer;
-            bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
-        }
+        VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
+        bufferDeviceAddressInfo.buffer = buffer;
+        bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
         BufferManager scratchBuffer{};
