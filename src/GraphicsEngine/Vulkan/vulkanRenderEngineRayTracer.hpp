@@ -19,7 +19,6 @@ public:
     ShaderBindingTables shaderBindingTables{};
     UniformBufferObject uniformBufferObject{};
     ImageManager rayTracingImage{};
-    std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
     float frameTime{};
     int frameNumber{};
 
@@ -79,22 +78,33 @@ public:
         asset->descriptorSetManager.create(&renderEngineLink, &descriptorSetManagerCreateInfo);
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.descriptorSetManager.destroy(); });
         //build raytracing shaders
-        std::vector<VulkanShader *> shaders{4};
-        VulkanShader::VulkanShaderCreateInfo raygenShaderCreateInfo{"../../Shaders/raygen.rgen", VK_SHADER_STAGE_RAYGEN_BIT_KHR};
-        shaders[0]->create(&renderEngineLink, &raygenShaderCreateInfo);
-        VulkanShader::VulkanShaderCreateInfo missShaderCreateInfo{"../../Shaders/miss.miss", VK_SHADER_STAGE_MISS_BIT_KHR};
-        shaders[1]->create(&renderEngineLink, &missShaderCreateInfo);
-        VulkanShader::VulkanShaderCreateInfo chitShaderCreateInfo{"../../Shaders/closestHit.chit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
-        shaders[2]->create(&renderEngineLink, &chitShaderCreateInfo);
-        VulkanShader::VulkanShaderCreateInfo callShaderCreateInfo{"../../Shaders/callable.call", VK_SHADER_STAGE_CALLABLE_BIT_KHR};
-        shaders[3]->create(&renderEngineLink, &callShaderCreateInfo);
+        std::vector<VulkanShader> shaders{4};
+        VulkanShader::VulkanShaderCreateInfo raygenShaderCreateInfo{"VulkanRayTracingShaders/raygen.rgen", VK_SHADER_STAGE_RAYGEN_BIT_KHR};
+        shaders[0].create(&renderEngineLink, &raygenShaderCreateInfo);
+        VulkanShader::VulkanShaderCreateInfo missShaderCreateInfo{"VulkanRayTracingShaders/miss.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR};
+        shaders[1].create(&renderEngineLink, &missShaderCreateInfo);
+        VulkanShader::VulkanShaderCreateInfo chitShaderCreateInfo{"VulkanRayTracingShaders/closestHit.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
+        shaders[2].create(&renderEngineLink, &chitShaderCreateInfo);
+        VulkanShader::VulkanShaderCreateInfo callShaderCreateInfo{"VulkanRayTracingShaders/callable.rcall", VK_SHADER_STAGE_CALLABLE_BIT_KHR};
+        shaders[3].create(&renderEngineLink, &callShaderCreateInfo);
         //build raytracing pipeline
         RayTracingPipelineManager::RayTracingPipelineManagerCreateInfo rayTracingPipelineManagerCreateInfo{};
-        rayTracingPipelineManagerCreateInfo.shaders = static_cast<std::vector<VulkanShader *>>(shaders);
+        rayTracingPipelineManagerCreateInfo.shaders = shaders;
         rayTracingPipelineManagerCreateInfo.descriptorSetManager = &asset->descriptorSetManager;
         asset->rayTracingPipelineManager.create(&renderEngineLink, &rayTracingPipelineManagerCreateInfo);
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.rayTracingPipelineManager.destroy(); });
         if (append) { assets.push_back(asset); }
+        // Create SBTs
+        const uint32_t handleSize = renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize;
+        const uint32_t handleSizeAligned = (renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
+        const auto groupCount = static_cast<uint32_t>(shaders.size());
+        const uint32_t SBTSize = groupCount * handleSizeAligned;
+        std::vector<uint8_t> shaderHandleStorage(SBTSize);
+        if (renderEngineLink.vkGetRayTracingShaderGroupHandlesKHR(renderEngineLink.device->device, asset->rayTracingPipelineManager.pipeline, 0, groupCount, SBTSize, shaderHandleStorage.data()) != VK_SUCCESS) { throw std::runtime_error("failed to get raytracing shader group handles."); }
+        memcpy(shaderBindingTables.rayGen.create(&renderEngineLink, handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 1), shaderHandleStorage.data(), handleSize);
+        memcpy(shaderBindingTables.miss.create(&renderEngineLink, handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 1), shaderHandleStorage.data() + handleSizeAligned, handleSize);
+        memcpy(shaderBindingTables.hit.create(&renderEngineLink, handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 1), shaderHandleStorage.data() + handleSizeAligned * 2, handleSize);
+        memcpy(shaderBindingTables.callable.create(&renderEngineLink, handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, static_cast<uint32_t>(assets.size())), shaderHandleStorage.data() + handleSizeAligned * 3, handleSize * assets.size());
     }
 
     explicit VulkanRenderEngineRayTracer(GLFWwindow *attachWindow = nullptr) : VulkanRenderEngine(attachWindow) {
@@ -103,18 +113,6 @@ public:
         rayTracingImage.transition(rayTracingImage.imageLayout, VK_IMAGE_LAYOUT_GENERAL);
         deletionQueue.emplace_front([&]{ rayTracingImage.destroy(); });
         //TODO: Place the next part in the upload asset function.
-//        // Create SBTs
-//
-//        const uint32_t handleSize = renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize;
-//        const uint32_t handleSizeAligned = (renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
-//        const auto groupCount = static_cast<uint32_t>(shaderGroups.size());
-//        const uint32_t SBTSize = groupCount * handleSizeAligned;
-//        std::vector<uint8_t> shaderHandleStorage(SBTSize);
-//        if (renderEngineLink.vkGetRayTracingShaderGroupHandlesKHR(renderEngineLink.device->device, pipeline, 0, groupCount, SBTSize, shaderHandleStorage.data()) != VK_SUCCESS) { throw std::runtime_error("failed to get raytracing shader group handles."); }
-//        memcpy(shaderBindingTables.rayGen.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 1), shaderHandleStorage.data(), handleSize);
-//        memcpy(shaderBindingTables.miss.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 1), shaderHandleStorage.data() + handleSizeAligned, handleSize);
-//        memcpy(shaderBindingTables.hit.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 1), shaderHandleStorage.data() + handleSizeAligned * 2, handleSize);
-//        memcpy(shaderBindingTables.callable.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, static_cast<uint32_t>(assets.size())), shaderHandleStorage.data() + handleSizeAligned * 3, handleSize * assets.size());
     }
 
 private:

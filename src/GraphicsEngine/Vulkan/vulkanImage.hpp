@@ -2,7 +2,7 @@
 
 #include "vulkanBuffer.hpp"
 
-//TODO: Create texture subclass
+/**@TODO: Create texture subclass*/
 
 enum ImageType {
     DEPTH = 0,

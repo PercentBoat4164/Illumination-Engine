@@ -17,7 +17,7 @@
 #include <fstream>
 #include <cstring>
 
-//TODO: Use vulkanShader.hpp and vulkanTexture.hpp when it is done
+/**@TODO: Use vulkanShader.hpp and vulkanTexture.hpp when it is done*/
 class Asset {
 public:
     Asset(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
@@ -130,8 +130,8 @@ private:
         shaderData.clear();
         shaderData.reserve(filenames.size());
         for (const char *shaderName : shaderNames) {
-            std::string compiledFileName = ((std::string) shaderName).substr(0, sizeof(shaderName) - 4) + "spv";
-            if (compile) { if (system((GLSLC + (std::string)shaderName + " -o " + compiledFileName).c_str()) != 0) { throw std::runtime_error("failed to compile Shaders!"); } }
+            std::string compiledFileName = ((std::string)shaderName).substr(0, std::string(shaderName).find_last_of('.')) + ".spv";
+            if (compile) { if (system((GLSLC + (std::string)shaderName + " -o " + compiledFileName + " --target-env=vulkan1.2").c_str()) != 0) { throw std::runtime_error("failed to compile Shaders!"); } }
             std::ifstream file(compiledFileName, std::ios::ate | std::ios::binary);
             if (!file.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName.append("\n as file: " + compiledFileName)); }
             size_t fileSize = (size_t) file.tellg();

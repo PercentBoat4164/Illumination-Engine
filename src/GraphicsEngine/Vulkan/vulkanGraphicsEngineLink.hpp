@@ -66,12 +66,6 @@ public:
         submitInfo.pCommandBuffers = &commandBuffer;
         vkQueueSubmit(*graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(*graphicsQueue);
-//        VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-//        VkFence fence{};
-//        if (vkCreateFence(device->device, &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS) { throw std::runtime_error("failed to create single time fence!"); }
-//        if (vkQueueSubmit(*graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) { throw std::runtime_error("failed to submit single time command buffer!"); }
-//        if (vkWaitForFences(device->device, 1, &fence, VK_TRUE, 100000000000) != VK_SUCCESS) { throw std::runtime_error("failed to wait for single time fence!"); }
-//        vkDestroyFence(device->device, fence, nullptr);
         vkFreeCommandBuffers(device->device, *commandPool, 1, &commandBuffer);
     }
 };

@@ -6,7 +6,7 @@
 class RayTracingPipelineManager {
 public:
     struct RayTracingPipelineManagerCreateInfo {
-        std::vector<VulkanShader *> shaders{};
+        std::vector<VulkanShader> shaders{};
         DescriptorSetManager *descriptorSetManager{};
     };
 
@@ -25,31 +25,24 @@ public:
         if (vkCreatePipelineLayout(linkedRenderEngine->device->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
         deletionQueue.emplace_front([&] { vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr); });
         std::vector<VkPipelineShaderStageCreateInfo> shaderStages{};
-        shaderStages.reserve(createdWith->shaders.size());
         shaderGroups.reserve(createdWith->shaders.size());
-        for (unsigned int i = 0; i > createdWith->shaders.size(); ++i) {
+        VkRayTracingShaderGroupCreateInfoKHR rayTracingShaderGroupCreateInfo{VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR};
+        for (auto & shader : createdWith->shaders) {
             VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
-            pipelineShaderStageCreateInfo.stage = createdWith->shaders[i]->createdWith->stage;
-            pipelineShaderStageCreateInfo.module = createdWith->shaders[i]->module;
+            pipelineShaderStageCreateInfo.stage = shader.createdWith->stage;
+            pipelineShaderStageCreateInfo.module = shader.module;
             pipelineShaderStageCreateInfo.pName = "main";
             shaderStages.push_back(pipelineShaderStageCreateInfo);
-            VkRayTracingShaderGroupCreateInfoKHR rayTracingShaderGroupCreateInfo{VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR};
-            rayTracingShaderGroupCreateInfo.generalShader = VK_SHADER_UNUSED_KHR;
             rayTracingShaderGroupCreateInfo.closestHitShader = VK_SHADER_UNUSED_KHR;
-            rayTracingShaderGroupCreateInfo.anyHitShader = VK_SHADER_UNUSED_KHR;
             rayTracingShaderGroupCreateInfo.intersectionShader = VK_SHADER_UNUSED_KHR;
-            if (pipelineShaderStageCreateInfo.stage & VK_SHADER_STAGE_RAYGEN_BIT_KHR) {
+            rayTracingShaderGroupCreateInfo.anyHitShader = VK_SHADER_UNUSED_KHR;
+            rayTracingShaderGroupCreateInfo.generalShader = VK_SHADER_UNUSED_KHR;
+            if (pipelineShaderStageCreateInfo.stage & (VK_SHADER_STAGE_CALLABLE_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR | VK_SHADER_STAGE_RAYGEN_BIT_KHR)) {
                 rayTracingShaderGroupCreateInfo.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-                rayTracingShaderGroupCreateInfo.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
-            } if (pipelineShaderStageCreateInfo.stage & VK_SHADER_STAGE_MISS_BIT_KHR) {
-                rayTracingShaderGroupCreateInfo.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-                rayTracingShaderGroupCreateInfo.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
-            } if (pipelineShaderStageCreateInfo.stage & VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR) {
+                rayTracingShaderGroupCreateInfo.generalShader = shaderStages.size() - 1;
+            } else if (pipelineShaderStageCreateInfo.stage & VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR) {
                 rayTracingShaderGroupCreateInfo.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
-                rayTracingShaderGroupCreateInfo.closestHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
-            } if (pipelineShaderStageCreateInfo.stage & VK_SHADER_STAGE_CALLABLE_BIT_KHR) {
-                rayTracingShaderGroupCreateInfo.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-                rayTracingShaderGroupCreateInfo.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+                rayTracingShaderGroupCreateInfo.closestHitShader = shaderStages.size() - 1;
             }
             shaderGroups.push_back(rayTracingShaderGroupCreateInfo);
         }

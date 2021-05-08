@@ -16,7 +16,7 @@ public:
     struct VulkanShaderCreateInfo {
         const char *filename{};
         VkShaderStageFlagBits stage{};
-        std::vector<std::vector<char>> data{};
+        std::vector<char> data{};
     };
 
     VkShaderModule module{};
@@ -32,16 +32,15 @@ public:
         createdWith = createInfo;
         if (createdWith->filename != nullptr) {
             createdWith->data.clear();
-            std::string compiledFileName = ((std::string)createdWith->filename).substr(0, sizeof(createdWith->filename) - 4) + "spv";
-            if (system((GLSLC + (std::string)createdWith->filename + " -o " + compiledFileName).c_str()) != 0) { throw std::runtime_error("failed to compile Shaders!"); }
+            std::string compiledFileName = ((std::string)createdWith->filename).substr(0, std::string(createdWith->filename).find_last_of('.')) + ".spv";
+            if (system((GLSLC + (std::string)createdWith->filename + " -o " + compiledFileName + " --target-env=vulkan1.2").c_str()) != 0) { throw std::runtime_error("failed to compile Shaders!"); }
             std::ifstream file(compiledFileName, std::ios::ate | std::ios::binary);
             if (!file.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName.append("\n as file: " + compiledFileName)); }
             size_t fileSize = (size_t) file.tellg();
-            std::vector<char> buffer(fileSize);
+            createdWith->data.resize(fileSize);
             file.seekg(0);
-            file.read(buffer.data(), (std::streamsize)fileSize);
+            file.read(createdWith->data.data(), (std::streamsize)fileSize);
             file.close();
-            createdWith->data.push_back(buffer);
         }
         VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
         shaderModuleCreateInfo.codeSize = createdWith->data.size();

@@ -182,7 +182,9 @@ int main(int argc, char **argv) {
                 VulkanRenderEngineRayTracer renderEngine = VulkanRenderEngineRayTracer();
                 glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
                 renderEngine.camera.position = {0, 0, 2};
-                Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
+                renderEngine.settings.pathTracing = true;
+                renderEngine.updateSettings(true);
+                Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"VulkanRayTracingShaders/vertexShader.vert", "VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
                 renderEngine.uploadAsset(&quad, true);
                 double lastTab{0};
                 double lastF2{0};
@@ -193,8 +195,6 @@ int main(int argc, char **argv) {
                 std::vector<float> recordedFPS{};
                 float recordedFPSCount{200};
                 recordedFPS.resize((size_t)recordedFPSCount);
-                renderEngine.settings.pathTracing = true;
-                renderEngine.updateSettings(true);
                 while (renderEngine.update()) {
                     //Process inputs
                     glfwPollEvents();

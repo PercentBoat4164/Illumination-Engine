@@ -84,6 +84,7 @@ public:
         else {
             VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
             linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
+            //TODO: This generates a Vulkan error that I cannot figure out how to fix. This will not be fixed until I determine that it is a real problem and how to fix it.
             linkedRenderEngine->endSingleTimeCommands(commandBuffer);
         }
         scratchBuffer.destroy();

@@ -33,7 +33,7 @@ endif()
 
 # Copy data files and dlls
 if ($ENV{CLION_IDE})
-    set(data_SHADOW src/Shaders src/Models)
+    set(data_SHADOW src/GraphicsEngine/Vulkan/VulkanRasterizationShaders src/GraphicsEngine/Vulkan/VulkanRayTracingShaders src/GraphicsEngine/OpenGL/OpenGLShaders src/Models)
     foreach (item IN LISTS data_SHADOW)
         FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
     endforeach()
