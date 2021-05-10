@@ -11,7 +11,7 @@ public:
         if (window == nullptr) { return false; }
         if (assets.empty()) { return glfwWindowShouldClose(window) != 1; }
         vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-        uint32_t imageIndex = 0;
+        uint32_t imageIndex{0};
         VkResult result = vkAcquireNextImageKHR(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             createSwapchain();
@@ -91,11 +91,11 @@ public:
         frameNumber++;
         //Check if window has been resized
         vkQueueWaitIdle(presentQueue);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
             framebufferResized = false;
             createSwapchain();
         } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
-        currentFrame = (currentFrame + 1) % settings.MAX_FRAMES_IN_FLIGHT;
+        currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
         return glfwWindowShouldClose(window) != 1;
     }
 

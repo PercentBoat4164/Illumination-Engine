@@ -81,11 +81,11 @@ int main(int argc, char **argv) {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
-            Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
-            Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
-            Asset vikingRoom = Asset("Models/vikingRoom.obj", {"Models/vikingRoom.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            Asset statue = Asset("Models/ancientStatue.obj", {"Models/ancientStatue.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {7, 2, 0}, {0, 0, 0});
-            Asset ball = Asset("Models/sphere.obj", {"Models/sphere_diffuse.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"});
+            Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+            Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
+            Asset vikingRoom = Asset("Models/vikingRoom.obj", {"Models/vikingRoom.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            Asset statue = Asset("Models/ancientStatue.obj", {"Models/ancientStatue.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"}, {7, 2, 0}, {0, 0, 0});
+            Asset ball = Asset("Models/sphere.obj", {"Models/sphere_diffuse.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"});
             renderEngine.uploadAsset(&cube, true);
             renderEngine.uploadAsset(&quad, true);
             renderEngine.uploadAsset(&vikingRoom, true);
@@ -183,7 +183,6 @@ int main(int argc, char **argv) {
                 glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
                 renderEngine.camera.position = {0, 0, 2};
                 renderEngine.settings.pathTracing = true;
-                renderEngine.updateSettings(true);
                 Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"VulkanRayTracingShaders/vertexShader.vert", "VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
                 renderEngine.uploadAsset(&quad, true);
                 double lastTab{0};
@@ -272,6 +271,7 @@ int main(int argc, char **argv) {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
+            renderEngine.camera.position = {0, 3, 1};
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};

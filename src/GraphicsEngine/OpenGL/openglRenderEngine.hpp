@@ -24,6 +24,7 @@ public:
 
     explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW");}
+        glfwSwapInterval(0);
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -38,7 +39,7 @@ public:
         GLuint VertexArrayID;
         glGenVertexArrays(1, &VertexArrayID);
         glBindVertexArray(VertexArrayID);
-        programID = loadShaders({"Shaders/vertexShader.glsl", "Shaders/fragmentShader.glsl"});
+        programID = loadShaders({"OpenGLShaders/vertexShader.glsl", "OpenGLShaders/fragmentShader.glsl"});
         modelMatrixID = glGetUniformLocation(programID, "MVP");
         //Create vertex buffer
         glGenBuffers(1, &vertexBuffer);

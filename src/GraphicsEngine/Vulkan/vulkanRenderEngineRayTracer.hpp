@@ -23,11 +23,96 @@ public:
     int frameNumber{};
 
     bool update() override {
-        VkCommandBufferBeginInfo commandBufferBeginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-        VkImageSubresourceRange imageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-
-        ++frameNumber;
-        return false;
+        if (window == nullptr) { return false; }
+        if (assets.empty()) { return glfwWindowShouldClose(window) != 1; }
+        vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+        uint32_t imageIndex{0};
+        VkResult result = vkAcquireNextImageKHR(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex); // Signals semaphore
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            createSwapchain();
+            return glfwWindowShouldClose(window) != 1;
+        } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) { throw std::runtime_error("failed to acquire swapchain image!"); }
+        if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) { vkWaitForFences(device.device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX); }
+        imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+        camera.update();
+        commandBufferManager.resetCommandBuffer((int)(imageIndex + (swapchain.image_count - 1)) % (int)swapchain.image_count);
+        commandBufferManager.recordCommandBuffer((int)imageIndex);
+        for (Asset *asset : assets) {
+            asset->update(camera);
+            vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, asset->rayTracingPipelineManager.pipeline);
+            vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, asset->rayTracingPipelineManager.pipelineLayout, 0, 1, &asset->descriptorSetManager.descriptorSet, 0, nullptr);
+            renderEngineLink.vkCmdTraceRaysKHR(commandBufferManager.commandBuffers[imageIndex], &shaderBindingTables.rayGen.stridedDeviceAddressRegion, &shaderBindingTables.miss.stridedDeviceAddressRegion, &shaderBindingTables.hit.stridedDeviceAddressRegion, &shaderBindingTables.callable.stridedDeviceAddressRegion, settings.resolution[0], settings.resolution[1], 1);
+            VkImageMemoryBarrier imageMemoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+            imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            imageMemoryBarrier.image = swapchain.get_images().value()[imageIndex];
+            imageMemoryBarrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            imageMemoryBarrier.srcAccessMask = 0;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            vkCmdPipelineBarrier(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+            imageMemoryBarrier.oldLayout = rayTracingImage.imageLayout;
+            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            imageMemoryBarrier.image = rayTracingImage.image;
+            imageMemoryBarrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            imageMemoryBarrier.srcAccessMask = 0;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            vkCmdPipelineBarrier(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+            rayTracingImage.imageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            VkImageCopy copyRegion{};
+            copyRegion.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+            copyRegion.srcOffset = {0, 0, 0};
+            copyRegion.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+            copyRegion.dstOffset = {0, 0, 0};
+            copyRegion.extent = {static_cast<uint32_t>(settings.resolution[0]), static_cast<uint32_t>(settings.resolution[1]), 1};
+            vkCmdCopyImage(commandBufferManager.commandBuffers[imageIndex], rayTracingImage.image, rayTracingImage.imageLayout, swapchain.get_images().value()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+            imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            imageMemoryBarrier.image = swapchain.get_images().value()[imageIndex];
+            imageMemoryBarrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            imageMemoryBarrier.dstAccessMask = 0;
+            vkCmdPipelineBarrier(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+            imageMemoryBarrier.oldLayout = rayTracingImage.imageLayout;
+            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            imageMemoryBarrier.image = rayTracingImage.image;
+            imageMemoryBarrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            imageMemoryBarrier.dstAccessMask = 0;
+            vkCmdPipelineBarrier(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+            rayTracingImage.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+        }
+        vkEndCommandBuffer(commandBufferManager.commandBuffers[imageIndex]);
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = &imageAvailableSemaphores[currentFrame]; // Wait for signaled semaphore
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBufferManager.commandBuffers[imageIndex];
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = &renderFinishedSemaphores[currentFrame];
+        vkResetFences(device.device, 1, &inFlightFences[currentFrame]);
+        result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
+//        if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command buffer!"); }
+        VkSwapchainKHR swapchains[] = {swapchain.swapchain};
+        VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = &renderFinishedSemaphores[currentFrame];
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapchains;
+        presentInfo.pImageIndices = &imageIndex;
+//        result = vkQueuePresentKHR(presentQueue, &presentInfo);
+        auto currentTime = (float)glfwGetTime();
+        frameTime = currentTime - previousTime;
+        previousTime = currentTime;
+        frameNumber++;
+        vkQueueWaitIdle(presentQueue);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+            framebufferResized = false;
+            createSwapchain();
+        } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
+        currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
+        return glfwWindowShouldClose(window) != 1;
     }
 
     void uploadAsset(Asset *asset, bool append) override {
@@ -112,11 +197,11 @@ public:
         rayTracingImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)swapchain.extent.width, (int)swapchain.extent.height, COLOR);
         rayTracingImage.transition(rayTracingImage.imageLayout, VK_IMAGE_LAYOUT_GENERAL);
         deletionQueue.emplace_front([&]{ rayTracingImage.destroy(); });
-        //TODO: Place the next part in the upload asset function.
     }
 
 private:
     std::deque<std::function<void()>> deletionQueue{};
     bool framebufferResized{false};
-    RayTracingPipelineManager pipelineManager{};
+    float previousTime{};
+    int currentFrame{};
 };
