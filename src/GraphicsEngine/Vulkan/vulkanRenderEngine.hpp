@@ -58,6 +58,12 @@ protected:
         if (attachWindow == nullptr) { glfwInit(); }
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+        // load icon
+        int width, height, channels;
+        stbi_uc *pixels = stbi_load("res/CrystalEngineLogo1024x1024.png", &width, &height, &channels, STBI_rgb_alpha);
+        if (!pixels) { throw std::runtime_error("failed to load texture image from file: res/CrystalEngineLogo1024x1024.png"); }
+        auto *icon = reinterpret_cast<GLFWimage *>(pixels);
+        glfwSetWindowIcon(window, 1, icon);
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
         glfwGetWindowPos(window, &xPos, &yPos);

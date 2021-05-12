@@ -11,7 +11,7 @@ set(CRYSTAL_ENGINE_PREFER_PRE_INSTALLED false)
 
 # Get packages
 find_package(Vulkan) # install with "wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.176-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.176-focal.list;sudo apt update;sudo apt install vulkan-sdk"
-find_package(OpenGL REQUIRED) # install with "sudo apt-get install libglu1-mesa-dev mesa-common-dev"
+find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL) # install with "sudo apt-get install libglu1-mesa-dev mesa-common-dev"
 if (CRYSTAL_ENGINE_PREFER_PRE_INSTALLED)
     find_package(GLEW) # install with "sudo apt install libglew-dev"
     find_package(glfw3 3.3) # install with "sudo apt install libglfw3-dev"
@@ -28,12 +28,12 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf sources.tar.xz WORKING_DIREC
 
 # Copy data files and dlls
 if ($ENV{CLION_IDE})
-    set(data_SHADOW src/GraphicsEngine/Vulkan/VulkanRasterizationShaders src/GraphicsEngine/Vulkan/VulkanRayTracingShaders src/GraphicsEngine/OpenGL/OpenGLShaders src/Models)
+    set(data_SHADOW src/GraphicsEngine/Vulkan/VulkanRasterizationShaders src/GraphicsEngine/Vulkan/VulkanRayTracingShaders src/GraphicsEngine/OpenGL/OpenGLShaders src/Models res)
     foreach (item IN LISTS data_SHADOW)
         FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}")
     endforeach()
 else()
-    set(data_SHADOW src/Shaders src/Models build/bin/Debug/glew32d.dll)
+    set(data_SHADOW src/Shaders src/Models build/bin/Debug/glew32d.dll res)
     foreach (item IN LISTS data_SHADOW)
         FILE(COPY ${item} DESTINATION "${CMAKE_BINARY_DIR}/Debug")
     endforeach()
@@ -60,6 +60,7 @@ else()
 endif()
 if (NOT glfw3_FOUND)
     add_subdirectory(deps/glfw)
+    include_directories(deps/glfw/include)
     target_link_libraries(CrystalEngine PUBLIC glfw)
     message("Building with packaged glfw")
 else()
@@ -79,4 +80,4 @@ if (Vulkan_FOUND)
     add_subdirectory(deps/vk-bootstrap)
     target_link_libraries(CrystalEngine PUBLIC vk-bootstrap Vulkan::Vulkan)
 endif()
-target_link_libraries(CrystalEngine PUBLIC OpenGL::GL)
+target_link_libraries(CrystalEngine PUBLIC OpenGL::OpenGL OpenGL::EGL)

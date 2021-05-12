@@ -72,7 +72,6 @@ public:
     std::vector<std::vector<char>> shaderData{};
     int width{};
     int height{};
-    VkDescriptorSet descriptorSet{};
     glm::vec3 position{};
     glm::vec3 rotation{};
     glm::vec3 scale{};
