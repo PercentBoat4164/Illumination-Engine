@@ -32,6 +32,7 @@ public:
     PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR{};
     PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR{};
     PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR{};
+    PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
 
     void build() {
         vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(vkGetDeviceProcAddr(device->device, "vkGetBufferDeviceAddressKHR"));
@@ -44,6 +45,7 @@ public:
         vkCmdTraceRaysKHR = reinterpret_cast<PFN_vkCmdTraceRaysKHR>(vkGetDeviceProcAddr(device->device, "vkCmdTraceRaysKHR"));
         vkGetRayTracingShaderGroupHandlesKHR = reinterpret_cast<PFN_vkGetRayTracingShaderGroupHandlesKHR>(vkGetDeviceProcAddr(device->device, "vkGetRayTracingShaderGroupHandlesKHR"));
         vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(device->device, "vkCreateRayTracingPipelinesKHR"));
+        vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device->device, "vkAcquireNextImageKhr"));
     }
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {

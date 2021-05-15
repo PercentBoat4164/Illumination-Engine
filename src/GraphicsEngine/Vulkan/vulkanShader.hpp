@@ -13,7 +13,7 @@
 
 class VulkanShader {
 public:
-    struct VulkanShaderCreateInfo {
+    struct CreateInfo {
         const char *filename{};
         VkShaderStageFlagBits stage{};
         std::vector<char> data{};
@@ -21,13 +21,13 @@ public:
 
     VkShaderModule module{};
     VulkanGraphicsEngineLink *linkedRenderEngine{};
-    VulkanShaderCreateInfo *createdWith{};
+    CreateInfo *createdWith{};
 
     void destroy() const {
         vkDestroyShaderModule(linkedRenderEngine->device->device, module, nullptr);
     }
 
-    void create(VulkanGraphicsEngineLink *renderEngineLink, VulkanShaderCreateInfo *createInfo) {
+    void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = createInfo;
         if (createdWith->filename != nullptr) {

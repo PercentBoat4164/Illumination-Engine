@@ -37,14 +37,14 @@ public:
             accelerationStructureInstance.transform = *createdWith->transformationMatrix;
             accelerationStructureInstance.mask = 0xFF;
             accelerationStructureInstance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
-            accelerationStructureInstance.accelerationStructureReference = createdWith->bottomLevelAccelerationStructure->bufferAddress;
+            accelerationStructureInstance.accelerationStructureReference = createdWith->bottomLevelAccelerationStructure->deviceAddress;
             instancesBuffer.setEngineLink(linkedRenderEngine);
             memcpy(instancesBuffer.create(sizeof(VkAccelerationStructureInstanceKHR), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU), &accelerationStructureInstance, sizeof(VkAccelerationStructureInstanceKHR));
             accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
             accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
             accelerationStructureGeometry.geometry.instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
             accelerationStructureGeometry.geometry.instances.arrayOfPointers = VK_FALSE;
-            accelerationStructureGeometry.geometry.instances.data = {instancesBuffer.bufferAddress};
+            accelerationStructureGeometry.geometry.instances.data = {instancesBuffer.deviceAddress};
         }
         VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR};
         accelerationStructureBuildGeometryInfo.type = createdWith->type;
@@ -67,9 +67,9 @@ public:
         accelerationStructureCreateInfo.type = createdWith->type;
         linkedRenderEngine->vkCreateAccelerationStructureKHR(linkedRenderEngine->device->device, &accelerationStructureCreateInfo, nullptr, &accelerationStructure);
         deletionQueue.emplace_front([&]{ linkedRenderEngine->vkDestroyAccelerationStructureKHR(linkedRenderEngine->device->device, accelerationStructure, nullptr); });
-        VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
-        bufferDeviceAddressInfo.buffer = buffer;
-        bufferAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
+        VkAccelerationStructureDeviceAddressInfoKHR accelerationStructureDeviceAddressInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR};
+        accelerationStructureDeviceAddressInfo.accelerationStructure = accelerationStructure;
+        deviceAddress = linkedRenderEngine->vkGetAccelerationStructureDeviceAddressKHR(linkedRenderEngine->device->device, &accelerationStructureDeviceAddressInfo);
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
         BufferManager scratchBuffer{};
@@ -77,7 +77,7 @@ public:
         scratchBuffer.create(accelerationStructureBuildSizesInfo.accelerationStructureSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
         accelerationStructureBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
         accelerationStructureBuildGeometryInfo.dstAccelerationStructure = accelerationStructure;
-        accelerationStructureBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.bufferAddress;
+        accelerationStructureBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.deviceAddress;
         VkAccelerationStructureBuildRangeInfoKHR bottomLevelAccelerationStructureBuildRangeInfo{createdWith->triangleCount};
         std::vector<VkAccelerationStructureBuildRangeInfoKHR *> pAccelerationStructureBuildRangeInfo{&bottomLevelAccelerationStructureBuildRangeInfo};
         if (linkedRenderEngine->physicalDeviceInfo->physicalDeviceAccelerationStructureFeatures.accelerationStructureHostCommands) { linkedRenderEngine->vkBuildAccelerationStructuresKHR(linkedRenderEngine->device->device, VK_NULL_HANDLE, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data()); }

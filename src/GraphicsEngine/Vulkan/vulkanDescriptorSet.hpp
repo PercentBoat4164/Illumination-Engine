@@ -6,7 +6,7 @@
 
 class DescriptorSetManager {
 public:
-    struct DescriptorSetManagerCreateInfo {
+    struct CreateInfo {
         std::vector<VkDescriptorPoolSize> poolSizes{};
         std::vector<VkShaderStageFlagBits> shaderStages{};
         std::vector<std::variant<AccelerationStructureManager *, ImageManager *, BufferManager *>> data{};
@@ -15,14 +15,14 @@ public:
     VkDescriptorPool descriptorPool{};
     VkDescriptorSet descriptorSet{};
     VkDescriptorSetLayout descriptorSetLayout{};
-    DescriptorSetManagerCreateInfo *createdWith{};
+    CreateInfo *createdWith{};
 
     void destroy() {
         for (const std::function<void()>& function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
-    void create(VulkanGraphicsEngineLink *renderEngineLink, DescriptorSetManagerCreateInfo *createInfo) {
+    void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = createInfo;
         //Create descriptor layout from bindings

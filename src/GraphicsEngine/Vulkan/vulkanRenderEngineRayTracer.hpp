@@ -141,9 +141,9 @@ public:
         //build bottom level acceleration structure
         AccelerationStructureManager::AccelerationStructureManagerCreateInfo accelerationStructureManagerCreateInfo{};
         accelerationStructureManagerCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
-        accelerationStructureManagerCreateInfo.vertexBufferAddress = asset->vertexBuffer.bufferAddress;
-        accelerationStructureManagerCreateInfo.indexBufferAddress = asset->indexBuffer.bufferAddress;
-        accelerationStructureManagerCreateInfo.transformationBufferAddress = asset->transformationBuffer.bufferAddress;
+        accelerationStructureManagerCreateInfo.vertexBufferAddress = asset->vertexBuffer.deviceAddress;
+        accelerationStructureManagerCreateInfo.indexBufferAddress = asset->indexBuffer.deviceAddress;
+        accelerationStructureManagerCreateInfo.transformationBufferAddress = asset->transformationBuffer.deviceAddress;
         accelerationStructureManagerCreateInfo.triangleCount = asset->triangleCount;
         asset->bottomLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.bottomLevelAccelerationStructure.destroy(); });
@@ -154,7 +154,7 @@ public:
         asset->topLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.topLevelAccelerationStructure.destroy(); });
         //build descriptor set
-        DescriptorSetManager::DescriptorSetManagerCreateInfo descriptorSetManagerCreateInfo{};
+        DescriptorSetManager::CreateInfo descriptorSetManagerCreateInfo{};
         descriptorSetManagerCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}, {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}};
         descriptorSetManagerCreateInfo.shaderStages = {static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR), VK_SHADER_STAGE_RAYGEN_BIT_KHR, static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR), VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
         descriptorSetManagerCreateInfo.data = {&asset->topLevelAccelerationStructure, &rayTracingImage, &asset->uniformBuffer, &asset->vertexBuffer, &asset->indexBuffer};
@@ -162,16 +162,16 @@ public:
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.descriptorSetManager.destroy(); });
         //build raytracing shaders
         std::vector<VulkanShader> shaders{4};
-        VulkanShader::VulkanShaderCreateInfo raygenShaderCreateInfo{"VulkanRayTracingShaders/raygen.rgen", VK_SHADER_STAGE_RAYGEN_BIT_KHR};
+        VulkanShader::CreateInfo raygenShaderCreateInfo{"VulkanRayTracingShaders/raygen.rgen", VK_SHADER_STAGE_RAYGEN_BIT_KHR};
         shaders[0].create(&renderEngineLink, &raygenShaderCreateInfo);
-        VulkanShader::VulkanShaderCreateInfo missShaderCreateInfo{"VulkanRayTracingShaders/miss.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR};
+        VulkanShader::CreateInfo missShaderCreateInfo{"VulkanRayTracingShaders/miss.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR};
         shaders[1].create(&renderEngineLink, &missShaderCreateInfo);
-        VulkanShader::VulkanShaderCreateInfo chitShaderCreateInfo{"VulkanRayTracingShaders/closestHit.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
+        VulkanShader::CreateInfo chitShaderCreateInfo{"VulkanRayTracingShaders/closestHit.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
         shaders[2].create(&renderEngineLink, &chitShaderCreateInfo);
-        VulkanShader::VulkanShaderCreateInfo callShaderCreateInfo{"VulkanRayTracingShaders/callable.rcall", VK_SHADER_STAGE_CALLABLE_BIT_KHR};
+        VulkanShader::CreateInfo callShaderCreateInfo{"VulkanRayTracingShaders/callable.rcall", VK_SHADER_STAGE_CALLABLE_BIT_KHR};
         shaders[3].create(&renderEngineLink, &callShaderCreateInfo);
         //build raytracing pipeline
-        RayTracingPipelineManager::RayTracingPipelineManagerCreateInfo rayTracingPipelineManagerCreateInfo{};
+        RayTracingPipelineManager::CreateInfo rayTracingPipelineManagerCreateInfo{};
         rayTracingPipelineManagerCreateInfo.shaders = shaders;
         rayTracingPipelineManagerCreateInfo.descriptorSetManager = &asset->descriptorSetManager;
         asset->rayTracingPipelineManager.create(&renderEngineLink, &rayTracingPipelineManagerCreateInfo);

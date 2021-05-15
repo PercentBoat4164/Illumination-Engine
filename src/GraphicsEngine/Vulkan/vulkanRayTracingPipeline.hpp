@@ -5,7 +5,7 @@
 
 class RayTracingPipelineManager {
 public:
-    struct RayTracingPipelineManagerCreateInfo {
+    struct CreateInfo {
         std::vector<VulkanShader> shaders{};
         DescriptorSetManager *descriptorSetManager{};
     };
@@ -14,9 +14,9 @@ public:
     VulkanGraphicsEngineLink *linkedRenderEngine{};
     std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
     VkPipeline pipeline{};
-    RayTracingPipelineManagerCreateInfo *createdWith{};
+    CreateInfo *createdWith{};
 
-    void create(VulkanGraphicsEngineLink *renderEngineLink, RayTracingPipelineManagerCreateInfo *createInfo) {
+    void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = createInfo;
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
