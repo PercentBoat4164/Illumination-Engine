@@ -1,7 +1,13 @@
 #pragma once
 
-#include "../Core/PhysicsCore.hpp"
+#include "../Core/Body.hpp"
+#include "../Core/Geometry.hpp"
 
-class RigidBody : Body {
 
+class RigidBody : public Body {
+public:
+
+    RigidBody(Shape *newShape) {
+        shape = newShape;
+    }
 };
