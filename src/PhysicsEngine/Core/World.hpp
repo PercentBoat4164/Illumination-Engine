@@ -1,55 +1,9 @@
-#include "PhysicsCore.hpp"
+#pragma once
 
-class Body {
-    public:
-
-        Body(Shape shape, float setMass) {
-            myShape = shape;
-            mass = setMass;
-            centerOfMass = shape.position;
-            velocity = glm::vec3(0, 0, 0);
-        }
-
-        float mass; //mass of the body
-        
-        void step(float time) {
-            myShape.position += velocity * time;
-        }
-
-        void applyImpulse(glm::vec3 impulse) {
-            velocity += impulse;
-        }
-
-        glm::vec3 getPosition() {
-            return myShape.position;
-        }
-
-        void setPosition(glm::vec3 newPosition) {
-            myShape.position = newPosition;
-        }
-
-        bool isIntersecting(Body otherBody) {
-            return myShape.isIntersecting(otherBody.getShape());
-        }
-
-        Shape getShape() {
-            return myShape;
-        }
-
-        glm::vec3 getVelocity() {
-            return velocity;
-        }
-
-        void setVelocity(glm::vec3 newVelocity) {
-            velocity = newVelocity;
-        }
-
-    private:
-
-        Shape myShape;
-        glm::vec3 centerOfMass; //the center of mass of the body
-        glm::vec3 velocity; //the velocity of the body
-};
+#include <glm/glm.hpp>
+#include "Geometry.hpp"
+#include "Body.hpp"
+#include <list>
 
 class World {
     public:
@@ -81,7 +35,7 @@ class World {
         bool checkCollision(Body body1, Body body2, float time) {
             body1.step(time);
             body2.step(time);
-            return body1.isIntersecting(body2);
+            return glm::length(body1.shape->position - body2.shape->position) <= body1.shape->radius + body2.shape->radius;
         }
 
         //get the exact time of a collision between two bodies
@@ -94,21 +48,21 @@ class World {
             Body s2 = *body2;
             
             //get the line on which the collision takes place. The method calculates a 1d collision along this line
-            glm::vec3 collisionNormal = s1.getPosition() - s2.getPosition();
+            glm::vec3 collisionNormal = s1.position - s2.position;
             collisionNormal *= 1 / glm::length(collisionNormal);
 
-            glm::vec3 vs1 = collisionNormal * glm::dot(s1.getVelocity(), collisionNormal);
-            glm::vec3 vs2 = collisionNormal * glm::dot(s2.getVelocity(), collisionNormal);
+            glm::vec3 vs1 = collisionNormal * glm::dot(s1.velocity, collisionNormal);
+            glm::vec3 vs2 = collisionNormal * glm::dot(s2.velocity, collisionNormal);
 
-            glm::vec3 remainderS1 = s1.getVelocity() - vs1;
-            glm::vec3 remainderS2 = s2.getVelocity() - vs2;
+            glm::vec3 remainderS1 = s1.velocity - vs1;
+            glm::vec3 remainderS2 = s2.velocity - vs2;
 
             glm::vec3 vS1Result = (s1.mass-s2.mass)/(s1.mass+s2.mass)*vs1 + (2*s2.mass)/(s1.mass+s2.mass)*vs2;
             glm::vec3 vS2Result = (s2.mass-s1.mass)/(s2.mass+s1.mass)*vs2 + (2*s1.mass)/(s2.mass+s1.mass)*vs1;
 
             //Recombine the velocity
-            s1.setVelocity(vS1Result + remainderS1);
-            s1.setVelocity(vS2Result + remainderS2);
+            body1->velocity = (vS1Result + remainderS1);
+            body2->velocity = (vS2Result + remainderS2);
         }
 
     private:

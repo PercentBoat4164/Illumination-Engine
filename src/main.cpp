@@ -1,5 +1,6 @@
 #include <iostream>
-#include "PhysicsEngine/Core/PhysicsCore.hpp"
+#include "PhysicsEngine/Modules/RigidBody.hpp"
+#include "PhysicsEngine/Core/World.hpp"
 #ifdef CRYSTAL_ENGINE_VULKAN
 #include "GraphicsEngine/Vulkan/Asset.hpp"
 #include "GraphicsEngine/Vulkan/VulkanRenderEngineRasterizer.hpp"
@@ -46,15 +47,24 @@ int main(int argc, char **argv) {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
             glfwSetWindowPosCallback(renderEngine.window, windowPositionCallback);
-            renderEngine.camera.position = {0, 0, 2};
-            Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
-            Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
-            Asset vikingRoom = Asset("Models/vikingRoom.obj", {"Models/vikingRoom.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            Asset statue = Asset("Models/ancientStatue.obj", {"Models/ancientStatue.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {7, 2, 0}, {0, 0, 0});
-            renderEngine.uploadAsset(&cube, true);
-            renderEngine.uploadAsset(&quad, true);
-            renderEngine.uploadAsset(&vikingRoom, true);
-            renderEngine.uploadAsset(&statue, true);
+            renderEngine.camera.position = {10, 11, 2};
+            RigidBody sphereBody(new Sphere(glm::vec3(0, 0, 0), 1.0f));
+            RigidBody sphereBody2(new Sphere(glm::vec3(0, 0, 0), 1.0f));
+            sphereBody.position = glm::vec3(0, 1, 1);
+            sphereBody2.position = glm::vec3(10, 0, 1);
+            sphereBody.mass = 1;
+            sphereBody2.mass = 1;
+            sphereBody.applyImpulse(glm::vec3(-0.005, 0, 0));
+            sphereBody2.applyImpulse(glm::vec3(-0.01, 0, 0));
+            World world{};
+            world.addActiveBody(&sphereBody);
+            world.addActiveBody(&sphereBody2);
+            Asset leatherBall = Asset("Models/icosphere.obj", {"Models/sphere_diffuse.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+            renderEngine.uploadAsset(&leatherBall, true);
+            Asset lightBall = Asset("Models/icosphere.obj", {"Models/sphere_normal.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {10, 0, 0}, {0, 0, 0});
+            renderEngine.uploadAsset(&lightBall, true);
+            Asset ground = Asset{"Models/quad.obj",  {"Models/quad_Color.png"}, {"Shaders/vertexShader.vert", "Shaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0}};
+            renderEngine.uploadAsset(&ground, true);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
@@ -64,7 +74,7 @@ int main(int argc, char **argv) {
             std::vector<float> recordedFPS{};
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
-            while (renderEngine.update()) {
+            while (renderEngine.update()) {                
                 //Process inputs
                 glfwPollEvents();
                 float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
@@ -121,13 +131,20 @@ int main(int argc, char **argv) {
                     }
                     lastEsc = glfwGetTime();
                 }
-                //move assets
-                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};
                 std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
                 glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
+
+                //move objects
+                world.step(1/(sum / recordedFPSCount));
+                if(world.checkCollision(sphereBody, sphereBody2, 0)) {
+                    std::cout << "\nCollision!";
+                    world.semiElasticCollide(&sphereBody, &sphereBody2);
+                }
+                leatherBall.position = sphereBody.position;
+                lightBall.position = sphereBody2.position;
             }
             renderEngine.cleanUp();
         } catch (const std::exception& e) {
