@@ -10,6 +10,7 @@ enum ImageType {
     TEXTURE = 2
 };
 
+// TODO: Add optional default layout to avoid a second call to transition
 class ImageManager {
 public:
     VkImage image{};

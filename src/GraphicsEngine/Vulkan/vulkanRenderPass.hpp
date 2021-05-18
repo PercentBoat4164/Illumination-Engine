@@ -10,7 +10,7 @@ class RenderPassManager {
 public:
     VkRenderPass renderPass{};
     std::vector<VkFramebuffer> framebuffers{};
-    std::vector<VkClearValue> clearValues{};
+    std::vector<VkClearValue> clearValues{}; // TODO: Create clear values based on msaaSamples settings.
 
     void destroy() {
         for (std::function<void()>& function : deletionQueue) { function(); }

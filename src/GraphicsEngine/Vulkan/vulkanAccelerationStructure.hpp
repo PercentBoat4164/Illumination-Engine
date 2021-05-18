@@ -4,10 +4,12 @@ class AccelerationStructureManager : public BufferManager {
 public:
     struct AccelerationStructureManagerCreateInfo {
         VkAccelerationStructureTypeKHR type{};
+        //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR
         VkDeviceAddress vertexBufferAddress{};
         VkDeviceAddress indexBufferAddress{};
         VkDeviceAddress transformationBufferAddress{};
         uint32_t triangleCount{};
+        //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR
         AccelerationStructureManager *bottomLevelAccelerationStructure{};
         VkTransformMatrixKHR *transformationMatrix{};
     };
@@ -38,9 +40,9 @@ public:
             accelerationStructureInstance.mask = 0xFF;
             accelerationStructureInstance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
             accelerationStructureInstance.accelerationStructureReference = createdWith->bottomLevelAccelerationStructure->deviceAddress;
+            accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
             instancesBuffer.setEngineLink(linkedRenderEngine);
             memcpy(instancesBuffer.create(sizeof(VkAccelerationStructureInstanceKHR), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU), &accelerationStructureInstance, sizeof(VkAccelerationStructureInstanceKHR));
-            accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
             accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
             accelerationStructureGeometry.geometry.instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
             accelerationStructureGeometry.geometry.instances.arrayOfPointers = VK_FALSE;
@@ -48,7 +50,7 @@ public:
         }
         VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR};
         accelerationStructureBuildGeometryInfo.type = createdWith->type;
-        accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+        accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR;
         accelerationStructureBuildGeometryInfo.geometryCount = geometryCount;
         accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
         VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR};
@@ -84,11 +86,27 @@ public:
         else {
             VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
             linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
-            //TODO: This generates a Vulkan error that I cannot figure out how to fix. This will not be fixed until I determine that it is a real problem and how to fix it.
             linkedRenderEngine->endSingleTimeCommands(commandBuffer);
         }
         scratchBuffer.destroy();
         if (createdWith->type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) { instancesBuffer.destroy(); }
         return data;
     }
+
+//    void update() {
+//        VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR};
+//        accelerationStructureBuildGeometryInfo.type = createdWith->type;
+//        accelerationStructureBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_UPDATE_KHR;
+//        accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR;
+//        accelerationStructureBuildGeometryInfo.srcAccelerationStructure = accelerationStructure;
+//        accelerationStructureBuildGeometryInfo.dstAccelerationStructure = accelerationStructure;
+//        VkAccelerationStructureBuildRangeInfoKHR bottomLevelAccelerationStructureBuildRangeInfo{createdWith->triangleCount};
+//        std::vector<VkAccelerationStructureBuildRangeInfoKHR *> pAccelerationStructureBuildRangeInfo{&bottomLevelAccelerationStructureBuildRangeInfo};
+//        if (linkedRenderEngine->physicalDeviceInfo->physicalDeviceAccelerationStructureFeatures.accelerationStructureHostCommands) { linkedRenderEngine->vkBuildAccelerationStructuresKHR(linkedRenderEngine->device->device, VK_NULL_HANDLE, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data()); }
+//        else {
+//            VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
+//            linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
+//            linkedRenderEngine->endSingleTimeCommands(commandBuffer);
+//        }
+//    }
 };
