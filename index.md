@@ -7,9 +7,19 @@ layout: default
 
 Crystal Engine is a cross-platform game development engine that is written in C++ that works on Windows and Linux.
 
+We hope to add macOS compatibility to the game engine in the coming months.
+
 ## Getting Started
 
 To get started, you will need a few packages. Also, make sure that you are using your favorite IDE.
+
+Here is a list of a few packages that you will need to download for linux:
+    
+    sudo apt install cmake, c++-9, python3 
+
+Those are a few of the packages that Linux users will need to download. 
+
+Next, Windows:
 
 ## Build
 
