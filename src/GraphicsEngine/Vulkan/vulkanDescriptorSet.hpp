@@ -9,7 +9,7 @@ public:
     struct CreateInfo {
         std::vector<VkDescriptorPoolSize> poolSizes{};
         std::vector<VkShaderStageFlagBits> shaderStages{};
-        std::vector<std::variant<AccelerationStructureManager *, ImageManager *, BufferManager *>> data{};
+        std::vector<std::variant<AccelerationStructure *, Image *, Buffer *>> data{};
     };
 
     VkDescriptorPool descriptorPool{};
@@ -68,28 +68,28 @@ public:
             if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
                 VkWriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAccelerationStructure{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR};
                 writeDescriptorSetAccelerationStructure.accelerationStructureCount = 1;
-                writeDescriptorSetAccelerationStructure.pAccelerationStructures = &std::get<AccelerationStructureManager *>(createdWith->data[i])->accelerationStructure;
+                writeDescriptorSetAccelerationStructure.pAccelerationStructures = &std::get<AccelerationStructure *>(createdWith->data[i])->accelerationStructure;
                 writeDescriptorSetAccelerationStructures.push_back(writeDescriptorSetAccelerationStructure);
                 writeDescriptorSet.pNext = &writeDescriptorSetAccelerationStructures[writeDescriptorSetAccelerationStructures.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
                 VkDescriptorImageInfo storageImageDescriptorInfo{};
-                storageImageDescriptorInfo.imageView = std::get<ImageManager *>(createdWith->data[i])->view;
-                storageImageDescriptorInfo.sampler = std::get<ImageManager *>(createdWith->data[i])->sampler;
-                storageImageDescriptorInfo.imageLayout = std::get<ImageManager *>(createdWith->data[i])->imageLayout;
+                storageImageDescriptorInfo.imageView = std::get<Image *>(createdWith->data[i])->view;
+                storageImageDescriptorInfo.sampler = std::get<Image *>(createdWith->data[i])->sampler;
+                storageImageDescriptorInfo.imageLayout = std::get<Image *>(createdWith->data[i])->imageLayout;
                 if (storageImageDescriptorInfo.imageView == VK_NULL_HANDLE) { throw std::runtime_error("no image given or given image does not have an associated view!"); }
                 imageDescriptorInfos.push_back(storageImageDescriptorInfo);
                 writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
                 VkDescriptorImageInfo combinedImageSamplerDescriptorInfo{};
-                combinedImageSamplerDescriptorInfo.imageView = std::get<ImageManager *>(createdWith->data[i])->view;
-                combinedImageSamplerDescriptorInfo.sampler = std::get<ImageManager *>(createdWith->data[i])->sampler;
-                combinedImageSamplerDescriptorInfo.imageLayout = std::get<ImageManager *>(createdWith->data[i])->imageLayout;
+                combinedImageSamplerDescriptorInfo.imageView = std::get<Image *>(createdWith->data[i])->view;
+                combinedImageSamplerDescriptorInfo.sampler = std::get<Image *>(createdWith->data[i])->sampler;
+                combinedImageSamplerDescriptorInfo.imageLayout = std::get<Image *>(createdWith->data[i])->imageLayout;
                 if (combinedImageSamplerDescriptorInfo.sampler == VK_NULL_HANDLE) { throw std::runtime_error("no image given or given image does not have an associated sampler!"); }
                 imageDescriptorInfos.push_back(combinedImageSamplerDescriptorInfo);
                 writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
                 VkDescriptorBufferInfo storageBufferDescriptorInfo{};
-                storageBufferDescriptorInfo.buffer = std::get<BufferManager *>(createdWith->data[i])->buffer;
+                storageBufferDescriptorInfo.buffer = std::get<Buffer *>(createdWith->data[i])->buffer;
                 storageBufferDescriptorInfo.offset = 0;
                 storageBufferDescriptorInfo.range = VK_WHOLE_SIZE;
                 if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no buffer given or given buffer has not been created!"); }
@@ -97,7 +97,7 @@ public:
                 writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
                 VkDescriptorBufferInfo uniformBufferDescriptorInfo{};
-                uniformBufferDescriptorInfo.buffer = std::get<BufferManager *>(createdWith->data[i])->buffer;
+                uniformBufferDescriptorInfo.buffer = std::get<Buffer *>(createdWith->data[i])->buffer;
                 uniformBufferDescriptorInfo.offset = 0;
                 uniformBufferDescriptorInfo.range = VK_WHOLE_SIZE;
                 if (uniformBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no buffer given or given buffer has not been created!"); }

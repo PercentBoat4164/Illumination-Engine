@@ -79,6 +79,8 @@ int main(int argc, char **argv) {
     if (input == "v") {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
+            renderEngine.settings.pathTracing = false;
+            renderEngine.updateSettings(true);
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
             Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
@@ -100,8 +102,6 @@ int main(int argc, char **argv) {
             std::vector<float> recordedFPS{};
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
-            renderEngine.settings.pathTracing = false;
-            renderEngine.updateSettings(true);
             while (renderEngine.update()) {
                 //Process inputs
                 glfwPollEvents();

@@ -158,7 +158,7 @@ public:
         deletionQueue.emplace_front([&]{ vkDestroyPipeline(linkedRenderEngine->device->device, pipeline, nullptr); pipeline = VK_NULL_HANDLE; });
     }
 
-    void createDescriptorSet(const std::vector<BufferManager>& buffers, const std::vector<ImageManager>& images, const std::vector<bool>& indices) {
+    void createDescriptorSet(const std::vector<Buffer>& buffers, const std::vector<Image>& images, const std::vector<bool>& indices) {
         if (buffers.size() + images.size() != indices.size()) { throw std::runtime_error("number of indices does not equal number of images plus number of buffers!"); }
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
         descriptorSetAllocateInfo.descriptorPool = descriptorPool;

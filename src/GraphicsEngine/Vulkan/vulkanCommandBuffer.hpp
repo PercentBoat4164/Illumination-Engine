@@ -10,7 +10,7 @@ public:
         deletionQueue.clear();
     }
 
-    void setup(vkb::Device &engineDevice, vkb::QueueType commandQueue) {
+    void create(vkb::Device &engineDevice, vkb::QueueType commandQueue) {
         creationDevice = engineDevice;
         queue = commandQueue;
         VkCommandPoolCreateInfo commandPoolCreateInfo{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};

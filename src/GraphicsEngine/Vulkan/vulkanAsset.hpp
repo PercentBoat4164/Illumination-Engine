@@ -3,6 +3,7 @@
 #include "vulkanShader.hpp"
 #include "vulkanCamera.hpp"
 #include "vulkanVertex.hpp"
+#include "vulkanTexture.hpp"
 #include "vulkanRasterizationPipeline.hpp"
 #include "vulkanRayTracingPipeline.hpp"
 #include "vulkanAccelerationStructure.hpp"
@@ -44,7 +45,7 @@ public:
     }
 
     void destroy() {
-        for (ImageManager &textureImage : textureImages) { textureImage.destroy(); }
+        for (Image &textureImage : textureImages) { textureImage.destroy(); }
         for (const std::function<void(Asset)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
     }
@@ -59,16 +60,16 @@ public:
     std::deque<std::function<void(Asset asset)>> deletionQueue{};
     std::vector<uint32_t> indices{};
     std::vector<Vertex> vertices{};
-    BufferManager uniformBuffer{};
-    BufferManager vertexBuffer{};
-    BufferManager indexBuffer{};
-    BufferManager transformationBuffer{};
+    Buffer uniformBuffer{};
+    Buffer vertexBuffer{};
+    Buffer indexBuffer{};
+    Buffer transformationBuffer{};
     RasterizationPipelineManager pipelineManager{};
     DescriptorSetManager descriptorSetManager{};
-    AccelerationStructureManager bottomLevelAccelerationStructure{};
+    AccelerationStructure bottomLevelAccelerationStructure{};
     UniformBufferObject uniformBufferObject{};
-    std::vector<ImageManager> textureImages{};
-    std::vector<stbi_uc *> textures{};
+    std::vector<Texture> textureImages{};
+    std::vector<const char *> textures{};
     std::vector<std::vector<char>> shaderData{};
     int width{};
     int height{};
@@ -116,13 +117,7 @@ private:
 
     void loadTextures(const std::vector<const char *>& filenames) {
         textures.clear();
-        textures.reserve(filenames.size());
-        for (const char *filename : filenames) {
-            int channels{};
-            stbi_uc *pixels = stbi_load(((std::string)filename).c_str(), &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) { throw std::runtime_error(("failed to load texture image from file: " + (std::string)filename).c_str()); }
-            textures.push_back(pixels);
-        }
+        textures = filenames;
     }
 
     void loadShaders(const std::vector<const char *>& filenames, bool compile = true) {

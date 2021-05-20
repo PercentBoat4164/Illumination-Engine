@@ -9,18 +9,18 @@
 class VulkanRenderEngineRayTracer : public VulkanRenderEngine {
 private:
     struct ShaderBindingTables {
-        ShaderBindingTableManager rayGen{};
-        ShaderBindingTableManager miss{};
-        ShaderBindingTableManager hit{};
-        ShaderBindingTableManager callable{};
+        ShaderBindingTable rayGen{};
+        ShaderBindingTable miss{};
+        ShaderBindingTable hit{};
+        ShaderBindingTable callable{};
     };
 
 public:
     ShaderBindingTables shaderBindingTables{};
-    RayTracingPipelineManager rayTracingPipelineManager{};
-    AccelerationStructureManager topLevelAccelerationStructure{};
+    RayTracingPipeline rayTracingPipelineManager{};
+    AccelerationStructure topLevelAccelerationStructure{};
     DescriptorSetManager descriptorSetManager{};
-    ImageManager rayTracingImage{};
+    Image rayTracingImage{};
     float frameTime{};
     int frameNumber{};
 
@@ -32,8 +32,9 @@ public:
         VkResult result = vkAcquireNextImageKHR(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex); // Signals semaphore
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             rayTracingImage.destroy();
-            rayTracingImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)swapchain.extent.width, (int)swapchain.extent.height, COLOR);
-            rayTracingImage.transition(rayTracingImage.imageLayout, VK_IMAGE_LAYOUT_GENERAL);
+            Image::CreateInfo rayTracingImageCreateInfo{swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
+            rayTracingImage.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            rayTracingImage.create(&renderEngineLink, &rayTracingImageCreateInfo);
             createSwapchain();
             return glfwWindowShouldClose(window) != 1;
         } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) { throw std::runtime_error("failed to acquire swapchain image!"); }
@@ -112,8 +113,9 @@ public:
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
             framebufferResized = false;
             rayTracingImage.destroy();
-            rayTracingImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)swapchain.extent.width, (int)swapchain.extent.height, COLOR);
-            rayTracingImage.transition(rayTracingImage.imageLayout, VK_IMAGE_LAYOUT_GENERAL);
+            Image::CreateInfo rayTracingImageCreateInfo{swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
+            rayTracingImage.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            rayTracingImage.create(&renderEngineLink, &rayTracingImageCreateInfo);
             createSwapchain();
         } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
         currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
@@ -124,29 +126,31 @@ public:
         //destroy previously created asset if any
         asset->destroy();
         //upload mesh, vertex, and transformation data if path tracing
-        asset->vertexBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
+        Buffer::CreateInfo vertexBufferCreateInfo {sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        memcpy(asset->vertexBuffer.create(&renderEngineLink, &vertexBufferCreateInfo), asset->vertices.data(), asset->vertexBuffer.bufferSize);
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.vertexBuffer.destroy(); });
-        asset->indexBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
+        Buffer::CreateInfo indexBufferCreateInfo {sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        memcpy(asset->indexBuffer.create(&renderEngineLink, &indexBufferCreateInfo), asset->indices.data(), asset->indexBuffer.bufferSize);
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.indexBuffer.destroy(); });
-        asset->transformationBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->transformationBuffer.create(sizeof(asset->transformationMatrix), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->transformationMatrix, sizeof(asset->transformationMatrix));
+        Buffer::CreateInfo transformationBufferCreateInfo {sizeof(asset->transformationMatrix), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        memcpy(asset->transformationBuffer.create(&renderEngineLink, &transformationBufferCreateInfo), &asset->transformationMatrix, asset->transformationBuffer.bufferSize);
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.transformationBuffer.destroy(); });
         //upload textures
         asset->textureImages.resize(asset->textures.size());
         for (unsigned int i = 0; i < asset->textures.size(); ++i) {
             scratchBuffer.destroy();
-            memcpy(scratchBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->textures[i], asset->width * asset->height * 4);
-            asset->textureImages[i].setEngineLink(&renderEngineLink);
-            asset->textureImages[i].create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, asset->width, asset->height, TEXTURE, &scratchBuffer);
+            Buffer::CreateInfo scratchBufferCreateInfo{static_cast<VkDeviceSize>(asset->width * asset->height * 4), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+            memcpy(scratchBuffer.create(&renderEngineLink, &scratchBufferCreateInfo), asset->textures[i], asset->width * asset->height * 4);
+            Image::CreateInfo textureImageCreateInfo{VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, asset->width, asset->height};
+            textureImageCreateInfo.dataSource = &scratchBuffer;
+            asset->textureImages[i].create(&renderEngineLink, &textureImageCreateInfo);
         }
         //build uniform buffers
-        asset->uniformBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->uniformBufferObject, sizeof(UniformBufferObject));
+        Buffer::CreateInfo uniformBufferCreateInfo {sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        memcpy(asset->uniformBuffer.create(&renderEngineLink, &uniformBufferCreateInfo), &asset->uniformBufferObject, sizeof(UniformBufferObject));
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.uniformBuffer.destroy(); });
         //build bottom level acceleration structure
-        AccelerationStructureManager::AccelerationStructureManagerCreateInfo accelerationStructureManagerCreateInfo{};
+        AccelerationStructure::CreateInfo accelerationStructureManagerCreateInfo{};
         accelerationStructureManagerCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
         accelerationStructureManagerCreateInfo.vertexBufferAddress = asset->vertexBuffer.deviceAddress;
         accelerationStructureManagerCreateInfo.indexBufferAddress = asset->indexBuffer.deviceAddress;
@@ -156,7 +160,6 @@ public:
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.bottomLevelAccelerationStructure.destroy(); });
         //build top level acceleration structure
         accelerationStructureManagerCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
-        accelerationStructureManagerCreateInfo.bottomLevelAccelerationStructure = &asset->bottomLevelAccelerationStructure;
         accelerationStructureManagerCreateInfo.transformationMatrix = &asset->transformationMatrix;
         topLevelAccelerationStructure.destroy();
         topLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
@@ -178,7 +181,7 @@ public:
         VulkanShader::CreateInfo callShaderCreateInfo{"VulkanRayTracingShaders/callable.rcall", VK_SHADER_STAGE_CALLABLE_BIT_KHR};
         shaders[3].create(&renderEngineLink, &callShaderCreateInfo);
         //build raytracing pipeline
-        RayTracingPipelineManager::CreateInfo rayTracingPipelineManagerCreateInfo{};
+        RayTracingPipeline::CreateInfo rayTracingPipelineManagerCreateInfo{};
         rayTracingPipelineManagerCreateInfo.shaders = shaders;
         rayTracingPipelineManagerCreateInfo.descriptorSetManager = &descriptorSetManager;
         rayTracingPipelineManager.create(&renderEngineLink, &rayTracingPipelineManagerCreateInfo);
@@ -191,21 +194,25 @@ public:
         const uint32_t SBTSize = groupCount * handleSizeAligned;
         std::vector<uint8_t> shaderHandleStorage(SBTSize);
         if (renderEngineLink.vkGetRayTracingShaderGroupHandlesKHR(renderEngineLink.device->device, rayTracingPipelineManager.pipeline, 0, groupCount, SBTSize, shaderHandleStorage.data()) != VK_SUCCESS) { throw std::runtime_error("failed to get raytracing shader group handles."); }
-        memcpy(shaderBindingTables.rayGen.create(&renderEngineLink, handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 1), shaderHandleStorage.data(), handleSize);
+        ShaderBindingTable::CreateInfo defaultShaderBindingTableCreateInfo{handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        defaultShaderBindingTableCreateInfo.handleCount = 1;
+        memcpy(shaderBindingTables.rayGen.create(&renderEngineLink, &defaultShaderBindingTableCreateInfo), shaderHandleStorage.data(), handleSize);
         deletionQueue.emplace_front([&]{ shaderBindingTables.rayGen.destroy(); });
-        memcpy(shaderBindingTables.miss.create(&renderEngineLink, handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 1), shaderHandleStorage.data() + handleSizeAligned, handleSize);
+        memcpy(shaderBindingTables.miss.create(&renderEngineLink, &defaultShaderBindingTableCreateInfo), shaderHandleStorage.data() + handleSizeAligned, handleSize);
         deletionQueue.emplace_front([&]{ shaderBindingTables.miss.destroy(); });
-        memcpy(shaderBindingTables.hit.create(&renderEngineLink, handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 1), shaderHandleStorage.data() + handleSizeAligned * 2, handleSize);
+        memcpy(shaderBindingTables.hit.create(&renderEngineLink, &defaultShaderBindingTableCreateInfo), shaderHandleStorage.data() + handleSizeAligned * 2, handleSize);
         deletionQueue.emplace_front([&]{ shaderBindingTables.hit.destroy(); });
-        memcpy(shaderBindingTables.callable.create(&renderEngineLink, handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, static_cast<uint32_t>(assets.size()) + 1), shaderHandleStorage.data() + handleSizeAligned * 3, handleSize * (assets.size() + 1));
+        ShaderBindingTable::CreateInfo callableShaderBindingTableCreateInfo{handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        callableShaderBindingTableCreateInfo.handleCount = static_cast<uint32_t>(assets.size()) + 1;
+        memcpy(shaderBindingTables.callable.create(&renderEngineLink, &callableShaderBindingTableCreateInfo), shaderHandleStorage.data() + handleSizeAligned * 3, handleSize * (assets.size() + 1));
         deletionQueue.emplace_front([&]{ shaderBindingTables.callable.destroy(); });
         if (append) { assets.push_back(asset); }
     }
 
     explicit VulkanRenderEngineRayTracer(GLFWwindow *attachWindow = nullptr) : VulkanRenderEngine(attachWindow) {
-        rayTracingImage.setEngineLink(&renderEngineLink);
-        rayTracingImage.create(swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)swapchain.extent.width, (int)swapchain.extent.height, COLOR);
-        rayTracingImage.transition(rayTracingImage.imageLayout, VK_IMAGE_LAYOUT_GENERAL);
+        Image::CreateInfo rayTracingImageCreateInfo{swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
+        rayTracingImage.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+        rayTracingImage.create(&renderEngineLink, &rayTracingImageCreateInfo);
         deletionQueue.emplace_front([&]{ rayTracingImage.destroy(); });
     }
 

@@ -8,6 +8,7 @@
 #include "vulkanUniformBufferObject.hpp"
 #include "vulkanSettings.hpp"
 #include "vulkanCommandBuffer.hpp"
+#include "vulkanTexture.hpp"
 
 #include <VkBootstrap.h>
 #define GLEW_IMPLEMENTATION
@@ -128,10 +129,9 @@ protected:
         vmaCreateAllocator(&allocatorInfo, &allocator);
         engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(allocator); });
         //Create commandPool
-        commandBufferManager.setup(device, vkb::QueueType::graphics);
+        commandBufferManager.create(device, vkb::QueueType::graphics);
         engineDeletionQueue.emplace_front([&] { commandBufferManager.destroy(); });
         //delete scratch buffer
-        scratchBuffer.setEngineLink(&renderEngineLink);
         engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
         createSwapchain(true);
         renderEngineLink.build();
@@ -202,38 +202,32 @@ protected:
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     VkQueue graphicsQueue{};
     VkQueue presentQueue{};
-    VkPipelineLayout pipelineLayout{};
     RenderPassManager renderPassManager{};
     VulkanGraphicsEngineLink renderEngineLink{};
-    BufferManager scratchBuffer{};
+    Buffer scratchBuffer{};
 
 public:
     virtual void uploadAsset(Asset *asset, bool append) {
         //destroy previously created asset if any
         asset->destroy();
         //upload mesh, vertex, and transformation data
-        asset->vertexBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->vertexBuffer.create(sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
+        Buffer::CreateInfo vertexBufferCreateInfo{sizeof(asset->vertices[0]) * asset->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        memcpy(asset->vertexBuffer.create(&renderEngineLink, &vertexBufferCreateInfo), asset->vertices.data(), sizeof(asset->vertices[0]) * asset->vertices.size());
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.vertexBuffer.destroy(); });
-        asset->indexBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->indexBuffer.create(sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
+        Buffer::CreateInfo indexBufferCreateInfo{sizeof(asset->indices[0]) * asset->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        memcpy(asset->indexBuffer.create(&renderEngineLink, &indexBufferCreateInfo), asset->indices.data(), sizeof(asset->indices[0]) * asset->indices.size());
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.indexBuffer.destroy(); });
-        if (settings.pathTracing) {
-            asset->transformationBuffer.setEngineLink(&renderEngineLink);
-            memcpy(asset->transformationBuffer.create(sizeof(asset->transformationMatrix), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->transformationMatrix, sizeof(asset->transformationMatrix));
-            asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.transformationBuffer.destroy(); });
-        }
         //upload textures
         asset->textureImages.resize(asset->textures.size());
         for (unsigned int i = 0; i < asset->textures.size(); ++i) {
-            scratchBuffer.destroy();
-            memcpy(scratchBuffer.create(asset->width * asset->height * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), asset->textures[i], asset->width * asset->height * 4);
-            asset->textureImages[i].setEngineLink(&renderEngineLink);
-            asset->textureImages[i].create(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, asset->width, asset->height, TEXTURE, &scratchBuffer);
+            asset->textureImages[i].destroy();
+            Texture::CreateInfo textureImageCreateInfo{VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, asset->textureImages[i].createdWith.width, asset->textureImages[i].createdWith.height};
+            textureImageCreateInfo.filename = asset->textures[i];
+            asset->textureImages[i].create(&renderEngineLink, &textureImageCreateInfo);
         }
         //build uniform buffers
-        asset->uniformBuffer.setEngineLink(&renderEngineLink);
-        memcpy(asset->uniformBuffer.create(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU), &asset->uniformBufferObject, sizeof(UniformBufferObject));
+        Buffer::CreateInfo uniformBufferCreateInfo {sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        memcpy(asset->uniformBuffer.create(&renderEngineLink, &uniformBufferCreateInfo), &asset->uniformBufferObject, sizeof(UniformBufferObject));
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.uniformBuffer.destroy(); });
         //build graphics pipeline and descriptor set for this asset
         asset->pipelineManager.setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, asset->shaderData);

@@ -36,12 +36,6 @@ public:
         scissor.offset = {0, 0};
         scissor.extent = swapchain.extent;
         vkCmdSetScissor(commandBufferManager.commandBuffers[imageIndex], 0, 1, &scissor);
-        std::vector<VkClearValue> clearValues{static_cast<size_t>(settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3)};
-        clearValues[0].depthStencil = {1.0f, 0};
-        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-        clearValues[1].depthStencil = {1.0f, 0};
-        if (settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
-        renderPassManager.clearValues = clearValues;
         VkRenderPassBeginInfo renderPassBeginInfo = renderPassManager.beginRenderPass(imageIndex);
         vkCmdBeginRenderPass(commandBufferManager.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         camera.update();

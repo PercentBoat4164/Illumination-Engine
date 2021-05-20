@@ -10,21 +10,28 @@ class RenderPassManager {
 public:
     VkRenderPass renderPass{};
     std::vector<VkFramebuffer> framebuffers{};
-    std::vector<VkClearValue> clearValues{}; // TODO: Create clear values based on msaaSamples settings.
+    std::vector<VkClearValue> clearValues{};
 
     void destroy() {
-        for (std::function<void()>& function : deletionQueue) { function(); }
-        deletionQueue.clear();
-        for (std::function<void()>& function : secondaryDeletionQueue) { function(); }
-        secondaryDeletionQueue.clear();
+        for (std::function<void()>& function : framebufferDeletionQueue) { function(); }
+        framebufferDeletionQueue.clear();
+        for (std::function<void()>& function : renderPassDeletionQueue) { function(); }
+        renderPassDeletionQueue.clear();
     }
 
     void setup(VulkanGraphicsEngineLink *engineLink) {
         //destroy all old stuffs
-        for (std::function<void()>& function : secondaryDeletionQueue) { function(); }
-        secondaryDeletionQueue.clear();
+        for (std::function<void()>& function : renderPassDeletionQueue) { function(); }
+        renderPassDeletionQueue.clear();
         //update engine link
         linkedRenderEngine = engineLink;
+        //Set clear values based on multisampling settings
+        clearValues.resize(linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3);
+        clearValues.reserve(clearValues.size());
+        clearValues[0].depthStencil = {1.0f, 0};
+        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+        clearValues[1].depthStencil = {1.0f, 0};
+        if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
         //create renderPass
         VkAttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format = linkedRenderEngine->swapchain->image_format;
@@ -85,20 +92,23 @@ public:
         renderPassCreateInfo.dependencyCount = 1;
         renderPassCreateInfo.pDependencies = &subpassDependency;
         if (vkCreateRenderPass(linkedRenderEngine->device->device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
-        secondaryDeletionQueue.emplace_front([&]{ vkDestroyRenderPass(linkedRenderEngine->device->device, renderPass, nullptr); });
+        renderPassDeletionQueue.emplace_front([&]{ vkDestroyRenderPass(linkedRenderEngine->device->device, renderPass, nullptr); });
     }
 
     void createFramebuffers() {
-        for (std::function<void()>& function : deletionQueue) { function(); }
-        deletionQueue.clear();
+        for (std::function<void()>& function : framebufferDeletionQueue) { function(); }
+        framebufferDeletionQueue.clear();
         //Create output images
-        colorImage.setEngineLink(linkedRenderEngine);
-        colorImage.create(linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, linkedRenderEngine->settings->msaaSamples, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)linkedRenderEngine->swapchain->extent.width, (int)linkedRenderEngine->swapchain->extent.height, COLOR);
-        deletionQueue.emplace_front([&]{ colorImage.destroy(); });
-        depthImage.setEngineLink(linkedRenderEngine);
-        depthImage.create(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, linkedRenderEngine->settings->msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, 1, (int)linkedRenderEngine->swapchain->extent.width, (int)linkedRenderEngine->swapchain->extent.height, DEPTH);
-        depthImage.transition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-        deletionQueue.emplace_front([&]{ depthImage.destroy(); });
+        Image::CreateInfo colorImageCreateInfo{linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
+        colorImageCreateInfo.msaaSamples = linkedRenderEngine->settings->msaaSamples;
+        colorImage.create(linkedRenderEngine, &colorImageCreateInfo);
+        framebufferDeletionQueue.emplace_front([&]{ colorImage.destroy(); });
+        Image::CreateInfo depthImageCreateInfo{VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
+        depthImageCreateInfo.msaaSamples = linkedRenderEngine->settings->msaaSamples;
+        depthImageCreateInfo.imageType = DEPTH;
+        depthImageCreateInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthImage.create(linkedRenderEngine, &depthImageCreateInfo);
+        framebufferDeletionQueue.emplace_front([&]{ depthImage.destroy(); });
         //create framebuffers
         framebuffers.resize(linkedRenderEngine->swapchain->image_count);
         std::vector<VkImageView> framebufferAttachments{};
@@ -114,7 +124,7 @@ public:
             framebufferCreateInfo.layers = 1;
             if (vkCreateFramebuffer(linkedRenderEngine->device->device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
         }
-        deletionQueue.emplace_front([&]{ for  (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(linkedRenderEngine->device->device, framebuffer, nullptr); } });
+        framebufferDeletionQueue.emplace_front([&]{ for  (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(linkedRenderEngine->device->device, framebuffer, nullptr); } });
     }
 
     void recreateFramebuffers() {
@@ -134,9 +144,9 @@ public:
     }
 
 private:
-    std::deque<std::function<void()>> deletionQueue{};
-    std::deque<std::function<void()>> secondaryDeletionQueue{};
+    std::deque<std::function<void()>> framebufferDeletionQueue{};
+    std::deque<std::function<void()>> renderPassDeletionQueue{};
     VulkanGraphicsEngineLink *linkedRenderEngine{};
-    ImageManager colorImage{};
-    ImageManager depthImage{};
+    Image colorImage{};
+    Image depthImage{};
 };

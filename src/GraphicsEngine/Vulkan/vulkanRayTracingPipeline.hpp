@@ -3,7 +3,7 @@
 #include "vulkanShader.hpp"
 #include "vulkanDescriptorSet.hpp"
 
-class RayTracingPipelineManager {
+class RayTracingPipeline {
 public:
     struct CreateInfo {
         std::vector<VulkanShader> shaders{};
