@@ -3,7 +3,7 @@ title: Home
 layout: default
 ---
 
-### Welcome to Crystal Engine!
+# Welcome to Crystal Engine!
 
 Crystal Engine is a cross-platform game development engine that is written in C++ that works on Windows and Linux.
 
@@ -13,19 +13,27 @@ We hope to add macOS compatibility to the game engine in the coming months.
 
 To get started, you will need a few packages. Also, make sure that you are using your favorite IDE.
 
-Here is a list of a few packages that you will need to download for linux:
+Here is a list of a few packages that you will need to download:
+
+### Linux:
+
+  Required: cmake, c++-9, python3, libglu1-mesa-dev, mesa-common-dev, libglu1-mesa-dev, mesa-common-dev
+  
+  Recommended: libglew-dev, libglfw3-dev, libglm-dev
+  
+  If you plan to use the Vulkan Render Engine, install the Vulkan software development kit using the following list of commands:
     
-    sudo apt install cmake, c++-9, python3 
+    wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.176-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.176-focal.list;sudo apt update;sudo apt install vulkan-sdk
+    
+   (Copy and paste this command into your terminal)
 
-Those are a few of the packages that Linux users will need to download. 
+Those are the packages that Linux users will need to download to use the render engine.
 
-Next, Windows:
+### Windows:
 
 ## Build
 
 
-
-## Running
 
 ## Support
 
