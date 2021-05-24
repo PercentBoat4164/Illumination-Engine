@@ -229,8 +229,14 @@ public:
         Buffer::CreateInfo uniformBufferCreateInfo {sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         memcpy(asset->uniformBuffer.create(&renderEngineLink, &uniformBufferCreateInfo), &asset->uniformBufferObject, sizeof(UniformBufferObject));
         asset->deletionQueue.emplace_front([&](Asset thisAsset){ thisAsset.uniformBuffer.destroy(); });
+        //build shaders
+        asset->shaders.resize(asset->shaderCreateInfos.size());
+        for (int i = 0; i < asset->shaderCreateInfos.size(); ++i) {
+            asset->shaders[i].create(&renderEngineLink, &asset->shaderCreateInfos[i]);
+        }
+        asset->deletionQueue.emplace_front([&](const Asset& thisAsset) { for (Shader shader : thisAsset.shaders) { shader.destroy(); } });
         //build graphics pipeline and descriptor set for this asset
-        asset->pipelineManager.setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, asset->shaderData);
+        asset->pipelineManager.setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, {asset->shaders[0].createdWith->data, asset->shaders[1].createdWith->data});
         asset->pipelineManager.createDescriptorSet({asset->uniformBuffer}, {asset->textureImages[0]}, {BUFFER, IMAGE});
         asset->deletionQueue.emplace_front([&](Asset thisAsset) { thisAsset.pipelineManager.destroy(); });
         if (append) { assets.push_back(asset); }

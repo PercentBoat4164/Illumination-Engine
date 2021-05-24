@@ -171,14 +171,14 @@ public:
         descriptorSetManager.create(&renderEngineLink, &descriptorSetManagerCreateInfo);
         deletionQueue.emplace_front([&]{ descriptorSetManager.destroy(); });
         //build raytracing shaders
-        std::vector<VulkanShader> shaders{4};
-        VulkanShader::CreateInfo raygenShaderCreateInfo{"VulkanRayTracingShaders/raygen.rgen", VK_SHADER_STAGE_RAYGEN_BIT_KHR};
+        std::vector<Shader> shaders{4};
+        Shader::CreateInfo raygenShaderCreateInfo{"VulkanRayTracingShaders/raygen.rgen", VK_SHADER_STAGE_RAYGEN_BIT_KHR};
         shaders[0].create(&renderEngineLink, &raygenShaderCreateInfo);
-        VulkanShader::CreateInfo missShaderCreateInfo{"VulkanRayTracingShaders/miss.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR};
+        Shader::CreateInfo missShaderCreateInfo{"VulkanRayTracingShaders/miss.rmiss", VK_SHADER_STAGE_MISS_BIT_KHR};
         shaders[1].create(&renderEngineLink, &missShaderCreateInfo);
-        VulkanShader::CreateInfo chitShaderCreateInfo{"VulkanRayTracingShaders/closestHit.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
+        Shader::CreateInfo chitShaderCreateInfo{"VulkanRayTracingShaders/closestHit.rchit", VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
         shaders[2].create(&renderEngineLink, &chitShaderCreateInfo);
-        VulkanShader::CreateInfo callShaderCreateInfo{"VulkanRayTracingShaders/callable.rcall", VK_SHADER_STAGE_CALLABLE_BIT_KHR};
+        Shader::CreateInfo callShaderCreateInfo{"VulkanRayTracingShaders/callable.rcall", VK_SHADER_STAGE_CALLABLE_BIT_KHR};
         shaders[3].create(&renderEngineLink, &callShaderCreateInfo);
         //build raytracing pipeline
         RayTracingPipeline::CreateInfo rayTracingPipelineManagerCreateInfo{};

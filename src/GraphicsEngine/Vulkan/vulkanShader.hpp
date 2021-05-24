@@ -11,7 +11,7 @@
 #define GLSLC "glslc "
 #endif
 
-class VulkanShader {
+class Shader {
 public:
     struct CreateInfo {
         const char *filename{};

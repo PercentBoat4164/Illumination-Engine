@@ -11,7 +11,7 @@ set(CRYSTAL_ENGINE_PREFER_PRE_INSTALLED false)
 
 # Get packages
 find_package(Vulkan) # install with "wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.176-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.176-focal.list;sudo apt update;sudo apt install vulkan-sdk"
-find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL) # install with "sudo apt-get install libglu1-mesa-dev mesa-common-dev"
+find_package(OpenGL REQUIRED) # install with "sudo apt-get install libglu1-mesa-dev mesa-common-dev"
 if (CRYSTAL_ENGINE_PREFER_PRE_INSTALLED)
     find_package(GLEW) # install with "sudo apt install libglew-dev"
     find_package(glfw3 3.3) # install with "sudo apt install libglfw3-dev"
@@ -80,4 +80,4 @@ if (Vulkan_FOUND)
     add_subdirectory(deps/vk-bootstrap)
     target_link_libraries(CrystalEngine PUBLIC vk-bootstrap Vulkan::Vulkan)
 endif()
-target_link_libraries(CrystalEngine PUBLIC OpenGL::OpenGL OpenGL::EGL)
+target_link_libraries(CrystalEngine PUBLIC OpenGL::GL)

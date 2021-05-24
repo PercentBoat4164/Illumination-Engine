@@ -9,6 +9,7 @@
 #include "vulkanAccelerationStructure.hpp"
 #include "vulkanUniformBufferObject.hpp"
 #include "vulkanShaderBindingTable.hpp"
+#include "vulkanGraphicsEngineLink.hpp"
 
 #include <glm/gtc/quaternion.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -19,7 +20,6 @@
 #include <fstream>
 #include <cstring>
 
-/**@TODO: Use vulkanShader.hpp and vulkanTexture.hpp when it is done*/
 //TODO: Add instancing
 class Asset {
 public:
@@ -70,7 +70,8 @@ public:
     UniformBufferObject uniformBufferObject{};
     std::vector<Texture> textureImages{};
     std::vector<const char *> textures{};
-    std::vector<std::vector<char>> shaderData{};
+    std::vector<Shader::CreateInfo> shaderCreateInfos{};
+    std::vector<Shader> shaders{};
     int width{};
     int height{};
     glm::vec3 position{};
@@ -120,20 +121,13 @@ private:
         textures = filenames;
     }
 
+    //First shader is vertex rest are fragment
     void loadShaders(const std::vector<const char *>& filenames, bool compile = true) {
-        shaderData.clear();
-        shaderData.reserve(filenames.size());
-        for (const char *shaderName : shaderNames) {
-            std::string compiledFileName = ((std::string)shaderName).substr(0, std::string(shaderName).find_last_of('.')) + ".spv";
-            if (compile) { if (system((GLSLC + (std::string)shaderName + " -o " + compiledFileName + " --target-env=vulkan1.2").c_str()) != 0) { throw std::runtime_error("failed to compile Shaders!"); } }
-            std::ifstream file(compiledFileName, std::ios::ate | std::ios::binary);
-            if (!file.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName.append("\n as file: " + compiledFileName)); }
-            size_t fileSize = (size_t) file.tellg();
-            std::vector<char> buffer(fileSize);
-            file.seekg(0);
-            file.read(buffer.data(), (std::streamsize)fileSize);
-            file.close();
-            shaderData.push_back(buffer);
+        shaderCreateInfos.clear();
+        shaderCreateInfos.reserve(filenames.size());
+        for (const char *filename : filenames) {
+            Shader::CreateInfo shaderCreateInfo {filename, filename == filenames[0] ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT};
+            shaderCreateInfos.push_back(shaderCreateInfo);
         }
     }
 

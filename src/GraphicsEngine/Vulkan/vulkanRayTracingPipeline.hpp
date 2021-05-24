@@ -6,7 +6,7 @@
 class RayTracingPipeline {
 public:
     struct CreateInfo {
-        std::vector<VulkanShader> shaders{};
+        std::vector<Shader> shaders{};
         DescriptorSetManager *descriptorSetManager{};
     };
 
