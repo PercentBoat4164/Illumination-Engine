@@ -24,7 +24,7 @@ public:
     }
 
     OpenGLSettings *settings{};
-    glm::vec3 position{0, 0, 2};
+    glm::vec3 position{0, 0, 0};
     glm::vec3 front{0, 1, 0};
     glm::vec3 up{0, 0, 1};
     glm::vec3 right{glm::cross(front, up)};

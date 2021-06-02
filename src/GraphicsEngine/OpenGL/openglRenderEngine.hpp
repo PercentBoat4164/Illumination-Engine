@@ -24,7 +24,6 @@ public:
 
     explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW");}
-        glfwSwapInterval(0);
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -34,6 +33,11 @@ public:
         glfwSetWindowUserPointer(window, this);
         if (window == nullptr) { throw std::runtime_error("failed to open GLFW window!"); }
         glfwMakeContextCurrent(window);
+        #if defined(WIN32)
+        glfwSwapInterval(settings.vSync ? 1 : 0);
+        #else
+        glfwSwapInterval(1)
+        #endif
         glewExperimental = true;
         if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
         GLuint VertexArrayID;

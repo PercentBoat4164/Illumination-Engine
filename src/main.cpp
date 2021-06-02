@@ -281,6 +281,7 @@ int main(int argc, char **argv) {
             std::vector<float> recordedFPS{};
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
+            renderEngine.camera.position = {0, 3, 1};
             while (renderEngine.update() != 1) {
                 //Process inputs
                 glfwPollEvents();

@@ -20,6 +20,7 @@
 class OpenGLSettings {
 public:
     bool pathTracing{false};
+    bool vSync{false}; // VSync is mandatory on Linux in OpenGL due to nVidia driver bugs.
     std::string applicationName{"Crystal Engine"};
     std::array<int, 3> applicationVersion{0, 0, 1};
     int msaaSamples{8};
