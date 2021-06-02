@@ -6,6 +6,9 @@
 #define GLEW_IMPLEMENTATION
 #include "../../../deps/glew/include/GL/glew.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../../../deps/stb_image.h"
+
 #include <GLFW/glfw3.h>
 
 #include <array>
@@ -30,6 +33,21 @@ public:
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS.
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+        // load icon
+        int width, height, channels;
+        stbi_uc *pixels = stbi_load("res/CrystalEngineLogo1024x1024.png", &width, &height, &channels, STBI_rgb_alpha);
+        if (!pixels) { throw std::runtime_error("failed to load texture image from file: res/CrystalEngineLogo1024x1024.png"); }
+        GLFWimage icons[1];
+        icons[0].pixels = pixels;
+        icons[0].height = height;
+        icons[0].width = width;
+        glfwSetWindowIcon(window, 1, icons);
+        stbi_image_free(pixels);
+        glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+        int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
+        glfwGetWindowPos(window, &xPos, &yPos);
+        settings.windowPosition = {xPos, yPos};
+        glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
         glfwSetWindowUserPointer(window, this);
         if (window == nullptr) { throw std::runtime_error("failed to open GLFW window!"); }
         glfwMakeContextCurrent(window);

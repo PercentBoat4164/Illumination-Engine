@@ -63,8 +63,12 @@ protected:
         int width, height, channels;
         stbi_uc *pixels = stbi_load("res/CrystalEngineLogo1024x1024.png", &width, &height, &channels, STBI_rgb_alpha);
         if (!pixels) { throw std::runtime_error("failed to load texture image from file: res/CrystalEngineLogo1024x1024.png"); }
-        auto *icon = reinterpret_cast<GLFWimage *>(pixels);
-        glfwSetWindowIcon(window, 1, icon);
+        GLFWimage icons[1];
+        icons[0].pixels = pixels;
+        icons[0].height = height;
+        icons[0].width = width;
+        glfwSetWindowIcon(window, 1, icons);
+        stbi_image_free(pixels);
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
         glfwGetWindowPos(window, &xPos, &yPos);
