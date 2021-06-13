@@ -21,5 +21,6 @@
 /deps/vk_mem_alloc.h
 /deps/glew32.dll
 /deps/glew32d.dll
+/deps/vulkanHeaders
 # Downloaded models
 /Models.tar.xz

@@ -21,9 +21,9 @@
 #include <cstring>
 
 //TODO: Add instancing
-class Asset {
+class Renderable {
 public:
-    Asset(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
+    Renderable(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
         position = initialPosition;
         rotation = initialRotation;
         scale = initialScale;
@@ -35,7 +35,7 @@ public:
         loadShaders(shaderFileNames);
     }
 
-    void reloadAsset(const char *modelFileName = nullptr, const std::vector<const char *> *textureFileNames = nullptr, const std::vector<const char *> *shaderFileNames = nullptr) {
+    void reloadRenderable(const char *modelFileName = nullptr, const std::vector<const char *> *textureFileNames = nullptr, const std::vector<const char *> *shaderFileNames = nullptr) {
         if (modelFileName != nullptr) { modelName = modelFileName; }
         if (textureFileNames != nullptr) { textureNames = *textureFileNames; }
         if (shaderFileNames != nullptr) { shaderNames = *shaderFileNames; }
@@ -46,18 +46,18 @@ public:
 
     void destroy() {
         for (Image &textureImage : textureImages) { textureImage.destroy(); }
-        for (const std::function<void(Asset)>& function : deletionQueue) { function(*this); }
+        for (const std::function<void(Renderable)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
     }
 
-    void update(VulkanCamera camera) {
+    void update(const VulkanCamera& camera) {
         uniformBufferObject = {glm::mat4(1.0f), camera.view, camera.proj};
         glm::quat quaternion = glm::quat(glm::radians(rotation));
         uniformBufferObject.model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
         memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(UniformBufferObject));
     }
 
-    std::deque<std::function<void(Asset asset)>> deletionQueue{};
+    std::deque<std::function<void(Renderable asset)>> deletionQueue{};
     std::vector<uint32_t> indices{};
     std::vector<Vertex> vertices{};
     Buffer uniformBuffer{};

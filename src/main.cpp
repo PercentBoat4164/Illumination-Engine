@@ -21,6 +21,7 @@ void vulkanRayTracerCursorCallback(GLFWwindow *window, double xOffset, double yO
     pRenderEngine->camera.pitch -= (float) yOffset;
     if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
     if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
+    pRenderEngine->camera.front = glm::normalize(glm::vec3{cos(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.pitch))});
     glfwSetCursorPos(window, 0, 0);
 }
 
@@ -38,6 +39,7 @@ void vulkanRasterizerCursorCallback(GLFWwindow *window, double xOffset, double y
     pRenderEngine->camera.pitch -= (float) yOffset;
     if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
     if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
+    pRenderEngine->camera.front = glm::normalize(glm::vec3{cos(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.pitch))});
     glfwSetCursorPos(window, 0, 0);
 }
 
@@ -56,6 +58,7 @@ void openglCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     pRenderEngine->camera.pitch -= (float) yOffset;
     if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
     if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
+    pRenderEngine->camera.front = glm::normalize(glm::vec3{cos(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.pitch))});
     glfwSetCursorPos(window, 0, 0);
 }
 
@@ -78,21 +81,19 @@ int main(int argc, char **argv) {
 #ifdef CRYSTAL_ENGINE_VULKAN
     if (input == "v") {
         try {
-            VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer();
-            renderEngine.settings.pathTracing = false;
-            renderEngine.updateSettings(true);
+            VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer(nullptr, false);
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
-            Asset cube = Asset("Models/cube.obj", {"Models/cube.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
-            Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
-            Asset vikingRoom = Asset("Models/vikingRoom.obj", {"Models/vikingRoom.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            Asset statue = Asset("Models/ancientStatue.obj", {"Models/ancientStatue.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"}, {7, 2, 0}, {0, 0, 0});
-            Asset ball = Asset("Models/sphere.obj", {"Models/sphere_diffuse.png"}, {"VulkanRasterizationShaders/vertexShader.vert", "VulkanRasterizationShaders/fragmentShader.frag"});
-            renderEngine.uploadAsset(&cube, true);
-            renderEngine.uploadAsset(&quad, true);
-            renderEngine.uploadAsset(&vikingRoom, true);
-            renderEngine.uploadAsset(&statue, true);
-            renderEngine.uploadAsset(&ball, true);
+            Renderable cube = Renderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+            Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
+            Renderable vikingRoom = Renderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            Renderable statue = Renderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {7, 2, 0}, {0, 0, 0});
+            Renderable ball = Renderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
+            renderEngine.uploadRenderable(&cube, true);
+            renderEngine.uploadRenderable(&quad, true);
+            renderEngine.uploadRenderable(&vikingRoom, true);
+            renderEngine.uploadRenderable(&statue, true);
+            renderEngine.uploadRenderable(&ball, true);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
@@ -107,7 +108,7 @@ int main(int argc, char **argv) {
                 glfwPollEvents();
                 float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-                    for (Asset *asset : renderEngine.assets) { asset->reloadAsset(); }
+                    for (Renderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
                     renderEngine.updateSettings(false);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
@@ -159,7 +160,7 @@ int main(int argc, char **argv) {
                     }
                     lastEsc = glfwGetTime();
                 }
-                //move assets
+                //move renderables
                 cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
                 ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
                 statue.position = {5, 5 * std::max(std::min(sin(3 * glfwGetTime()), -2.5), 2.5), 0};
@@ -169,7 +170,7 @@ int main(int argc, char **argv) {
                 std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
                 glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
             }
-            renderEngine.cleanUp();
+            renderEngine.destroy();
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
             return EXIT_FAILURE;
@@ -179,12 +180,13 @@ int main(int argc, char **argv) {
     #ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
         if (input == "r") {
             try {
-                VulkanRenderEngineRayTracer renderEngine = VulkanRenderEngineRayTracer();
+                VulkanRenderEngineRayTracer renderEngine = VulkanRenderEngineRayTracer(nullptr, true);
                 glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
-                renderEngine.camera.position = {0, 0, 2};
-                renderEngine.settings.pathTracing = true;
-                Asset quad = Asset("Models/quad.obj", {"Models/quad_Color.png"}, {"VulkanRayTracingShaders/vertexShader.vert", "VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90,  0,  0}, {100, 100, 0});
-                renderEngine.uploadAsset(&quad, true);
+                renderEngine.camera.position = {0, -5, 0};
+                renderEngine.camera.front = {0, 1, 0};
+                renderEngine.settings.rayTracing = true;
+                Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
+                renderEngine.uploadRenderable(&quad, true);
                 double lastTab{0};
                 double lastF2{0};
                 double lastEsc{0};
@@ -199,7 +201,7 @@ int main(int argc, char **argv) {
                     glfwPollEvents();
                     float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-                        for (Asset *asset : renderEngine.assets) { asset->reloadAsset(); }
+                        for (Renderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
                         renderEngine.updateSettings(false);
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                         renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
@@ -257,7 +259,7 @@ int main(int argc, char **argv) {
                     std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
                     glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
                 }
-                renderEngine.cleanUp();
+                renderEngine.destroy();
             } catch (const std::exception& e) {
                 std::cerr << e.what() << std::endl;
                 return EXIT_FAILURE;
@@ -287,7 +289,7 @@ int main(int argc, char **argv) {
                 glfwPollEvents();
                 float velocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
 //                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-//                    for (Asset *asset : renderEngine.assets) { asset->reloadAsset(); }
+//                    for (Renderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
 //                    renderEngine.updateSettings(false);
                 /*}*/ if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;

@@ -4,12 +4,12 @@
 
 class VulkanRenderEngineRasterizer : public VulkanRenderEngine {
 public:
-    explicit VulkanRenderEngineRasterizer(GLFWwindow *attachWindow = nullptr) : VulkanRenderEngine(attachWindow) {}
+    explicit VulkanRenderEngineRasterizer(GLFWwindow *attachWindow = nullptr, bool rayTracing = false) : VulkanRenderEngine(attachWindow, rayTracing) {}
 
     bool update() override {
         //GPU synchronization
         if (window == nullptr) { return false; }
-        if (assets.empty()) { return glfwWindowShouldClose(window) != 1; }
+        if (renderables.empty()) { return glfwWindowShouldClose(window) != 1; }
         vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         uint32_t imageIndex{0};
         VkResult result = vkAcquireNextImageKHR(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
@@ -39,16 +39,16 @@ public:
         VkRenderPassBeginInfo renderPassBeginInfo = renderPassManager.beginRenderPass(imageIndex);
         vkCmdBeginRenderPass(commandBufferManager.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         camera.update();
-        for (Asset *asset : assets) {
-            if (asset->render) {
-                //update asset
-                asset->update(camera);
-                //record command buffer for this asset
-                vkCmdBindVertexBuffers(commandBufferManager.commandBuffers[imageIndex], 0, 1, &asset->vertexBuffer.buffer, offsets);
-                vkCmdBindIndexBuffer(commandBufferManager.commandBuffers[imageIndex], asset->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->pipelineManager.pipelineLayout, 0, 1, &asset->pipelineManager.descriptorSet, 0, nullptr);
-                vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, asset->pipelineManager.pipeline);
-                vkCmdDrawIndexed(commandBufferManager.commandBuffers[imageIndex], static_cast<uint32_t>(asset->indices.size()), 1, 0, 0, 0);
+        for (Renderable *renderable : renderables) {
+            if (renderable->render) {
+                //update renderable
+                renderable->update(camera);
+                //record command buffer for this renderable
+                vkCmdBindVertexBuffers(commandBufferManager.commandBuffers[imageIndex], 0, 1, &renderable->vertexBuffer.buffer, offsets);
+                vkCmdBindIndexBuffer(commandBufferManager.commandBuffers[imageIndex], renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipelineLayout, 0, 1, &renderable->pipelineManager.descriptorSet, 0, nullptr);
+                vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipeline);
+                vkCmdDrawIndexed(commandBufferManager.commandBuffers[imageIndex], static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
             }
         }
         vkCmdEndRenderPass(commandBufferManager.commandBuffers[imageIndex]);

@@ -6,8 +6,10 @@
 #define GLEW_IMPLEMENTATION
 #include "../../../deps/glew/include/GL/glew.h"
 
+#ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../../deps/stb_image.h"
+#endif
 
 #include <GLFW/glfw3.h>
 
@@ -26,7 +28,7 @@ public:
     GLuint modelMatrixID{};
 
     explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
-        if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW");}
+        if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -34,15 +36,18 @@ public:
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
         // load icon
-        int width, height, channels;
-        stbi_uc *pixels = stbi_load("res/CrystalEngineLogo1024x1024.png", &width, &height, &channels, STBI_rgb_alpha);
-        if (!pixels) { throw std::runtime_error("failed to load texture image from file: res/CrystalEngineLogo1024x1024.png"); }
-        GLFWimage icons[1];
-        icons[0].pixels = pixels;
-        icons[0].height = height;
-        icons[0].width = width;
-        glfwSetWindowIcon(window, 1, icons);
-        stbi_image_free(pixels);
+        int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
+        GLFWimage icons[sizeof(sizes)/sizeof(int)];
+        for (unsigned long i = 0; i < sizeof(sizes)/sizeof(int); ++i) {
+            std::string filename = "res/Logos/CrystalEngineLogo" + std::to_string(sizes[i]) + ".png";
+            stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+            if (!pixels) { throw std::runtime_error("failed to load texture image from file: " + filename); }
+            icons[i].pixels = pixels;
+            icons[i].height = height;
+            icons[i].width = width;
+        }
+        glfwSetWindowIcon(window, sizeof(icons)/sizeof(GLFWimage), icons);
+        for (GLFWimage icon : icons) { stbi_image_free(icon.pixels); }
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
         glfwGetWindowPos(window, &xPos, &yPos);
@@ -51,17 +56,17 @@ public:
         glfwSetWindowUserPointer(window, this);
         if (window == nullptr) { throw std::runtime_error("failed to open GLFW window!"); }
         glfwMakeContextCurrent(window);
-        #if defined(WIN32)
+        #if defined(_WIN32)
         glfwSwapInterval(settings.vSync ? 1 : 0);
         #else
-        glfwSwapInterval(1)
+        glfwSwapInterval(1); // VSync is mandatory on Linux in OpenGL due to nVidia driver bugs.
         #endif
         glewExperimental = true;
         if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
         GLuint VertexArrayID;
         glGenVertexArrays(1, &VertexArrayID);
         glBindVertexArray(VertexArrayID);
-        programID = loadShaders({"OpenGLShaders/vertexShader.glsl", "OpenGLShaders/fragmentShader.glsl"});
+        programID = loadShaders({"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
         modelMatrixID = glGetUniformLocation(programID, "MVP");
         //Create vertex buffer
         glGenBuffers(1, &vertexBuffer);

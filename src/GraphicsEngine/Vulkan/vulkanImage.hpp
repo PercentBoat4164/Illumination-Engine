@@ -80,7 +80,7 @@ public:
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             createdWith.dataSource->toImage(image, createdWith.width, createdWith.height);
         }
-    if (createdWith.imageLayout != VK_IMAGE_LAYOUT_UNDEFINED) { transitionLayout(createdWith.imageLayout); }
+        if (createdWith.imageLayout != VK_IMAGE_LAYOUT_UNDEFINED) { transitionLayout(createdWith.imageLayout); }
     }
 
     [[maybe_unused]] void toBuffer(VkBuffer buffer, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {

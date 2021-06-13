@@ -54,6 +54,7 @@ public:
         rayTracingPipelineCreateInfo.maxPipelineRayRecursionDepth = 2;
         rayTracingPipelineCreateInfo.layout = pipelineLayout;
         linkedRenderEngine->vkCreateRayTracingPipelinesKHR(linkedRenderEngine->device->device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCreateInfo, nullptr, &pipeline);
+        deletionQueue.emplace_front([&]{ vkDestroyPipeline(linkedRenderEngine->device->device, pipeline, nullptr); });
         for (VkPipelineShaderStageCreateInfo shader : shaderStages) { vkDestroyShaderModule(linkedRenderEngine->device->device, shader.module, nullptr); }
     }
 

@@ -13,10 +13,8 @@ public:
         createdWith = *createInfo;
         linkedRenderEngine = engineLink;
         int channels{};
-        if (pixels == nullptr) {
-            pixels = stbi_load(((std::string)createdWith.filename).c_str(), &createdWith.width, &createdWith.height, &channels, STBI_rgb_alpha);
-            if (!pixels) { throw std::runtime_error(("failed to load texture image from file: " + (std::string)createdWith.filename).c_str()); }
-        }
+        pixels = stbi_load(((std::string)createdWith.filename).c_str(), &createdWith.width, &createdWith.height, &channels, STBI_rgb_alpha);
+        if (!pixels) { throw std::runtime_error(("failed to load texture image from file: " + (std::string)createdWith.filename).c_str()); }
         VkImageCreateInfo imageCreateInfo{};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;

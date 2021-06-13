@@ -13,21 +13,21 @@ public:
         VkBufferUsageFlags usage{};
         VmaMemoryUsage allocationUsage{};
 
-        //Only required for acceleration structure creation
-        VkAccelerationStructureTypeKHR type{};
-
         //Only required for shader binding table creation
         uint32_t handleCount{1};
+
+        //Only required for acceleration structure creation
+        VkAccelerationStructureTypeKHR type{};
+        VkTransformMatrixKHR *transformationMatrix{};
 
         //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR
         VkDeviceAddress vertexBufferAddress{};
         VkDeviceAddress indexBufferAddress{};
         VkDeviceAddress transformationBufferAddress{};
-        uint32_t triangleCount{1};
+        uint32_t primitiveCount{1};
 
         //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR
         VkDeviceAddress bottomLevelAccelerationStructureDeviceAddress{};
-        VkTransformMatrixKHR *transformationMatrix{};
     };
 
     void *data{};
@@ -53,13 +53,13 @@ public:
         allocationCreateInfo.usage = createdWith.allocationUsage;
         if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
+        vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
+        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
         if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
             VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
             bufferDeviceAddressInfo.buffer = buffer;
             deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         }
-        vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
-        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
         return data;
     }
 
