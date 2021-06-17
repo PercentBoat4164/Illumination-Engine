@@ -42,7 +42,6 @@ public:
         renderable->update(camera);
         descriptorSetManager.update({&camera.uniformBufferObject}, {2});
         commandBufferManager.resetCommandBuffer((int)(imageIndex + (swapchain.image_count - 1)) % (int)swapchain.image_count);
-    //Problem is after here.
         VkImage swapchainImage = renderEngineLink.swapchainImages[imageIndex];
         commandBufferManager.recordCommandBuffer((int)imageIndex);
         VkImageMemoryBarrier imageMemoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
@@ -96,7 +95,6 @@ public:
         submitInfo.pCommandBuffers = &commandBufferManager.commandBuffers[imageIndex];
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = &renderFinishedSemaphores[currentFrame];
-    //Problem is not in commandBuffer recording, but before here.
         vkResetFences(device.device, 1, &inFlightFences[currentFrame]);
         if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command buffer!"); }
         VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};

@@ -19,12 +19,12 @@ public:
         //Only required for acceleration structure creation
         VkAccelerationStructureTypeKHR type{};
         VkTransformMatrixKHR *transformationMatrix{};
+        uint32_t primitiveCount{1};
 
         //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR
         VkDeviceAddress vertexBufferAddress{};
         VkDeviceAddress indexBufferAddress{};
         VkDeviceAddress transformationBufferAddress{};
-        uint32_t primitiveCount{1};
 
         //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR
         VkDeviceAddress bottomLevelAccelerationStructureDeviceAddress{};

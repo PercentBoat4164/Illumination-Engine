@@ -182,18 +182,24 @@ int main(int argc, char **argv) {
             try {
                 VulkanRenderEngineRayTracer renderEngine = VulkanRenderEngineRayTracer(nullptr, true);
                 glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
-                renderEngine.camera.position = {0, -5, 0};
+//                renderEngine.camera.position = {0, -5, 0};
                 renderEngine.camera.front = {0, 1, 0};
                 renderEngine.settings.rayTracing = true;
-                Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
-                renderEngine.uploadRenderable(&quad, true);
+//                Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 1});
+//                renderEngine.uploadRenderable(&quad, true);
+//                Renderable cube = Renderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
+//                renderEngine.uploadRenderable(&cube, true);
+//                Renderable viking_room = Renderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
+//                renderEngine.uploadRenderable(&viking_room, true);
+                Renderable ancientStatue = Renderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
+                renderEngine.uploadRenderable(&ancientStatue, true);
                 double lastTab{0};
                 double lastF2{0};
                 double lastEsc{0};
                 double lastCursorPosX{0};
                 double lastCursorPosY{0};
                 bool captureInput{};
-                std::vector<float> recordedFPS{};
+                std::vector<float> recordedFPS{0};
                 float recordedFPSCount{200};
                 recordedFPS.resize((size_t)recordedFPSCount);
                 while (renderEngine.update()) {

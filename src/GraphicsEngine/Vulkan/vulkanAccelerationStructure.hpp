@@ -7,8 +7,9 @@ public:
     void *create (VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) override {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
+        std::vector<uint32_t> geometryCounts{};
+        geometryCounts.reserve(createdWith.primitiveCount);
         VkAccelerationStructureGeometryKHR accelerationStructureGeometry{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR};
-        uint32_t geometryCount{1};
         Buffer instanceBuffer{};
         if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR) {
             accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
@@ -16,7 +17,7 @@ public:
             accelerationStructureGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
             accelerationStructureGeometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
             accelerationStructureGeometry.geometry.triangles.vertexData = {createdWith.vertexBufferAddress};
-            accelerationStructureGeometry.geometry.triangles.maxVertex = 3;
+            accelerationStructureGeometry.geometry.triangles.maxVertex = 3 * createdWith.primitiveCount;
             accelerationStructureGeometry.geometry.triangles.vertexStride = sizeof(Vertex);
             accelerationStructureGeometry.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32;
             accelerationStructureGeometry.geometry.triangles.indexData = {createdWith.indexBufferAddress};
@@ -38,17 +39,17 @@ public:
         VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR};
         accelerationStructureBuildGeometryInfo.type = createdWith.type;
         accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR;
-        accelerationStructureBuildGeometryInfo.geometryCount = geometryCount;
+        accelerationStructureBuildGeometryInfo.geometryCount = 1;
         accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
         VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR};
-        linkedRenderEngine->vkGetAccelerationStructureBuildSizesKHR(linkedRenderEngine->device->device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accelerationStructureBuildGeometryInfo, &geometryCount, &accelerationStructureBuildSizesInfo);
+        linkedRenderEngine->vkGetAccelerationStructureBuildSizesKHR(linkedRenderEngine->device->device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accelerationStructureBuildGeometryInfo, &createdWith.primitiveCount, &accelerationStructureBuildSizesInfo);
         bufferSize = accelerationStructureBuildSizesInfo.accelerationStructureSize;
         VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
         bufferCreateInfo.size = bufferSize;
         bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer"); }
+        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
         VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR};
         accelerationStructureCreateInfo.buffer = buffer;
