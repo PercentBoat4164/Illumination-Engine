@@ -12,6 +12,22 @@
 #endif
 
 #ifdef CRYSTAL_ENGINE_VULKAN
+void vulkanRasterizerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
+    auto pRenderEngine = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
+    xOffset *= pRenderEngine->settings.mouseSensitivity;
+    yOffset *= pRenderEngine->settings.mouseSensitivity;
+    pRenderEngine->camera.yaw -= (float) xOffset;
+    pRenderEngine->camera.pitch -= (float) yOffset;
+    if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
+    if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
+    pRenderEngine->camera.front = glm::normalize(glm::vec3{cos(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.pitch))});
+    glfwSetCursorPos(window, 0, 0);
+}
+
+void vulkanRasterizerWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
+    auto pVulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
+    if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
+}
 #ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
 void vulkanRayTracerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     auto pRenderEngine = static_cast<VulkanRenderEngineRayTracer *>(glfwGetWindowUserPointer(window));
@@ -30,23 +46,6 @@ void vulkanRayTracerWindowPositionCallback(GLFWwindow *window, int xPos, int yPo
     if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
 }
 #endif
-
-void vulkanRasterizerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto pRenderEngine = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
-    xOffset *= pRenderEngine->settings.mouseSensitivity;
-    yOffset *= pRenderEngine->settings.mouseSensitivity;
-    pRenderEngine->camera.yaw -= (float) xOffset;
-    pRenderEngine->camera.pitch -= (float) yOffset;
-    if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
-    if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
-    pRenderEngine->camera.front = glm::normalize(glm::vec3{cos(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.pitch))});
-    glfwSetCursorPos(window, 0, 0);
-}
-
-void vulkanRasterizerWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
-    auto pVulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
-    if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
-}
 #endif
 
 #ifdef CRYSTAL_ENGINE_OPENGL
@@ -83,17 +82,17 @@ int main(int argc, char **argv) {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer(nullptr, false);
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
-            renderEngine.camera.position = {0, 0, 2};
-            Renderable cube = Renderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
-            Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
-            Renderable vikingRoom = Renderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            Renderable statue = Renderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {7, 2, 0}, {0, 0, 0});
-            Renderable ball = Renderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
-            renderEngine.uploadRenderable(&cube, true);
-            renderEngine.uploadRenderable(&quad, true);
-            renderEngine.uploadRenderable(&vikingRoom, true);
+            renderEngine.camera.position = {0, 2, 0};
+//            Renderable cube = Renderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+//            Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
+//            Renderable vikingRoom = Renderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            Renderable statue = Renderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+//            Renderable ball = Renderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
+//            renderEngine.uploadRenderable(&cube, true);
+//            renderEngine.uploadRenderable(&quad, true);
+//            renderEngine.uploadRenderable(&vikingRoom, true);
             renderEngine.uploadRenderable(&statue, true);
-            renderEngine.uploadRenderable(&ball, true);
+//            renderEngine.uploadRenderable(&ball, true);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
@@ -104,6 +103,7 @@ int main(int argc, char **argv) {
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
             while (renderEngine.update()) {
+                renderEngine.camera.update();
                 //Process inputs
                 glfwPollEvents();
                 float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
@@ -137,12 +137,12 @@ int main(int argc, char **argv) {
                         if (glfwGetWindowAttrib(renderEngine.window, GLFW_HOVERED)) {
                             glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                             glfwSetCursorPos(renderEngine.window, 0, 0);
-                            glfwSetCursorPosCallback(renderEngine.window, vulkanRayTracerCursorCallback);
+                            glfwSetCursorPosCallback(renderEngine.window, vulkanRasterizerCursorCallback);
                             glfwSetCursorPos(renderEngine.window, lastCursorPosX, lastCursorPosY);
                         } else {
                             glfwSetCursorPos(renderEngine.window, 0, 0);
                             glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                            glfwSetCursorPosCallback(renderEngine.window, vulkanRayTracerCursorCallback);
+                            glfwSetCursorPosCallback(renderEngine.window, vulkanRasterizerCursorCallback);
                         }
                     }
                     lastTab = glfwGetTime();
@@ -161,9 +161,8 @@ int main(int argc, char **argv) {
                     lastEsc = glfwGetTime();
                 }
                 //move renderables
-                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
-                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
-                statue.position = {5, 5 * std::max(std::min(sin(3 * glfwGetTime()), -2.5), 2.5), 0};
+//                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
+//                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};
@@ -182,8 +181,7 @@ int main(int argc, char **argv) {
             try {
                 VulkanRenderEngineRayTracer renderEngine = VulkanRenderEngineRayTracer(nullptr, true);
                 glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
-//                renderEngine.camera.position = {0, -5, 0};
-                renderEngine.camera.front = {0, 1, 0};
+                renderEngine.camera.position = {0, 0, -10};
                 renderEngine.settings.rayTracing = true;
 //                Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 1});
 //                renderEngine.uploadRenderable(&quad, true);
@@ -191,7 +189,7 @@ int main(int argc, char **argv) {
 //                renderEngine.uploadRenderable(&cube, true);
 //                Renderable viking_room = Renderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
 //                renderEngine.uploadRenderable(&viking_room, true);
-                Renderable ancientStatue = Renderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
+                Renderable ancientStatue = Renderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
                 renderEngine.uploadRenderable(&ancientStatue, true);
                 double lastTab{0};
                 double lastF2{0};
@@ -236,12 +234,12 @@ int main(int argc, char **argv) {
                             if (glfwGetWindowAttrib(renderEngine.window, GLFW_HOVERED)) {
                                 glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                                 glfwSetCursorPos(renderEngine.window, 0, 0);
-                                glfwSetCursorPosCallback(renderEngine.window, vulkanRasterizerCursorCallback);
+                                glfwSetCursorPosCallback(renderEngine.window, vulkanRayTracerCursorCallback);
                                 glfwSetCursorPos(renderEngine.window, lastCursorPosX, lastCursorPosY);
                             } else {
                                 glfwSetCursorPos(renderEngine.window, 0, 0);
                                 glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                                glfwSetCursorPosCallback(renderEngine.window, vulkanRasterizerCursorCallback);
+                                glfwSetCursorPosCallback(renderEngine.window, vulkanRayTracerCursorCallback);
                             }
                         }
                         lastTab = glfwGetTime();

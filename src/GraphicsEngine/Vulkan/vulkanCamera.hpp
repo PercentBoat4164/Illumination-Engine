@@ -10,10 +10,11 @@ public:
 
     void create(VulkanGraphicsEngineLink *engineLink) {
         linkedRenderEngine = engineLink;
-        proj = glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / std::max(settings->resolution[1], 1), 0.01, settings->renderDistance);
+        proj = glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / settings->resolution[1], 0.01, settings->renderDistance);
         Buffer::CreateInfo uniformBufferObjectCreateInfo{sizeof(CameraUBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         uniformBufferObject.create(linkedRenderEngine, &uniformBufferObjectCreateInfo);
         deletionQueue.emplace_back([&] { uniformBufferObject.destroy(); });
+        view = glm::lookAt(position, position + front, up);
     }
 
     void destroy() {
@@ -24,8 +25,8 @@ public:
     void update() {
         right = glm::normalize(glm::cross(front, up));
         view = {glm::lookAt(position, position + front, up)};
-        proj = {glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / std::max(settings->resolution[1], 1), 0.01, settings->renderDistance)};
-        proj[1][1] *= -1;
+        proj = {glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / settings->resolution[1], 0.1, settings->renderDistance)};
+        proj[1][1] *= -1.0f;
         CameraUBO ubo = {glm::inverse(view), glm::inverse(proj)};
         memcpy(uniformBufferObject.data, &ubo, sizeof(CameraUBO));
     }
@@ -44,7 +45,7 @@ public:
     glm::vec3 front{glm::normalize(glm::vec3{cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch))})};
     glm::vec3 up{0, 0, 1};
     glm::vec3 right{glm::cross(front, up)};
-    glm::mat4 view{glm::lookAt(position, position + front, up)};
-    glm::mat4 proj{};
+    glm::mat4 view;
+    glm::mat4 proj;
     std::deque<std::function<void()>> deletionQueue{};
 };

@@ -14,22 +14,22 @@ public:
     VulkanGraphicsEngineLink *linkedRenderEngine{};
     std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
     VkPipeline pipeline{};
-    CreateInfo *createdWith{};
+    CreateInfo createdWith{};
 
     void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
-        createdWith = createInfo;
+        createdWith = *createInfo;
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         pipelineLayoutCreateInfo.setLayoutCount = 1;
-        pipelineLayoutCreateInfo.pSetLayouts = &createdWith->descriptorSetManager->descriptorSetLayout;
+        pipelineLayoutCreateInfo.pSetLayouts = &createdWith.descriptorSetManager->descriptorSetLayout;
         if (vkCreatePipelineLayout(linkedRenderEngine->device->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
         deletionQueue.emplace_front([&] { vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr); });
         std::vector<VkPipelineShaderStageCreateInfo> shaderStages{};
-        shaderGroups.reserve(createdWith->shaders.size());
+        shaderGroups.reserve(createdWith.shaders.size());
         VkRayTracingShaderGroupCreateInfoKHR rayTracingShaderGroupCreateInfo{VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR};
-        for (auto & shader : createdWith->shaders) {
+        for (auto & shader : createdWith.shaders) {
             VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
-            pipelineShaderStageCreateInfo.stage = shader.createdWith->stage;
+            pipelineShaderStageCreateInfo.stage = shader.createdWith.stage;
             pipelineShaderStageCreateInfo.module = shader.module;
             pipelineShaderStageCreateInfo.pName = "main";
             shaderStages.push_back(pipelineShaderStageCreateInfo);

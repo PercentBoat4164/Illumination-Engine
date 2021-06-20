@@ -21,6 +21,7 @@
 #include <cstring>
 
 //TODO: Add instancing
+//TODO: Rewrite this entire class to work better with the ray tracer.
 class Renderable {
 public:
     Renderable(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
@@ -117,7 +118,6 @@ private:
     }
 
     void loadTextures(const std::vector<const char *>& filenames) {
-        textures.clear();
         textures = filenames;
     }
 

@@ -22,16 +22,17 @@ public:
     std::array<int, 3> applicationVersion{0, 0, 1};
     std::array<int, 3> requiredVulkanVersion{1, 2, 0};
     VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_8_BIT};
-    std::array<int, 2> defaultWindowResolution{800, 600};
+    std::array<uint32_t, 2> defaultWindowResolution{800, 600};
     std::array<int, 2> windowPosition{0, 0};
     float anisotropicFilterLevel{0};
     int mipLevels{1};
     bool fullscreen{false};
     int refreshRate{60};
-    std::array<int, 2> resolution{defaultWindowResolution};
+    std::array<uint32_t, 2> resolution{defaultWindowResolution};
     int MAX_FRAMES_IN_FLIGHT{2};
     double fov{90};
-    double renderDistance{1000000};
+    //double renderDistance{1000000};
+    double renderDistance{512.0};
     double mouseSensitivity{0.1};
     float movementSpeed{2.5};
 

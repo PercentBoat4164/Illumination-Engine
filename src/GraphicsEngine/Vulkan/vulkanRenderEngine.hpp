@@ -260,9 +260,9 @@ public:
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) {
             renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]);
         }
-        renderable->deletionQueue.emplace_front([&](const Renderable& thisRenderable) { for (Shader shader : thisRenderable.shaders) { shader.destroy(); } });
+        renderable->deletionQueue.emplace_front([&](const Renderable& thisRenderable) { for (const Shader& shader : thisRenderable.shaders) { shader.destroy(); } });
         //build graphics pipeline and descriptor set for this renderable
-        renderable->pipelineManager.setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, {renderable->shaders[0].createdWith->data, renderable->shaders[1].createdWith->data});
+        renderable->pipelineManager.setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, {renderable->shaders[0].createdWith.data, renderable->shaders[1].createdWith.data});
         renderable->pipelineManager.createDescriptorSet({renderable->uniformBuffer}, {renderable->textureImages[0]}, {BUFFER, IMAGE});
         renderable->deletionQueue.emplace_front([&](Renderable thisRenderable) { thisRenderable.pipelineManager.destroy(); });
         if (append) { renderables.push_back(renderable); }
