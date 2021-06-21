@@ -1,17 +1,17 @@
 var NAVTREEINDEX0 =
 {
-"acceleration_structure_manager_8hpp.html":[2,0,0,0,0,1,0],
-"acceleration_structure_manager_8hpp_source.html":[2,0,0,0,0,1,0],
+"acceleration_structure_manager_8hpp.html":[2,0,0,2,0,1,0],
+"acceleration_structure_manager_8hpp_source.html":[2,0,0,2,0,1,0],
 "annotated.html":[1,0],
-"asset_8hpp.html":[2,0,0,0,0,1,1],
-"asset_8hpp.html#a18372412ad2fc3ce1e3240b3cf0efe78":[2,0,0,0,0,1,1,2],
-"asset_8hpp.html#a793d7ab0cd37a3efbd852fb647fe2cd2":[2,0,0,0,0,1,1,1],
-"asset_8hpp.html#af14fac7fbc250522a78849d58d5b0811":[2,0,0,0,0,1,1,3],
-"asset_8hpp_source.html":[2,0,0,0,0,1,1],
-"buffer_manager_8hpp.html":[2,0,0,0,0,1,2],
-"buffer_manager_8hpp_source.html":[2,0,0,0,0,1,2],
-"camera_8hpp.html":[2,0,0,0,0,1,3],
-"camera_8hpp_source.html":[2,0,0,0,0,1,3],
+"asset_8hpp.html":[2,0,0,2,0,1,1],
+"asset_8hpp.html#a18372412ad2fc3ce1e3240b3cf0efe78":[2,0,0,2,0,1,1,2],
+"asset_8hpp.html#a793d7ab0cd37a3efbd852fb647fe2cd2":[2,0,0,2,0,1,1,1],
+"asset_8hpp.html#af14fac7fbc250522a78849d58d5b0811":[2,0,0,2,0,1,1,3],
+"asset_8hpp_source.html":[2,0,0,2,0,1,1],
+"buffer_manager_8hpp.html":[2,0,0,2,0,1,2],
+"buffer_manager_8hpp_source.html":[2,0,0,2,0,1,2],
+"camera_8hpp.html":[2,0,0,2,0,1,3],
+"camera_8hpp_source.html":[2,0,0,2,0,1,3],
 "class_acceleration_structure_manager.html":[1,0,0],
 "class_acceleration_structure_manager.html#a72b913b90276e246b4c388cf943cda06":[1,0,0,1],
 "class_acceleration_structure_manager.html#ada3d5aff96417a9844795be4e90d16ef":[1,0,0,2],
@@ -249,5 +249,5 @@ var NAVTREEINDEX0 =
 "class_world.html#a63a22c1ea89297d49095004c79d40ce6":[1,0,25,1],
 "class_world.html#adf62db291ac1d0e7394b01b8d90f07ca":[1,0,25,2],
 "classes.html":[1,1],
-"command_buffer_manager_8hpp.html":[2,0,0,0,0,1,4]
+"cmake-build-debug_2_c_make_files_23_819_82_2_compiler_id_c_2_c_make_c_compiler_id_8c.html":[2,0,0,0,0,0,0,0]
 };

@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "Crystal Engine", "index.html", [
+  [ "Illumination Engine", "index.html", [
     [ "Description", "md__crystal_engine__r_e_a_d_m_e.html", null ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
@@ -39,8 +39,9 @@ var NAVTREE =
     [ "Files", "files.html", [
       [ "File List", "files.html", "files_dup" ],
       [ "File Members", "globals.html", [
-        [ "All", "globals.html", null ],
+        [ "All", "globals.html", "globals_dup" ],
         [ "Functions", "globals_func.html", null ],
+        [ "Variables", "globals_vars.html", "globals_vars" ],
         [ "Enumerations", "globals_enum.html", null ],
         [ "Enumerator", "globals_eval.html", null ],
         [ "Macros", "globals_defs.html", null ]
@@ -52,7 +53,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "acceleration_structure_manager_8hpp.html",
-"command_buffer_manager_8hpp_source.html"
+"cmake-build-debug_2_c_make_files_23_819_82_2_compiler_id_c_2_c_make_c_compiler_id_8c.html#a07f8e5783674099cd7f5110e22a78cdb",
+"test_fortran_script_8f90.html#af717a6e44dd9cb0f5e4874a6fb259813"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

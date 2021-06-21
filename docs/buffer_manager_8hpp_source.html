@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Crystal Engine: CrystalEngine/src/GraphicsEngine/Vulkan/bufferManager.hpp Source File</title>
+<title>Illumination Engine: CrystalEngine/src/GraphicsEngine/Vulkan/bufferManager.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -31,7 +31,7 @@
  <tr style="height: 56px;">
   <td id="projectlogo"><img alt="Logo" src="CrystalEngineLogoResized"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">Crystal Engine
+   <div id="projectname">Illumination Engine
    &#160;<span id="projectnumber">0.1</span>
    </div>
    <div id="projectbrief">A Game Development Engine Written In C++</div>
@@ -149,35 +149,35 @@ $(document).ready(function(){initNavTree('buffer_manager_8hpp_source.html',''); 
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_buffer_manager.html#ad25574eadc600151a30afb0c3aec3719">data</a>;</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    }</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
-<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="class_buffer_manager.html#ab701f827d6c270a1cf1c2e0f6572d2c3">   66</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_buffer_manager.html#ab701f827d6c270a1cf1c2e0f6572d2c3">toImage</a>(VkImage image, uint32_t width, uint32_t height)<span class="keyword"> const </span>{</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        VkBufferImageCopy region{};</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        region.bufferOffset = 0;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        region.bufferRowLength = 0;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        region.bufferImageHeight = 0;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        region.imageSubresource.mipLevel = 0;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        region.imageSubresource.baseArrayLayer = 0;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        region.imageSubresource.layerCount = 1;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        region.imageOffset = {0, 0, 0};</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        region.imageExtent = {width, height, 1};</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        VkCommandBuffer commandBuffer = <a class="code" href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">linkedRenderEngine</a>-&gt;<a class="code" href="class_vulkan_graphics_engine_link.html#a32c40e4c48367fcdfa54bf9364167197">beginSingleTimeCommands</a>();</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        vkCmdCopyBufferToImage(commandBuffer, <a class="code" href="class_buffer_manager.html#aeb70904534529996cbb47df4682e1acd">buffer</a>, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &amp;region);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <a class="code" href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">linkedRenderEngine</a>-&gt;<a class="code" href="class_vulkan_graphics_engine_link.html#a8c8d66e66725778ed6ef24894b3ee31c">endSingleTimeCommands</a>(commandBuffer);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    }</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="class_buffer_manager.html#a02ce0b2826a9aebcda41a14a2c29a434">   84</a></span>&#160;    std::deque&lt;std::function&lt;void()&gt;&gt; <a class="code" href="class_buffer_manager.html#a02ce0b2826a9aebcda41a14a2c29a434">deletionQueue</a>{};</div>
-<div class="line"><a name="l00086"></a><span class="lineno"><a class="line" href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">   86</a></span>&#160;    <a class="code" href="class_vulkan_graphics_engine_link.html">VulkanGraphicsEngineLink</a> *<a class="code" href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">linkedRenderEngine</a>{};</div>
-<div class="line"><a name="l00088"></a><span class="lineno"><a class="line" href="class_buffer_manager.html#aa88844b5d0d98fe6cf4e1e78dc849f92">   88</a></span>&#160;    VmaAllocation <a class="code" href="class_buffer_manager.html#aa88844b5d0d98fe6cf4e1e78dc849f92">allocation</a>{};</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;};</div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="class_buffer_manager.html#ab701f827d6c270a1cf1c2e0f6572d2c3">   64</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_buffer_manager.html#ab701f827d6c270a1cf1c2e0f6572d2c3">toImage</a>(VkImage image, uint32_t width, uint32_t height)<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        VkBufferImageCopy region{};</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        region.bufferOffset = 0;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        region.bufferRowLength = 0;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        region.bufferImageHeight = 0;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        region.imageSubresource.mipLevel = 0;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        region.imageSubresource.baseArrayLayer = 0;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        region.imageSubresource.layerCount = 1;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        region.imageOffset = {0, 0, 0};</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        region.imageExtent = {width, height, 1};</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        VkCommandBuffer commandBuffer = <a class="code" href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">linkedRenderEngine</a>-&gt;<a class="code" href="class_vulkan_graphics_engine_link.html#a32c40e4c48367fcdfa54bf9364167197">beginSingleTimeCommands</a>();</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        vkCmdCopyBufferToImage(commandBuffer, <a class="code" href="class_buffer_manager.html#aeb70904534529996cbb47df4682e1acd">buffer</a>, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &amp;region);</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <a class="code" href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">linkedRenderEngine</a>-&gt;<a class="code" href="class_vulkan_graphics_engine_link.html#a8c8d66e66725778ed6ef24894b3ee31c">endSingleTimeCommands</a>(commandBuffer);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    }</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00082"></a><span class="lineno"><a class="line" href="class_buffer_manager.html#a02ce0b2826a9aebcda41a14a2c29a434">   82</a></span>&#160;    std::deque&lt;std::function&lt;void()&gt;&gt; <a class="code" href="class_buffer_manager.html#a02ce0b2826a9aebcda41a14a2c29a434">deletionQueue</a>{};</div>
+<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">   84</a></span>&#160;    <a class="code" href="class_vulkan_graphics_engine_link.html">VulkanGraphicsEngineLink</a> *<a class="code" href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">linkedRenderEngine</a>{};</div>
+<div class="line"><a name="l00086"></a><span class="lineno"><a class="line" href="class_buffer_manager.html#aa88844b5d0d98fe6cf4e1e78dc849f92">   86</a></span>&#160;    VmaAllocation <a class="code" href="class_buffer_manager.html#aa88844b5d0d98fe6cf4e1e78dc849f92">allocation</a>{};</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;};</div>
 <div class="ttc" id="aclass_buffer_manager_html"><div class="ttname"><a href="class_buffer_manager.html">BufferManager</a></div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:11</div></div>
-<div class="ttc" id="aclass_buffer_manager_html_a02ce0b2826a9aebcda41a14a2c29a434"><div class="ttname"><a href="class_buffer_manager.html#a02ce0b2826a9aebcda41a14a2c29a434">BufferManager::deletionQueue</a></div><div class="ttdeci">std::deque&lt; std::function&lt; void()&gt; &gt; deletionQueue</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:84</div></div>
-<div class="ttc" id="aclass_buffer_manager_html_a76051ffa96174b655eb6a21a90a85e39"><div class="ttname"><a href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">BufferManager::linkedRenderEngine</a></div><div class="ttdeci">VulkanGraphicsEngineLink * linkedRenderEngine</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:86</div></div>
+<div class="ttc" id="aclass_buffer_manager_html_a02ce0b2826a9aebcda41a14a2c29a434"><div class="ttname"><a href="class_buffer_manager.html#a02ce0b2826a9aebcda41a14a2c29a434">BufferManager::deletionQueue</a></div><div class="ttdeci">std::deque&lt; std::function&lt; void()&gt; &gt; deletionQueue</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:82</div></div>
+<div class="ttc" id="aclass_buffer_manager_html_a76051ffa96174b655eb6a21a90a85e39"><div class="ttname"><a href="class_buffer_manager.html#a76051ffa96174b655eb6a21a90a85e39">BufferManager::linkedRenderEngine</a></div><div class="ttdeci">VulkanGraphicsEngineLink * linkedRenderEngine</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:84</div></div>
 <div class="ttc" id="aclass_buffer_manager_html_a7fb1c1c3607c296cba88b566ff93d5ed"><div class="ttname"><a href="class_buffer_manager.html#a7fb1c1c3607c296cba88b566ff93d5ed">BufferManager::bufferAddress</a></div><div class="ttdeci">VkDeviceAddress bufferAddress</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:20</div></div>
 <div class="ttc" id="aclass_buffer_manager_html_aa0aa76b46bc71d2c3ab1fcabf0cb19bf"><div class="ttname"><a href="class_buffer_manager.html#aa0aa76b46bc71d2c3ab1fcabf0cb19bf">BufferManager::setEngineLink</a></div><div class="ttdeci">void setEngineLink(VulkanGraphicsEngineLink *engineLink)</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:30</div></div>
 <div class="ttc" id="aclass_buffer_manager_html_aa5d45ea925e91e40ad3d98b577c6b972"><div class="ttname"><a href="class_buffer_manager.html#aa5d45ea925e91e40ad3d98b577c6b972">BufferManager::create</a></div><div class="ttdeci">virtual void * create(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage allocationUsage)</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:39</div></div>
-<div class="ttc" id="aclass_buffer_manager_html_aa88844b5d0d98fe6cf4e1e78dc849f92"><div class="ttname"><a href="class_buffer_manager.html#aa88844b5d0d98fe6cf4e1e78dc849f92">BufferManager::allocation</a></div><div class="ttdeci">VmaAllocation allocation</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:88</div></div>
-<div class="ttc" id="aclass_buffer_manager_html_ab701f827d6c270a1cf1c2e0f6572d2c3"><div class="ttname"><a href="class_buffer_manager.html#ab701f827d6c270a1cf1c2e0f6572d2c3">BufferManager::toImage</a></div><div class="ttdeci">void toImage(VkImage image, uint32_t width, uint32_t height) const</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:66</div></div>
+<div class="ttc" id="aclass_buffer_manager_html_aa88844b5d0d98fe6cf4e1e78dc849f92"><div class="ttname"><a href="class_buffer_manager.html#aa88844b5d0d98fe6cf4e1e78dc849f92">BufferManager::allocation</a></div><div class="ttdeci">VmaAllocation allocation</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:86</div></div>
+<div class="ttc" id="aclass_buffer_manager_html_ab701f827d6c270a1cf1c2e0f6572d2c3"><div class="ttname"><a href="class_buffer_manager.html#ab701f827d6c270a1cf1c2e0f6572d2c3">BufferManager::toImage</a></div><div class="ttdeci">void toImage(VkImage image, uint32_t width, uint32_t height) const</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:64</div></div>
 <div class="ttc" id="aclass_buffer_manager_html_acb3c42b0b9cb49b6099d4a948c43860f"><div class="ttname"><a href="class_buffer_manager.html#acb3c42b0b9cb49b6099d4a948c43860f">BufferManager::bufferSize</a></div><div class="ttdeci">VkDeviceSize bufferSize</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:18</div></div>
 <div class="ttc" id="aclass_buffer_manager_html_ad25574eadc600151a30afb0c3aec3719"><div class="ttname"><a href="class_buffer_manager.html#ad25574eadc600151a30afb0c3aec3719">BufferManager::data</a></div><div class="ttdeci">void * data</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:14</div></div>
 <div class="ttc" id="aclass_buffer_manager_html_aeb70904534529996cbb47df4682e1acd"><div class="ttname"><a href="class_buffer_manager.html#aeb70904534529996cbb47df4682e1acd">BufferManager::buffer</a></div><div class="ttdeci">VkBuffer buffer</div><div class="ttdef"><b>Definition:</b> bufferManager.hpp:16</div></div>

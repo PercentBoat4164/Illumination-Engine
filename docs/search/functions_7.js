@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['main_321',['main',['../main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main.cpp']]]
+  ['getattributedescriptions_473',['getAttributeDescriptions',['../struct_vertex.html#a166e25f6814999f04e8d2c75cb51a569',1,'Vertex']]],
+  ['getbindingdescription_474',['getBindingDescription',['../struct_vertex.html#aaca5987855365a64b2e48a60ccf4a6fc',1,'Vertex']]],
+  ['getclosestpoints_475',['getClosestPoints',['../physics_8hpp.html#a859da0af1a9a7bc136038d9dcec3ccd5',1,'physics.hpp']]]
 ];
