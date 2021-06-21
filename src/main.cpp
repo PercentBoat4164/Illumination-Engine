@@ -1,17 +1,17 @@
 #include <iostream>
 #include <cmath>
 
-#ifdef CRYSTAL_ENGINE_VULKAN
+#ifdef ILLUMINATION_ENGINE_VULKAN
 #include "GraphicsEngine/Vulkan/vulkanRenderEngineRasterizer.hpp"
-#ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
+#ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
 #include "GraphicsEngine/Vulkan/vulkanRenderEngineRayTracer.hpp"
 #endif
 #endif
-#ifdef CRYSTAL_ENGINE_OPENGL
+#ifdef ILLUMINATION_ENGINE_OPENGL
 #include "GraphicsEngine/OpenGL/openglRenderEngine.hpp"
 #endif
 
-#ifdef CRYSTAL_ENGINE_VULKAN
+#ifdef ILLUMINATION_ENGINE_VULKAN
 void vulkanRasterizerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     auto pRenderEngine = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
     xOffset *= pRenderEngine->settings.mouseSensitivity;
@@ -28,7 +28,7 @@ void vulkanRasterizerWindowPositionCallback(GLFWwindow *window, int xPos, int yP
     auto pVulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
     if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
 }
-#ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
+#ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
 void vulkanRayTracerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     auto pRenderEngine = static_cast<VulkanRenderEngineRayTracer *>(glfwGetWindowUserPointer(window));
     xOffset *= pRenderEngine->settings.mouseSensitivity;
@@ -48,7 +48,7 @@ void vulkanRayTracerWindowPositionCallback(GLFWwindow *window, int xPos, int yPo
 #endif
 #endif
 
-#ifdef CRYSTAL_ENGINE_OPENGL
+#ifdef ILLUMINATION_ENGINE_OPENGL
 void openglCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     auto pRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
     xOffset *= pRenderEngine->settings.mouseSensitivity;
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
         std::cin >> selection;
         input = selection[0];
     }
-#ifdef CRYSTAL_ENGINE_VULKAN
+#ifdef ILLUMINATION_ENGINE_VULKAN
     if (input == "v") {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer(nullptr, false);
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};
                 std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
-                glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
+                glfwSetWindowTitle(renderEngine.window, (std::string("Illumination Engine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
             }
             renderEngine.destroy();
         } catch (const std::exception& e) {
@@ -176,12 +176,12 @@ int main(int argc, char **argv) {
         }
         return EXIT_SUCCESS;
     }
-    #ifdef CRYSTAL_ENGINE_VULKAN_RAY_TRACING
+    #ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
         if (input == "r") {
             try {
                 VulkanRenderEngineRayTracer renderEngine = VulkanRenderEngineRayTracer(nullptr, true);
                 glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
-                renderEngine.camera.position = {0, 0, -10};
+                renderEngine.camera.position = {0, 10, 0};
                 renderEngine.settings.rayTracing = true;
 //                Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 1});
 //                renderEngine.uploadRenderable(&quad, true);
@@ -261,7 +261,7 @@ int main(int argc, char **argv) {
                     recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                     int sum{0};
                     std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
-                    glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
+                    glfwSetWindowTitle(renderEngine.window, (std::string("Illumination Engine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
                 }
                 renderEngine.destroy();
             } catch (const std::exception& e) {
@@ -272,7 +272,7 @@ int main(int argc, char **argv) {
         }
     #endif
 #endif
-#ifdef CRYSTAL_ENGINE_OPENGL
+#ifdef ILLUMINATION_ENGINE_OPENGL
     if (input == "o") {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
@@ -350,7 +350,7 @@ int main(int argc, char **argv) {
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1.0f / (float)renderEngine.frameTime;
                 int sum{0};
                 std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
-                glfwSetWindowTitle(renderEngine.window, (std::string("CrystalEngine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
+                glfwSetWindowTitle(renderEngine.window, (std::string("Illumination Engine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
             }
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;

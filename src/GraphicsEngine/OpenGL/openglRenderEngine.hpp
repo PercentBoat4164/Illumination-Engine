@@ -39,7 +39,7 @@ public:
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes)/sizeof(int)];
         for (unsigned long i = 0; i < sizeof(sizes)/sizeof(int); ++i) {
-            std::string filename = "res/Logos/CrystalEngineLogo" + std::to_string(sizes[i]) + ".png";
+            std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
             if (!pixels) { throw std::runtime_error("failed to load texture image from file: " + filename); }
             icons[i].pixels = pixels;

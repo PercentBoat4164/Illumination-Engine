@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
-project(CrystalEngine)
+project(IlluminationEngine)
 
 # Set CMake variables
 set(OpenGL_GL_PREFERENCE LEGACY)
@@ -7,11 +7,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-set(CRYSTAL_ENGINE_PREFER_PRE_INSTALLED true)
+set(ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED true)
 
 # Get packages
 find_package(OpenGL REQUIRED) # install with "sudo apt-get install libglu1-mesa-dev mesa-common-dev"
-if (CRYSTAL_ENGINE_PREFER_PRE_INSTALLED)
+if (ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED)
     find_package(Vulkan) # install with "wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.176-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.176-focal.list;sudo apt update;sudo apt install vulkan-sdk"
     find_package(GLEW) # install with "sudo apt install libglew-dev"
     find_package(glfw3 3.3) # install with "sudo apt install libglfw3-dev"
@@ -33,7 +33,7 @@ if (NOT $ENV{CLION_IDE})
 endif()
 
 # Generate executable
-add_executable(CrystalEngine src/main.cpp)
+add_executable(IlluminationEngine src/main.cpp)
 
 # Add dependencies
 if (NOT VulkanFound)
@@ -48,38 +48,38 @@ endif()
 if (NOT glm_FOUND)
     add_subdirectory(deps/glm)
     message("Building with packaged glm")
-    target_link_libraries(CrystalEngine PUBLIC glm)
+    target_link_libraries(IlluminationEngine PUBLIC glm)
 else()
     message("Building with pre-installed glm")
-    target_link_libraries(CrystalEngine PUBLIC glm)
+    target_link_libraries(IlluminationEngine PUBLIC glm)
 endif()
 if (NOT glfw3_FOUND)
     add_subdirectory(deps/glfw)
     include_directories(deps/glfw/include)
-    target_link_libraries(CrystalEngine PUBLIC glfw)
+    target_link_libraries(IlluminationEngine PUBLIC glfw)
     message("Building with packaged glfw")
 else()
-    target_link_libraries(CrystalEngine PUBLIC glfw)
+    target_link_libraries(IlluminationEngine PUBLIC glfw)
     message("Building with pre-installed glfw")
 endif()
 if (NOT GLEW_FOUND)
     add_subdirectory(deps/glew/build/cmake)
     include_directories(deps/glew/include)
-    target_link_libraries(CrystalEngine PUBLIC glew)
+    target_link_libraries(IlluminationEngine PUBLIC glew)
     message("Building with packaged glew")
 else()
-    target_link_libraries(CrystalEngine PUBLIC GLEW::GLEW)
+    target_link_libraries(IlluminationEngine PUBLIC GLEW::GLEW)
     message("Building with pre-installed glew")
 endif()
 if (Vulkan_FOUND)
     add_subdirectory(deps/vk-bootstrap)
-    target_link_libraries(CrystalEngine PUBLIC vk-bootstrap Vulkan::Vulkan)
+    target_link_libraries(IlluminationEngine PUBLIC vk-bootstrap Vulkan::Vulkan)
 endif()
-target_link_libraries(CrystalEngine PUBLIC OpenGL::GL)
+target_link_libraries(IlluminationEngine PUBLIC OpenGL::GL)
 
 # Add compile definitions based on supported features
-add_compile_definitions(CRYSTAL_ENGINE_OPENGL)
+add_compile_definitions(ILLUMINATION_ENGINE_OPENGL)
 if (Vulkan_FOUND)
-    add_compile_definitions(CRYSTAL_ENGINE_VULKAN)
-    add_compile_definitions(CRYSTAL_ENGINE_VULKAN_RAY_TRACING)
+    add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
+    add_compile_definitions(ILLUMINATION_ENGINE_VULKAN_RAY_TRACING)
 endif()

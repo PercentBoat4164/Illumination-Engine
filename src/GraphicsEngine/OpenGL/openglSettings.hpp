@@ -21,7 +21,7 @@ class OpenGLSettings {
 public:
     bool rayTracing{false};
     bool vSync{false}; // VSync is mandatory on Linux in OpenGL due to nVidia driver bugs.
-    std::string applicationName{"Crystal Engine"};
+    std::string applicationName{"Illumination Engine"};
     std::array<int, 3> applicationVersion{0, 0, 1};
     int msaaSamples{8};
     std::array<int, 2> defaultWindowResolution{800, 600};

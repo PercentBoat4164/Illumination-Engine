@@ -18,7 +18,7 @@
 class VulkanSettings {
 public:
     bool rayTracing{false};
-    std::string applicationName{"Crystal Engine"};
+    std::string applicationName{"Illumination Engine"};
     std::array<int, 3> applicationVersion{0, 0, 1};
     std::array<int, 3> requiredVulkanVersion{1, 2, 0};
     VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_8_BIT};
@@ -31,8 +31,7 @@ public:
     std::array<uint32_t, 2> resolution{defaultWindowResolution};
     int MAX_FRAMES_IN_FLIGHT{2};
     double fov{90};
-    //double renderDistance{1000000};
-    double renderDistance{512.0};
+    double renderDistance{1000000};
     double mouseSensitivity{0.1};
     float movementSpeed{2.5};
 
