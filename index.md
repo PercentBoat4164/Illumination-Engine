@@ -3,9 +3,9 @@ title: Home
 layout: default
 ---
 
-# Welcome to Crystal Engine!
+# Welcome to Illumination Engine!
 
-Crystal Engine is a cross-platform game development engine that is written in C++ that works on Windows and Linux.
+Illumination Engine is a cross-platform game development engine that is written in C++ that works on Windows and Linux.
 
 We hope to add macOS compatibility to the game engine in the coming months.
 
