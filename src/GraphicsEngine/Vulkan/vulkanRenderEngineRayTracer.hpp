@@ -27,7 +27,8 @@ public:
         vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         uint32_t imageIndex{0};
         VkResult result = renderEngineLink.vkAcquireNextImageKhr(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex); // Signals semaphore
-        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || framebufferResized) {
+            framebufferResized = false;
             rayTracingImage.destroy();
             Image::CreateInfo rayTracingImageCreateInfo{swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
             rayTracingImage.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -156,18 +157,20 @@ public:
         renderable->bottomLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
         renderable->deletionQueue.emplace_front([&](Renderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
         //build top level acceleration structure
+        auto identityMatrix = glm::identity<glm::mat4>();
+        VkTransformMatrixKHR vkIdentityMatrix = {};
         accelerationStructureManagerCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
         accelerationStructureManagerCreateInfo.bottomLevelAccelerationStructureDeviceAddress = renderable->bottomLevelAccelerationStructure.deviceAddress;
+        accelerationStructureManagerCreateInfo.accelerationStructureToModify = topLevelAccelerationStructure.accelerationStructure;
         accelerationStructureManagerCreateInfo.transformationMatrix = &renderable->transformationMatrix; // Make an identity matrix for this line. This will work for now because the transformation Matrix is always an identity matrix.
         accelerationStructureManagerCreateInfo.primitiveCount = renderables.size() + 1;
         //TODO: Allow choice of update vs rebuild to user. Currently is rebuild. Create new function in AccelerationStructure class for this.
-        topLevelAccelerationStructure.destroy();
         topLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
         //build descriptor set
         DescriptorSetManager::CreateInfo descriptorSetManagerCreateInfo{};
         descriptorSetManagerCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}, {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}};
         descriptorSetManagerCreateInfo.shaderStages = {static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR), VK_SHADER_STAGE_RAYGEN_BIT_KHR, static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR), VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR};
-        descriptorSetManagerCreateInfo.data = {&topLevelAccelerationStructure, &rayTracingImage, std::nullopt, &renderable->vertexBuffer, &renderable->indexBuffer};
+        descriptorSetManagerCreateInfo.data = {&topLevelAccelerationStructure, &rayTracingImage, std::nullopt, &renderable->vertexBuffer, &renderable->indexBuffer, &renderable->textureImages[0]};
         descriptorSetManager.create(&renderEngineLink, &descriptorSetManagerCreateInfo);
         engineDeletionQueue.emplace_front([&]{ descriptorSetManager.destroy(); });
         //build raytracing shaders
@@ -187,8 +190,8 @@ public:
         rayTracingPipelineManager.create(&renderEngineLink, &rayTracingPipelineManagerCreateInfo);
         engineDeletionQueue.emplace_front([&]{ rayTracingPipelineManager.destroy(); });
         // Create SBTs
-        const uint32_t handleSize = renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize;
-        const uint32_t handleSizeAligned = (renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(renderEngineLink.physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
+        const uint32_t handleSize = renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize;
+        const uint32_t handleSizeAligned = (renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
         const auto groupCount = static_cast<uint32_t>(shaders.size());
         const uint32_t SBTSize = groupCount * handleSizeAligned;
         std::vector<uint8_t> shaderHandleStorage(SBTSize);
@@ -209,7 +212,6 @@ public:
     }
 
     explicit VulkanRenderEngineRayTracer(GLFWwindow *attachWindow = nullptr, bool rayTracing = true) : VulkanRenderEngine(attachWindow, rayTracing) {
-        //TODO: Move initial creation of topLevelAccelerationStructure to here.
         engineDeletionQueue.emplace_front([&]{ topLevelAccelerationStructure.destroy(); });
     }
 
@@ -217,4 +219,5 @@ private:
     bool framebufferResized{false};
     float previousTime{};
     int currentFrame{};
+    int vertexSize{sizeof(Vertex)};
 };

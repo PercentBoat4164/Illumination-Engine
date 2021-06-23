@@ -9,12 +9,12 @@
 struct Vertex {
 public:
     glm::vec3 pos{};
-    glm::vec3 color{};
+    glm::vec4 color{};
     glm::vec2 texCoord{};
     glm::vec3 normal{};
 
     static VkVertexInputBindingDescription getBindingDescription() {
-        VkVertexInputBindingDescription bindingDescription;
+        VkVertexInputBindingDescription bindingDescription{};
         bindingDescription.binding = 0;
         bindingDescription.stride = sizeof(Vertex);
         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;

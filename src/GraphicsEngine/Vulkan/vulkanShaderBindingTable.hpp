@@ -18,7 +18,7 @@ public:
         VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
         bufferDeviceAddressInfo.buffer = buffer;
         deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
-        const uint32_t handleSizeAligned = (linkedRenderEngine->physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + linkedRenderEngine->physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(linkedRenderEngine->physicalDeviceInfo->physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
+        const uint32_t handleSizeAligned = (linkedRenderEngine->supportedPhysicalDeviceInfo.physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + linkedRenderEngine->supportedPhysicalDeviceInfo.physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(linkedRenderEngine->supportedPhysicalDeviceInfo.physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
         stridedDeviceAddressRegion.deviceAddress = deviceAddress;
         stridedDeviceAddressRegion.stride = handleSizeAligned;
         stridedDeviceAddressRegion.size = createdWith.handleCount * handleSizeAligned;

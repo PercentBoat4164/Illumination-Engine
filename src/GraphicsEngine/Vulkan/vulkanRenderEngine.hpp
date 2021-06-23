@@ -1,3 +1,25 @@
+/**@todo: Add multithreading support throughout the engine
+ * - LOW PRIORITY: GPU is busy 95-98% of the time.
+ * This will be a higher priority if GPU hits 80-90%.
+ * Focus is going to be put on making all engines work before perfecting any of them.*/
+
+/**@todo: Combine all of the engines into one.
+ * - LOW PRIORITY: This is optional, and not high on the list until ray tracing performance becomes horrendous.
+ * Perhaps create some type of hybrid engine that can both ray trace and rasterize.
+ * This would require a rewrite of some parts of the ray tracer, but might be worth it as it would help significantly in real-time scenarios.
+ */
+
+/**@todo: Add proper invalid input checks to and clean up the abstractions.
+ * - HIGH PRIORITY: This should happen before moving on to a new part of the game engine.
+ * This has already been started in vulkanDescriptorSet.hpp.
+ */
+
+/**@todo: Rework includes and required defines to work with any include order.
+ * - HIGH PRIORITY: This should happen before moving on to a new part of the game engine.
+ * This would also include prepackaging the vulkan SDK.
+ */
+
+
 #pragma once
 
 #include "vulkanRenderPass.hpp"
@@ -11,17 +33,15 @@
 #include "vulkanTexture.hpp"
 
 #include <VkBootstrap.h>
+#ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
 #include "../../../deps/glew/include/GL/glew.h"
+#endif
 #include <GLFW/glfw3.h>
 
 #include <deque>
 #include <functional>
 
-/**@todo: Add multithreading support throughout the engine
- * - LOW PRIORITY: GPU is busy 95-98% of the time.
- * This will be a higher priority if GPU hits 80-90%.
- * Focus is going to be put on making all engines work before perfecting any of them.*/
 class VulkanRenderEngine {
 private:
     vkb::Instance instance{};
@@ -37,7 +57,6 @@ protected:
     explicit VulkanRenderEngine(GLFWwindow *attachWindow = nullptr, bool rayTracing = false) {
         camera.settings = &settings;
         renderEngineLink.device = &device;
-        renderEngineLink.physicalDeviceInfo = &physicalDeviceInfo;
         renderEngineLink.swapchain = &swapchain;
         renderEngineLink.settings = &settings;
         renderEngineLink.commandPool = &commandBufferManager.commandPool;
@@ -60,7 +79,7 @@ protected:
         engineDeletionQueue.emplace_front([&] { vkb::destroy_instance(instance); });
         if (attachWindow == nullptr) { glfwInit(); }
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+        window = glfwCreateWindow(static_cast<int>(settings.resolution[0]), static_cast<int>(settings.resolution[1]), settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
         // load icon
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes)/sizeof(int)];
@@ -90,7 +109,7 @@ protected:
             extensionNames.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
             extensionNames.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
             extensionNames.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
-            extensionNames.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+            extensionNames.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);  // Maybe move this to be optional for both vulkan engines rather than simply required for the ray tracer?
             extensionNames.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
             extensionNames.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
             extensionNames.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
@@ -103,24 +122,31 @@ protected:
         //create logical device
         vkb::DeviceBuilder device_builder{phys_ret.value()};
         if (settings.rayTracing) {
-            VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES};
-            physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
-            VkPhysicalDeviceRayTracingPipelineFeaturesKHR physicalDeviceRayTracingPipelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR};
-            physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
-            VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR};
-            physicalDeviceAccelerationStructureFeatures.accelerationStructure = VK_TRUE;
-            vkb::detail::Result<vkb::Device> dev_ret = device_builder.add_pNext(&physicalDeviceBufferDeviceAddressFeatures).add_pNext(&physicalDeviceRayTracingPipelineFeatures).add_pNext(&physicalDeviceAccelerationStructureFeatures).build();
-            if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
-            device = dev_ret.value();
-            engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
-            //get physical device features and properties
+            //get features and properties physical device on temporary device with nothing enabled
+            vkb::detail::Result<vkb::Device> temporaryDevice = device_builder.build();
+            if (!temporaryDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + temporaryDevice.error().message() + "\n"); }
+            device = temporaryDevice.value();
             VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
-            deviceProperties2.pNext = &physicalDeviceInfo.physicalDeviceRayTracingPipelineProperties;
+            deviceProperties2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestProperty;
             vkGetPhysicalDeviceProperties2(device.physical_device.physical_device, &deviceProperties2);
             VkPhysicalDeviceFeatures2 deviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-            deviceFeatures2.pNext = &physicalDeviceInfo.physicalDeviceAccelerationStructureFeatures;
+            deviceFeatures2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestFeature;
             vkGetPhysicalDeviceFeatures2(device.physical_device.physical_device, &deviceFeatures2);
-            vkGetPhysicalDeviceMemoryProperties(phys_ret.value().physical_device, &physicalDeviceInfo.physicalDeviceMemoryProperties);
+            vkGetPhysicalDeviceMemoryProperties(phys_ret.value().physical_device, &renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
+            vkb::destroy_device(device);
+            //Enable required features
+            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
+            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = VK_TRUE;
+            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
+            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
+            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
+            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure = VK_TRUE;
+            vkb::detail::Result<vkb::Device> finalDevice = device_builder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature).build();
+            if (!finalDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + finalDevice.error().message() + "\n"); }
+            device = finalDevice.value();
+            engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
         } else {
             vkb::detail::Result<vkb::Device> dev_ret = device_builder.build();
             if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
@@ -157,7 +183,7 @@ protected:
         recreationDeletionQueue.clear();
         //Create swapchain
         vkb::SwapchainBuilder swapchainBuilder{ device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).set_desired_format({settings.rayTracing ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(settings.rayTracing ? VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
+        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).set_desired_format({settings.rayTracing ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(settings.rayTracing ? VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         swapchain = swap_ret.value();
         recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
@@ -201,7 +227,8 @@ protected:
             //re-upload renderables
             for (Renderable *renderable : renderables) { uploadRenderable(renderable, false); }
         }
-        if (initialized) { descriptorSetManager.update({&topLevelAccelerationStructure, &rayTracingImage, std::nullopt, std::nullopt, std::nullopt}); }
+        if (initialized) { descriptorSetManager.update({&topLevelAccelerationStructure, &rayTracingImage}, {0, 1}); }
+        renderEngineLink.swapchainImages = swapchain.get_images().value();
         //recreate framebuffers
         renderPassManager.recreateFramebuffers();
     }
@@ -317,5 +344,4 @@ public:
     GLFWwindow *window{};
     std::vector<Renderable *> renderables{};
     CommandBufferManager commandBufferManager{};
-    VulkanGraphicsEngineLink::PhysicalDeviceInfo physicalDeviceInfo{};
 };

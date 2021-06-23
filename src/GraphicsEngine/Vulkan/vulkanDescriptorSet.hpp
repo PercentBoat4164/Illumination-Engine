@@ -12,6 +12,12 @@ public:
         std::vector<VkDescriptorPoolSize> poolSizes{};
         std::vector<VkShaderStageFlagBits> shaderStages{};
         std::vector<std::optional<std::variant<AccelerationStructure *, Image *, Buffer *>>> data{};
+
+        //Optional
+        u_int32_t maxIndex{1};
+
+        //Required if maxIndex is used
+        VkDescriptorBindingFlagsEXT flags{0};
     };
 
     VkDescriptorPool descriptorPool{};
@@ -27,7 +33,9 @@ public:
     void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
-        //Create descriptor layout from bindings
+        if (createdWith.maxIndex > 0) { assert(linkedRenderEngine->enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount); }
+        assert(!createdWith.data.empty());
+        assert(createdWith.data.size() == createdWith.shaderStages.size() && createdWith.data.size() == createdWith.poolSizes.size());
         std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings{};
         descriptorSetLayoutBindings.reserve(createdWith.poolSizes.size());
         for (unsigned long i = 0; i < createdWith.poolSizes.size(); ++i) {
@@ -38,7 +46,14 @@ public:
             descriptorSetLayoutBinding.descriptorCount = createdWith.poolSizes[i].descriptorCount;
             descriptorSetLayoutBindings.push_back(descriptorSetLayoutBinding);
         }
+        std::vector<VkDescriptorBindingFlagsEXT> flags{};
+        flags.resize(createdWith.data.size());
+        flags[flags.size() - 1] = createdWith.flags;
+        VkDescriptorSetLayoutBindingFlagsCreateInfoEXT descriptorSetLayoutBindingFlagsCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT};
+        descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = descriptorSetLayoutBindings.size();
+        descriptorSetLayoutBindingFlagsCreateInfo.pBindingFlags = flags.data();
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+        descriptorSetLayoutCreateInfo.pNext = &descriptorSetLayoutBindingFlagsCreateInfo;
         descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
         descriptorSetLayoutCreateInfo.bindingCount = descriptorSetLayoutBindings.size();
         if (vkCreateDescriptorSetLayout(linkedRenderEngine->device->device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor layout!"); }
@@ -49,13 +64,19 @@ public:
         descriptorPoolCreateInfo.maxSets = 1;
         if (vkCreateDescriptorPool(linkedRenderEngine->device->device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); }
         deletionQueue.emplace_front([&]{ vkDestroyDescriptorPool(linkedRenderEngine->device->device, descriptorPool, nullptr); descriptorPool = VK_NULL_HANDLE; });
+        VkDescriptorSetVariableDescriptorCountAllocateInfoEXT descriptorSetVariableDescriptorCountAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT};
+        descriptorSetVariableDescriptorCountAllocateInfo.descriptorSetCount = 1;
+        descriptorSetVariableDescriptorCountAllocateInfo.pDescriptorCounts = &createdWith.maxIndex;
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+        descriptorSetAllocateInfo.pNext = &descriptorSetVariableDescriptorCountAllocateInfo;
         descriptorSetAllocateInfo.descriptorPool = descriptorPool;
         descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
         descriptorSetAllocateInfo.descriptorSetCount = 1;
         if (vkAllocateDescriptorSets(linkedRenderEngine->device->device, &descriptorSetAllocateInfo, &descriptorSet) != VK_SUCCESS) { throw std::runtime_error("failed to allocate descriptor set!"); }
         std::vector<int> bindings{};
+        bindings.reserve(createdWith.data.size());
         std::vector<std::optional<std::variant<AccelerationStructure *, Image *, Buffer *>>> data{};
+        data.reserve(createdWith.data.size());
         for (int i = 0; i < createdWith.data.size(); ++i) {
             if (createdWith.data[i].has_value()) {
                 bindings.push_back(i);
@@ -66,26 +87,23 @@ public:
     }
 
     void update(std::vector<std::optional<std::variant<AccelerationStructure *, Image *, Buffer *>>> newData, std::vector<int> bindings = {}) {
+        if (bindings.empty()) { assert(newData.size() == createdWith.data.size()); } else { assert(bindings.size() == newData.size()); }
         std::vector<VkWriteDescriptorSetAccelerationStructureKHR> writeDescriptorSetAccelerationStructures{};
         writeDescriptorSetAccelerationStructures.reserve(createdWith.poolSizes.size());
         std::vector<VkDescriptorImageInfo> imageDescriptorInfos{};
         imageDescriptorInfos.reserve(createdWith.poolSizes.size());
         std::vector<VkDescriptorBufferInfo> bufferDescriptorInfos{};
         bufferDescriptorInfos.reserve(createdWith.poolSizes.size());
-        if (bindings.empty()) {
-            bindings.resize(newData.size());
-            std::iota(std::begin(bindings), std::end(bindings), 0);
-        }
+        if (bindings.empty()) { bindings.resize(newData.size(), 0); }
         std::vector<VkWriteDescriptorSet> descriptorWrites{};
         descriptorWrites.resize(bindings.size());
         for (unsigned long i = 0; i < bindings.size(); ++i) {
             if (newData[i].has_value()) {
-                newData[i] = newData[i].value();
                 VkWriteDescriptorSet writeDescriptorSet{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
                 writeDescriptorSet.dstSet = descriptorSet;
                 writeDescriptorSet.descriptorType = createdWith.poolSizes[bindings[i]].type;
                 writeDescriptorSet.dstBinding = bindings[i];
-                writeDescriptorSet.descriptorCount = 1;
+                writeDescriptorSet.descriptorCount = writeDescriptorSet.dstBinding == createdWith.data.size() ? createdWith.maxIndex : 1;
                 if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
                     VkWriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAccelerationStructure{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR};
                     writeDescriptorSetAccelerationStructure.accelerationStructureCount = 1;
@@ -124,7 +142,7 @@ public:
                     if (uniformBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no buffer given or given buffer has not been created!"); }
                     bufferDescriptorInfos.push_back(uniformBufferDescriptorInfo);
                     writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
-                } else { throw std::runtime_error("unsupported descriptor type!"); }
+                } else { throw std::runtime_error("unsupported descriptor type: " + std::to_string(writeDescriptorSet.descriptorType)); }
                 descriptorWrites[i] = writeDescriptorSet;
             }
         }

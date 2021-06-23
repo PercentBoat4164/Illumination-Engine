@@ -25,7 +25,7 @@ public:
     void update() {
         right = glm::normalize(glm::cross(front, up));
         view = {glm::lookAt(position, position + front, up)};
-        proj = {glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / settings->resolution[1], 0.1, settings->renderDistance)};
+        proj = {glm::perspective(glm::radians(settings->fov), double(settings->resolution[0]) / settings->resolution[1], 0.01, settings->renderDistance)};
         proj[1][1] *= -1.0f;
         CameraUBO ubo = {glm::inverse(view), glm::inverse(proj)};
         memcpy(uniformBufferObject.data, &ubo, sizeof(CameraUBO));

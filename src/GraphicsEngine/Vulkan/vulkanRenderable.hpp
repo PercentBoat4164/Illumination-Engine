@@ -12,10 +12,16 @@
 #include "vulkanGraphicsEngineLink.hpp"
 
 #include <glm/gtc/quaternion.hpp>
+
+#ifndef TINYOBJLOADER_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <../../../deps/tiny_obj_loader.h>
+#endif
+
+#ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#include <../../../deps/stb_image.h>
+#include "../../../deps/stb_image.h"
+#endif
 
 #include <fstream>
 #include <cstring>
@@ -66,7 +72,6 @@ public:
     Buffer indexBuffer{};
     Buffer transformationBuffer{};
     RasterizationPipelineManager pipelineManager{};
-    DescriptorSetManager descriptorSetManager{};
     AccelerationStructure bottomLevelAccelerationStructure{};
     UniformBufferObject uniformBufferObject{};
     std::vector<Texture> textureImages{};
@@ -103,7 +108,7 @@ private:
                 vertex.pos = { attrib.vertices[3 * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
                 vertex.texCoord = { attrib.texcoords[2 * index.texcoord_index], 1.f - attrib.texcoords[2 * index.texcoord_index + 1] };
                 vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
-                vertex.color = {1.f, 1.f, 1.f};
+                vertex.color = {1.0f, 1.0f, 1.0f, 0.0f};
                 if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
                     uniqueVertices.insert({vertex, static_cast<uint32_t>(vertices.size())});
                     vertices.push_back(vertex);
@@ -122,7 +127,7 @@ private:
     }
 
     //First shader is vertex rest are fragment
-    void loadShaders(const std::vector<const char *>& filenames, bool compile = true) {
+    void loadShaders(const std::vector<const char *> &filenames) {
         shaderCreateInfos.clear();
         shaderCreateInfos.reserve(filenames.size());
         for (const char *filename : filenames) {

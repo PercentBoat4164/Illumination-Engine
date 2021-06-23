@@ -67,6 +67,7 @@ public:
         scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo);
         accelerationStructureBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
         accelerationStructureBuildGeometryInfo.dstAccelerationStructure = accelerationStructure;
+        accelerationStructureBuildGeometryInfo.srcAccelerationStructure = createdWith.accelerationStructureToModify;
         accelerationStructureBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.deviceAddress;
         VkAccelerationStructureBuildRangeInfoKHR bottomLevelAccelerationStructureBuildRangeInfo{createdWith.primitiveCount};
         std::vector<VkAccelerationStructureBuildRangeInfoKHR *> pAccelerationStructureBuildRangeInfo{&bottomLevelAccelerationStructureBuildRangeInfo};

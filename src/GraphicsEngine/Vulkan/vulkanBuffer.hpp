@@ -8,7 +8,7 @@
 class Buffer {
 public:
     struct CreateInfo {
-        //Only required for buffer | shader binding table creation
+        //Only required for buffer || shader binding table creation
         VkDeviceSize size{};
         VkBufferUsageFlags usage{};
         VmaMemoryUsage allocationUsage{};
@@ -20,6 +20,9 @@ public:
         VkAccelerationStructureTypeKHR type{};
         VkTransformMatrixKHR *transformationMatrix{};
         uint32_t primitiveCount{1};
+
+        //Optional, only available for acceleration structures
+        VkAccelerationStructureKHR accelerationStructureToModify{};
 
         //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR
         VkDeviceAddress vertexBufferAddress{};

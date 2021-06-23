@@ -11,10 +11,20 @@
 class VulkanGraphicsEngineLink {
 public:
     struct PhysicalDeviceInfo {
-        VkPhysicalDeviceRayTracingPipelinePropertiesKHR physicalDeviceRayTracingPipelineProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR};
-        VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR};
+        // Properties
         VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
-    } *physicalDeviceInfo{};
+        VkPhysicalDeviceRayTracingPipelinePropertiesKHR physicalDeviceRayTracingPipelineProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR};
+
+        void *pNextHighestProperty = &physicalDeviceRayTracingPipelineProperties;
+
+        // Features
+        VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR};
+        VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES, &physicalDeviceAccelerationStructureFeatures};
+        VkPhysicalDeviceDescriptorIndexingFeaturesEXT physicalDeviceDescriptorIndexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT, &physicalDeviceBufferDeviceAddressFeatures};
+        VkPhysicalDeviceRayTracingPipelineFeaturesKHR physicalDeviceRayTracingPipelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR, &physicalDeviceDescriptorIndexingFeatures};
+
+        void *pNextHighestFeature = &physicalDeviceRayTracingPipelineFeatures;
+    };
 
     VulkanSettings *settings = nullptr;
     vkb::Device *device{};
@@ -34,6 +44,8 @@ public:
     PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR{};
     PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR{};
     PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
+    PhysicalDeviceInfo supportedPhysicalDeviceInfo{};
+    PhysicalDeviceInfo enabledPhysicalDeviceInfo{};
 
     void build() {
         vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(vkGetDeviceProcAddr(device->device, "vkGetBufferDeviceAddressKHR"));

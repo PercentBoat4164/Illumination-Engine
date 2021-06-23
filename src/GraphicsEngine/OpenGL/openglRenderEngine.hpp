@@ -3,15 +3,17 @@
 #include "openglSettings.hpp"
 #include "openglCamera.hpp"
 
+#ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
 #include "../../../deps/glew/include/GL/glew.h"
+#endif
+
+#include <GLFW/glfw3.h>
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../../deps/stb_image.h"
 #endif
-
-#include <GLFW/glfw3.h>
 
 #include <array>
 #include <string>
