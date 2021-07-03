@@ -2,6 +2,7 @@
 
 #include "openglSettings.hpp"
 #include "openglCamera.hpp"
+#include "openglRenderable.hpp"
 
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
@@ -25,9 +26,7 @@ public:
     GLFWwindow *window{};
     OpenGLSettings settings{};
     OpenGLCamera camera{&settings};
-    GLuint vertexBuffer{};
-    GLuint programID{};
-    GLuint modelMatrixID{};
+    std::vector<OpenGLRenderable *> renderables;
 
     explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
@@ -61,32 +60,31 @@ public:
         #if defined(_WIN32)
         glfwSwapInterval(settings.vSync ? 1 : 0);
         #else
-        glfwSwapInterval(1); // VSync is mandatory on Linux in OpenGL due to nVidia driver bugs.
+        glfwSwapInterval(1); // VSync is mandatory on Linux in OpenGL due to nVidia driver bugs?
         #endif
         glewExperimental = true;
         if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
-        GLuint VertexArrayID;
-        glGenVertexArrays(1, &VertexArrayID);
-        glBindVertexArray(VertexArrayID);
-        programID = loadShaders({"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
-        modelMatrixID = glGetUniformLocation(programID, "MVP");
-        //Create vertex buffer
-        glGenBuffers(1, &vertexBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+    }
+
+    void uploadRenderable(OpenGLRenderable *renderable, bool append = true) {
+        renderable->loadModel(renderable->modelFilename);
+        renderable->loadShaders(renderable->shaderFilenames);
+        renderable->loadTextures(renderable->textureFilenames);
+        if (append) { renderables.push_back(renderable); }
     }
 
     bool update() {
         if (glfwWindowShouldClose(window)) { return true; }
         glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(programID);
-        glUniformMatrix4fv((GLint)modelMatrixID, 1, GL_FALSE, &camera.update()[0][0]);
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDisableVertexAttribArray(0);
+        for (OpenGLRenderable *renderable : renderables) {
+            glUseProgram(renderable->programID);
+            glUniformMatrix4fv((GLint)renderable->modelMatrixID, 1, GL_FALSE, &camera.update()[0][0]);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, renderable->textures[0]);
+            glBindVertexArray(renderable->vertexArrayObject);
+            glDrawElements(GL_TRIANGLES, (GLsizei)renderable->vertices.size(), GL_UNSIGNED_INT, nullptr);
+        }
         glfwSwapBuffers(window);
         auto currentTime = (float)glfwGetTime();
         frameTime = currentTime - previousTime;
@@ -146,44 +144,6 @@ private:
     static void cleanUp() {
         glFinish();
         glfwTerminate();
-    }
-
-    static GLuint loadShaders(const std::array<std::string, 2>& paths) {
-        GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-        GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-        std::array<GLuint, 2> shaderIDs = {vertexShaderID, fragmentShaderID};
-        GLint Result = GL_FALSE;
-        int InfoLogLength{0};
-        for (unsigned int i = 0; i < paths.size(); i++) {
-            std::ifstream file(paths[i], std::ios::in);
-            if (!file.is_open()) { throw std::runtime_error("failed to load shader: " + paths[i]); }
-            std::stringstream stringStream;
-            stringStream << file.rdbuf();
-            std::string shaderCode = stringStream.str();
-            file.close();
-            char const *sourcePointer = shaderCode.c_str();
-            glShaderSource(shaderIDs[i], 1, &sourcePointer, nullptr);
-            glCompileShader(shaderIDs[i]);
-            glGetShaderiv(shaderIDs[i], GL_COMPILE_STATUS, &Result);
-            glGetShaderiv(shaderIDs[i], GL_INFO_LOG_LENGTH, &InfoLogLength);
-            if (InfoLogLength > 1) { throw std::runtime_error("failed to compile shader: " + paths[i]); }
-        }
-        GLuint ProgramID = glCreateProgram();
-        glAttachShader(ProgramID, vertexShaderID);
-        glAttachShader(ProgramID, fragmentShaderID);
-        glLinkProgram(ProgramID);
-        glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
-        glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-        if (InfoLogLength > 0){
-            std::vector<char> ProgramErrorMessage(InfoLogLength+1);
-            glGetProgramInfoLog(ProgramID, InfoLogLength, nullptr, &ProgramErrorMessage[0]);
-            printf("%s\n", &ProgramErrorMessage[0]);
-        }
-        glDetachShader(ProgramID, vertexShaderID);
-        glDetachShader(ProgramID, fragmentShaderID);
-        glDeleteShader(vertexShaderID);
-        glDeleteShader(fragmentShaderID);
-        return ProgramID;
     }
 
     GLFWmonitor *monitor{};

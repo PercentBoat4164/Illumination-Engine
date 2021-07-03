@@ -15,12 +15,12 @@
 
 #ifndef TINYOBJLOADER_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
-#include <../../../deps/tiny_obj_loader.h>
+#include <tiny_obj_loader.h>
 #endif
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../../deps/stb_image.h"
+#include <stb_image.h>
 #endif
 
 #include <fstream>
@@ -28,9 +28,9 @@
 
 //TODO: Add instancing
 //TODO: Rewrite this entire class to work better with the ray tracer.
-class Renderable {
+class VulkanRenderable {
 public:
-    Renderable(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
+    VulkanRenderable(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
         position = initialPosition;
         rotation = initialRotation;
         scale = initialScale;
@@ -53,7 +53,7 @@ public:
 
     void destroy() {
         for (Image &textureImage : textureImages) { textureImage.destroy(); }
-        for (const std::function<void(Renderable)>& function : deletionQueue) { function(*this); }
+        for (const std::function<void(VulkanRenderable)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
     }
 
@@ -64,9 +64,9 @@ public:
         memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(UniformBufferObject));
     }
 
-    std::deque<std::function<void(Renderable asset)>> deletionQueue{};
+    std::deque<std::function<void(VulkanRenderable asset)>> deletionQueue{};
     std::vector<uint32_t> indices{};
-    std::vector<Vertex> vertices{};
+    std::vector<VulkanVertex> vertices{};
     Buffer uniformBuffer{};
     Buffer vertexBuffer{};
     Buffer indexBuffer{};
@@ -88,7 +88,7 @@ public:
     VkTransformMatrixKHR transformationMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 
 private:
-    void loadModel(const char *filename) {
+    static void loadModel(const char *filename) {
         vertices.clear();
         indices.clear();
         tinyobj::attrib_t attrib;
@@ -100,11 +100,11 @@ private:
         for (const auto& shape : shapes) { reserveCount += shape.mesh.indices.size(); }
         indices.reserve(reserveCount);
         vertices.reserve(reserveCount * (2 / 3)); // Allocates too much space! Let's procrastinate cutting it down.
-        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+        std::unordered_map<VulkanVertex, uint32_t> uniqueVertices{};
         uniqueVertices.reserve(reserveCount * (2 / 3)); // Also allocates too much space, but it will be deleted at the end of the function, so we don't care
         for (const auto& shape : shapes) {
             for (const auto& index : shape.mesh.indices) {
-                Vertex vertex{};
+                VulkanVertex vertex{};
                 vertex.pos = { attrib.vertices[3 * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
                 vertex.texCoord = { attrib.texcoords[2 * index.texcoord_index], 1.f - attrib.texcoords[2 * index.texcoord_index + 1] };
                 vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
@@ -117,7 +117,7 @@ private:
             }
         }
         // Remove unneeded space at end of vertices at the last minute
-        std::vector<Vertex> tmp = vertices;
+        std::vector<VulkanVertex> tmp = vertices;
         vertices.swap(tmp);
         triangleCount = static_cast<uint32_t>(indices.size()) / 3;
     }

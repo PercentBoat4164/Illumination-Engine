@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-set(ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED true)
+set(ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED false)
 
 # Get packages
 find_package(OpenGL REQUIRED) # install with "sudo apt-get install libglu1-mesa-dev mesa-common-dev"
@@ -33,17 +33,17 @@ if (NOT $ENV{CLION_IDE})
 endif()
 
 # Generate executable
-add_executable(IlluminationEngine src/main.cpp)
+add_executable(IlluminationEngine src/main.cpp src/GraphicsEngine/OpenGL/openglVertex.hpp)
 
 # Add dependencies
 if (NOT Vulkan_FOUND)
-    if (WIN32)
-        find_library(Vulkan_LIBRARY NAMES vulkan-1 vulkan HINTS "${CMAKE_SOURCE_DIR}/deps/vulkanHeaders")
-    else()
-        find_library(Vulkan_LIBRARY NAMES vulkan HINTS "${CMAKE_SOURCE_DIR}/deps/vulkanHeaders")
-    endif()
-    message("Building with packaged Vulkan")
-    link_libraries(${Vulkan_LIBRARY})
+#    if (WIN32)
+#        find_library(Vulkan_LIBRARY NAMES vulkan-1 vulkan HINTS "${CMAKE_SOURCE_DIR}/deps/vulkanHeaders")
+#    else()
+#        find_library(Vulkan_LIBRARY NAMES vulkan HINTS "${CMAKE_SOURCE_DIR}/deps/vulkanHeaders")
+#    endif()
+#    message("Building with packaged Vulkan")
+#    link_libraries(${Vulkan_LIBRARY})
 else()
     message("Building with pre-installed Vulkan")
 endif()
