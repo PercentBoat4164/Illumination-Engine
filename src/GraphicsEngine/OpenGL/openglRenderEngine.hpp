@@ -28,13 +28,63 @@ public:
     OpenGLCamera camera{&settings};
     std::vector<OpenGLRenderable *> renderables;
 
+    static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
+        if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
+        std::cout << "---------------" << std::endl;
+        std::cout << "Debug message (" << id << "): " <<  message << std::endl;
+        switch (source) {
+            case GL_DEBUG_SOURCE_API:               std::cout << "Source: API"; break;
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     std::cout << "Source: Window System"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: Shader Compiler"; break;
+            case GL_DEBUG_SOURCE_THIRD_PARTY:       std::cout << "Source: Third Party"; break;
+            case GL_DEBUG_SOURCE_APPLICATION:       std::cout << "Source: Application"; break;
+            case GL_DEBUG_SOURCE_OTHER:             std::cout << "Source: Other"; break;
+            default:                                std::cout << "Source: Unknown"; break;
+        }
+        std::cout << std::endl;
+        switch (type) {
+            case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error"; break;
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behaviour"; break;
+            case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability"; break;
+            case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Performance"; break;
+            case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker"; break;
+            case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
+            case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
+            case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
+            default:                                std::cout << "Type: Unknown"; break;
+        }
+        std::cout << std::endl;
+        switch (severity) {
+            case GL_DEBUG_SEVERITY_HIGH:            std::cout << "Severity: high"; break;
+            case GL_DEBUG_SEVERITY_MEDIUM:          std::cout << "Severity: medium"; break;
+            case GL_DEBUG_SEVERITY_LOW:             std::cout << "Severity: low"; break;
+            case GL_DEBUG_SEVERITY_NOTIFICATION:    std::cout << "Severity: notification"; break;
+            default:                                std::cout << "Source: Unknown"; break;
+        }
+        std::cout << std::endl;
+        std::cout << std::endl;
+    }
+
+
     explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
+        window = glfwCreateWindow(1, 1, "Finding OpenGL version...", nullptr, nullptr);
+        glfwMakeContextCurrent(window);
+        std::string version = std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)));
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        glfwInit();
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(version.substr(0, 1)));
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(version.substr(2, 1)));
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+        #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS.
+        #endif
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        #ifdef _DEBUG
+        #endif
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
         // load icon
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
@@ -64,6 +114,16 @@ public:
         #endif
         glewExperimental = true;
         if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
+        #ifdef _DEBUG
+        int flags;
+        glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+        if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+            glEnable(GL_DEBUG_OUTPUT);
+            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // makes sure errors are displayed synchronously
+            glDebugMessageCallback(glDebugOutput, nullptr);
+            glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+        }
+        #endif
     }
 
     void uploadRenderable(OpenGLRenderable *renderable, bool append = true) {
@@ -75,15 +135,18 @@ public:
 
     bool update() {
         if (glfwWindowShouldClose(window)) { return true; }
-        glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for (OpenGLRenderable *renderable : renderables) {
-            glUseProgram(renderable->programID);
-            glUniformMatrix4fv((GLint)renderable->modelMatrixID, 1, GL_FALSE, &camera.update()[0][0]);
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, renderable->textures[0]);
+            glBindTexture(GL_TEXTURE_2D, renderable->textureIDs[0]);
+            glUseProgram(renderable->programID);
             glBindVertexArray(renderable->vertexArrayObject);
-            glDrawElements(GL_TRIANGLES, (GLsizei)renderable->vertices.size(), GL_UNSIGNED_INT, nullptr);
+            glUniformMatrix4fv(glGetUniformLocation(renderable->programID, "MVP"), 1, GL_FALSE, &camera.update()[0][0]);
+            glUniform1i(glGetUniformLocation(renderable->programID, "texture"), 0);
+            glDrawElements(GL_TRIANGLES, (GLsizei)renderable->indices.size(), GL_UNSIGNED_INT, nullptr);
         }
         glfwSwapBuffers(window);
         auto currentTime = (float)glfwGetTime();
@@ -139,8 +202,6 @@ public:
     int frameNumber{};
 
 private:
-    constexpr static const GLfloat g_vertex_buffer_data[] = {-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f};
-
     static void cleanUp() {
         glFinish();
         glfwTerminate();

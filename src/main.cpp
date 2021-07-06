@@ -62,8 +62,8 @@ void openglCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
 }
 
 void openglWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
-    auto pVulkanRenderEngineRasterizer = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
-    if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
+    auto pOpenGlRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
+    if (!pOpenGlRenderEngine->settings.fullscreen) { pOpenGlRenderEngine->settings.windowPosition = {xPos, yPos}; }
 }
 #endif
 
@@ -276,8 +276,9 @@ int main(int argc, char **argv) {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
-            renderEngine.camera.position = {0, 3, 1};
+            OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
             OpenGLRenderable cube = OpenGLRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
+            renderEngine.uploadRenderable(&vikingRoom);
             renderEngine.uploadRenderable(&cube);
             double lastTab{0};
             double lastF2{0};
@@ -288,7 +289,7 @@ int main(int argc, char **argv) {
             std::vector<float> recordedFPS{};
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
-            renderEngine.camera.position = {0, 3, 1};
+            renderEngine.camera.position = {0, 3, 0};
             while (renderEngine.update() != 1) {
                 //Process inputs
                 glfwPollEvents();

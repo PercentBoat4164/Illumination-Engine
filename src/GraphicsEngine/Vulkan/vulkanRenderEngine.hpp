@@ -67,7 +67,7 @@ protected:
         //build instance
         vkb::InstanceBuilder builder;
         builder.set_app_name(settings.applicationName.c_str()).set_app_version(settings.applicationVersion[0], settings.applicationVersion[1], settings.applicationVersion[2]).require_api_version(settings.requiredVulkanVersion[0], settings.requiredVulkanVersion[1], settings.requiredVulkanVersion[2]);
-        #ifndef _NDEBUG
+        #ifdef _DEBUG
         /* Validation layers hamper performance. Therefore to eek out extra speed from the GPU they will be turned off if the program is run in 'Release' mode. */
         if (systemInfo->validation_layers_available) { builder.request_validation_layers(); }
         #endif
