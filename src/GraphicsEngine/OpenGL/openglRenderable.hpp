@@ -23,15 +23,20 @@ public:
     const char *modelFilename{};
     std::vector<unsigned int> textureIDs{};
     GLuint programID{};
-    GLuint modelMatrixID{};
     unsigned int vertexBuffer{};
     unsigned int vertexArrayObject{};
     unsigned int indexBuffer{};
     std::vector<uint32_t> indices{};
     std::vector<OpenGLVertex> vertices{};
     uint32_t triangleCount{};
+    glm::vec3 position{};
+    glm::vec3 rotation{};
+    glm::vec3 scale{};
 
-    explicit OpenGLRenderable(const char *modelPath, const std::vector<const char *>& texturePaths, const std::vector<const char *>& shaderPaths) {
+    explicit OpenGLRenderable(const char *modelPath, const std::vector<const char *>& texturePaths, const std::vector<const char *>& shaderPaths, glm::vec3 initialPosition = {0.0f, 0.0f, 0.0f}, glm::vec3 initialRotation = {0.0f, 0.0f, 0.0f}, glm::vec3 initialScale = {1.0f, 1.0f, 1.0f}) {
+        position = initialPosition;
+        rotation = initialRotation;
+        scale = initialScale;
         textureFilenames = texturePaths;
         modelFilename = modelPath;
         shaderFilenames = shaderPaths;
@@ -148,6 +153,5 @@ public:
         glDetachShader(programID, fragmentShaderID);
         glDeleteShader(vertexShaderID);
         glDeleteShader(fragmentShaderID);
-        modelMatrixID = glGetUniformLocation(programID, "MVP");
     }
 };

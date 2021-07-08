@@ -276,7 +276,7 @@ int main(int argc, char **argv) {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
-            OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
+            OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {5.0f, 5.0f, 5.0f});
             OpenGLRenderable cube = OpenGLRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
             renderEngine.uploadRenderable(&vikingRoom);
             renderEngine.uploadRenderable(&cube);
@@ -294,19 +294,19 @@ int main(int argc, char **argv) {
                 //Process inputs
                 glfwPollEvents();
                 float velocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
-//                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-//                    for (VulkanRenderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
-//                    renderEngine.updateSettings(false);
-                /*}*/ if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
+                    for (OpenGLRenderable *renderable : renderEngine.renderables) { renderEngine.uploadRenderable(renderable, false); }
+                    renderEngine.updateSettings();
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
-                    renderEngine.updateSettings(true);
+                    renderEngine.updateSettings();
                     lastF2 = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = 1;
-                    renderEngine.updateSettings(true);
+                    renderEngine.updateSettings();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_4)) {
                     renderEngine.settings.msaaSamples = 4;
-                    renderEngine.updateSettings(true);
+                    renderEngine.updateSettings();
                 }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
@@ -339,7 +339,7 @@ int main(int argc, char **argv) {
                     if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
                     if (renderEngine.settings.fullscreen) {
                         renderEngine.settings.fullscreen = false;
-                        renderEngine.updateSettings(true);
+                        renderEngine.updateSettings();
                     } if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -348,6 +348,8 @@ int main(int argc, char **argv) {
                     }
                     lastEsc = glfwGetTime();
                 }
+                //move renderables
+                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1.0f / (float)renderEngine.frameTime;
                 int sum{0};

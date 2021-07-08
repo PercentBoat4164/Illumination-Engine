@@ -27,6 +27,7 @@ public:
     OpenGLSettings settings{};
     OpenGLCamera camera{&settings};
     std::vector<OpenGLRenderable *> renderables;
+    bool framebufferResized{false};
 
     static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
         if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
@@ -66,6 +67,12 @@ public:
         std::cout << std::endl;
     }
 
+    static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
+        auto pOpenGlRenderEngine = (OpenGLRenderEngine *)glfwGetWindowUserPointer(pWindow);
+        pOpenGlRenderEngine->framebufferResized = true;
+        pOpenGlRenderEngine->settings.resolution[0] = width;
+        pOpenGlRenderEngine->settings.resolution[1] = height;
+    }
 
     explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
@@ -78,12 +85,13 @@ public:
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(version.substr(0, 1)));
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(version.substr(2, 1)));
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-        #ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS.
-        #endif
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
+        #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        #endif
         #ifdef _DEBUG
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         #endif
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
         // load icon
@@ -107,6 +115,8 @@ public:
         glfwSetWindowUserPointer(window, this);
         if (window == nullptr) { throw std::runtime_error("failed to open GLFW window!"); }
         glfwMakeContextCurrent(window);
+        glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         #if defined(_WIN32)
         glfwSwapInterval(settings.vSync ? 1 : 0);
         #else
@@ -139,20 +149,25 @@ public:
         glEnable(GL_CULL_FACE);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
+        glScissor(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
         for (OpenGLRenderable *renderable : renderables) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, renderable->textureIDs[0]);
             glUseProgram(renderable->programID);
             glBindVertexArray(renderable->vertexArrayObject);
-            glUniformMatrix4fv(glGetUniformLocation(renderable->programID, "MVP"), 1, GL_FALSE, &camera.update()[0][0]);
+            glm::quat quaternion = glm::quat(glm::radians(renderable->rotation));
+            glUniformMatrix4fv(glGetUniformLocation(renderable->programID, "MVP"), 1, GL_FALSE, &(camera.update() * glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), renderable->scale), glm::angle(quaternion), glm::axis(quaternion)), (renderable->position)))[0][0]);
             glUniform1i(glGetUniformLocation(renderable->programID, "texture"), 0);
             glDrawElements(GL_TRIANGLES, (GLsizei)renderable->indices.size(), GL_UNSIGNED_INT, nullptr);
         }
+        glFlush();
         glfwSwapBuffers(window);
         auto currentTime = (float)glfwGetTime();
         frameTime = currentTime - previousTime;
         previousTime = currentTime;
         ++frameNumber;
+        framebufferResized = false;
         return false;
     }
 
@@ -160,7 +175,7 @@ public:
         cleanUp();
     }
 
-    void updateSettings(bool updateAll = false) {
+    void updateSettings() {
         if (settings.fullscreen) {
             glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);
             //find monitor that window is on
@@ -186,15 +201,12 @@ public:
             }
             //put window in fullscreen on that monitor
             glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
-        } else { glfwSetWindowMonitor(window, nullptr, settings.windowPosition[0], settings.windowPosition[1], settings.defaultWindowResolution[0], settings.defaultWindowResolution[1], settings.refreshRate); }
+            settings.resolution = {bestMonitorWidth, bestMonitorHeight};
+        } else {
+            glfwSetWindowMonitor(window, nullptr, settings.windowPosition[0], settings.windowPosition[1], settings.defaultWindowResolution[0], settings.defaultWindowResolution[1], settings.refreshRate);
+            settings.resolution = settings.defaultWindowResolution;
+        }
         glfwSetWindowTitle(window, settings.applicationName.c_str());
-        if (updateAll) { rebuildOpenGLInstance(); }
-    }
-
-    void rebuildOpenGLInstance() {
-        glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
-        glViewport(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
-        glScissor(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
     }
 
     double frameTime{};
