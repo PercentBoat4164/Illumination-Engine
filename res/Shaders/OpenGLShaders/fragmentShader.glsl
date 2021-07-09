@@ -6,8 +6,8 @@ in vec3 normal;
 
 out vec4 fragColor;
 
-uniform sampler2D texture;
+uniform sampler2D albedo;
 
 void main() {
-    fragColor = texture(texture, texCoords) * color;
+    fragColor = texture(albedo, texCoords) * color;
 }
