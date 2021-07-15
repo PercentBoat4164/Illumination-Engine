@@ -62,8 +62,8 @@ void openglCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
 }
 
 void openglWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
-    auto pVulkanRenderEngineRasterizer = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
-    if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
+    auto pOpenGlRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
+    if (!pOpenGlRenderEngine->settings.fullscreen) { pOpenGlRenderEngine->settings.windowPosition = {xPos, yPos}; }
 }
 #endif
 
@@ -83,16 +83,16 @@ int main(int argc, char **argv) {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer(nullptr, false);
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
             renderEngine.camera.position = {0, 2, 0};
-//            Renderable cube = Renderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
-//            Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
-//            Renderable vikingRoom = Renderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            Renderable statue = Renderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
-//            Renderable ball = Renderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
-//            renderEngine.uploadRenderable(&cube, true);
-//            renderEngine.uploadRenderable(&quad, true);
-//            renderEngine.uploadRenderable(&vikingRoom, true);
+            VulkanRenderable cube = VulkanRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+            VulkanRenderable quad = VulkanRenderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
+            VulkanRenderable vikingRoom = VulkanRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            VulkanRenderable statue = VulkanRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+            VulkanRenderable ball = VulkanRenderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
+            renderEngine.uploadRenderable(&cube, true);
+            renderEngine.uploadRenderable(&quad, true);
+            renderEngine.uploadRenderable(&vikingRoom, true);
             renderEngine.uploadRenderable(&statue, true);
-//            renderEngine.uploadRenderable(&ball, true);
+            renderEngine.uploadRenderable(&ball, true);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
@@ -103,12 +103,11 @@ int main(int argc, char **argv) {
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
             while (renderEngine.update()) {
-                renderEngine.camera.update();
                 //Process inputs
                 glfwPollEvents();
                 float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-                    for (Renderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
+                    for (VulkanRenderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
                     renderEngine.updateSettings(false);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
@@ -161,8 +160,8 @@ int main(int argc, char **argv) {
                     lastEsc = glfwGetTime();
                 }
                 //move renderables
-//                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
-//                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
+                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
+                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};
@@ -183,13 +182,13 @@ int main(int argc, char **argv) {
                 glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
                 renderEngine.camera.position = {0, 10, 0};
                 renderEngine.settings.rayTracing = true;
-//                Renderable quad = Renderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 1});
+//                VulkanRenderable quad = VulkanRenderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 1});
 //                renderEngine.uploadRenderable(&quad, true);
-//                Renderable cube = Renderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
+//                VulkanRenderable cube = VulkanRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
 //                renderEngine.uploadRenderable(&cube, true);
-//                Renderable viking_room = Renderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
+//                VulkanRenderable viking_room = VulkanRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
 //                renderEngine.uploadRenderable(&viking_room, true);
-                Renderable ancientStatue = Renderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
+                VulkanRenderable ancientStatue = VulkanRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
                 renderEngine.uploadRenderable(&ancientStatue, true);
                 double lastTab{0};
                 double lastF2{0};
@@ -205,7 +204,7 @@ int main(int argc, char **argv) {
                     glfwPollEvents();
                     float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-                        for (Renderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
+                        for (VulkanRenderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
                         renderEngine.updateSettings(false);
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                         renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
@@ -277,7 +276,10 @@ int main(int argc, char **argv) {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
-            renderEngine.camera.position = {0, 3, 1};
+            OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {5.0f, 5.0f, 5.0f});
+            OpenGLRenderable cube = OpenGLRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
+            renderEngine.uploadRenderable(&vikingRoom);
+            renderEngine.uploadRenderable(&cube);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
@@ -287,24 +289,24 @@ int main(int argc, char **argv) {
             std::vector<float> recordedFPS{};
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
-            renderEngine.camera.position = {0, 3, 1};
+            renderEngine.camera.position = {0, 3, 0};
             while (renderEngine.update() != 1) {
                 //Process inputs
                 glfwPollEvents();
                 float velocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
-//                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-//                    for (Renderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
-//                    renderEngine.updateSettings(false);
-                /*}*/ if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
+                    for (OpenGLRenderable *renderable : renderEngine.renderables) { renderEngine.uploadRenderable(renderable, false); }
+                    renderEngine.updateSettings();
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
-                    renderEngine.updateSettings(true);
+                    renderEngine.updateSettings();
                     lastF2 = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = 1;
-                    renderEngine.updateSettings(true);
+                    renderEngine.updateSettings();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_4)) {
                     renderEngine.settings.msaaSamples = 4;
-                    renderEngine.updateSettings(true);
+                    renderEngine.updateSettings();
                 }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
@@ -337,7 +339,7 @@ int main(int argc, char **argv) {
                     if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
                     if (renderEngine.settings.fullscreen) {
                         renderEngine.settings.fullscreen = false;
-                        renderEngine.updateSettings(true);
+                        renderEngine.updateSettings();
                     } if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -346,6 +348,8 @@ int main(int argc, char **argv) {
                     }
                     lastEsc = glfwGetTime();
                 }
+                //move renderables
+                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1.0f / (float)renderEngine.frameTime;
                 int sum{0};

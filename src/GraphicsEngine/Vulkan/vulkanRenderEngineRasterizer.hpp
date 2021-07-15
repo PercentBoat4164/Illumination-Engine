@@ -39,7 +39,7 @@ public:
         VkRenderPassBeginInfo renderPassBeginInfo = renderPassManager.beginRenderPass(imageIndex);
         vkCmdBeginRenderPass(commandBufferManager.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         camera.update();
-        for (Renderable *renderable : renderables) {
+        for (VulkanRenderable *renderable : renderables) {
             if (renderable->render) {
                 //update renderable
                 renderable->update(camera);

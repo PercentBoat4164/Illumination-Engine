@@ -11,10 +11,7 @@
 #include <array>
 #include <filesystem>
 
-#if defined(_WIN32)
-#define NOMINMAX
-#include <Windows.h>
-#else
+#ifndef _WIN32
 #include <climits>
 #include <unistd.h>
 #endif
@@ -22,7 +19,7 @@
 class OpenGLSettings {
 public:
     bool rayTracing{false};
-    bool vSync{false}; // VSync is mandatory on Linux in OpenGL due to nVidia driver bugs.
+    bool vSync{true};
     std::string applicationName{"Illumination Engine"};
     std::array<int, 3> applicationVersion{0, 0, 1};
     int msaaSamples{8};
