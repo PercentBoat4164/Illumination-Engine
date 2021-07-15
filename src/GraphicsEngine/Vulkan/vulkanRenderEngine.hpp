@@ -227,7 +227,7 @@ protected:
             //re-upload renderables
             for (Renderable *renderable : renderables) { uploadRenderable(renderable, false); }
         }
-        if (initialized) { descriptorSetManager.update({&topLevelAccelerationStructure, &rayTracingImage}, {0, 1}); }
+        if (initialized && settings.rayTracing) { descriptorSetManager.update({&topLevelAccelerationStructure, &rayTracingImage}, {0, 1}); }
         renderEngineLink.swapchainImages = swapchain.get_images().value();
         //recreate framebuffers
         renderPassManager.recreateFramebuffers();
