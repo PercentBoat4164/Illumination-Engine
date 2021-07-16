@@ -39,8 +39,7 @@ public:
         if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) { vkWaitForFences(device.device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX); }
         imagesInFlight[imageIndex] = inFlightFences[currentFrame];
         camera.update();
-        Renderable *renderable = renderables[0];
-        renderable->update(camera);
+        renderables[0]->update(camera);
         descriptorSetManager.update({&camera.uniformBufferObject}, {2});
         commandBufferManager.resetCommandBuffer((int)(imageIndex + (swapchain.image_count - 1)) % (int)swapchain.image_count);
         VkImage swapchainImage = renderEngineLink.swapchainImages[imageIndex];
@@ -122,29 +121,29 @@ public:
         return glfwWindowShouldClose(window) != 1;
     }
 
-    void uploadRenderable(Renderable *renderable, bool append) override {
+    void uploadRenderable(VulkanRenderable *renderable, bool append) override {
         //destroy previously created renderable if any
         renderable->destroy();
         //upload mesh, vertex, uniform, and transformation data
         Buffer::CreateInfo vertexBufferCreateInfo{sizeof(renderable->vertices[0]) * renderable->vertices.size(), VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         memcpy(renderable->vertexBuffer.create(&renderEngineLink, &vertexBufferCreateInfo), renderable->vertices.data(), sizeof(renderable->vertices[0]) * renderable->vertices.size());
-        renderable->deletionQueue.emplace_front([&](Renderable thisRenderable){ thisRenderable.vertexBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.vertexBuffer.destroy(); });
         Buffer::CreateInfo indexBufferCreateInfo{sizeof(renderable->indices[0]) * renderable->indices.size(), VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         memcpy(renderable->indexBuffer.create(&renderEngineLink, &indexBufferCreateInfo), renderable->indices.data(), sizeof(renderable->indices[0]) * renderable->indices.size());
-        renderable->deletionQueue.emplace_front([&](Renderable thisRenderable){ thisRenderable.indexBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.indexBuffer.destroy(); });
         Buffer::CreateInfo transformationBufferCreateInfo{sizeof(renderable->transformationMatrix), VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         memcpy(renderable->transformationBuffer.create(&renderEngineLink, &transformationBufferCreateInfo), &renderable->transformationMatrix, sizeof(VkTransformMatrixKHR));
-        renderable->deletionQueue.emplace_front([&](Renderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
         Buffer::CreateInfo uniformBufferCreateInfo{sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         memcpy(renderable->uniformBuffer.create(&renderEngineLink, &uniformBufferCreateInfo), &renderable->uniformBufferObject, sizeof(UniformBufferObject));
-        renderable->deletionQueue.emplace_front([&](Renderable thisRenderable){ thisRenderable.uniformBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.uniformBuffer.destroy(); });
         //upload textures
         renderable->textureImages.resize(renderable->textures.size());
         for (unsigned int i = 0; i < renderable->textures.size(); ++i) {
             Image::CreateInfo textureImageCreateInfo{VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, renderable->width, renderable->height};
             textureImageCreateInfo.filename = renderable->textures[i];
             renderable->textureImages[i].create(&renderEngineLink, &textureImageCreateInfo);
-            renderable->deletionQueue.emplace_front([&](const Renderable& thisRenderable){ for (Texture textureImage : thisRenderable.textureImages) { textureImage.destroy(); } });
+            renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable){ for (Texture textureImage : thisRenderable.textureImages) { textureImage.destroy(); } });
         }
         //build bottom level acceleration structure
         AccelerationStructure::CreateInfo accelerationStructureManagerCreateInfo{};
@@ -155,7 +154,7 @@ public:
         accelerationStructureManagerCreateInfo.primitiveCount = renderable->triangleCount;
         accelerationStructureManagerCreateInfo.transformationMatrix = &renderable->transformationMatrix;
         renderable->bottomLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
-        renderable->deletionQueue.emplace_front([&](Renderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
         //build top level acceleration structure
         auto identityMatrix = glm::identity<glm::mat4>();
         VkTransformMatrixKHR vkIdentityMatrix = {};
@@ -219,5 +218,5 @@ private:
     bool framebufferResized{false};
     float previousTime{};
     int currentFrame{};
-    int vertexSize{sizeof(Vertex)};
+    int vertexSize{sizeof(VulkanVertex)};
 };

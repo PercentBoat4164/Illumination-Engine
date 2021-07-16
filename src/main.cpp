@@ -82,11 +82,11 @@ int main(int argc, char **argv) {
         try {
             VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer(nullptr, false);
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
-            renderEngine.camera.position = {0, 2, 0};
-            VulkanRenderable cube = VulkanRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+            renderEngine.camera.position = {0, 0, 2};
+            VulkanRenderable cube = VulkanRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
             VulkanRenderable quad = VulkanRenderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
             VulkanRenderable vikingRoom = VulkanRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            VulkanRenderable statue = VulkanRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0});
+            VulkanRenderable statue = VulkanRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {7, 0, 0});
             VulkanRenderable ball = VulkanRenderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
             renderEngine.uploadRenderable(&cube, true);
             renderEngine.uploadRenderable(&quad, true);

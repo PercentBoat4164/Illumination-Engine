@@ -18,7 +18,7 @@ public:
             accelerationStructureGeometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
             accelerationStructureGeometry.geometry.triangles.vertexData = {createdWith.vertexBufferAddress};
             accelerationStructureGeometry.geometry.triangles.maxVertex = 3 * createdWith.primitiveCount;
-            accelerationStructureGeometry.geometry.triangles.vertexStride = sizeof(Vertex);
+            accelerationStructureGeometry.geometry.triangles.vertexStride = sizeof(VulkanVertex);
             accelerationStructureGeometry.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32;
             accelerationStructureGeometry.geometry.triangles.indexData = {createdWith.indexBufferAddress};
             accelerationStructureGeometry.geometry.triangles.transformData = {createdWith.transformationBufferAddress};

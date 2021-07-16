@@ -82,8 +82,8 @@ public:
         }
         //create graphics pipeline
         VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
-        VkVertexInputBindingDescription bindingDescription = Vertex::getBindingDescription();
-        std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = Vertex::getAttributeDescriptions();
+        VkVertexInputBindingDescription bindingDescription = VulkanVertex::getBindingDescription();
+        std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = VulkanVertex::getAttributeDescriptions();
         vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
         vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
         vertexInputStateCreateInfo.pVertexBindingDescriptions = &bindingDescription;

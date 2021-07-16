@@ -7,14 +7,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-set(ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED false)
+set(ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED true)
 
 # Get packages
 find_package(OpenGL REQUIRED) # install with "sudo apt-get install libglu1-mesa-dev mesa-common-dev"
+find_package(Vulkan) # install with "wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.176-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.176-focal.list;sudo apt update;sudo apt install vulkan-sdk"
 if (ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED)
-    find_package(Vulkan) # install with "wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.176-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.176-focal.list;sudo apt update;sudo apt install vulkan-sdk"
     find_package(GLEW) # install with "sudo apt install libglew-dev"
-    find_package(glfw3 3.3) # install with "sudo apt install libglfw3-dev"
+#    find_package(glfw3) # install with "sudo apt install libglfw3-dev" COMMENTED BECAUSE IT FAILS TO LINK AGAINST PRE-INSTALLED VERSIONS
     find_package(glm) # install with "sudo apt install libglm-dev"
 endif()
 
@@ -33,37 +33,24 @@ if (NOT $ENV{CLION_IDE})
 endif()
 
 # Generate executable
-add_executable(IlluminationEngine src/main.cpp src/GraphicsEngine/OpenGL/openglVertex.hpp)
+add_executable(IlluminationEngine src/main.cpp)
 
 # Add dependencies
-if (NOT Vulkan_FOUND)
-#    if (WIN32)
-#        find_library(Vulkan_LIBRARY NAMES vulkan-1 vulkan HINTS "${CMAKE_SOURCE_DIR}/deps/vulkanHeaders")
-#    else()
-#        find_library(Vulkan_LIBRARY NAMES vulkan HINTS "${CMAKE_SOURCE_DIR}/deps/vulkanHeaders")
-#    endif()
-#    message("Building with packaged Vulkan")
-#    link_libraries(${Vulkan_LIBRARY})
-else()
-    message("Building with pre-installed Vulkan")
-endif()
 if (NOT glm_FOUND)
     add_subdirectory(deps/glm)
     message("Building with packaged glm")
-    target_link_libraries(IlluminationEngine PUBLIC glm)
 else()
     message("Building with pre-installed glm")
-    target_link_libraries(IlluminationEngine PUBLIC glm)
 endif()
+target_link_libraries(IlluminationEngine PUBLIC glm::glm)
 if (NOT glfw3_FOUND)
     add_subdirectory(deps/glfw)
     include_directories(deps/glfw/include)
-    target_link_libraries(IlluminationEngine PUBLIC glfw)
     message("Building with packaged glfw")
 else()
-    target_link_libraries(IlluminationEngine PUBLIC glfw)
     message("Building with pre-installed glfw")
 endif()
+target_link_libraries(IlluminationEngine PUBLIC glfw)
 if (NOT GLEW_FOUND)
     add_subdirectory(deps/glew/build/cmake)
     include_directories(deps/glew/include)

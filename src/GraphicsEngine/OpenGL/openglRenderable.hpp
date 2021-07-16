@@ -55,8 +55,8 @@ public:
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glGenerateMipmap(GL_TEXTURE_2D);
             stbi_image_free(pixels);
         }
@@ -117,7 +117,7 @@ public:
         glEnableVertexAttribArray(3);
     }
 
-    GLuint loadShaders(const std::vector<const char *>& filenames) {
+    void loadShaders(const std::vector<const char *>& filenames) {
         assert(!filenames.empty());
         GLuint vertexShaderID{glCreateShader(GL_VERTEX_SHADER)};
         GLuint fragmentShaderID{glCreateShader(GL_FRAGMENT_SHADER)};

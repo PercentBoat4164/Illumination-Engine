@@ -15,12 +15,7 @@
 
 #ifndef TINYOBJLOADER_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
-#endif
-
-#ifndef STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <../../../deps/tiny_obj_loader.h>
 #endif
 
 #include <fstream>
@@ -88,7 +83,7 @@ public:
     VkTransformMatrixKHR transformationMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 
 private:
-    static void loadModel(const char *filename) {
+    void loadModel(const char *filename) {
         vertices.clear();
         indices.clear();
         tinyobj::attrib_t attrib;

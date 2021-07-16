@@ -266,10 +266,10 @@ public:
         //upload mesh, vertex, and transformation data
         Buffer::CreateInfo vertexBufferCreateInfo{sizeof(renderable->vertices[0]) * renderable->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         memcpy(renderable->vertexBuffer.create(&renderEngineLink, &vertexBufferCreateInfo), renderable->vertices.data(), sizeof(renderable->vertices[0]) * renderable->vertices.size());
-        renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable){ thisRenderable.vertexBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.vertexBuffer.destroy(); });
         Buffer::CreateInfo indexBufferCreateInfo{sizeof(renderable->indices[0]) * renderable->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         memcpy(renderable->indexBuffer.create(&renderEngineLink, &indexBufferCreateInfo), renderable->indices.data(), sizeof(renderable->indices[0]) * renderable->indices.size());
-        renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable){ thisRenderable.indexBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.indexBuffer.destroy(); });
         //upload textures
         renderable->textureImages.resize(renderable->textures.size());
         for (unsigned int i = 0; i < renderable->textures.size(); ++i) {
@@ -281,7 +281,7 @@ public:
         //build uniform buffers
         Buffer::CreateInfo uniformBufferCreateInfo {sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         memcpy(renderable->uniformBuffer.create(&renderEngineLink, &uniformBufferCreateInfo), &renderable->uniformBufferObject, sizeof(UniformBufferObject));
-        renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable){ thisRenderable.uniformBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.uniformBuffer.destroy(); });
         //build shaders
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
@@ -289,7 +289,7 @@ public:
         //build graphics pipeline and descriptor set for this renderable
         renderable->pipelineManager.setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, {renderable->shaders[0].createdWith.data, renderable->shaders[1].createdWith.data});
         renderable->pipelineManager.createDescriptorSet({renderable->uniformBuffer}, {renderable->textureImages[0]}, {BUFFER, IMAGE});
-        renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable) { thisRenderable.pipelineManager.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.pipelineManager.destroy(); });
         if (append) { renderables.push_back(renderable); }
     }
 
