@@ -26,7 +26,7 @@ public:
 
         //Only use for texture images
         const char *filename{};                                     //REQUIRED
-        int mipLevels = 1;                                          //OPTIONAL
+        bool mipMapping = false;                                     //OPTIONAL
     };
 
     VkImage image{};
@@ -34,6 +34,7 @@ public:
     VkSampler sampler{};
     VkFormat imageFormat{};
     VkImageLayout imageLayout{};
+    uint32_t mipLevels{};
     CreateInfo createdWith{};
 
     void destroy() {
@@ -44,13 +45,14 @@ public:
     virtual void create(VulkanGraphicsEngineLink *engineLink, CreateInfo *createInfo) {
         linkedRenderEngine = engineLink;
         createdWith = *createInfo;
+        mipLevels = std::max((static_cast<uint32_t>(std::floor(std::log2(std::max(createdWith.width, createdWith.height)))) + 1) * createdWith.mipMapping, static_cast<uint32_t>(1));
         VkImageCreateInfo imageCreateInfo{};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
         imageCreateInfo.extent.width = createdWith.width == 0 ? linkedRenderEngine->swapchain->extent.width : createdWith.width;
         imageCreateInfo.extent.height = createdWith.height == 0 ? linkedRenderEngine->swapchain->extent.height : createdWith.height;
         imageCreateInfo.extent.depth = 1;
-        imageCreateInfo.mipLevels = createdWith.mipLevels;
+        imageCreateInfo.mipLevels = mipLevels;
         imageCreateInfo.arrayLayers = 1;
         imageCreateInfo.format = createdWith.format;
         imageCreateInfo.tiling = createdWith.tiling;
@@ -80,7 +82,7 @@ public:
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             createdWith.dataSource->toImage(image, createdWith.width, createdWith.height);
         }
-        if (createdWith.imageLayout != VK_IMAGE_LAYOUT_UNDEFINED) { transitionLayout(createdWith.imageLayout); }
+        if (createdWith.imageLayout != imageLayout) { transitionLayout(createdWith.imageLayout); }
     }
 
     [[maybe_unused]] void toBuffer(VkBuffer buffer, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
@@ -113,7 +115,7 @@ public:
         barrier.image = image;
         barrier.subresourceRange.aspectMask = newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
         barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.levelCount = mipLevels;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
         VkPipelineStageFlags sourceStage{VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};

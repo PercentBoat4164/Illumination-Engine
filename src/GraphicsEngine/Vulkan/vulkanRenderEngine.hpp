@@ -1,7 +1,8 @@
 /**@todo: Add multithreading support throughout the engine
  * - LOW PRIORITY: GPU is busy 95-98% of the time.
  * This will be a higher priority if GPU hits 80-90%.
- * Focus is going to be put on making all engines work before perfecting any of them.*/
+ * Focus is going to be put on making all engines work before perfecting any of them.
+ */
 
 /**@todo: Combine all of the engines into one.
  * - LOW PRIORITY: This is optional, and not high on the list until ray tracing performance becomes horrendous.
@@ -46,12 +47,13 @@ class VulkanRenderEngine {
 private:
     vkb::Instance instance{};
     VmaAllocator allocator{};
-    bool framebufferResized{false};
     VkSurfaceKHR surface{};
     std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
     std::vector<VkImageView> swapchainImageViews{};
 
 protected:
+    bool framebufferResized{false};
+
     virtual bool update() { return false; }
 
     explicit VulkanRenderEngine(GLFWwindow *attachWindow = nullptr, bool rayTracing = false) {
@@ -169,13 +171,13 @@ protected:
         engineDeletionQueue.emplace_front([&] { commandBufferManager.destroy(); });
         //delete scratch buffer
         engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
-        createSwapchain(true, true);
+        createSwapchain(true);
         renderEngineLink.build();
         camera.create(&renderEngineLink);
         initialized = true;
     }
 
-    void createSwapchain(bool fullRecreate = false, bool firstTime = false) {
+    void createSwapchain(bool fullRecreate = false) {
         //Make sure no other GPU operations are ongoing
         vkDeviceWaitIdle(device.device);
         //Clear recreationDeletionQueue
@@ -276,6 +278,7 @@ public:
             renderable->textureImages[i].destroy();
             Texture::CreateInfo textureImageCreateInfo{VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, renderable->textureImages[i].createdWith.width, renderable->textureImages[i].createdWith.height};
             textureImageCreateInfo.filename = renderable->textures[i];
+            textureImageCreateInfo.mipMapping = settings.mipMapping;
             renderable->textureImages[i].create(&renderEngineLink, &textureImageCreateInfo);
         }
         //build uniform buffers
@@ -293,7 +296,11 @@ public:
         if (append) { renderables.push_back(renderable); }
     }
 
-    void updateSettings(bool updateAll) {
+    void reloadRenderables() {
+        for (VulkanRenderable *renderable : renderables) { uploadRenderable(renderable, false); }
+    }
+
+    void handleFullscreenSettingsChange() {
         if (settings.fullscreen) {
             glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);
             //find monitor that window is on
@@ -319,9 +326,8 @@ public:
             }
             //put window in fullscreen on that monitor
             glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
-        } else { glfwSetWindowMonitor(window, nullptr, settings.windowPosition[0], settings.windowPosition[1], settings.defaultWindowResolution[0], settings.defaultWindowResolution[1], settings.refreshRate); }
+        } else { glfwSetWindowMonitor(window, nullptr, settings.windowPosition[0], settings.windowPosition[1], static_cast<int>(settings.defaultWindowResolution[0]), static_cast<int>(settings.defaultWindowResolution[1]), static_cast<int>(settings.refreshRate)); }
         glfwSetWindowTitle(window, settings.applicationName.c_str());
-        if (updateAll) { createSwapchain(true); }
     }
 
     void destroy() {

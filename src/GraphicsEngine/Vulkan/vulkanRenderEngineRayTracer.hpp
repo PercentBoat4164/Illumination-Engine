@@ -156,14 +156,12 @@ public:
         renderable->bottomLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
         //build top level acceleration structure
-        auto identityMatrix = glm::identity<glm::mat4>();
-        VkTransformMatrixKHR vkIdentityMatrix = {};
         accelerationStructureManagerCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
         accelerationStructureManagerCreateInfo.bottomLevelAccelerationStructureDeviceAddress = renderable->bottomLevelAccelerationStructure.deviceAddress;
         accelerationStructureManagerCreateInfo.accelerationStructureToModify = topLevelAccelerationStructure.accelerationStructure;
         accelerationStructureManagerCreateInfo.transformationMatrix = &renderable->transformationMatrix; // Make an identity matrix for this line. This will work for now because the transformation Matrix is always an identity matrix.
         accelerationStructureManagerCreateInfo.primitiveCount = renderables.size() + 1;
-        //TODO: Allow choice of update vs rebuild to user. Currently is rebuild. Create new function in AccelerationStructure class for this.
+        /**@todo: Allow choice of update vs rebuild to user. Currently is rebuild. Create new function in AccelerationStructure class for this.*/
         topLevelAccelerationStructure.create(&renderEngineLink, &accelerationStructureManagerCreateInfo);
         //build descriptor set
         DescriptorSetManager::CreateInfo descriptorSetManagerCreateInfo{};
@@ -215,8 +213,6 @@ public:
     }
 
 private:
-    bool framebufferResized{false};
     float previousTime{};
     int currentFrame{};
-    int vertexSize{sizeof(VulkanVertex)};
 };

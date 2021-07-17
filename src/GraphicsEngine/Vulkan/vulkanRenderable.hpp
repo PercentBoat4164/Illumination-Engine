@@ -1,3 +1,19 @@
+/**@todo: Add instancing.
+ * - LOW PRIORITY: This is only an optimization for specific scenarios.
+ */
+
+/**@todo: Rewrite this class to work with the ray tracer and rasterizer.
+ * - HIGH PRIORITY: This will enable much easier code maintenance.
+ */
+
+/**@todo: Allow loading models and textures into RAM without loading them into VRAM.
+ * - MEDIUM PRIORITY: Useful and easy to implement feature.
+
+/**@todo: Switch to ASSIMP to support materials and more file types.
+ * - HIGH PRIORITY: Should be done before the second alpha release for convenience.
+ */
+
+
 #pragma once
 
 #include "vulkanShader.hpp"
@@ -21,8 +37,6 @@
 #include <fstream>
 #include <cstring>
 
-//TODO: Add instancing
-//TODO: Rewrite this entire class to work better with the ray tracer.
 class VulkanRenderable {
 public:
     VulkanRenderable(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {

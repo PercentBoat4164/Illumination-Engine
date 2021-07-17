@@ -108,17 +108,20 @@ int main(int argc, char **argv) {
                 float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
                     for (VulkanRenderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
-                    renderEngine.updateSettings(false);
+                    renderEngine.reloadRenderables();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
-                    renderEngine.updateSettings(true);
+                    renderEngine.handleFullscreenSettingsChange();
                     lastF2 = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-                    renderEngine.updateSettings(true);
+                    renderEngine.reloadRenderables();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-                    renderEngine.updateSettings(true);
+                    renderEngine.reloadRenderables();
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
+                    renderEngine.settings.mipMapping ^= 1;
+                    renderEngine.reloadRenderables();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
@@ -150,7 +153,7 @@ int main(int argc, char **argv) {
                     if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
                     if (renderEngine.settings.fullscreen) {
                         renderEngine.settings.fullscreen = false;
-                        renderEngine.updateSettings(true);
+                        renderEngine.handleFullscreenSettingsChange();
                     } if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -205,18 +208,21 @@ int main(int argc, char **argv) {
                     float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
                         for (VulkanRenderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
-                        renderEngine.updateSettings(false);
+                        renderEngine.reloadRenderables();
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                         renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
-                        renderEngine.updateSettings(true);
+                        renderEngine.handleFullscreenSettingsChange();
                         lastF2 = glfwGetTime();
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                         renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-                        renderEngine.updateSettings(true);
+                        renderEngine.reloadRenderables();
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                         renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-                        renderEngine.updateSettings(true);
-                    } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
+                        renderEngine.reloadRenderables();
+                    } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
+                        renderEngine.settings.mipMapping ^= 1;
+                        renderEngine.reloadRenderables();
+                    }if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
@@ -247,7 +253,7 @@ int main(int argc, char **argv) {
                         if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
                         if (renderEngine.settings.fullscreen) {
                             renderEngine.settings.fullscreen = false;
-                            renderEngine.updateSettings(true);
+                            renderEngine.handleFullscreenSettingsChange();
                         } if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
                             glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                             glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -289,7 +295,7 @@ int main(int argc, char **argv) {
             std::vector<float> recordedFPS{};
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
-            renderEngine.camera.position = {0, 3, 0};
+            renderEngine.camera.position = {0, 0, 2};
             while (renderEngine.update() != 1) {
                 //Process inputs
                 glfwPollEvents();
@@ -307,8 +313,10 @@ int main(int argc, char **argv) {
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_4)) {
                     renderEngine.settings.msaaSamples = 4;
                     renderEngine.updateSettings();
-                }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
+                    renderEngine.settings.mipMapping ^= 1;
+                    renderEngine.updateSettings();
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }

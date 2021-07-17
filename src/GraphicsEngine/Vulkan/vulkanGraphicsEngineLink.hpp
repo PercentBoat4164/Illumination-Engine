@@ -33,6 +33,9 @@ public:
     VkCommandPool *commandPool{};
     VmaAllocator *allocator{};
     VkQueue *graphicsQueue{};
+    VkQueue *computeQueue{}; // Unused for now
+    VkQueue *transferQueue{}; // Unused for now
+    VkQueue *protectedQueue{}; // Unused for now
     std::vector<VkImageView> *swapchainImageViews{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
     PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{};

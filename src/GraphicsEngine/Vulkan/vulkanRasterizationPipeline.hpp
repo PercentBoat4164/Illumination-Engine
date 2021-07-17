@@ -5,7 +5,7 @@
 #include <deque>
 #include <functional>
 
-//TODO: Edit this to take advantage of the abstraction layers already implemented in vulkanDescriptorSet.hpp
+/**@todo: Edit this to take advantage of the abstraction layers already implemented in vulkanDescriptorSet.hpp.*/
 
 enum DescriptorAttachmentType {
     BUFFER = 0,

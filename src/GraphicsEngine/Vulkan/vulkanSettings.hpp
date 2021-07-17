@@ -29,9 +29,9 @@ public:
     std::array<uint32_t, 2> defaultWindowResolution{800, 600};
     std::array<int, 2> windowPosition{0, 0};
     float anisotropicFilterLevel{0};
-    int mipLevels{1};
+    bool mipMapping{false};
     bool fullscreen{false};
-    int refreshRate{60};
+    int refreshRate{144};
     std::array<uint32_t, 2> resolution{defaultWindowResolution};
     int MAX_FRAMES_IN_FLIGHT{2};
     double fov{90};
