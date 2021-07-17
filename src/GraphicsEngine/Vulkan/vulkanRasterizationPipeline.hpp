@@ -1,78 +1,44 @@
 #pragma once
 
 #include "vulkanGraphicsEngineLink.hpp"
+#include "vulkanDescriptorSet.hpp"
 
 #include <deque>
 #include <functional>
 
-/**@todo: Edit this to take advantage of the abstraction layers already implemented in vulkanDescriptorSet.hpp.*/
-
-enum DescriptorAttachmentType {
-    BUFFER = 0,
-    IMAGE = 1
-};
-
 class RasterizationPipelineManager {
 public:
-    VkPipelineLayout pipelineLayout{};
-    VkDescriptorSetLayout descriptorSetLayout{};
-    VkPipeline pipeline{};
-    VkDescriptorPool descriptorPool{};
-    VkDescriptorSet descriptorSet{};
+    struct CreateInfo {
+        std::vector<Shader> shaders{};
+        DescriptorSetManager *descriptorSetManager{};
+        RenderPassManager *renderPassManager{};
+    };
 
+    VkPipelineLayout pipelineLayout{};
+    CreateInfo createdWith{};
+    VkPipeline pipeline{};
 
     void destroy() {
         for (const std::function<void()>& function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
-    void setup(VulkanGraphicsEngineLink *engineLink, const std::vector<VkDescriptorType>& setupDescriptorTypes, const std::vector<VkShaderStageFlagBits>& setupShaderFlags, uint32_t setupSwapchainImageCount, VkRenderPass renderPass, std::vector<std::vector<char>> shaderData) {
+    void create(VulkanGraphicsEngineLink *engineLink, CreateInfo *createInfo) {
         linkedRenderEngine = engineLink;
-        //create descriptor layout
-        if (setupDescriptorTypes.size() != setupShaderFlags.size()) { throw std::runtime_error("number of descriptor types does not equal number of shader flags!"); }
-        swapchainImageCount = setupSwapchainImageCount;
-        descriptorTypes = setupDescriptorTypes;
-        descriptorSetLayoutBindings.clear();
-        descriptorPoolSizes.clear();
-        descriptorSetLayoutBindings.reserve(setupDescriptorTypes.size());
-        descriptorPoolSizes.reserve(setupDescriptorTypes.size());
-        VkDescriptorSetLayoutBinding descriptorSetLayoutBinding{};
-        descriptorSetLayoutBinding.descriptorCount = 1;
-        VkDescriptorPoolSize descriptorPoolSize{};
-        descriptorPoolSize.descriptorCount = swapchainImageCount;
-        for (unsigned long i = 0; i < setupDescriptorTypes.size(); i++) {
-            descriptorSetLayoutBinding.descriptorType = setupDescriptorTypes[i];
-            descriptorSetLayoutBinding.stageFlags = setupShaderFlags[i];
-            descriptorSetLayoutBinding.binding = i;
-            descriptorSetLayoutBindings.push_back(descriptorSetLayoutBinding);
-            descriptorPoolSize.type = setupDescriptorTypes[i];
-            descriptorPoolSizes.push_back(descriptorPoolSize);
-        }
-        VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
-        descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
-        if (vkCreateDescriptorSetLayout(linkedRenderEngine->device->device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor set layout!"); }
-        deletionQueue.emplace_front([&]{ vkDestroyDescriptorSetLayout(linkedRenderEngine->device->device, descriptorSetLayout, nullptr); descriptorSetLayout = VK_NULL_HANDLE; });
-        VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
-        descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
-        descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
-        descriptorPoolCreateInfo.maxSets = swapchainImageCount;
-        if (vkCreateDescriptorPool(linkedRenderEngine->device->device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); }
-        deletionQueue.emplace_front([&]{ vkDestroyDescriptorPool(linkedRenderEngine->device->device, descriptorPool, nullptr); descriptorPool = VK_NULL_HANDLE; });
+        createdWith = *createInfo;
         //Create pipelineLayout
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         pipelineLayoutCreateInfo.setLayoutCount = 1;
-        pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+        pipelineLayoutCreateInfo.pSetLayouts = &createdWith.descriptorSetManager->descriptorSetLayout;
         if (vkCreatePipelineLayout(linkedRenderEngine->device->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
         deletionQueue.emplace_front([&]{ vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr); pipelineLayout = VK_NULL_HANDLE; });
         //prepare shaders
         std::vector<VkPipelineShaderStageCreateInfo> shaders{};
-        for (unsigned int i = 0; i < shaderData.size(); i++) {
+        for (unsigned int i = 0; i < createdWith.shaders.size(); i++) {
             VkShaderModule shaderModule;
             VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
-            shaderModuleCreateInfo.codeSize = shaderData[i].size();
-            shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(shaderData[i].data());
+            shaderModuleCreateInfo.codeSize = createdWith.shaders[i].data.size();
+            shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(createdWith.shaders[i].data.data());
             if (vkCreateShaderModule(linkedRenderEngine->device->device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
             VkPipelineShaderStageCreateInfo shaderStageInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
             shaderStageInfo.module = shaderModule;
@@ -152,7 +118,7 @@ public:
         pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
         pipelineCreateInfo.pDynamicState = &pipelineDynamicStateCreateInfo;
         pipelineCreateInfo.layout = pipelineLayout;
-        pipelineCreateInfo.renderPass = renderPass;
+        pipelineCreateInfo.renderPass = createdWith.renderPassManager->renderPass;
         pipelineCreateInfo.subpass = 0;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(linkedRenderEngine->device->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
@@ -160,52 +126,7 @@ public:
         deletionQueue.emplace_front([&]{ vkDestroyPipeline(linkedRenderEngine->device->device, pipeline, nullptr); pipeline = VK_NULL_HANDLE; });
     }
 
-    void createDescriptorSet(const std::vector<Buffer>& buffers, const std::vector<Image>& images, const std::vector<bool>& indices) {
-        if (buffers.size() + images.size() != indices.size()) { throw std::runtime_error("number of indices does not equal number of images plus number of buffers!"); }
-        VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
-        descriptorSetAllocateInfo.descriptorPool = descriptorPool;
-        descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
-        descriptorSetAllocateInfo.descriptorSetCount = 1;
-        vkAllocateDescriptorSets(linkedRenderEngine->device->device, &descriptorSetAllocateInfo, &descriptorSet);
-        int bufferCounter{}, imageCounter{};
-        std::vector<VkWriteDescriptorSet> descriptorWrites{indices.size()};
-        std::vector<VkDescriptorBufferInfo> descriptorBuffers{};
-        descriptorBuffers.reserve(buffers.size());
-        std::vector<VkDescriptorImageInfo> descriptorImages{};
-        descriptorImages.reserve(images.size());
-        for (unsigned long i = 0; i < indices.size(); i++) {
-            descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[i].dstSet = descriptorSet;
-            descriptorWrites[i].dstBinding = i;
-            descriptorWrites[i].dstArrayElement = 0;
-            descriptorWrites[i].descriptorType = descriptorTypes[i];
-            descriptorWrites[i].descriptorCount = 1;
-            if (!indices[i]) {
-                VkDescriptorBufferInfo descriptorBufferInfo{};
-                descriptorBufferInfo.buffer = buffers[bufferCounter].buffer;
-                descriptorBufferInfo.offset = 0;
-                descriptorBufferInfo.range = buffers[bufferCounter].bufferSize;
-                descriptorBuffers.push_back(descriptorBufferInfo);
-                descriptorWrites[i].pBufferInfo = &descriptorBuffers[bufferCounter];
-                bufferCounter++;
-            } else {
-                VkDescriptorImageInfo descriptorImageInfo{};
-                descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                descriptorImageInfo.sampler = images[imageCounter].sampler;
-                descriptorImageInfo.imageView = images[imageCounter].view;
-                descriptorImages.push_back(descriptorImageInfo);
-                descriptorWrites[i].pImageInfo = &descriptorImages[imageCounter];
-                imageCounter++;
-            }
-        }
-        vkUpdateDescriptorSets(linkedRenderEngine->device->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-    }
-
 private:
     VulkanGraphicsEngineLink *linkedRenderEngine{};
     std::deque<std::function<void()>> deletionQueue{};
-    std::vector<VkDescriptorType> descriptorTypes{};
-    std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings{};
-    std::vector<VkDescriptorPoolSize> descriptorPoolSizes{};
-    uint32_t swapchainImageCount{};
 };

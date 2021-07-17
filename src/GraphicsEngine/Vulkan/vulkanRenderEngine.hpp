@@ -10,16 +10,10 @@
  * This would require a rewrite of some parts of the ray tracer, but might be worth it as it would help significantly in real-time scenarios.
  */
 
-/**@todo: Add proper invalid input checks to and clean up the abstractions.
+/**@todo: Add proper invalid input checks to, and clean up, the abstractions.
  * - HIGH PRIORITY: This should happen before moving on to a new part of the game engine.
  * This has already been started in vulkanDescriptorSet.hpp.
  */
-
-/**@todo: Rework includes and required defines to work with any include order.
- * - HIGH PRIORITY: This should happen before moving on to a new part of the game engine.
- * This would also include prepackaging the vulkan SDK.
- */
-
 
 #pragma once
 
@@ -290,8 +284,17 @@ public:
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
         renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable) { for (const Shader& shader : thisRenderable.shaders) { shader.destroy(); } });
         //build graphics pipeline and descriptor set for this renderable
-        renderable->pipelineManager.setup(&renderEngineLink, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, swapchain.image_count, renderPassManager.renderPass, {renderable->shaders[0].createdWith.data, renderable->shaders[1].createdWith.data});
-        renderable->pipelineManager.createDescriptorSet({renderable->uniformBuffer}, {renderable->textureImages[0]}, {BUFFER, IMAGE});
+        DescriptorSetManager::CreateInfo renderableDescriptorSetManagerCreateInfo{};
+        renderableDescriptorSetManagerCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}};
+        renderableDescriptorSetManagerCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
+        renderableDescriptorSetManagerCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0]};
+        renderable->descriptorSetManager.create(&renderEngineLink, &renderableDescriptorSetManagerCreateInfo);
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.descriptorSetManager.destroy(); });
+        RasterizationPipelineManager::CreateInfo renderablePipelineManagerCreateInfo{};
+        renderablePipelineManagerCreateInfo.descriptorSetManager = &renderable->descriptorSetManager;
+        renderablePipelineManagerCreateInfo.renderPassManager = &renderPassManager;
+        renderablePipelineManagerCreateInfo.shaders = renderable->shaders;
+        renderable->pipelineManager.create(&renderEngineLink, &renderablePipelineManagerCreateInfo);
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.pipelineManager.destroy(); });
         if (append) { renderables.push_back(renderable); }
     }

@@ -33,7 +33,7 @@ public:
     void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
-        if (createdWith.maxIndex > 0) { assert(linkedRenderEngine->enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount); }
+        if (createdWith.maxIndex > 1) { assert(linkedRenderEngine->enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount); }
         assert(!createdWith.data.empty());
         assert(createdWith.data.size() == createdWith.shaderStages.size() && createdWith.data.size() == createdWith.poolSizes.size());
         std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings{};

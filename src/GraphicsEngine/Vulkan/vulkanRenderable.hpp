@@ -8,11 +8,11 @@
 
 /**@todo: Allow loading models and textures into RAM without loading them into VRAM.
  * - MEDIUM PRIORITY: Useful and easy to implement feature.
+ */
 
 /**@todo: Switch to ASSIMP to support materials and more file types.
  * - HIGH PRIORITY: Should be done before the second alpha release for convenience.
  */
-
 
 #pragma once
 
@@ -81,6 +81,7 @@ public:
     Buffer indexBuffer{};
     Buffer transformationBuffer{};
     RasterizationPipelineManager pipelineManager{};
+    DescriptorSetManager descriptorSetManager{};
     AccelerationStructure bottomLevelAccelerationStructure{};
     UniformBufferObject uniformBufferObject{};
     std::vector<Texture> textureImages{};

@@ -46,7 +46,7 @@ public:
                 //record command buffer for this renderable
                 vkCmdBindVertexBuffers(commandBufferManager.commandBuffers[imageIndex], 0, 1, &renderable->vertexBuffer.buffer, offsets);
                 vkCmdBindIndexBuffer(commandBufferManager.commandBuffers[imageIndex], renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipelineLayout, 0, 1, &renderable->pipelineManager.descriptorSet, 0, nullptr);
+                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipelineLayout, 0, 1, &renderable->descriptorSetManager.descriptorSet, 0, nullptr);
                 vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipeline);
                 vkCmdDrawIndexed(commandBufferManager.commandBuffers[imageIndex], static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
             }
