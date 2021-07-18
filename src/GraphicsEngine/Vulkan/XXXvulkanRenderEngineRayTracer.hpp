@@ -1,10 +1,10 @@
 #pragma once
 
-#include "vulkanShaderBindingTable.hpp"
+#include "XXXvulkanShaderBindingTable.hpp"
 #include "vulkanImage.hpp"
 #include "vulkanAccelerationStructure.hpp"
 #include "vulkanDescriptorSet.hpp"
-#include "vulkanRayTracingPipeline.hpp"
+#include "XXXvulkanRayTracingPipeline.hpp"
 
 class VulkanRenderEngineRayTracer : public VulkanRenderEngine {
 private:

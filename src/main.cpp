@@ -2,9 +2,10 @@
 #include <cmath>
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
-#include "GraphicsEngine/Vulkan/vulkanRenderEngineRasterizer.hpp"
+#include "GraphicsEngine/Vulkan/vulkanRenderEngine.hpp"
+//#include "GraphicsEngine/Vulkan/vulkanRenderEngineRasterizer.hpp"
 #ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
-#include "GraphicsEngine/Vulkan/vulkanRenderEngineRayTracer.hpp"
+//#include "GraphicsEngine/Vulkan/vulkanRenderEngineRayTracer.hpp"
 #endif
 #endif
 #ifdef ILLUMINATION_ENGINE_OPENGL
@@ -13,7 +14,7 @@
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
 void vulkanRasterizerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto pRenderEngine = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
+    auto pRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
     xOffset *= pRenderEngine->settings.mouseSensitivity;
     yOffset *= pRenderEngine->settings.mouseSensitivity;
     pRenderEngine->camera.yaw -= (float) xOffset;
@@ -25,12 +26,12 @@ void vulkanRasterizerCursorCallback(GLFWwindow *window, double xOffset, double y
 }
 
 void vulkanRasterizerWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
-    auto pVulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRasterizer *>(glfwGetWindowUserPointer(window));
+    auto pVulkanRenderEngineRasterizer = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
     if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
 }
 #ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
 void vulkanRayTracerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto pRenderEngine = static_cast<VulkanRenderEngineRayTracer *>(glfwGetWindowUserPointer(window));
+    auto pRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
     xOffset *= pRenderEngine->settings.mouseSensitivity;
     yOffset *= pRenderEngine->settings.mouseSensitivity;
     pRenderEngine->camera.yaw -= (float) xOffset;
@@ -42,7 +43,7 @@ void vulkanRayTracerCursorCallback(GLFWwindow *window, double xOffset, double yO
 }
 
 void vulkanRayTracerWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
-    auto pVulkanRenderEngineRasterizer = static_cast<VulkanRenderEngineRayTracer *>(glfwGetWindowUserPointer(window));
+    auto pVulkanRenderEngineRasterizer = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
     if (!pVulkanRenderEngineRasterizer->settings.fullscreen) { pVulkanRenderEngineRasterizer->settings.windowPosition = {xPos, yPos}; }
 }
 #endif
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
 #ifdef ILLUMINATION_ENGINE_VULKAN
     if (input == "v") {
         try {
-            VulkanRenderEngineRasterizer renderEngine = VulkanRenderEngineRasterizer(nullptr, false);
+            VulkanRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
             VulkanRenderable cube = VulkanRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
@@ -115,9 +116,11 @@ int main(int argc, char **argv) {
                     lastF2 = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+                    renderEngine.renderPassManager.createFramebuffers();
                     renderEngine.reloadRenderables();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
+                    renderEngine.renderPassManager.createFramebuffers();
                     renderEngine.reloadRenderables();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
@@ -181,17 +184,11 @@ int main(int argc, char **argv) {
     #ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
         if (input == "r") {
             try {
-                VulkanRenderEngineRayTracer renderEngine = VulkanRenderEngineRayTracer(nullptr, true);
+                VulkanRenderEngine renderEngine{};
                 glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
                 renderEngine.camera.position = {0, 10, 0};
                 renderEngine.settings.rayTracing = true;
-//                VulkanRenderable quad = VulkanRenderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 1});
-//                renderEngine.uploadRenderable(&quad, true);
-//                VulkanRenderable cube = VulkanRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
-//                renderEngine.uploadRenderable(&cube, true);
-//                VulkanRenderable viking_room = VulkanRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
-//                renderEngine.uploadRenderable(&viking_room, true);
-                VulkanRenderable ancientStatue = VulkanRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRayTracingShaders/callable.rcall"}, {0, 0, 0}, {0, 0, 0}, {1, 1, 1});
+                VulkanRenderable ancientStatue = VulkanRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/fragmentShader.frag"});
                 renderEngine.uploadRenderable(&ancientStatue, true);
                 double lastTab{0};
                 double lastF2{0};
@@ -207,10 +204,9 @@ int main(int argc, char **argv) {
                     glfwPollEvents();
                     float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-                        for (VulkanRenderable *renderable : renderEngine.renderables) { renderable->reloadRenderable(); }
                         renderEngine.reloadRenderables();
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
-                        renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
+                        renderEngine.settings.fullscreen ^= 1;
                         renderEngine.handleFullscreenSettingsChange();
                         lastF2 = glfwGetTime();
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
@@ -222,7 +218,10 @@ int main(int argc, char **argv) {
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                         renderEngine.settings.mipMapping ^= 1;
                         renderEngine.reloadRenderables();
-                    }if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
+                    } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_R)) {
+                        renderEngine.settings.rayTracing ^= 1;
+                        renderEngine.createSwapchain(true);
+                    } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
                     if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }

@@ -5,7 +5,9 @@
 
 #include <deque>
 #include <functional>
-
+/**@todo: Rework this class to be like the others and depend on a VulkanFramebuffer class.
+ * - MEDIUM PRIORITY: Important to keep code consistent, and to ease development in the future, but not crucial to make the engine work.
+ */
 class RenderPassManager {
 public:
     VkRenderPass renderPass{};
@@ -25,13 +27,6 @@ public:
         renderPassDeletionQueue.clear();
         //update engine link
         linkedRenderEngine = engineLink;
-        //Set clear values based on multisampling settings
-        clearValues.resize(linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3);
-        clearValues.reserve(clearValues.size());
-        clearValues[0].depthStencil = {1.0f, 0};
-        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-        clearValues[1].depthStencil = {1.0f, 0};
-        if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
         //create renderPass
         VkAttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format = linkedRenderEngine->swapchain->image_format;
@@ -124,14 +119,15 @@ public:
             framebufferCreateInfo.layers = 1;
             if (vkCreateFramebuffer(linkedRenderEngine->device->device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
         }
-        framebufferDeletionQueue.emplace_front([&]{ for  (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(linkedRenderEngine->device->device, framebuffer, nullptr); } });
-    }
-
-    void recreateFramebuffers() {
-        createFramebuffers();
+        framebufferDeletionQueue.emplace_front([&]{ for (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(linkedRenderEngine->device->device, framebuffer, nullptr); } });
     }
 
     VkRenderPassBeginInfo beginRenderPass(unsigned int framebufferIndex = 0) {
+        //Set clear values based on multisampling settings
+        clearValues.resize(linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3);
+        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+        clearValues[1].depthStencil = {1.0f, 0};
+        if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
         VkRenderPassBeginInfo renderPassBeginInfo{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         renderPassBeginInfo.renderArea.offset = {0, 0};
         renderPassBeginInfo.renderArea.extent = linkedRenderEngine->swapchain->extent;

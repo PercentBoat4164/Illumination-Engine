@@ -44,190 +44,12 @@ private:
     VkSurfaceKHR surface{};
     std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
     std::vector<VkImageView> swapchainImageViews{};
+    VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 
 protected:
+    size_t currentFrame{};
     bool framebufferResized{false};
-
-    virtual bool update() { return false; }
-
-    explicit VulkanRenderEngine(GLFWwindow *attachWindow = nullptr, bool rayTracing = false) {
-        camera.settings = &settings;
-        renderEngineLink.device = &device;
-        renderEngineLink.swapchain = &swapchain;
-        renderEngineLink.settings = &settings;
-        renderEngineLink.commandPool = &commandBufferManager.commandPool;
-        renderEngineLink.allocator = &allocator;
-        renderEngineLink.graphicsQueue = &graphicsQueue;
-        settings.rayTracing = rayTracing;
-        vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
-        //build instance
-        vkb::InstanceBuilder builder;
-        builder.set_app_name(settings.applicationName.c_str()).set_app_version(settings.applicationVersion[0], settings.applicationVersion[1], settings.applicationVersion[2]).require_api_version(settings.requiredVulkanVersion[0], settings.requiredVulkanVersion[1], settings.requiredVulkanVersion[2]);
-        #ifdef _DEBUG
-        /* Validation layers hamper performance. Therefore to eek out extra speed from the GPU they will be turned off if the program is run in 'Release' mode. */
-        if (systemInfo->validation_layers_available) { builder.request_validation_layers(); }
-        #endif
-        if (systemInfo->debug_utils_available) { builder.use_default_debug_messenger(); }
-        vkb::detail::Result<vkb::Instance> inst_ret = builder.build();
-        if (!inst_ret) { throw std::runtime_error("Failed to create Vulkan instance. Error: " + inst_ret.error().message() + "\n"); }
-        instance = inst_ret.value();
-        //build window
-        engineDeletionQueue.emplace_front([&] { vkb::destroy_instance(instance); });
-        if (attachWindow == nullptr) { glfwInit(); }
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        window = glfwCreateWindow(static_cast<int>(settings.resolution[0]), static_cast<int>(settings.resolution[1]), settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
-        // load icon
-        int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
-        GLFWimage icons[sizeof(sizes)/sizeof(int)];
-        for (unsigned long i = 0; i < sizeof(sizes)/sizeof(int); ++i) {
-            std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
-            stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) { throw std::runtime_error("failed to load icon image from file: " + filename); }
-            icons[i].pixels = pixels;
-            icons[i].height = height;
-            icons[i].width = width;
-        }
-        glfwSetWindowIcon(window, sizeof(icons)/sizeof(GLFWimage), icons);
-        for (GLFWimage icon : icons) { stbi_image_free(icon.pixels); }
-        glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-        int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
-        glfwGetWindowPos(window, &xPos, &yPos);
-        settings.windowPosition = {xPos, yPos};
-        glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
-        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-        glfwSetWindowUserPointer(window, this);
-        if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS) { throw std::runtime_error("failed to create window surface!"); }
-        engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(instance.instance, surface, nullptr); });
-        //select physical device
-        vkb::PhysicalDeviceSelector selector{instance};
-        std::vector<const char *> extensionNames{};
-        if (settings.rayTracing) {
-            extensionNames.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
-            extensionNames.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
-            extensionNames.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
-            extensionNames.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);  // Maybe move this to be optional for both vulkan engines rather than simply required for the ray tracer?
-            extensionNames.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
-            extensionNames.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
-            extensionNames.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
-        }
-        VkPhysicalDeviceFeatures deviceFeatures{}; //require device features here
-        deviceFeatures.samplerAnisotropy = VK_TRUE;
-        deviceFeatures.sampleRateShading = VK_TRUE;
-        vkb::detail::Result<vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).require_dedicated_transfer_queue().add_required_extensions(extensionNames).set_required_features(deviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
-        if (!phys_ret) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + phys_ret.error().message() + "\n"); }
-        //create logical device
-        vkb::DeviceBuilder device_builder{phys_ret.value()};
-        if (settings.rayTracing) {
-            //get features and properties physical device on temporary device with nothing enabled
-            vkb::detail::Result<vkb::Device> temporaryDevice = device_builder.build();
-            if (!temporaryDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + temporaryDevice.error().message() + "\n"); }
-            device = temporaryDevice.value();
-            VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
-            deviceProperties2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestProperty;
-            vkGetPhysicalDeviceProperties2(device.physical_device.physical_device, &deviceProperties2);
-            VkPhysicalDeviceFeatures2 deviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-            deviceFeatures2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestFeature;
-            vkGetPhysicalDeviceFeatures2(device.physical_device.physical_device, &deviceFeatures2);
-            vkGetPhysicalDeviceMemoryProperties(phys_ret.value().physical_device, &renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
-            vkb::destroy_device(device);
-            //Enable required features
-            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
-            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
-            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = VK_TRUE;
-            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
-            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
-            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
-            renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure = VK_TRUE;
-            vkb::detail::Result<vkb::Device> finalDevice = device_builder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature).build();
-            if (!finalDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + finalDevice.error().message() + "\n"); }
-            device = finalDevice.value();
-            engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
-        } else {
-            vkb::detail::Result<vkb::Device> dev_ret = device_builder.build();
-            if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
-            device = dev_ret.value();
-            engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
-        }
-        //get queues
-        graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
-        presentQueue = device.get_queue(vkb::QueueType::present).value();
-        //create vma allocator
-        VmaAllocatorCreateInfo allocatorInfo{};
-        allocatorInfo.physicalDevice = device.physical_device.physical_device;
-        allocatorInfo.device = device.device;
-        allocatorInfo.instance = instance.instance;
-        allocatorInfo.flags = settings.rayTracing ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0;
-        vmaCreateAllocator(&allocatorInfo, &allocator);
-        engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(allocator); });
-        //Create commandPool
-        commandBufferManager.create(device, vkb::QueueType::graphics);
-        engineDeletionQueue.emplace_front([&] { commandBufferManager.destroy(); });
-        //delete scratch buffer
-        engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
-        createSwapchain(true);
-        renderEngineLink.build();
-        camera.create(&renderEngineLink);
-        initialized = true;
-    }
-
-    void createSwapchain(bool fullRecreate = false) {
-        //Make sure no other GPU operations are ongoing
-        vkDeviceWaitIdle(device.device);
-        //Clear recreationDeletionQueue
-        for (std::function<void()>& function : recreationDeletionQueue) { function(); }
-        recreationDeletionQueue.clear();
-        //Create swapchain
-        vkb::SwapchainBuilder swapchainBuilder{ device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).set_desired_format({settings.rayTracing ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(settings.rayTracing ? VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
-        if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
-        swapchain = swap_ret.value();
-        recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
-        swapchainImageViews = swapchain.get_image_views().value();
-        recreationDeletionQueue.emplace_front([&]{ swapchain.destroy_image_views(swapchainImageViews); });
-        renderEngineLink.swapchainImageViews = &swapchainImageViews;
-        //clear images marked as in flight
-        imagesInFlight.clear();
-        imagesInFlight.resize(swapchain.image_count, VK_NULL_HANDLE);
-        //reset special raytracing resources
-        if (settings.rayTracing) {
-            Image::CreateInfo rayTracingImageCreateInfo{swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
-            rayTracingImageCreateInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-            rayTracingImage.create(&renderEngineLink, &rayTracingImageCreateInfo);
-            recreationDeletionQueue.emplace_front([&]{ rayTracingImage.destroy(); });
-        }
-        //do the other stuff only if needed
-        if (fullRecreate) {
-            for (std::function<void()> &function : oneTimeOptionalDeletionQueue) { function(); }
-            oneTimeOptionalDeletionQueue.clear();
-            //Create commandBuffers
-            commandBufferManager.createCommandBuffers((int) swapchain.image_count);
-            //Create sync objects
-            imageAvailableSemaphores.resize(swapchain.image_count);
-            renderFinishedSemaphores.resize(swapchain.image_count);
-            inFlightFences.resize(swapchain.image_count);
-            VkSemaphoreCreateInfo semaphoreCreateInfo{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-            VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-            for (unsigned int i = 0; i < swapchain.image_count; i++) {
-                if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
-                if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
-                if (vkCreateFence(device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create fences!"); }
-            }
-            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(device.device, imageAvailableSemaphore, nullptr); }});
-            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); }});
-            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); }});
-            //Create render pass
-            renderPassManager.setup(&renderEngineLink);
-            oneTimeOptionalDeletionQueue.emplace_front([&] { renderPassManager.destroy(); });
-            //re-upload renderables
-            for (VulkanRenderable *renderable : renderables) { uploadRenderable(renderable, false); }
-        }
-        if (initialized && settings.rayTracing) { descriptorSetManager.update({&topLevelAccelerationStructure, &rayTracingImage}, {0, 1}); }
-        renderEngineLink.swapchainImages = swapchain.get_images().value();
-        //recreate framebuffers
-        renderPassManager.recreateFramebuffers();
-    }
+    float previousTime{};
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
         auto vulkanRenderEngine = (VulkanRenderEngine *)glfwGetWindowUserPointer(pWindow);
@@ -236,10 +58,6 @@ protected:
         vulkanRenderEngine->settings.resolution[1] = height;
     }
 
-    //Only used in raytracer
-    DescriptorSetManager descriptorSetManager{};
-    Image rayTracingImage{};
-    //Used in rasterizer
     std::deque<std::function<void()>> engineDeletionQueue{};
     vkb::Device device{};
     std::vector<VkFence> inFlightFences{};
@@ -249,7 +67,6 @@ protected:
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     VkQueue graphicsQueue{};
     VkQueue presentQueue{};
-    RenderPassManager renderPassManager{};
     VulkanGraphicsEngineLink renderEngineLink{};
     Buffer scratchBuffer{};
     std::deque<std::function<void()>> recreationDeletionQueue{};
@@ -261,11 +78,18 @@ public:
         renderable->destroy();
         //upload mesh, vertex, and transformation data
         Buffer::CreateInfo vertexBufferCreateInfo{sizeof(renderable->vertices[0]) * renderable->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        if (settings.rayTracing) { vertexBufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
         memcpy(renderable->vertexBuffer.create(&renderEngineLink, &vertexBufferCreateInfo), renderable->vertices.data(), sizeof(renderable->vertices[0]) * renderable->vertices.size());
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.vertexBuffer.destroy(); });
         Buffer::CreateInfo indexBufferCreateInfo{sizeof(renderable->indices[0]) * renderable->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        if (settings.rayTracing) { indexBufferCreateInfo.usage |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
         memcpy(renderable->indexBuffer.create(&renderEngineLink, &indexBufferCreateInfo), renderable->indices.data(), sizeof(renderable->indices[0]) * renderable->indices.size());
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.indexBuffer.destroy(); });
+        if (settings.rayTracing) {
+            Buffer::CreateInfo transformationBufferCreateInfo{sizeof(renderable->transformationMatrix), VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+            memcpy(renderable->transformationBuffer.create(&renderEngineLink, &transformationBufferCreateInfo), &renderable->transformationMatrix, sizeof(VkTransformMatrixKHR));
+            renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
+        }
         //upload textures
         renderable->textureImages.resize(renderable->textures.size());
         for (unsigned int i = 0; i < renderable->textures.size(); ++i) {
@@ -283,11 +107,36 @@ public:
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
         renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable) { for (const Shader& shader : thisRenderable.shaders) { shader.destroy(); } });
+        /* This setup is temporary, but for the purposes of testing only the most recently uploaded model will be included in the raytracing. */
+        if (settings.rayTracing) {
+            AccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
+            renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+            renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
+            renderableBottomLevelAccelerationStructureCreateInfo.primitiveCount = renderable->triangleCount;
+            renderableBottomLevelAccelerationStructureCreateInfo.vertexBufferAddress = renderable->vertexBuffer.deviceAddress;
+            renderableBottomLevelAccelerationStructureCreateInfo.indexBufferAddress = renderable->indexBuffer.deviceAddress;
+            renderableBottomLevelAccelerationStructureCreateInfo.transformationBufferAddress = renderable->transformationBuffer.deviceAddress;
+            renderable->bottomLevelAccelerationStructure.create(&renderEngineLink, &renderableBottomLevelAccelerationStructureCreateInfo);
+            renderable->deletionQueue.emplace_front([&] (VulkanRenderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
+            topLevelAccelerationStructure.destroy();
+            AccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
+            topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+            topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
+            topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
+            topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddress = renderable->bottomLevelAccelerationStructure.deviceAddress;
+            topLevelAccelerationStructure.create(&renderEngineLink, &topLevelAccelerationStructureCreateInfo);
+        }
         //build graphics pipeline and descriptor set for this renderable
         DescriptorSetManager::CreateInfo renderableDescriptorSetManagerCreateInfo{};
-        renderableDescriptorSetManagerCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}};
-        renderableDescriptorSetManagerCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
-        renderableDescriptorSetManagerCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0]};
+        if (settings.rayTracing) {
+            renderableDescriptorSetManagerCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}};
+            renderableDescriptorSetManagerCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
+            renderableDescriptorSetManagerCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0], &topLevelAccelerationStructure};
+        } else {
+            renderableDescriptorSetManagerCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}};
+            renderableDescriptorSetManagerCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
+            renderableDescriptorSetManagerCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0]};
+        }
         renderable->descriptorSetManager.create(&renderEngineLink, &renderableDescriptorSetManagerCreateInfo);
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.descriptorSetManager.destroy(); });
         RasterizationPipelineManager::CreateInfo renderablePipelineManagerCreateInfo{};
@@ -344,6 +193,263 @@ public:
         engineDeletionQueue.clear();
     }
 
+    virtual bool update() {
+        //GPU synchronization
+        if (window == nullptr) { return false; }
+        if (renderables.empty()) { return glfwWindowShouldClose(window) != 1; }
+        vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+        uint32_t imageIndex{0};
+        VkResult result = vkAcquireNextImageKHR(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            createSwapchain();
+            return glfwWindowShouldClose(window) != 1;
+        } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) { throw std::runtime_error("failed to acquire swapchain image!"); }
+        if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) { vkWaitForFences(device.device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX); }
+        imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+        //update state of frame
+        VkDeviceSize offsets[] = {0};
+        //record command buffers for color pass
+        commandBufferManager.resetCommandBuffer((int)(imageIndex + (swapchain.image_count - 1)) % (int)swapchain.image_count);
+        commandBufferManager.recordCommandBuffer((int)imageIndex);
+        VkViewport viewport{};
+        viewport.x = 0.f;
+        viewport.y = 0.f;
+        viewport.width = (float)swapchain.extent.width;
+        viewport.height = (float)swapchain.extent.height;
+        viewport.minDepth = 0.f;
+        viewport.maxDepth = 1.f;
+        vkCmdSetViewport(commandBufferManager.commandBuffers[imageIndex], 0, 1, &viewport);
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = swapchain.extent;
+        vkCmdSetScissor(commandBufferManager.commandBuffers[imageIndex], 0, 1, &scissor);
+        VkRenderPassBeginInfo renderPassBeginInfo = renderPassManager.beginRenderPass(imageIndex);
+        vkCmdBeginRenderPass(commandBufferManager.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        camera.update();
+        for (VulkanRenderable *renderable : renderables) {
+            if (renderable->render) {
+                //update renderable
+                renderable->update(camera);
+                //record command buffer for this renderable
+                vkCmdBindVertexBuffers(commandBufferManager.commandBuffers[imageIndex], 0, 1, &renderable->vertexBuffer.buffer, offsets);
+                vkCmdBindIndexBuffer(commandBufferManager.commandBuffers[imageIndex], renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipelineLayout, 0, 1, &renderable->descriptorSetManager.descriptorSet, 0, nullptr);
+                vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipeline);
+                vkCmdDrawIndexed(commandBufferManager.commandBuffers[imageIndex], static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
+            }
+        }
+        vkCmdEndRenderPass(commandBufferManager.commandBuffers[imageIndex]);
+        if (vkEndCommandBuffer(commandBufferManager.commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record command buffer!"); }
+        //Submit
+        VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+        VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBufferManager.commandBuffers[imageIndex];
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+        vkResetFences(device.device, 1, &inFlightFences[currentFrame]);
+        if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command buffer!"); }
+        //Present
+        VkSwapchainKHR swapchains[] = {swapchain.swapchain};
+        VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapchains;
+        presentInfo.pImageIndices = &imageIndex;
+        result = vkQueuePresentKHR(presentQueue, &presentInfo);
+        //update frameTime and frameNumber
+        auto currentTime = (float)glfwGetTime();
+        frameTime = currentTime - previousTime;
+        previousTime = currentTime;
+        frameNumber++;
+        //Check if window has been resized
+        vkQueueWaitIdle(presentQueue);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+            framebufferResized = false;
+            createSwapchain();
+        } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
+        currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
+        return glfwWindowShouldClose(window) != 1;
+    }
+
+    explicit VulkanRenderEngine(GLFWwindow *attachWindow = nullptr) {
+        camera.settings = &settings;
+        renderEngineLink.device = &device;
+        renderEngineLink.swapchain = &swapchain;
+        renderEngineLink.settings = &settings;
+        renderEngineLink.commandPool = &commandBufferManager.commandPool;
+        renderEngineLink.allocator = &allocator;
+        renderEngineLink.graphicsQueue = &graphicsQueue;
+        vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
+        //build instance
+        vkb::InstanceBuilder builder;
+        builder.set_app_name(settings.applicationName.c_str()).set_app_version(settings.applicationVersion[0], settings.applicationVersion[1], settings.applicationVersion[2]).require_api_version(settings.requiredVulkanVersion[0], settings.requiredVulkanVersion[1], settings.requiredVulkanVersion[2]);
+        #ifdef _DEBUG
+        /* Validation layers hamper performance. Therefore to eek out extra speed from the GPU they will be turned off if the program is run in 'Release' mode. */
+        if (systemInfo->validation_layers_available) { builder.request_validation_layers(); }
+        #endif
+        if (systemInfo->debug_utils_available) { builder.use_default_debug_messenger(); }
+        vkb::detail::Result<vkb::Instance> inst_ret = builder.build();
+        if (!inst_ret) { throw std::runtime_error("Failed to create Vulkan instance. Error: " + inst_ret.error().message() + "\n"); }
+        instance = inst_ret.value();
+        //build window
+        engineDeletionQueue.emplace_front([&] { vkb::destroy_instance(instance); });
+        if (attachWindow == nullptr) { glfwInit(); }
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        window = glfwCreateWindow(static_cast<int>(settings.resolution[0]), static_cast<int>(settings.resolution[1]), settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+        // load icon
+        int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
+        GLFWimage icons[sizeof(sizes)/sizeof(int)];
+        for (unsigned long i = 0; i < sizeof(sizes)/sizeof(int); ++i) {
+            std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
+            stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+            if (!pixels) { throw std::runtime_error("failed to load icon image from file: " + filename); }
+            icons[i].pixels = pixels;
+            icons[i].height = height;
+            icons[i].width = width;
+        }
+        glfwSetWindowIcon(window, sizeof(icons)/sizeof(GLFWimage), icons);
+        for (GLFWimage icon : icons) { stbi_image_free(icon.pixels); }
+        glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+        int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
+        glfwGetWindowPos(window, &xPos, &yPos);
+        settings.windowPosition = {xPos, yPos};
+        glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
+        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+        glfwSetWindowUserPointer(window, this);
+        if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS) { throw std::runtime_error("failed to create window surface!"); }
+        engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(instance.instance, surface, nullptr); });
+        //select physical device
+        vkb::PhysicalDeviceSelector selector{instance};
+        std::vector<const char *> extensionNames{};
+        #ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
+        extensionNames.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+        extensionNames.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+        extensionNames.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+        extensionNames.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);  // Maybe move this to be optional for both vulkan engines rather than simply required for the ray tracer?
+        extensionNames.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+        extensionNames.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+        extensionNames.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+        #endif
+        VkPhysicalDeviceFeatures deviceFeatures{}; //require device features here
+        deviceFeatures.samplerAnisotropy = VK_TRUE;
+        deviceFeatures.sampleRateShading = VK_TRUE;
+        vkb::detail::Result<vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).require_dedicated_transfer_queue().add_required_extensions(extensionNames).set_required_features(deviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
+        if (!phys_ret) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + phys_ret.error().message() + "\n"); }
+        //create logical device
+        vkb::DeviceBuilder device_builder{phys_ret.value()};
+        #ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
+        //get features and properties physical device on temporary device with nothing enabled
+        vkb::detail::Result<vkb::Device> temporaryDevice = device_builder.build();
+        if (!temporaryDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + temporaryDevice.error().message() + "\n"); }
+        device = temporaryDevice.value();
+        VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        deviceProperties2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestProperty;
+        vkGetPhysicalDeviceProperties2(device.physical_device.physical_device, &deviceProperties2);
+        VkPhysicalDeviceFeatures2 deviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+        deviceFeatures2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestFeature;
+        vkGetPhysicalDeviceFeatures2(device.physical_device.physical_device, &deviceFeatures2);
+        vkGetPhysicalDeviceMemoryProperties(phys_ret.value().physical_device, &renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
+        vkb::destroy_device(device);
+        //Enable required features
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = VK_TRUE;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure = VK_TRUE;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayQueryFeatures.rayQuery = VK_TRUE;
+        vkb::detail::Result<vkb::Device> finalDevice = device_builder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature).build();
+        if (!finalDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + finalDevice.error().message() + "\n"); }
+        device = finalDevice.value();
+        engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
+        #else
+        vkb::detail::Result<vkb::Device> dev_ret = device_builder.build();
+        if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
+        device = dev_ret.value();
+        engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
+        #endif
+        //get queues
+        graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
+        presentQueue = device.get_queue(vkb::QueueType::present).value();
+        //create vma allocator
+        VmaAllocatorCreateInfo allocatorInfo{};
+        allocatorInfo.physicalDevice = device.physical_device.physical_device;
+        allocatorInfo.device = device.device;
+        allocatorInfo.instance = instance.instance;
+        allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+        vmaCreateAllocator(&allocatorInfo, &allocator);
+        engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(allocator); });
+        //Create commandPool
+        commandBufferManager.create(device, vkb::QueueType::graphics);
+        engineDeletionQueue.emplace_front([&] { commandBufferManager.destroy(); });
+        //delete scratch buffer
+        engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
+        createSwapchain(true);
+        renderEngineLink.build();
+        camera.create(&renderEngineLink);
+        engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); });
+        initialized = true;
+    }
+
+    void createSwapchain(bool fullRecreate = false) {
+        //Make sure no other GPU operations are ongoing
+        vkDeviceWaitIdle(device.device);
+        //Clear recreationDeletionQueue
+        for (std::function<void()>& function : recreationDeletionQueue) { function(); }
+        recreationDeletionQueue.clear();
+        //Create swapchain
+        vkb::SwapchainBuilder swapchainBuilder{ device };
+        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
+        if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
+        swapchain = swap_ret.value();
+        recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
+        swapchainImageViews = swapchain.get_image_views().value();
+        recreationDeletionQueue.emplace_front([&]{ swapchain.destroy_image_views(swapchainImageViews); });
+        renderEngineLink.swapchainImageViews = &swapchainImageViews;
+        //clear images marked as in flight
+        imagesInFlight.clear();
+        imagesInFlight.resize(swapchain.image_count, VK_NULL_HANDLE);
+        //do the other stuff only if needed
+        if (fullRecreate) {
+            for (std::function<void()> &function : oneTimeOptionalDeletionQueue) { function(); }
+            oneTimeOptionalDeletionQueue.clear();
+            //Create commandBuffers
+            commandBufferManager.createCommandBuffers((int) swapchain.image_count);
+            //Create sync objects
+            imageAvailableSemaphores.resize(swapchain.image_count);
+            renderFinishedSemaphores.resize(swapchain.image_count);
+            inFlightFences.resize(swapchain.image_count);
+            VkSemaphoreCreateInfo semaphoreCreateInfo{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+            VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+            for (unsigned int i = 0; i < swapchain.image_count; i++) {
+                if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
+                if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
+                if (vkCreateFence(device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create fences!"); }
+            }
+            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(device.device, imageAvailableSemaphore, nullptr); }});
+            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); }});
+            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); }});
+            //Create render pass
+            renderPassManager.setup(&renderEngineLink);
+            oneTimeOptionalDeletionQueue.emplace_front([&] { renderPassManager.destroy(); });
+            //re-upload renderables
+            for (VulkanRenderable *renderable : renderables) { uploadRenderable(renderable, false); }
+        }
+        renderEngineLink.swapchainImages = swapchain.get_images().value();
+        //Recreate framebuffers without recreating entire RenderPass.
+        renderPassManager.createFramebuffers();
+    }
+
     bool initialized{false};
     GLFWmonitor *monitor{};
     VulkanSettings settings{};
@@ -351,4 +457,7 @@ public:
     GLFWwindow *window{};
     std::vector<VulkanRenderable *> renderables{};
     CommandBufferManager commandBufferManager{};
+    int frameNumber{};
+    float frameTime{};
+    RenderPassManager renderPassManager{};
 };

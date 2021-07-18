@@ -81,17 +81,18 @@ public:
         rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
         VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
-        multisampleStateCreateInfo.sampleShadingEnable = linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? VK_FALSE : VK_TRUE;
+        multisampleStateCreateInfo.sampleShadingEnable = (linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT) || linkedRenderEngine->settings->rayTracing ? VK_FALSE : VK_TRUE;
         multisampleStateCreateInfo.rasterizationSamples = linkedRenderEngine->settings->msaaSamples;
         VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
         pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
         pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
-        pipelineDepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+        pipelineDepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
         pipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
         pipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
-        VkPipelineColorBlendAttachmentState colorBlendAttachmentState{}; //Alpha blending is done here
+        pipelineDepthStencilStateCreateInfo.back.compareOp = VK_COMPARE_OP_ALWAYS;
+        VkPipelineColorBlendAttachmentState colorBlendAttachmentState{}; // Alpha blending is done here
         colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachmentState.blendEnable = VK_TRUE;
+        colorBlendAttachmentState.blendEnable = linkedRenderEngine->settings->rayTracing ? VK_FALSE : VK_TRUE;
         colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
@@ -119,7 +120,6 @@ public:
         pipelineCreateInfo.pDynamicState = &pipelineDynamicStateCreateInfo;
         pipelineCreateInfo.layout = pipelineLayout;
         pipelineCreateInfo.renderPass = createdWith.renderPassManager->renderPass;
-        pipelineCreateInfo.subpass = 0;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(linkedRenderEngine->device->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
         for (VkPipelineShaderStageCreateInfo shader : shaders) { vkDestroyShaderModule(linkedRenderEngine->device->device, shader.module, nullptr); }
