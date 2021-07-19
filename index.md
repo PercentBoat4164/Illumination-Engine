@@ -25,7 +25,7 @@ Here is a list of a few packages that you will need to download:
 
     sudo apt install libglew-dev libglfw3-dev libglm-dev
   
-  If you plan to use the Vulkan Render Engine, install the Vulkan software development kit using the following list of commands:
+  Even if you don't plan to use the Vulkan Render Engine, you will still need the Vulkan SDK to compile the program. To accomplish this task, install the Vulkan software development kit using the following list of commands:
     
     wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.176-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.176-focal.list;sudo apt update;sudo apt install vulkan-sdk
     
