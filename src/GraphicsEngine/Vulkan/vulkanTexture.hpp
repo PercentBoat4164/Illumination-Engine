@@ -2,7 +2,10 @@
 
 #include "vulkanImage.hpp"
 
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
 #include "../../../deps/stb_image.h"
+#endif
 
 #include <fstream>
 #include <cstring>

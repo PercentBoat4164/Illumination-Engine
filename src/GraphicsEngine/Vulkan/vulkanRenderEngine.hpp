@@ -352,13 +352,13 @@ public:
         vkb::detail::Result<vkb::Device> temporaryDevice = device_builder.build();
         if (!temporaryDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + temporaryDevice.error().message() + "\n"); }
         device = temporaryDevice.value();
-        VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
-        deviceProperties2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestProperty;
-        vkGetPhysicalDeviceProperties2(device.physical_device.physical_device, &deviceProperties2);
+        //VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        //deviceProperties2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestProperty;
+        //vkGetPhysicalDeviceProperties2(device.physical_device.physical_device, &deviceProperties2);
         VkPhysicalDeviceFeatures2 deviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
         deviceFeatures2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestFeature;
         vkGetPhysicalDeviceFeatures2(device.physical_device.physical_device, &deviceFeatures2);
-        vkGetPhysicalDeviceMemoryProperties(phys_ret.value().physical_device, &renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
+        //vkGetPhysicalDeviceMemoryProperties(phys_ret.value().physical_device, &renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
         vkb::destroy_device(device);
         VkPhysicalDeviceFeatures physicalDeviceFeatures{};
         physicalDeviceFeatures.sampleRateShading = VK_TRUE;

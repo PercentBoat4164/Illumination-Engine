@@ -9,7 +9,6 @@
 
 #include <vector>
 #include <array>
-#include <filesystem>
 
 #ifndef _WIN32
 #include <climits>

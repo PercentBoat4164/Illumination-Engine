@@ -3,8 +3,11 @@
 #include "vulkanSettings.hpp"
 
 #include <VkBootstrap.h>
+
+#ifndef VMA_IMPLEMENTATION
 #define VMA_IMPLEMENTATION
 #include "../../../deps/vk_mem_alloc.h"
+#endif
 
 #include <vector>
 

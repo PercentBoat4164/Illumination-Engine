@@ -2,8 +2,11 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <cmath>
+#include <filesystem> //necessary for msvc
 
+#ifndef ILLUMINATION_ENGINE_PI
 #define ILLUMINATION_ENGINE_PI 3.141592653589793238462643383279
+#endif
 
 class VulkanCamera {
 public:

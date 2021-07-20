@@ -14,7 +14,7 @@ public:
         std::vector<std::optional<std::variant<AccelerationStructure *, Image *, Buffer *>>> data{};
 
         //Optional
-        u_int32_t maxIndex{1};
+        uint32_t maxIndex{1};
 
         //Required if maxIndex is used
         VkDescriptorBindingFlagsEXT flags{0};
@@ -50,12 +50,12 @@ public:
         flags.resize(createdWith.data.size());
         flags[flags.size() - 1] = createdWith.flags;
         VkDescriptorSetLayoutBindingFlagsCreateInfoEXT descriptorSetLayoutBindingFlagsCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT};
-        descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = descriptorSetLayoutBindings.size();
+        descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
         descriptorSetLayoutBindingFlagsCreateInfo.pBindingFlags = flags.data();
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
         descriptorSetLayoutCreateInfo.pNext = &descriptorSetLayoutBindingFlagsCreateInfo;
         descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
-        descriptorSetLayoutCreateInfo.bindingCount = descriptorSetLayoutBindings.size();
+        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
         if (vkCreateDescriptorSetLayout(linkedRenderEngine->device->device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor layout!"); }
         deletionQueue.emplace_front([&] { vkDestroyDescriptorSetLayout(linkedRenderEngine->device->device, descriptorSetLayout, nullptr); });
         VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
