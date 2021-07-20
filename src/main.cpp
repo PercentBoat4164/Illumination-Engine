@@ -89,11 +89,11 @@ int main(int argc, char **argv) {
             VulkanRenderable vikingRoom = VulkanRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
             VulkanRenderable statue = VulkanRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {7, 0, 0});
             VulkanRenderable ball = VulkanRenderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
-            renderEngine.uploadRenderable(&cube, true);
-            renderEngine.uploadRenderable(&quad, true);
-            renderEngine.uploadRenderable(&vikingRoom, true);
-            renderEngine.uploadRenderable(&statue, true);
-            renderEngine.uploadRenderable(&ball, true);
+            renderEngine.loadRenderable(&cube, true);
+            renderEngine.loadRenderable(&quad, true);
+            renderEngine.loadRenderable(&vikingRoom, true);
+            renderEngine.loadRenderable(&statue, true);
+            renderEngine.loadRenderable(&ball, true);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
@@ -117,11 +117,11 @@ int main(int argc, char **argv) {
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
                     renderEngine.renderPassManager.createFramebuffers();
-                    renderEngine.reloadRenderables();
+                    renderEngine.createSwapchain(true);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
                     renderEngine.renderPassManager.createFramebuffers();
-                    renderEngine.reloadRenderables();
+                    renderEngine.createSwapchain(true);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
                     renderEngine.reloadRenderables();
@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
                 renderEngine.camera.position = {0, 10, 0};
                 renderEngine.settings.rayTracing = true;
                 VulkanRenderable ancientStatue = VulkanRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/fragmentShader.frag"});
-                renderEngine.uploadRenderable(&ancientStatue, true);
+                renderEngine.loadRenderable(&ancientStatue, true);
                 double lastTab{0};
                 double lastF2{0};
                 double lastEsc{0};
@@ -211,10 +211,10 @@ int main(int argc, char **argv) {
                         lastF2 = glfwGetTime();
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                         renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-                        renderEngine.reloadRenderables();
+                        renderEngine.createSwapchain(true);
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                         renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-                        renderEngine.reloadRenderables();
+                        renderEngine.createSwapchain(true);
                     } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                         renderEngine.settings.mipMapping ^= 1;
                         renderEngine.reloadRenderables();
@@ -281,10 +281,16 @@ int main(int argc, char **argv) {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
-            OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {5.0f, 5.0f, 5.0f});
             OpenGLRenderable cube = OpenGLRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
-            renderEngine.uploadRenderable(&vikingRoom);
+            OpenGLRenderable quad = OpenGLRenderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
+            OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            OpenGLRenderable statue = OpenGLRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"}, {7, 0, 0});
+            OpenGLRenderable ball = OpenGLRenderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
             renderEngine.uploadRenderable(&cube);
+            renderEngine.uploadRenderable(&quad);
+            renderEngine.uploadRenderable(&vikingRoom);
+            renderEngine.uploadRenderable(&statue);
+            renderEngine.uploadRenderable(&ball);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
@@ -357,6 +363,7 @@ int main(int argc, char **argv) {
                 }
                 //move renderables
                 cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
+                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1.0f / (float)renderEngine.frameTime;
                 int sum{0};

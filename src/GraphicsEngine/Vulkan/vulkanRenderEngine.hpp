@@ -73,7 +73,7 @@ protected:
     AccelerationStructure topLevelAccelerationStructure{};
 
 public:
-    virtual void uploadRenderable(VulkanRenderable *renderable, bool append) {
+    virtual void loadRenderable(VulkanRenderable *renderable, bool append = true) {
         //destroy previously created renderable if any
         renderable->destroy();
         //upload mesh, vertex, and transformation data
@@ -149,7 +149,10 @@ public:
     }
 
     void reloadRenderables() {
-        for (VulkanRenderable *renderable : renderables) { uploadRenderable(renderable, false); }
+        for (VulkanRenderable *renderable : renderables) {
+            renderable->destroy();
+            loadRenderable(renderable, false);
+        }
     }
 
     void handleFullscreenSettingsChange() {
@@ -199,7 +202,7 @@ public:
         if (renderables.empty()) { return glfwWindowShouldClose(window) != 1; }
         vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         uint32_t imageIndex{0};
-        VkResult result = vkAcquireNextImageKHR(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+        VkResult result = renderEngineLink.vkAcquireNextImageKhr(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             createSwapchain();
             return glfwWindowShouldClose(window) != 1;
@@ -225,6 +228,7 @@ public:
         vkCmdSetScissor(commandBufferManager.commandBuffers[imageIndex], 0, 1, &scissor);
         VkRenderPassBeginInfo renderPassBeginInfo = renderPassManager.beginRenderPass(imageIndex);
         vkCmdBeginRenderPass(commandBufferManager.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderables[0]->pipelineManager.pipeline);
         camera.update();
         for (VulkanRenderable *renderable : renderables) {
             if (renderable->render) {
@@ -234,7 +238,6 @@ public:
                 vkCmdBindVertexBuffers(commandBufferManager.commandBuffers[imageIndex], 0, 1, &renderable->vertexBuffer.buffer, offsets);
                 vkCmdBindIndexBuffer(commandBufferManager.commandBuffers[imageIndex], renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
                 vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipelineLayout, 0, 1, &renderable->descriptorSetManager.descriptorSet, 0, nullptr);
-                vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipeline);
                 vkCmdDrawIndexed(commandBufferManager.commandBuffers[imageIndex], static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
             }
         }
@@ -357,6 +360,9 @@ public:
         vkGetPhysicalDeviceFeatures2(device.physical_device.physical_device, &deviceFeatures2);
         vkGetPhysicalDeviceMemoryProperties(phys_ret.value().physical_device, &renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
         vkb::destroy_device(device);
+        VkPhysicalDeviceFeatures physicalDeviceFeatures{};
+        physicalDeviceFeatures.sampleRateShading = VK_TRUE;
+        physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
         //Enable required features
         renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
         renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
@@ -367,7 +373,7 @@ public:
         renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
         renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure = VK_TRUE;
         renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayQueryFeatures.rayQuery = VK_TRUE;
-        vkb::detail::Result<vkb::Device> finalDevice = device_builder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature).build();
+        vkb::detail::Result<vkb::Device> finalDevice = device_builder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature).add_pNext(&physicalDeviceFeatures).build();
         if (!finalDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + finalDevice.error().message() + "\n"); }
         device = finalDevice.value();
         engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
@@ -408,9 +414,10 @@ public:
         recreationDeletionQueue.clear();
         //Create swapchain
         vkb::SwapchainBuilder swapchainBuilder{ device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
+        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(settings.vSync ? VK_PRESENT_MODE_FIFO_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         swapchain = swap_ret.value();
+        renderEngineLink.swapchainImages = swapchain.get_images().value();
         recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
         swapchainImageViews = swapchain.get_image_views().value();
         recreationDeletionQueue.emplace_front([&]{ swapchain.destroy_image_views(swapchainImageViews); });
@@ -443,17 +450,17 @@ public:
             renderPassManager.setup(&renderEngineLink);
             oneTimeOptionalDeletionQueue.emplace_front([&] { renderPassManager.destroy(); });
             //re-upload renderables
-            for (VulkanRenderable *renderable : renderables) { uploadRenderable(renderable, false); }
+            for (VulkanRenderable *renderable : renderables) { loadRenderable(renderable, false); }
         }
-        renderEngineLink.swapchainImages = swapchain.get_images().value();
         //Recreate framebuffers without recreating entire RenderPass.
         renderPassManager.createFramebuffers();
+        camera.updateSettings(&settings);
     }
 
     bool initialized{false};
     GLFWmonitor *monitor{};
     VulkanSettings settings{};
-    VulkanCamera camera{&settings};
+    VulkanCamera camera{};
     GLFWwindow *window{};
     std::vector<VulkanRenderable *> renderables{};
     CommandBufferManager commandBufferManager{};

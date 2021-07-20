@@ -76,12 +76,13 @@ public:
         rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
         rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
         rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL; //Controls fill mode (e.g. wireframe mode)
-        rasterizationStateCreateInfo.lineWidth = 1.f;
+        rasterizationStateCreateInfo.lineWidth = 1.0f;
         rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
         rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
         VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
         multisampleStateCreateInfo.sampleShadingEnable = (linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT) || linkedRenderEngine->settings->rayTracing ? VK_FALSE : VK_TRUE;
+        multisampleStateCreateInfo.minSampleShading = 1.0f;
         multisampleStateCreateInfo.rasterizationSamples = linkedRenderEngine->settings->msaaSamples;
         VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
         pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;

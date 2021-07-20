@@ -21,10 +21,8 @@
 #include "vulkanVertex.hpp"
 #include "vulkanTexture.hpp"
 #include "vulkanPipelineManager.hpp"
-#include "XXXvulkanRayTracingPipeline.hpp"
 #include "vulkanAccelerationStructure.hpp"
 #include "vulkanUniformBufferObject.hpp"
-#include "XXXvulkanShaderBindingTable.hpp"
 #include "vulkanGraphicsEngineLink.hpp"
 
 #include <glm/gtc/quaternion.hpp>

@@ -93,7 +93,12 @@ public:
     void createFramebuffers() {
         for (std::function<void()>& function : framebufferDeletionQueue) { function(); }
         framebufferDeletionQueue.clear();
-        //Create output images
+        //Set clear values based on multisampling settings
+        clearValues.resize(linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3);
+        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+        clearValues[1].depthStencil = {1.0f, 0};
+        if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
+        //Create framebuffer images
         Image::CreateInfo colorImageCreateInfo{linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
         colorImageCreateInfo.msaaSamples = linkedRenderEngine->settings->msaaSamples;
         colorImage.create(linkedRenderEngine, &colorImageCreateInfo);
@@ -123,11 +128,6 @@ public:
     }
 
     VkRenderPassBeginInfo beginRenderPass(unsigned int framebufferIndex = 0) {
-        //Set clear values based on multisampling settings
-        clearValues.resize(linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3);
-        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-        clearValues[1].depthStencil = {1.0f, 0};
-        if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
         VkRenderPassBeginInfo renderPassBeginInfo{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         renderPassBeginInfo.renderArea.offset = {0, 0};
         renderPassBeginInfo.renderArea.extent = linkedRenderEngine->swapchain->extent;
