@@ -15,6 +15,10 @@
  * This has already been started in vulkanDescriptorSet.hpp.
  */
 
+/*
+ * Try changing
+ */
+
 #pragma once
 
 #include "vulkanRenderPass.hpp"
@@ -28,10 +32,12 @@
 #include "vulkanTexture.hpp"
 
 #include <VkBootstrap.h>
+
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
 #include "../../../deps/glew/include/GL/glew.h"
 #endif
+
 #include <GLFW/glfw3.h>
 
 #include <deque>
@@ -73,7 +79,7 @@ protected:
     AccelerationStructure topLevelAccelerationStructure{};
 
 public:
-    virtual void loadRenderable(VulkanRenderable *renderable, bool append = true) {
+    virtual void loadRenderable(VulkanRenderable *renderable, bool append) {
         //destroy previously created renderable if any
         renderable->destroy();
         //upload mesh, vertex, and transformation data
@@ -282,7 +288,6 @@ public:
     }
 
     explicit VulkanRenderEngine(GLFWwindow *attachWindow = nullptr) {
-        camera.settings = &settings;
         renderEngineLink.device = &device;
         renderEngineLink.swapchain = &swapchain;
         renderEngineLink.settings = &settings;
@@ -399,9 +404,9 @@ public:
         engineDeletionQueue.emplace_front([&] { commandBufferManager.destroy(); });
         //delete scratch buffer
         engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
-        createSwapchain(true);
         renderEngineLink.build();
         camera.create(&renderEngineLink);
+        createSwapchain(true);
         engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); });
         initialized = true;
     }
@@ -454,7 +459,7 @@ public:
         }
         //Recreate framebuffers without recreating entire RenderPass.
         renderPassManager.createFramebuffers();
-        camera.updateSettings(&settings);
+        camera.updateSettings();
     }
 
     bool initialized{false};

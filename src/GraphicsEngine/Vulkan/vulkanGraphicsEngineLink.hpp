@@ -64,7 +64,6 @@ public:
         vkGetRayTracingShaderGroupHandlesKHR = reinterpret_cast<PFN_vkGetRayTracingShaderGroupHandlesKHR>(vkGetDeviceProcAddr(device->device, "vkGetRayTracingShaderGroupHandlesKHR"));
         vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(device->device, "vkCreateRayTracingPipelinesKHR"));
         vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device->device, "vkAcquireNextImageKHR"));
-        swapchainImages = swapchain->get_images().value();
     }
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
