@@ -22,5 +22,4 @@
 /deps/glew32.dll
 /deps/glew32d.dll
 /deps/vulkanHeaders
-# Downloaded models
-/Models.tar.xz
+/deps/assimp/
