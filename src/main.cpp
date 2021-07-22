@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
             try {
                 VulkanRenderEngine renderEngine{};
                 glfwSetWindowPosCallback(renderEngine.window, vulkanRayTracerWindowPositionCallback);
-                renderEngine.camera.position = {0, 10, 0};
+                renderEngine.camera.position = {0, 1, 1};
                 renderEngine.settings.rayTracing = true;
                 VulkanRenderable ancientStatue = VulkanRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/VulkanRayTracingShaders/vertexShader.vert", "res/Shaders/VulkanRayTracingShaders/fragmentShader.frag"});
                 renderEngine.loadRenderable(&ancientStatue, true);
@@ -281,11 +281,11 @@ int main(int argc, char **argv) {
         try {
             OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
-            OpenGLRenderable cube = OpenGLRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
-            OpenGLRenderable quad = OpenGLRenderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
-            OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            OpenGLRenderable statue = OpenGLRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"}, {7, 0, 0});
-            OpenGLRenderable ball = OpenGLRenderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/OpenGLShaders/vertexShader.glsl", "res/Shaders/OpenGLShaders/fragmentShader.glsl"});
+            OpenGLRenderable cube = OpenGLRenderable("res/Models/cube.obj", {"res/Models/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"});
+            OpenGLRenderable quad = OpenGLRenderable("res/Models/quad.obj", {"res/Models/quad_Color.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
+            OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/vikingRoom.obj", {"res/Models/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            OpenGLRenderable statue = OpenGLRenderable("res/Models/ancientStatue.obj", {"res/Models/ancientStatue.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {7, 0, 0});
+            OpenGLRenderable ball = OpenGLRenderable("res/Models/sphere.obj", {"res/Models/sphere_diffuse.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"});
             renderEngine.uploadRenderable(&cube);
             renderEngine.uploadRenderable(&quad);
             renderEngine.uploadRenderable(&vikingRoom);

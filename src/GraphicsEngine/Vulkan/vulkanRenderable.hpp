@@ -43,6 +43,7 @@ public:
         scale = initialScale;
         modelName = modelFileName;
         textureNames = textureFileNames;
+        if (textureNames.empty()) { textureNames.push_back("NO_FILE"); }
         shaderNames = shaderFileNames;
         loadModel(modelFileName);
         loadTextures(textureFileNames);
@@ -116,7 +117,7 @@ private:
                 vertex.pos = { attrib.vertices[3 * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
                 vertex.texCoord = { attrib.texcoords[2 * index.texcoord_index], 1.f - attrib.texcoords[2 * index.texcoord_index + 1] };
                 vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
-                vertex.color = {1.0f, 1.0f, 1.0f, 0.0f};
+                vertex.color = {1.0f, 1.0f, 1.0f, 1.0f};
                 if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
                     uniqueVertices.insert({vertex, static_cast<uint32_t>(vertices.size())});
                     vertices.push_back(vertex);

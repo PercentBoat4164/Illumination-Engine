@@ -64,6 +64,13 @@ public:
         vkGetRayTracingShaderGroupHandlesKHR = reinterpret_cast<PFN_vkGetRayTracingShaderGroupHandlesKHR>(vkGetDeviceProcAddr(device->device, "vkGetRayTracingShaderGroupHandlesKHR"));
         vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(device->device, "vkCreateRayTracingPipelinesKHR"));
         vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device->device, "vkAcquireNextImageKHR"));
+        VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        deviceProperties2.pNext = supportedPhysicalDeviceInfo.pNextHighestProperty;
+        vkGetPhysicalDeviceProperties2(device->physical_device.physical_device, &deviceProperties2);
+        VkPhysicalDeviceFeatures2 deviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+        deviceFeatures2.pNext = supportedPhysicalDeviceInfo.pNextHighestFeature;
+        vkGetPhysicalDeviceFeatures2(device->physical_device.physical_device, &deviceFeatures2);
+        vkGetPhysicalDeviceMemoryProperties(device->physical_device.physical_device, &supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
     }
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
@@ -87,5 +94,25 @@ public:
         vkQueueSubmit(*graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(*graphicsQueue);
         vkFreeCommandBuffers(device->device, *commandPool, 1, &commandBuffer);
+    }
+
+    VkBool32 enableFeature(VkBool32 *feature) {
+        VkBool32 support = *(VkBool32 *)(feature - (VkBool32 *)&enabledPhysicalDeviceInfo + (VkBool32 *)&supportedPhysicalDeviceInfo);
+        *feature = support;
+        return *feature;
+    }
+
+    std::vector<VkBool32> enableFeature(const std::vector<VkBool32 *>& features) {
+        std::vector<VkBool32> results{};
+        results.reserve(static_cast<unsigned int>(features.size() + 1));
+        results[0] = VK_TRUE;
+        for (VkBool32 *feature : features) { results.push_back(enableFeature(feature)); }
+        for (VkBool32 result : results) {
+            if (!result) {
+                results[0] = VK_FALSE;
+                break;
+            }
+        }
+        return results;
     }
 };

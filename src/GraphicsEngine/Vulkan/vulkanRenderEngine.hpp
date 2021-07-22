@@ -335,50 +335,33 @@ public:
         engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(instance.instance, surface, nullptr); });
         //select physical device
         vkb::PhysicalDeviceSelector selector{instance};
-        std::vector<const char *> extensionNames{};
-        #ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
-        extensionNames.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
-        extensionNames.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
-        extensionNames.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
-        extensionNames.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);  // Maybe move this to be optional for both vulkan engines rather than simply required for the ray tracer?
-        extensionNames.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
-        extensionNames.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
-        extensionNames.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
-        #endif
+        std::vector<const char *> extensionNames{
+            VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+            VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+            VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+        };
         VkPhysicalDeviceFeatures deviceFeatures{}; //require device features here
         deviceFeatures.samplerAnisotropy = VK_TRUE;
         deviceFeatures.sampleRateShading = VK_TRUE;
-        vkb::detail::Result<vkb::PhysicalDevice> phys_ret = selector.set_surface(surface).require_dedicated_transfer_queue().add_required_extensions(extensionNames).set_required_features(deviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
-        if (!phys_ret) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + phys_ret.error().message() + "\n"); }
+        vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuildResults = selector.set_surface(surface).add_required_extensions(extensionNames).set_required_features(deviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
+        if (!physicalDeviceBuildResults) { throw std::runtime_error("Failed to select Vulkan Physical Device. Error: " + physicalDeviceBuildResults.error().message() + "\n"); }
         //create logical device
-        vkb::DeviceBuilder device_builder{phys_ret.value()};
+        vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuildResults.value()};
         #ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
         //get features and properties physical device on temporary device with nothing enabled
-        vkb::detail::Result<vkb::Device> temporaryDevice = device_builder.build();
+        vkb::detail::Result<vkb::Device> temporaryDevice = logicalDeviceBuilder.build();
         if (!temporaryDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + temporaryDevice.error().message() + "\n"); }
         device = temporaryDevice.value();
-        //VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
-        //deviceProperties2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestProperty;
-        //vkGetPhysicalDeviceProperties2(device.physical_device.physical_device, &deviceProperties2);
-        VkPhysicalDeviceFeatures2 deviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-        deviceFeatures2.pNext = renderEngineLink.supportedPhysicalDeviceInfo.pNextHighestFeature;
-        vkGetPhysicalDeviceFeatures2(device.physical_device.physical_device, &deviceFeatures2);
-        //vkGetPhysicalDeviceMemoryProperties(phys_ret.value().physical_device, &renderEngineLink.supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
+        renderEngineLink.build();
         vkb::destroy_device(device);
-        VkPhysicalDeviceFeatures physicalDeviceFeatures{};
-        physicalDeviceFeatures.sampleRateShading = VK_TRUE;
-        physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
         //Enable required features
-        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
-        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
-        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = VK_TRUE;
-        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
-        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
-        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
-        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure = VK_TRUE;
-        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayQueryFeatures.rayQuery = VK_TRUE;
-        vkb::detail::Result<vkb::Device> finalDevice = device_builder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature).add_pNext(&physicalDeviceFeatures).build();
+        std::vector<VkBool32 *> requestedFeatures{
+            &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress,
+            &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure,
+            &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayQueryFeatures.rayQuery
+        };
+        if (!renderEngineLink.enableFeature(requestedFeatures)[0]) { throw std::runtime_error("One of the requested features is not supported!"); }
+        vkb::detail::Result<vkb::Device> finalDevice = logicalDeviceBuilder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature).build();
         if (!finalDevice) { throw std::runtime_error("Failed to create Vulkan device. Error: " + finalDevice.error().message() + "\n"); }
         device = finalDevice.value();
         engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
@@ -386,6 +369,7 @@ public:
         vkb::detail::Result<vkb::Device> dev_ret = device_builder.build();
         if (!dev_ret) { throw std::runtime_error("Failed to create Vulkan device. Error: " + dev_ret.error().message() + "\n"); }
         device = dev_ret.value();
+        renderEngineLink.build();
         engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
         #endif
         //get queues
@@ -404,7 +388,6 @@ public:
         engineDeletionQueue.emplace_front([&] { commandBufferManager.destroy(); });
         //delete scratch buffer
         engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
-        renderEngineLink.build();
         camera.create(&renderEngineLink);
         createSwapchain(true);
         engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); });
