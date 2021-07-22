@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
 #include "GraphicsEngine/Vulkan/vulkanRenderEngine.hpp"

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <fstream>
+#include <sstream>
+
 class OpenGLShader {
 public:
     struct CreateInfo {

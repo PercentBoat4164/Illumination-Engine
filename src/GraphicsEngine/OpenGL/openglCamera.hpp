@@ -2,6 +2,10 @@
 
 #include "openglSettings.hpp"
 
+#ifndef ILLUMINATION_ENGINE_PI
+#define ILLUMINATION_ENGINE_PI 3.141592653589793238462643383279
+#endif
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
