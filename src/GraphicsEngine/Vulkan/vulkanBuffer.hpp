@@ -13,9 +13,6 @@ public:
         VkBufferUsageFlags usage{};
         VmaMemoryUsage allocationUsage{};
 
-        //Only required for shader binding table creation
-        uint32_t handleCount{1};
-
         //Only required for acceleration structure creation
         VkAccelerationStructureTypeKHR type{};
         VkTransformMatrixKHR *transformationMatrix{};

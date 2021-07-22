@@ -6,6 +6,7 @@
 #pragma once
 
 #include "openglVertex.hpp"
+#include "openglProgram.hpp"
 
 #ifndef TINYOBJLOADER_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -27,7 +28,7 @@ public:
     std::vector<const char *> shaderFilenames{};
     const char *modelFilename{};
     std::vector<unsigned int> textureIDs{};
-    GLuint programID{};
+    OpenGLProgram program{};
     unsigned int vertexBuffer{};
     unsigned int vertexArrayObject{};
     unsigned int indexBuffer{};
@@ -45,6 +46,13 @@ public:
         textureFilenames = texturePaths;
         modelFilename = modelPath;
         shaderFilenames = shaderPaths;
+        std::vector<OpenGLShader> shaders{shaderFilenames.size()};
+        for (uint32_t i = 0; i < shaderFilenames.size(); ++i) {
+            OpenGLShader::CreateInfo shaderCreateInfo{shaderFilenames[i]};
+            shaders[i].create(&shaderCreateInfo);
+        }
+        OpenGLProgram::CreateInfo programCreateInfo{shaders};
+        program.create(&programCreateInfo);
     }
 
     void loadTextures(std::vector<const char *> filenames) {
@@ -120,43 +128,5 @@ public:
         //Normal Data
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(OpenGLVertex), (void *)offsetof(OpenGLVertex, normal));
         glEnableVertexAttribArray(3);
-    }
-
-    void loadShaders(const std::vector<const char *>& filenames) {
-        assert(!filenames.empty());
-        GLuint vertexShaderID{glCreateShader(GL_VERTEX_SHADER)};
-        GLuint fragmentShaderID{glCreateShader(GL_FRAGMENT_SHADER)};
-        std::array<GLuint, 2> shaderIDs{vertexShaderID, fragmentShaderID};
-        GLint Result{GL_FALSE};
-        int InfoLogLength{0};
-        for (unsigned int i = 0; i < filenames.size(); i++) {
-            std::ifstream file(filenames[i], std::ios::in);
-            if (!file.is_open()) { throw std::runtime_error("failed to load shader: " + (std::string)filenames[i]); }
-            std::stringstream stringStream;
-            stringStream << file.rdbuf();
-            std::string shaderCode = stringStream.str();
-            file.close();
-            char const *sourcePointer = shaderCode.c_str();
-            glShaderSource(shaderIDs[i], 1, &sourcePointer, nullptr);
-            glCompileShader(shaderIDs[i]);
-            glGetShaderiv(shaderIDs[i], GL_COMPILE_STATUS, &Result);
-            glGetShaderiv(shaderIDs[i], GL_INFO_LOG_LENGTH, &InfoLogLength);
-            if (InfoLogLength > 1) { throw std::runtime_error("failed to compile shader: " + (std::string)filenames[i]); }
-        }
-        programID = glCreateProgram();
-        glAttachShader(programID, vertexShaderID);
-        glAttachShader(programID, fragmentShaderID);
-        glLinkProgram(programID);
-        glGetProgramiv(programID, GL_LINK_STATUS, &Result);
-        glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-        if (InfoLogLength > 0){
-            std::vector<char> ProgramErrorMessage(InfoLogLength+1);
-            glGetProgramInfoLog(programID, InfoLogLength, nullptr, &ProgramErrorMessage[0]);
-            printf("%s\n", &ProgramErrorMessage[0]);
-        }
-        glDetachShader(programID, vertexShaderID);
-        glDetachShader(programID, fragmentShaderID);
-        glDeleteShader(vertexShaderID);
-        glDeleteShader(fragmentShaderID);
     }
 };

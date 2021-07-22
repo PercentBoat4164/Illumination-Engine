@@ -138,7 +138,6 @@ public:
 
     void uploadRenderable(OpenGLRenderable *renderable, bool append = true) {
         renderable->loadModel(renderable->modelFilename);
-        renderable->loadShaders(renderable->shaderFilenames);
         renderable->loadTextures(renderable->textureFilenames);
         if (append) { renderables.push_back(renderable); }
     }
@@ -154,11 +153,11 @@ public:
         for (OpenGLRenderable *renderable : renderables) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, renderable->textureIDs[0]);
-            glUseProgram(renderable->programID);
             glBindVertexArray(renderable->vertexArrayObject);
+            glUseProgram(renderable->program.ID);
             glm::quat quaternion = glm::quat(glm::radians(renderable->rotation));
-            glUniformMatrix4fv(glGetUniformLocation(renderable->programID, "MVP"), 1, GL_FALSE, &(camera.update() * glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), renderable->scale), glm::angle(quaternion), glm::axis(quaternion)), (renderable->position)))[0][0]);
-            glUniform1i(glGetUniformLocation(renderable->programID, "texture"), 0);
+            renderable->program.setValue("MVP", camera.update() * glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), renderable->scale), glm::angle(quaternion), glm::axis(quaternion)), renderable->position));
+            renderable->program.setValue("diffuse", 0);
             glDrawElements(GL_TRIANGLES, (GLsizei)renderable->indices.size(), GL_UNSIGNED_INT, nullptr);
         }
         glFlush();

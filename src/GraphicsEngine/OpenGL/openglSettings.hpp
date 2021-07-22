@@ -9,7 +9,6 @@
 
 #include <vector>
 #include <array>
-#include <filesystem>
 
 #ifndef _WIN32
 #include <climits>
@@ -33,13 +32,4 @@ public:
     double renderDistance{1000000};
     double movementSpeed{2.5};
     double mouseSensitivity{0.1};
-
-    OpenGLSettings findMaxSettings() {
-        const GLFWvidmode* mode{glfwGetVideoMode(glfwGetPrimaryMonitor())};
-        refreshRate = mode->refreshRate;
-        resolution[0] = mode->width;
-        resolution[1] = mode->height;
-        fullscreen = true;
-        return *this;
-    }
 };

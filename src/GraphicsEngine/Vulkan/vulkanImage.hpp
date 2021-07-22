@@ -106,8 +106,7 @@ public:
     void transitionLayout(VkImageLayout newLayout, VkCommandBuffer commandBuffer = nullptr) {
         bool noCommandBuffer{false};
         if (commandBuffer == nullptr) { noCommandBuffer = true; }
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
         barrier.oldLayout = imageLayout;
         barrier.newLayout = newLayout;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;

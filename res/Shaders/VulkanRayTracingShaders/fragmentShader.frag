@@ -16,13 +16,13 @@ layout(location = 0) out vec4 outColor;
 //Add POM
 
 void main() {
-    outColor = texture(abledo, fragTexCoord);
+    outColor = texture(abledo, fragTexCoord) * 0.1f;
     rayQueryEXT rayQuery;
-    rayQueryInitializeEXT(rayQuery, topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT, 0xFF, worldPosition, 0.01, vec3(0, 0, 1), 1000.0);
+    rayQueryInitializeEXT(rayQuery, topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT, 0xFF, worldPosition, 0.001, vec3(0, 0, 1), 1000.0);
 
     // Start the ray traversal, rayQueryProceedEXT returns false if the traversal is complete
     while (rayQueryProceedEXT(rayQuery)) { }
 
     // If the intersection has hit a triangle, the fragment is shadowed
-    if (rayQueryGetIntersectionTypeEXT(rayQuery, true) == gl_RayQueryCommittedIntersectionTriangleEXT ) { outColor *= 0.1; }
+    if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionTriangleEXT ) { outColor *= 10; }
 }
