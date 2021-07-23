@@ -1,6 +1,6 @@
 #pragma once
 
-class AccelerationStructure : public Buffer {
+class VulkanAccelerationStructure : public VulkanBuffer {
 public:
     VkAccelerationStructureKHR accelerationStructure{};
 
@@ -10,7 +10,7 @@ public:
         std::vector<uint32_t> geometryCounts{};
         geometryCounts.reserve(createdWith.primitiveCount);
         VkAccelerationStructureGeometryKHR accelerationStructureGeometry{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR};
-        Buffer instanceBuffer{};
+        VulkanBuffer instanceBuffer{};
         if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR) {
             accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
             accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
@@ -28,7 +28,7 @@ public:
             accelerationStructureInstance.mask = 0xFF;
             accelerationStructureInstance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
             accelerationStructureInstance.accelerationStructureReference = createdWith.bottomLevelAccelerationStructureDeviceAddress;
-            Buffer::CreateInfo instanceBufferCreateInfo{sizeof(VkAccelerationStructureInstanceKHR), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU};
+            VulkanBuffer::CreateInfo instanceBufferCreateInfo{sizeof(VkAccelerationStructureInstanceKHR), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU};
             memcpy(instanceBuffer.create(linkedRenderEngine, &instanceBufferCreateInfo), &accelerationStructureInstance, sizeof(VkAccelerationStructureInstanceKHR));
             accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
             accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
@@ -62,8 +62,8 @@ public:
         deviceAddress = linkedRenderEngine->vkGetAccelerationStructureDeviceAddressKHR(linkedRenderEngine->device->device, &accelerationStructureDeviceAddressInfo);
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
-        Buffer::CreateInfo scratchBufferCreateInfo{accelerationStructureBuildSizesInfo.accelerationStructureSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
-        Buffer scratchBuffer{};
+        VulkanBuffer::CreateInfo scratchBufferCreateInfo{accelerationStructureBuildSizesInfo.accelerationStructureSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        VulkanBuffer scratchBuffer{};
         scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo);
         accelerationStructureBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
         accelerationStructureBuildGeometryInfo.dstAccelerationStructure = accelerationStructure;

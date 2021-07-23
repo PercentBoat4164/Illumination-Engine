@@ -6,12 +6,13 @@
 #include <deque>
 #include <functional>
 
-class RasterizationPipelineManager {
+class VulkanPipeline {
 public:
     struct CreateInfo {
-        std::vector<Shader> shaders{};
-        DescriptorSetManager *descriptorSetManager{};
-        RenderPassManager *renderPassManager{};
+        //Required
+        std::vector<VulkanShader> shaders{};
+        DescriptorSet *descriptorSet{};
+        VulkanRenderPass *renderPass{};
     };
 
     VkPipelineLayout pipelineLayout{};
@@ -29,7 +30,7 @@ public:
         //Create pipelineLayout
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         pipelineLayoutCreateInfo.setLayoutCount = 1;
-        pipelineLayoutCreateInfo.pSetLayouts = &createdWith.descriptorSetManager->descriptorSetLayout;
+        pipelineLayoutCreateInfo.pSetLayouts = &createdWith.descriptorSet->descriptorSetLayout;
         if (vkCreatePipelineLayout(linkedRenderEngine->device->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
         deletionQueue.emplace_front([&]{ vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr); pipelineLayout = VK_NULL_HANDLE; });
         //prepare shaders
@@ -120,7 +121,7 @@ public:
         pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
         pipelineCreateInfo.pDynamicState = &pipelineDynamicStateCreateInfo;
         pipelineCreateInfo.layout = pipelineLayout;
-        pipelineCreateInfo.renderPass = createdWith.renderPassManager->renderPass;
+        pipelineCreateInfo.renderPass = createdWith.renderPass->renderPass;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(linkedRenderEngine->device->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
         for (VkPipelineShaderStageCreateInfo shader : shaders) { vkDestroyShaderModule(linkedRenderEngine->device->device, shader.module, nullptr); }

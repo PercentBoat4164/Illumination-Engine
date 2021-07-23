@@ -51,7 +51,9 @@ public:
     void loadTextures(std::vector<const char *> filenames) {
         textures.resize(filenames.size());
         for (uint32_t i = 0; i < filenames.size(); ++i) {
-            OpenGLTexture::CreateInfo textureCreateInfo{filenames[i]};
+            OpenGLTexture::CreateInfo textureCreateInfo{};
+            textureCreateInfo.filename = filenames[i];
+            textureCreateInfo.format = OPENGL_TEXTURE;
             textures[i].destroy();
             textures[i].create(&textureCreateInfo);
             textures[i].upload();

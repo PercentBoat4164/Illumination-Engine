@@ -117,11 +117,11 @@ int main(int argc, char **argv) {
                     lastF2 = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-                    renderEngine.renderPassManager.createFramebuffers();
+                    renderEngine.renderPass.createFramebuffers();
                     renderEngine.createSwapchain(true);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-                    renderEngine.renderPassManager.createFramebuffers();
+                    renderEngine.renderPass.createFramebuffers();
                     renderEngine.createSwapchain(true);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
@@ -280,7 +280,7 @@ int main(int argc, char **argv) {
 #ifdef ILLUMINATION_ENGINE_OPENGL
     if (input == "o") {
         try {
-            OpenGLRenderEngine renderEngine = OpenGLRenderEngine();
+            OpenGLRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
             OpenGLRenderable cube = OpenGLRenderable("res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"});
             OpenGLRenderable quad = OpenGLRenderable("res/Models/Quad/quad.obj", {"res/Models/Quad/quad_Color.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
                     for (OpenGLRenderable *renderable : renderEngine.renderables) { renderEngine.uploadRenderable(renderable, false); }
                     renderEngine.updateSettings();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
-                    renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
+                    renderEngine.settings.fullscreen ^= 1;
                     renderEngine.updateSettings();
                     lastF2 = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {

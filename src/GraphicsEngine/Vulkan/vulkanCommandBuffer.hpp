@@ -1,6 +1,6 @@
 #pragma once
 
-class CommandBufferManager {
+class VulkanCommandBuffer {
 public:
     VkCommandPool commandPool{};
     std::vector<VkCommandBuffer> commandBuffers{};

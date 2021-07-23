@@ -11,11 +11,11 @@
 #define GLSLC "glslc "
 #endif
 
-class Shader {
+class VulkanShader {
 public:
     struct CreateInfo {
+        //Required
         const char *filename{};
-        VkShaderStageFlagBits stage{};
     };
 
     std::vector<char> data{};

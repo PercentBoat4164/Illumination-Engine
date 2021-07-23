@@ -2,14 +2,15 @@
 
 #include "vulkanBuffer.hpp"
 
-enum ImageType {
-    DEPTH = 0x00000000,
-    COLOR = 0x00000001
+enum VulkanImageType {
+    VULKAN_DEPTH = 0x00000000,
+    VULKAN_COLOR = 0x00000001
 };
 
-class Image {
+class VulkanImage {
 public:
     struct CreateInfo {
+        //Required
         VkFormat format{};
         VkImageTiling tiling{};
         VkImageUsageFlags usage{};
@@ -21,8 +22,8 @@ public:
         //Only use for non-texture images
         VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;  //OPTIONAL
         VkImageLayout imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;      //OPTIONAL
-        ImageType imageType = COLOR;                                //OPTIONAL
-        Buffer *dataSource = nullptr;                               //OPTIONAL
+        VulkanImageType imageType = VULKAN_COLOR;                          //OPTIONAL
+        VulkanBuffer *dataSource = nullptr;                         //OPTIONAL
 
         //Only use for texture images
         const char *filename{};                                     //REQUIRED
@@ -71,7 +72,7 @@ public:
         imageViewCreateInfo.image = image;
         imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         imageViewCreateInfo.format = createdWith.format;
-        imageViewCreateInfo.subresourceRange.aspectMask = createdWith.imageType == ImageType::DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        imageViewCreateInfo.subresourceRange.aspectMask = createdWith.imageType == VulkanImageType::VULKAN_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
         imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
         imageViewCreateInfo.subresourceRange.levelCount = 1;
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;

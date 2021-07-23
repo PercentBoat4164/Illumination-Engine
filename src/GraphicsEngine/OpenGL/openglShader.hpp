@@ -6,10 +6,10 @@
 class OpenGLShader {
 public:
     struct CreateInfo {
-        //REQUIRED
+        //Required
         const char *filename{};
 
-        //RECOMMENDED - will be filled in based on shader file extension if not provided. This will fail if no extension is recognized.
+        //Recommended - will be filled in based on shader file extension if not provided. This will fail if no extension is recognized.
         GLenum shaderType{};
     };
 

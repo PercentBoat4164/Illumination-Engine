@@ -10,7 +10,7 @@
 #include <fstream>
 #include <cstring>
 
-class Texture : public Image {
+class VulkanTexture : public VulkanImage {
 public:
     /**@todo: Combine as many command buffer submissions as possible together to reduce load on GPU.*/
     void create(VulkanGraphicsEngineLink *engineLink, CreateInfo *createInfo) override {
@@ -45,7 +45,7 @@ public:
         imageViewCreateInfo.image = image;
         imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         imageViewCreateInfo.format = createdWith.format;
-        imageViewCreateInfo.subresourceRange.aspectMask = createdWith.imageType == ImageType::DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        imageViewCreateInfo.subresourceRange.aspectMask = createdWith.imageType == VulkanImageType::VULKAN_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
         imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
         imageViewCreateInfo.subresourceRange.levelCount = mipLevels;
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
@@ -53,8 +53,8 @@ public:
         if (vkCreateImageView(linkedRenderEngine->device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
         deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr); view = VK_NULL_HANDLE; });
         transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        Buffer scratchBuffer{};
-        Buffer::CreateInfo scratchBufferCreateInfo{static_cast<VkDeviceSize>(createdWith.width * createdWith.height * 4), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        VulkanBuffer scratchBuffer{};
+        VulkanBuffer::CreateInfo scratchBufferCreateInfo{static_cast<VkDeviceSize>(createdWith.width * createdWith.height * 4), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         memcpy(scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo), pixels, createdWith.width * createdWith.height * 4);
         scratchBuffer.toImage(image, createdWith.width, createdWith.height);
         /**@todo: Add support for more mipmap interpolation methods. Currently only linear interpolation is supported.*/

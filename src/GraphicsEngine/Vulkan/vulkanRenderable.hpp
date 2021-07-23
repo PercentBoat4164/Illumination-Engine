@@ -20,7 +20,7 @@
 #include "vulkanCamera.hpp"
 #include "vulkanVertex.hpp"
 #include "vulkanTexture.hpp"
-#include "vulkanPipelineManager.hpp"
+#include "vulkanPipeline.hpp"
 #include "vulkanAccelerationStructure.hpp"
 #include "vulkanUniformBufferObject.hpp"
 #include "vulkanGraphicsEngineLink.hpp"
@@ -60,7 +60,7 @@ public:
     }
 
     void destroy() {
-        for (Image &textureImage : textureImages) { textureImage.destroy(); }
+        for (VulkanImage &textureImage : textureImages) { textureImage.destroy(); }
         for (const std::function<void(VulkanRenderable)>& function : deletionQueue) { function(*this); }
         deletionQueue.clear();
     }
@@ -69,26 +69,24 @@ public:
         uniformBufferObject = {glm::mat4(1.0f), camera.view, camera.proj};
         glm::quat quaternion = glm::quat(glm::radians(rotation));
         uniformBufferObject.model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
-        memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(UniformBufferObject));
+        memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(VulkanUniformBufferObject));
     }
 
     std::deque<std::function<void(VulkanRenderable asset)>> deletionQueue{};
     std::vector<uint32_t> indices{};
     std::vector<VulkanVertex> vertices{};
-    Buffer uniformBuffer{};
-    Buffer vertexBuffer{};
-    Buffer indexBuffer{};
-    Buffer transformationBuffer{};
-    RasterizationPipelineManager pipelineManager{};
-    DescriptorSetManager descriptorSetManager{};
-    AccelerationStructure bottomLevelAccelerationStructure{};
-    UniformBufferObject uniformBufferObject{};
-    std::vector<Texture> textureImages{};
+    VulkanBuffer uniformBuffer{};
+    VulkanBuffer vertexBuffer{};
+    VulkanBuffer indexBuffer{};
+    VulkanBuffer transformationBuffer{};
+    VulkanPipeline pipeline{};
+    DescriptorSet descriptorSet{};
+    VulkanAccelerationStructure bottomLevelAccelerationStructure{};
+    VulkanUniformBufferObject uniformBufferObject{};
+    std::vector<VulkanTexture> textureImages{};
     std::vector<const char *> textures{};
-    std::vector<Shader::CreateInfo> shaderCreateInfos{};
-    std::vector<Shader> shaders{};
-    int width{};
-    int height{};
+    std::vector<VulkanShader::CreateInfo> shaderCreateInfos{};
+    std::vector<VulkanShader> shaders{};
     glm::vec3 position{};
     glm::vec3 rotation{};
     glm::vec3 scale{};
@@ -140,7 +138,7 @@ private:
         shaderCreateInfos.clear();
         shaderCreateInfos.reserve(filenames.size());
         for (const char *filename : filenames) {
-            Shader::CreateInfo shaderCreateInfo {filename, filename == filenames[0] ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT};
+            VulkanShader::CreateInfo shaderCreateInfo {filename};
             shaderCreateInfos.push_back(shaderCreateInfo);
         }
     }

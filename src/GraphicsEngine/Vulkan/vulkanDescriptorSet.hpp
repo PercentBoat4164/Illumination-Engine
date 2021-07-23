@@ -6,12 +6,13 @@
 #include <optional>
 #include <numeric>
 
-class DescriptorSetManager {
+class DescriptorSet {
 public:
     struct CreateInfo {
+        //Required
         std::vector<VkDescriptorPoolSize> poolSizes{};
         std::vector<VkShaderStageFlagBits> shaderStages{};
-        std::vector<std::optional<std::variant<AccelerationStructure *, Image *, Buffer *>>> data{};
+        std::vector<std::optional<std::variant<VulkanAccelerationStructure *, VulkanImage *, VulkanBuffer *>>> data{};
 
         //Optional
         uint32_t maxIndex{1};
@@ -75,7 +76,7 @@ public:
         if (vkAllocateDescriptorSets(linkedRenderEngine->device->device, &descriptorSetAllocateInfo, &descriptorSet) != VK_SUCCESS) { throw std::runtime_error("failed to allocate descriptor set!"); }
         std::vector<int> bindings{};
         bindings.reserve(createdWith.data.size());
-        std::vector<std::optional<std::variant<AccelerationStructure *, Image *, Buffer *>>> data{};
+        std::vector<std::optional<std::variant<VulkanAccelerationStructure *, VulkanImage *, VulkanBuffer *>>> data{};
         data.reserve(createdWith.data.size());
         for (int i = 0; i < createdWith.data.size(); ++i) {
             if (createdWith.data[i].has_value()) {
@@ -86,7 +87,7 @@ public:
         update(data, bindings);
     }
 
-    void update(std::vector<std::optional<std::variant<AccelerationStructure *, Image *, Buffer *>>> newData, std::vector<int> bindings = {}) {
+    void update(std::vector<std::optional<std::variant<VulkanAccelerationStructure *, VulkanImage *, VulkanBuffer *>>> newData, std::vector<int> bindings = {}) {
         if (bindings.empty()) { assert(newData.size() == createdWith.data.size()); } else { assert(bindings.size() == newData.size()); }
         std::vector<VkWriteDescriptorSetAccelerationStructureKHR> writeDescriptorSetAccelerationStructures{};
         writeDescriptorSetAccelerationStructures.reserve(createdWith.poolSizes.size());
@@ -107,28 +108,28 @@ public:
                 if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
                     VkWriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAccelerationStructure{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR};
                     writeDescriptorSetAccelerationStructure.accelerationStructureCount = 1;
-                    writeDescriptorSetAccelerationStructure.pAccelerationStructures = &std::get<AccelerationStructure *>(newData[i].value())->accelerationStructure;
+                    writeDescriptorSetAccelerationStructure.pAccelerationStructures = &std::get<VulkanAccelerationStructure *>(newData[i].value())->accelerationStructure;
                     writeDescriptorSetAccelerationStructures.push_back(writeDescriptorSetAccelerationStructure);
                     writeDescriptorSet.pNext = &writeDescriptorSetAccelerationStructures[writeDescriptorSetAccelerationStructures.size() - 1];
                 } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
                     VkDescriptorImageInfo storageImageDescriptorInfo{};
-                    storageImageDescriptorInfo.imageView = std::get<Image *>(newData[i].value())->view;
-                    storageImageDescriptorInfo.sampler = std::get<Image *>(newData[i].value())->sampler;
-                    storageImageDescriptorInfo.imageLayout = std::get<Image *>(newData[i].value())->imageLayout;
+                    storageImageDescriptorInfo.imageView = std::get<VulkanImage *>(newData[i].value())->view;
+                    storageImageDescriptorInfo.sampler = std::get<VulkanImage *>(newData[i].value())->sampler;
+                    storageImageDescriptorInfo.imageLayout = std::get<VulkanImage *>(newData[i].value())->imageLayout;
                     if (storageImageDescriptorInfo.imageView == VK_NULL_HANDLE) { throw std::runtime_error("no image given or given image does not have an associated view!"); }
                     imageDescriptorInfos.push_back(storageImageDescriptorInfo);
                     writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
                 } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
                     VkDescriptorImageInfo combinedImageSamplerDescriptorInfo{};
-                    combinedImageSamplerDescriptorInfo.imageView = std::get<Image *>(newData[i].value())->view;
-                    combinedImageSamplerDescriptorInfo.sampler = std::get<Image *>(newData[i].value())->sampler;
-                    combinedImageSamplerDescriptorInfo.imageLayout = std::get<Image *>(newData[i].value())->imageLayout;
+                    combinedImageSamplerDescriptorInfo.imageView = std::get<VulkanImage *>(newData[i].value())->view;
+                    combinedImageSamplerDescriptorInfo.sampler = std::get<VulkanImage *>(newData[i].value())->sampler;
+                    combinedImageSamplerDescriptorInfo.imageLayout = std::get<VulkanImage *>(newData[i].value())->imageLayout;
                     if (combinedImageSamplerDescriptorInfo.sampler == VK_NULL_HANDLE) { throw std::runtime_error("no image given or given image does not have an associated sampler!"); }
                     imageDescriptorInfos.push_back(combinedImageSamplerDescriptorInfo);
                     writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
                 } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
                     VkDescriptorBufferInfo storageBufferDescriptorInfo{};
-                    storageBufferDescriptorInfo.buffer = std::get<Buffer *>(newData[i].value())->buffer;
+                    storageBufferDescriptorInfo.buffer = std::get<VulkanBuffer *>(newData[i].value())->buffer;
                     storageBufferDescriptorInfo.offset = 0;
                     storageBufferDescriptorInfo.range = VK_WHOLE_SIZE;
                     if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no buffer given or given buffer has not been created!"); }
@@ -136,7 +137,7 @@ public:
                     writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
                 } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
                     VkDescriptorBufferInfo uniformBufferDescriptorInfo{};
-                    uniformBufferDescriptorInfo.buffer = std::get<Buffer *>(newData[i].value())->buffer;
+                    uniformBufferDescriptorInfo.buffer = std::get<VulkanBuffer *>(newData[i].value())->buffer;
                     uniformBufferDescriptorInfo.offset = 0;
                     uniformBufferDescriptorInfo.range = VK_WHOLE_SIZE;
                     if (uniformBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no buffer given or given buffer has not been created!"); }

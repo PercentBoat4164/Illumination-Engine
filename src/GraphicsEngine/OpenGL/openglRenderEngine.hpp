@@ -3,6 +3,8 @@
 #include "openglSettings.hpp"
 #include "openglCamera.hpp"
 #include "openglRenderable.hpp"
+#include "openglFramebuffer.hpp"
+#include "openglGraphicsEngineLink.hpp"
 
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
@@ -25,8 +27,11 @@ class OpenGLRenderEngine {
 public:
     GLFWwindow *window{};
     OpenGLSettings settings{};
-    OpenGLCamera camera{&settings};
+    OpenGLCamera camera{};
     std::vector<OpenGLRenderable *> renderables;
+    OpenGLFramebuffer prepassFramebuffer{};
+    OpenGLProgram prepassProgram{};
+    OpenGLGraphicsEngineLink renderEngineLink{};
     bool framebufferResized{false};
 
     static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
@@ -72,6 +77,7 @@ public:
         pOpenGlRenderEngine->framebufferResized = true;
         pOpenGlRenderEngine->settings.resolution[0] = width;
         pOpenGlRenderEngine->settings.resolution[1] = height;
+        pOpenGlRenderEngine->camera.updateSettings();
     }
 
     explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
@@ -134,6 +140,18 @@ public:
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         }
         #endif
+        // Build engine
+        renderEngineLink.settings = &settings;
+        camera.create(&renderEngineLink);
+        OpenGLFramebuffer::CreateInfo prepassFramebufferCreateInfo{true};
+        prepassFramebuffer.create(&renderEngineLink, &prepassFramebufferCreateInfo);
+        std::vector<OpenGLShader> prepassShaders{2};
+        OpenGLShader::CreateInfo prepassShadersCreateInfo{"res/Shaders/OpenGLShaders/prepassVertexShader.vert"};
+        prepassShaders[0].create(&prepassShadersCreateInfo);
+        prepassShadersCreateInfo.filename = "res/Shaders/OpenGLShaders/prepassFragmentShader.frag";
+        prepassShaders[1].create(&prepassShadersCreateInfo);
+        OpenGLProgram::CreateInfo prepassProgramCreateInfo{prepassShaders};
+        prepassProgram.create(&prepassProgramCreateInfo);
     }
 
     void uploadRenderable(OpenGLRenderable *renderable, bool append = true) {
@@ -145,21 +163,40 @@ public:
 
     bool update() {
         if (glfwWindowShouldClose(window)) { return true; }
+        glViewport(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
+        glScissor(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
+        glBindFramebuffer(GL_FRAMEBUFFER, prepassFramebuffer.ID);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        prepassFramebuffer.clear();
+        glUseProgram(prepassProgram.ID);
+        for (OpenGLRenderable *renderable : renderables) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, renderable->textures[0].ID);
+            glBindVertexArray(renderable->vertexArrayObject);
+            glm::quat quaternion = glm::quat(glm::radians(renderable->rotation));
+            renderable->program.setValue("MVP", camera.update() * glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), renderable->scale), glm::angle(quaternion), glm::axis(quaternion)), renderable->position));
+            renderable->program.setValue("diffuse", 0);
+            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(renderable->indices.size()), GL_UNSIGNED_INT, nullptr);
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
-        glScissor(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
+        glActiveTexture(GL_TEXTURE0);
         for (OpenGLRenderable *renderable : renderables) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, renderable->textures[0].ID);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, prepassFramebuffer.depthImage.ID);
             glBindVertexArray(renderable->vertexArrayObject);
             glUseProgram(renderable->program.ID);
             glm::quat quaternion = glm::quat(glm::radians(renderable->rotation));
             renderable->program.setValue("MVP", camera.update() * glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), renderable->scale), glm::angle(quaternion), glm::axis(quaternion)), renderable->position));
             renderable->program.setValue("diffuse", 0);
-            glDrawElements(GL_TRIANGLES, (GLsizei)renderable->indices.size(), GL_UNSIGNED_INT, nullptr);
+            renderable->program.setValue("depth", 1);
+            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(renderable->indices.size()), GL_UNSIGNED_INT, nullptr);
         }
         glFlush();
         glfwSwapBuffers(window);

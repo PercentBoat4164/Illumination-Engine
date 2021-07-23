@@ -8,7 +8,7 @@
 /**@todo: Rework this class to be like the others and depend on a VulkanFramebuffer class.
  * - MEDIUM PRIORITY: Important to keep code consistent, and to ease development in the future, but not crucial to make the engine work.
  */
-class RenderPassManager {
+class VulkanRenderPass {
 public:
     VkRenderPass renderPass{};
     std::vector<VkFramebuffer> framebuffers{};
@@ -21,7 +21,7 @@ public:
         renderPassDeletionQueue.clear();
     }
 
-    void setup(VulkanGraphicsEngineLink *engineLink) {
+    void create(VulkanGraphicsEngineLink *engineLink) {
         //destroy all old stuffs
         for (std::function<void()>& function : renderPassDeletionQueue) { function(); }
         renderPassDeletionQueue.clear();
@@ -99,13 +99,13 @@ public:
         clearValues[1].depthStencil = {1.0f, 0};
         if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
         //Create framebuffer images
-        Image::CreateInfo colorImageCreateInfo{linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
+        VulkanImage::CreateInfo colorImageCreateInfo{linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
         colorImageCreateInfo.msaaSamples = linkedRenderEngine->settings->msaaSamples;
         colorImage.create(linkedRenderEngine, &colorImageCreateInfo);
         framebufferDeletionQueue.emplace_front([&]{ colorImage.destroy(); });
-        Image::CreateInfo depthImageCreateInfo{VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
+        VulkanImage::CreateInfo depthImageCreateInfo{VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
         depthImageCreateInfo.msaaSamples = linkedRenderEngine->settings->msaaSamples;
-        depthImageCreateInfo.imageType = DEPTH;
+        depthImageCreateInfo.imageType = VULKAN_DEPTH;
         depthImageCreateInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         depthImage.create(linkedRenderEngine, &depthImageCreateInfo);
         framebufferDeletionQueue.emplace_front([&]{ depthImage.destroy(); });
@@ -143,6 +143,6 @@ private:
     std::deque<std::function<void()>> framebufferDeletionQueue{};
     std::deque<std::function<void()>> renderPassDeletionQueue{};
     VulkanGraphicsEngineLink *linkedRenderEngine{};
-    Image colorImage{};
-    Image depthImage{};
+    VulkanImage colorImage{};
+    VulkanImage depthImage{};
 };

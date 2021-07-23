@@ -74,25 +74,25 @@ protected:
     VkQueue graphicsQueue{};
     VkQueue presentQueue{};
     VulkanGraphicsEngineLink renderEngineLink{};
-    Buffer scratchBuffer{};
+    VulkanBuffer scratchBuffer{};
     std::deque<std::function<void()>> recreationDeletionQueue{};
-    AccelerationStructure topLevelAccelerationStructure{};
+    VulkanAccelerationStructure topLevelAccelerationStructure{};
 
 public:
     virtual void loadRenderable(VulkanRenderable *renderable, bool append) {
         //destroy previously created renderable if any
         renderable->destroy();
         //upload mesh, vertex, and transformation data
-        Buffer::CreateInfo vertexBufferCreateInfo{sizeof(renderable->vertices[0]) * renderable->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        VulkanBuffer::CreateInfo vertexBufferCreateInfo{sizeof(renderable->vertices[0]) * renderable->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         if (settings.rayTracing) { vertexBufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
         memcpy(renderable->vertexBuffer.create(&renderEngineLink, &vertexBufferCreateInfo), renderable->vertices.data(), sizeof(renderable->vertices[0]) * renderable->vertices.size());
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.vertexBuffer.destroy(); });
-        Buffer::CreateInfo indexBufferCreateInfo{sizeof(renderable->indices[0]) * renderable->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        VulkanBuffer::CreateInfo indexBufferCreateInfo{sizeof(renderable->indices[0]) * renderable->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         if (settings.rayTracing) { indexBufferCreateInfo.usage |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
         memcpy(renderable->indexBuffer.create(&renderEngineLink, &indexBufferCreateInfo), renderable->indices.data(), sizeof(renderable->indices[0]) * renderable->indices.size());
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.indexBuffer.destroy(); });
         if (settings.rayTracing) {
-            Buffer::CreateInfo transformationBufferCreateInfo{sizeof(renderable->transformationMatrix), VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+            VulkanBuffer::CreateInfo transformationBufferCreateInfo{sizeof(renderable->transformationMatrix), VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
             memcpy(renderable->transformationBuffer.create(&renderEngineLink, &transformationBufferCreateInfo), &renderable->transformationMatrix, sizeof(VkTransformMatrixKHR));
             renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
         }
@@ -100,22 +100,22 @@ public:
         renderable->textureImages.resize(renderable->textures.size());
         for (unsigned int i = 0; i < renderable->textures.size(); ++i) {
             renderable->textureImages[i].destroy();
-            Texture::CreateInfo textureImageCreateInfo{VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, renderable->textureImages[i].createdWith.width, renderable->textureImages[i].createdWith.height};
+            VulkanTexture::CreateInfo textureImageCreateInfo{VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, renderable->textureImages[i].createdWith.width, renderable->textureImages[i].createdWith.height};
             textureImageCreateInfo.filename = renderable->textures[i];
             textureImageCreateInfo.mipMapping = settings.mipMapping;
             renderable->textureImages[i].create(&renderEngineLink, &textureImageCreateInfo);
         }
         //build uniform buffers
-        Buffer::CreateInfo uniformBufferCreateInfo {sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
-        memcpy(renderable->uniformBuffer.create(&renderEngineLink, &uniformBufferCreateInfo), &renderable->uniformBufferObject, sizeof(UniformBufferObject));
+        VulkanBuffer::CreateInfo uniformBufferCreateInfo {sizeof(VulkanUniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
+        memcpy(renderable->uniformBuffer.create(&renderEngineLink, &uniformBufferCreateInfo), &renderable->uniformBufferObject, sizeof(VulkanUniformBufferObject));
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.uniformBuffer.destroy(); });
         //build shaders
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
-        renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable) { for (const Shader& shader : thisRenderable.shaders) { shader.destroy(); } });
+        renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable) { for (const VulkanShader& shader : thisRenderable.shaders) { shader.destroy(); } });
         /* This setup is temporary, but for the purposes of testing only the most recently uploaded model will be included in the raytracing. */
         if (settings.rayTracing) {
-            AccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
+            VulkanAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
             renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
             renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
             renderableBottomLevelAccelerationStructureCreateInfo.primitiveCount = renderable->triangleCount;
@@ -125,7 +125,7 @@ public:
             renderable->bottomLevelAccelerationStructure.create(&renderEngineLink, &renderableBottomLevelAccelerationStructureCreateInfo);
             renderable->deletionQueue.emplace_front([&] (VulkanRenderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
             topLevelAccelerationStructure.destroy();
-            AccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
+            VulkanAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
             topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
             topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
             topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
@@ -133,24 +133,24 @@ public:
             topLevelAccelerationStructure.create(&renderEngineLink, &topLevelAccelerationStructureCreateInfo);
         }
         //build graphics pipeline and descriptor set for this renderable
-        DescriptorSetManager::CreateInfo renderableDescriptorSetManagerCreateInfo{};
+        DescriptorSet::CreateInfo renderableDescriptorSetCreateInfo{};
         if (settings.rayTracing) {
-            renderableDescriptorSetManagerCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}};
-            renderableDescriptorSetManagerCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
-            renderableDescriptorSetManagerCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0], &topLevelAccelerationStructure};
+            renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}};
+            renderableDescriptorSetCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
+            renderableDescriptorSetCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0], &topLevelAccelerationStructure};
         } else {
-            renderableDescriptorSetManagerCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}};
-            renderableDescriptorSetManagerCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
-            renderableDescriptorSetManagerCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0]};
+            renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}};
+            renderableDescriptorSetCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
+            renderableDescriptorSetCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0]};
         }
-        renderable->descriptorSetManager.create(&renderEngineLink, &renderableDescriptorSetManagerCreateInfo);
-        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.descriptorSetManager.destroy(); });
-        RasterizationPipelineManager::CreateInfo renderablePipelineManagerCreateInfo{};
-        renderablePipelineManagerCreateInfo.descriptorSetManager = &renderable->descriptorSetManager;
-        renderablePipelineManagerCreateInfo.renderPassManager = &renderPassManager;
-        renderablePipelineManagerCreateInfo.shaders = renderable->shaders;
-        renderable->pipelineManager.create(&renderEngineLink, &renderablePipelineManagerCreateInfo);
-        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.pipelineManager.destroy(); });
+        renderable->descriptorSet.create(&renderEngineLink, &renderableDescriptorSetCreateInfo);
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.descriptorSet.destroy(); });
+        VulkanPipeline::CreateInfo renderablePipelineCreateInfo{};
+        renderablePipelineCreateInfo.descriptorSet = &renderable->descriptorSet;
+        renderablePipelineCreateInfo.renderPass = &renderPass;
+        renderablePipelineCreateInfo.shaders = renderable->shaders;
+        renderable->pipeline.create(&renderEngineLink, &renderablePipelineCreateInfo);
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.pipeline.destroy(); });
         if (append) { renderables.push_back(renderable); }
     }
 
@@ -218,8 +218,8 @@ public:
         //update state of frame
         VkDeviceSize offsets[] = {0};
         //record command buffers for color pass
-        commandBufferManager.resetCommandBuffer((int)(imageIndex + (swapchain.image_count - 1)) % (int)swapchain.image_count);
-        commandBufferManager.recordCommandBuffer((int)imageIndex);
+        commandBuffer.resetCommandBuffer((int)(imageIndex + (swapchain.image_count - 1)) % (int)swapchain.image_count);
+        commandBuffer.recordCommandBuffer((int)imageIndex);
         VkViewport viewport{};
         viewport.x = 0.f;
         viewport.y = 0.f;
@@ -227,28 +227,28 @@ public:
         viewport.height = (float)swapchain.extent.height;
         viewport.minDepth = 0.f;
         viewport.maxDepth = 1.f;
-        vkCmdSetViewport(commandBufferManager.commandBuffers[imageIndex], 0, 1, &viewport);
+        vkCmdSetViewport(commandBuffer.commandBuffers[imageIndex], 0, 1, &viewport);
         VkRect2D scissor{};
         scissor.offset = {0, 0};
         scissor.extent = swapchain.extent;
-        vkCmdSetScissor(commandBufferManager.commandBuffers[imageIndex], 0, 1, &scissor);
-        VkRenderPassBeginInfo renderPassBeginInfo = renderPassManager.beginRenderPass(imageIndex);
-        vkCmdBeginRenderPass(commandBufferManager.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderables[0]->pipelineManager.pipeline);
+        vkCmdSetScissor(commandBuffer.commandBuffers[imageIndex], 0, 1, &scissor);
+        VkRenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(imageIndex);
+        vkCmdBeginRenderPass(commandBuffer.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindPipeline(commandBuffer.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderables[0]->pipeline.pipeline);
         camera.update();
         for (VulkanRenderable *renderable : renderables) {
             if (renderable->render) {
                 //update renderable
                 renderable->update(camera);
                 //record command buffer for this renderable
-                vkCmdBindVertexBuffers(commandBufferManager.commandBuffers[imageIndex], 0, 1, &renderable->vertexBuffer.buffer, offsets);
-                vkCmdBindIndexBuffer(commandBufferManager.commandBuffers[imageIndex], renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-                vkCmdBindDescriptorSets(commandBufferManager.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipelineManager.pipelineLayout, 0, 1, &renderable->descriptorSetManager.descriptorSet, 0, nullptr);
-                vkCmdDrawIndexed(commandBufferManager.commandBuffers[imageIndex], static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
+                vkCmdBindVertexBuffers(commandBuffer.commandBuffers[imageIndex], 0, 1, &renderable->vertexBuffer.buffer, offsets);
+                vkCmdBindIndexBuffer(commandBuffer.commandBuffers[imageIndex], renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+                vkCmdBindDescriptorSets(commandBuffer.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipelineLayout, 0, 1, &renderable->descriptorSet.descriptorSet, 0, nullptr);
+                vkCmdDrawIndexed(commandBuffer.commandBuffers[imageIndex], static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
             }
         }
-        vkCmdEndRenderPass(commandBufferManager.commandBuffers[imageIndex]);
-        if (vkEndCommandBuffer(commandBufferManager.commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record command buffer!"); }
+        vkCmdEndRenderPass(commandBuffer.commandBuffers[imageIndex]);
+        if (vkEndCommandBuffer(commandBuffer.commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record command buffer!"); }
         //Submit
         VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
         VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
@@ -258,7 +258,7 @@ public:
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBufferManager.commandBuffers[imageIndex];
+        submitInfo.pCommandBuffers = &commandBuffer.commandBuffers[imageIndex];
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
         vkResetFences(device.device, 1, &inFlightFences[currentFrame]);
@@ -291,7 +291,7 @@ public:
         renderEngineLink.device = &device;
         renderEngineLink.swapchain = &swapchain;
         renderEngineLink.settings = &settings;
-        renderEngineLink.commandPool = &commandBufferManager.commandPool;
+        renderEngineLink.commandPool = &commandBuffer.commandPool;
         renderEngineLink.allocator = &allocator;
         renderEngineLink.graphicsQueue = &graphicsQueue;
         vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
@@ -384,8 +384,8 @@ public:
         vmaCreateAllocator(&allocatorInfo, &allocator);
         engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(allocator); });
         //Create commandPool
-        commandBufferManager.create(device, vkb::QueueType::graphics);
-        engineDeletionQueue.emplace_front([&] { commandBufferManager.destroy(); });
+        commandBuffer.create(device, vkb::QueueType::graphics);
+        engineDeletionQueue.emplace_front([&] { commandBuffer.destroy(); });
         //delete scratch buffer
         engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
         camera.create(&renderEngineLink);
@@ -418,7 +418,7 @@ public:
             for (std::function<void()> &function : oneTimeOptionalDeletionQueue) { function(); }
             oneTimeOptionalDeletionQueue.clear();
             //Create commandBuffers
-            commandBufferManager.createCommandBuffers((int) swapchain.image_count);
+            commandBuffer.createCommandBuffers((int) swapchain.image_count);
             //Create sync objects
             imageAvailableSemaphores.resize(swapchain.image_count);
             renderFinishedSemaphores.resize(swapchain.image_count);
@@ -435,13 +435,13 @@ public:
             oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); }});
             oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); }});
             //Create render pass
-            renderPassManager.setup(&renderEngineLink);
-            oneTimeOptionalDeletionQueue.emplace_front([&] { renderPassManager.destroy(); });
+            renderPass.create(&renderEngineLink);
+            oneTimeOptionalDeletionQueue.emplace_front([&] { renderPass.destroy(); });
             //re-upload renderables
             for (VulkanRenderable *renderable : renderables) { loadRenderable(renderable, false); }
         }
         //Recreate framebuffers without recreating entire RenderPass.
-        renderPassManager.createFramebuffers();
+        renderPass.createFramebuffers();
         camera.updateSettings();
     }
 
@@ -451,8 +451,8 @@ public:
     VulkanCamera camera{};
     GLFWwindow *window{};
     std::vector<VulkanRenderable *> renderables{};
-    CommandBufferManager commandBufferManager{};
+    VulkanCommandBuffer commandBuffer{};
     int frameNumber{};
     float frameTime{};
-    RenderPassManager renderPassManager{};
+    VulkanRenderPass renderPass{};
 };

@@ -5,7 +5,7 @@
 #include <deque>
 #include <functional>
 
-class Buffer {
+class VulkanBuffer {
 public:
     struct CreateInfo {
         //Only required for buffer || shader binding table creation

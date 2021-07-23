@@ -6,8 +6,10 @@ in vec3 normal;
 
 out vec4 fragColor;
 
-uniform sampler2D albedo;
+uniform sampler2D diffuse;
+uniform sampler2D depth;
 
 void main() {
-    fragColor = texture(albedo, texCoords) * color;
+    if (gl_FragDepth < texture(depth, gl_FragCoord.xy).r);
+    fragColor = texture(diffuse, texCoords);
 }

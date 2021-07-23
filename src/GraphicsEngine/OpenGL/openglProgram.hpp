@@ -5,7 +5,7 @@
 class OpenGLProgram {
 public:
     struct CreateInfo {
-        //REQUIRED
+        //Required
         std::vector<OpenGLShader> shaders{};
     };
 
@@ -42,6 +42,10 @@ public:
     void setValue(const char *name, glm::mat4 data) const {
         GLint oldID{};
         glGetIntegerv(GL_CURRENT_PROGRAM,  &oldID);
+        if (ID == oldID) {
+            glUniformMatrix4fv(glGetUniformLocation(ID, name), 1, GL_FALSE, &data[0][0]);
+            return;
+        }
         glUseProgram(ID);
         glUniformMatrix4fv(glGetUniformLocation(ID, name), 1, GL_FALSE, &data[0][0]);
         glUseProgram(oldID);
@@ -50,6 +54,10 @@ public:
     void setValue(const char *name, GLint data) const {
         GLint oldID{};
         glGetIntegerv(GL_CURRENT_PROGRAM,  &oldID);
+        if (ID == oldID) {
+            glUniform1i(glGetUniformLocation(ID, name), data);
+            return;
+        }
         glUseProgram(ID);
         glUniform1i(glGetUniformLocation(ID, name), data);
         glUseProgram(oldID);
