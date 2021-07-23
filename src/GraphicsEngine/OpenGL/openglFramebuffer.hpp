@@ -3,6 +3,9 @@
 #include "openglImage.hpp"
 #include "openglGraphicsEngineLink.hpp"
 
+#include <deque>
+#include <functional>
+
 class OpenGLFramebuffer {
 public:
     struct CreateInfo {
@@ -57,7 +60,7 @@ public:
     }
 
     void destroy() {
-        for (const std::function<void()>& function : deletionQueue) { function(); }
+        for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 

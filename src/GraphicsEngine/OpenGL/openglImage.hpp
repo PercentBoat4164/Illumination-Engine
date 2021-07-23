@@ -1,5 +1,10 @@
 #pragma once
 
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#include <../../../deps/stb_image.h>
+#endif
+
 enum OpenGLImageType {
     OPENGL_DEPTH = 0x00000000,
     OPENGL_COLOR = 0x00000001,

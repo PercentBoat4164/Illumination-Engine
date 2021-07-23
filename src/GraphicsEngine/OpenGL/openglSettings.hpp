@@ -18,7 +18,7 @@
 class OpenGLSettings {
 public:
     bool rayTracing{false};
-    bool vSync{true};
+    bool vSync{false};
     std::string applicationName{"Illumination Engine"};
     std::array<int, 3> applicationVersion{0, 0, 1};
     int msaaSamples{4};

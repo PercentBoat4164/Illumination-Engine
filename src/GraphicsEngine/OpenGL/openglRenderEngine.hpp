@@ -142,7 +142,6 @@ public:
         }
         #endif
         // Build engine
-        glDisable(GL_MULTISAMPLE);
         renderEngineLink.settings = &settings;
         camera.create(&renderEngineLink);
         OpenGLFramebuffer::CreateInfo prepassFramebufferCreateInfo{true};
