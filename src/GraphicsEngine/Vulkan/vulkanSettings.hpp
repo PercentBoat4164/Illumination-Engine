@@ -28,9 +28,9 @@ public:
     VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_8_BIT};
     std::array<uint32_t, 2> defaultWindowResolution{800, 600};
     std::array<int, 2> windowPosition{0, 0};
-    float anisotropicFilterLevel{1.0f};
+    float anisotropicFilterLevel{16.0f};
     bool mipMapping{true};
-    float mipMapLevel{0.0f};
+    float mipMapLevel{1.0f};
     bool fullscreen{false};
     int refreshRate{144};
     bool vSync{false};

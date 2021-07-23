@@ -7,6 +7,7 @@
 
 #include "openglVertex.hpp"
 #include "openglProgram.hpp"
+#include "openglTexture.hpp"
 
 #ifndef TINYOBJLOADER_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -23,11 +24,10 @@
 
 class OpenGLRenderable {
 public:
-    int width{}, height{};
     std::vector<const char *> textureFilenames{};
     std::vector<const char *> shaderFilenames{};
     const char *modelFilename{};
-    std::vector<unsigned int> textureIDs{};
+    std::vector<OpenGLTexture> textures{};
     OpenGLProgram program{};
     unsigned int vertexBuffer{};
     unsigned int vertexArrayObject{};
@@ -46,31 +46,15 @@ public:
         textureFilenames = texturePaths;
         modelFilename = modelPath;
         shaderFilenames = shaderPaths;
-        std::vector<OpenGLShader> shaders{shaderFilenames.size()};
-        for (uint32_t i = 0; i < shaderFilenames.size(); ++i) {
-            OpenGLShader::CreateInfo shaderCreateInfo{shaderFilenames[i]};
-            shaders[i].create(&shaderCreateInfo);
-        }
-        OpenGLProgram::CreateInfo programCreateInfo{shaders};
-        program.create(&programCreateInfo);
     }
 
     void loadTextures(std::vector<const char *> filenames) {
-        if (filenames.empty()) { filenames = textureFilenames; } else { textureFilenames = filenames; }
-        textureIDs.resize(filenames.size());
-        glGenTextures((GLsizei)textureIDs.size(), textureIDs.data());
-        for (unsigned int i = 0; i < filenames.size(); ++i) {
-            glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
-            stbi_set_flip_vertically_on_load(true);
-            int channels{};
-            stbi_uc *pixels = stbi_load(((std::string)filenames[i]).c_str(), &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) { throw std::runtime_error(("failed to load texture image from file: " + (std::string)filenames[i]).c_str()); }
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glGenerateMipmap(GL_TEXTURE_2D);
-            stbi_image_free(pixels);
+        textures.resize(filenames.size());
+        for (uint32_t i = 0; i < filenames.size(); ++i) {
+            OpenGLTexture::CreateInfo textureCreateInfo{filenames[i]};
+            textures[i].destroy();
+            textures[i].create(&textureCreateInfo);
+            textures[i].upload();
         }
     }
 
@@ -127,5 +111,16 @@ public:
         //Normal Data
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(OpenGLVertex), (void *)offsetof(OpenGLVertex, normal));
         glEnableVertexAttribArray(3);
+    }
+
+    void loadShaders(std::vector<const char *> filenames) {
+        std::vector<OpenGLShader> shaders{filenames.size()};
+        for (uint32_t i = 0; i < filenames.size(); ++i) {
+            OpenGLShader::CreateInfo shaderCreateInfo{filenames[i]};
+            shaders[i].destroy();
+            shaders[i].create(&shaderCreateInfo);
+        }
+        OpenGLProgram::CreateInfo programCreateInfo{shaders};
+        program.create(&programCreateInfo);
     }
 };

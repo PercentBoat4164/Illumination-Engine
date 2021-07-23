@@ -97,8 +97,7 @@ public:
     }
 
     VkBool32 enableFeature(VkBool32 *feature) {
-        VkBool32 support = *(VkBool32 *)(feature - (VkBool32 *)&enabledPhysicalDeviceInfo + (VkBool32 *)&supportedPhysicalDeviceInfo);
-        *feature = support;
+        feature = (VkBool32 *)(feature - (VkBool32 *)&enabledPhysicalDeviceInfo + (VkBool32 *)&supportedPhysicalDeviceInfo);
         return *feature;
     }
 

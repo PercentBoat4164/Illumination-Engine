@@ -138,6 +138,7 @@ public:
 
     void uploadRenderable(OpenGLRenderable *renderable, bool append = true) {
         renderable->loadModel(renderable->modelFilename);
+        renderable->loadShaders(renderable->shaderFilenames);
         renderable->loadTextures(renderable->textureFilenames);
         if (append) { renderables.push_back(renderable); }
     }
@@ -152,7 +153,7 @@ public:
         glScissor(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
         for (OpenGLRenderable *renderable : renderables) {
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, renderable->textureIDs[0]);
+            glBindTexture(GL_TEXTURE_2D, renderable->textures[0].ID);
             glBindVertexArray(renderable->vertexArrayObject);
             glUseProgram(renderable->program.ID);
             glm::quat quaternion = glm::quat(glm::radians(renderable->rotation));
@@ -168,10 +169,6 @@ public:
         ++frameNumber;
         framebufferResized = false;
         return false;
-    }
-
-    ~OpenGLRenderEngine() {
-        cleanUp();
     }
 
     void updateSettings() {
@@ -212,11 +209,11 @@ public:
     double previousTime{};
     int frameNumber{};
 
-private:
-    static void cleanUp() {
+    void destroy() {
         glFinish();
         glfwTerminate();
     }
 
+private:
     GLFWmonitor *monitor{};
 };
