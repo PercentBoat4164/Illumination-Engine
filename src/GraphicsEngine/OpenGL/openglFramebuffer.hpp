@@ -20,15 +20,18 @@ public:
         linkedRenderEngine = engineLink;
         createdWith = *createInfo;
         glGenFramebuffers(1, &ID);
+        deletionQueue.emplace_back([&] { glDeleteFramebuffers(1, &ID); });
         glBindFramebuffer(GL_FRAMEBUFFER, ID);
         OpenGLImage::CreateInfo attachmentCreateInfo{OPENGL_COLOR, linkedRenderEngine->settings->resolution[0], linkedRenderEngine->settings->resolution[1]};
         colorImage.create(&attachmentCreateInfo);
         colorImage.upload();
+        deletionQueue.emplace_back([&] { colorImage.destroy(); });
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorImage.ID, 0);
         if (createdWith.depth) {
             attachmentCreateInfo.format = OPENGL_DEPTH;
             depthImage.create(&attachmentCreateInfo);
             depthImage.upload();
+            deletionQueue.emplace_back([&] { depthImage.destroy(); });
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthImage.ID, 0);
         }
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) { throw std::runtime_error("framebuffer is incomplete!"); }
@@ -48,7 +51,16 @@ public:
         glBindFramebuffer(GL_READ_FRAMEBUFFER_BINDING, oldReadID);
     }
 
-    void destroy() {
-        glDeleteFramebuffers(1, &ID);
+    void rebuild() {
+        destroy();
+        create(linkedRenderEngine, &createdWith);
     }
+
+    void destroy() {
+        for (const std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
+    }
+
+private:
+    std::deque<std::function<void()>> deletionQueue{};
 };

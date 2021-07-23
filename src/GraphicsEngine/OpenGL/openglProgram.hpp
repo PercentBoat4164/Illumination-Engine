@@ -62,4 +62,16 @@ public:
         glUniform1i(glGetUniformLocation(ID, name), data);
         glUseProgram(oldID);
     }
+
+    void setValue(const char *name, glm::vec2 data) const {
+        GLint oldID{};
+        glGetIntegerv(GL_CURRENT_PROGRAM,  &oldID);
+        if (ID == oldID) {
+            glUniform2fv(glGetUniformLocation(ID, name), 1, &data[0]);
+            return;
+        }
+        glUseProgram(ID);
+        glUniform2fv(glGetUniformLocation(ID, name), 1, &data[0]);
+        glUseProgram(oldID);
+    }
 };
