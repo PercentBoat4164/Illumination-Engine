@@ -127,7 +127,7 @@ public:
         #if defined(_WIN32)
         glfwSwapInterval(settings.vSync ? 1 : 0);
         #else
-        glfwSwapInterval(1); // VSync is mandatory on Linux in OpenGL due to high frame rates (>4000) causing system freezes.
+        glfwSwapInterval(0); // VSync is mandatory on Linux in OpenGL due to high frame rates (>4000) causing system freezes.
         #endif
         glewExperimental = true;
         if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }

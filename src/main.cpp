@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
             double lastCursorPosY{0};
             bool captureInput{};
             std::vector<float> recordedFPS{};
-            float recordedFPSCount{200};
+            float recordedFPSCount{10};
             recordedFPS.resize((size_t)recordedFPSCount);
             renderEngine.camera.position = {0, 0, 2};
             while (renderEngine.update() != 1) {
