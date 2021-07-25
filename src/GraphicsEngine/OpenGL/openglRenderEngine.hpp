@@ -34,53 +34,6 @@ public:
     OpenGLGraphicsEngineLink renderEngineLink{};
     bool framebufferResized{false};
 
-    static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
-        if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
-        std::cout << "---------------" << std::endl;
-        std::cout << "Debug message (" << id << "): " <<  message << std::endl;
-        switch (source) {
-            case GL_DEBUG_SOURCE_API:               std::cout << "Source: API"; break;
-            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     std::cout << "Source: Window System"; break;
-            case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: Shader Compiler"; break;
-            case GL_DEBUG_SOURCE_THIRD_PARTY:       std::cout << "Source: Third Party"; break;
-            case GL_DEBUG_SOURCE_APPLICATION:       std::cout << "Source: Application"; break;
-            case GL_DEBUG_SOURCE_OTHER:             std::cout << "Source: Other"; break;
-            default:                                std::cout << "Source: Unknown"; break;
-        }
-        std::cout << std::endl;
-        switch (type) {
-            case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error"; break;
-            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
-            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behaviour"; break;
-            case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability"; break;
-            case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Performance"; break;
-            case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker"; break;
-            case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
-            case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
-            case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
-            default:                                std::cout << "Type: Unknown"; break;
-        }
-        std::cout << std::endl;
-        switch (severity) {
-            case GL_DEBUG_SEVERITY_HIGH:            std::cout << "Severity: high"; break;
-            case GL_DEBUG_SEVERITY_MEDIUM:          std::cout << "Severity: medium"; break;
-            case GL_DEBUG_SEVERITY_LOW:             std::cout << "Severity: low"; break;
-            case GL_DEBUG_SEVERITY_NOTIFICATION:    std::cout << "Severity: notification"; break;
-            default:                                std::cout << "Source: Unknown"; break;
-        }
-        std::cout << std::endl;
-        std::cout << std::endl;
-    }
-
-    static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-        auto pOpenGlRenderEngine = (OpenGLRenderEngine *)glfwGetWindowUserPointer(pWindow);
-        pOpenGlRenderEngine->framebufferResized = true;
-        pOpenGlRenderEngine->settings.resolution[0] = width;
-        pOpenGlRenderEngine->settings.resolution[1] = height;
-        pOpenGlRenderEngine->camera.updateSettings();
-        pOpenGlRenderEngine->prepassFramebuffer.rebuild();
-    }
-
     explicit OpenGLRenderEngine() {
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
         window = glfwCreateWindow(1, 1, "Finding OpenGL version...", nullptr, nullptr);
@@ -90,6 +43,7 @@ public:
         glfwDestroyWindow(window);
         glfwTerminate();
         glfwInit();
+        deletionQueue.emplace_back([&] { glFinish(); glfwTerminate(); });
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(renderEngineLink.openglVersion.substr(0, 1)));
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(renderEngineLink.openglVersion.substr(2, 1)));
@@ -147,6 +101,7 @@ public:
         camera.create(&renderEngineLink);
         OpenGLFramebuffer::CreateInfo prepassFramebufferCreateInfo{true};
         prepassFramebuffer.create(&renderEngineLink, &prepassFramebufferCreateInfo);
+        deletionQueue.emplace_back([&] { prepassFramebuffer.destroy(); });
         std::vector<OpenGLShader> prepassShaders{2};
         OpenGLShader::CreateInfo prepassShadersCreateInfo{"res/Shaders/OpenGLShaders/prepassVertexShader.vert"};
         prepassShaders[0].create(&prepassShadersCreateInfo);
@@ -154,6 +109,7 @@ public:
         prepassShaders[1].create(&prepassShadersCreateInfo);
         OpenGLProgram::CreateInfo prepassProgramCreateInfo{prepassShaders};
         prepassProgram.create(&prepassProgramCreateInfo);
+        deletionQueue.emplace_back([&] { prepassProgram.destroy(); });
     }
 
     void handleMSAAChange() {
@@ -273,11 +229,60 @@ public:
     double previousTime{};
     int frameNumber{};
 
-    static void destroy() {
-        glFinish();
-        glfwTerminate();
+    void destroy() {
+        for (OpenGLRenderable *renderable : renderables) { renderable->destroy(); }
+        for (const std::function<void()> &function : deletionQueue) { function(); }
+        deletionQueue.clear();
     }
 
 private:
+    static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
+        if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
+        std::cout << "---------------" << std::endl;
+        std::cout << "Debug message (" << id << "): " <<  message << std::endl;
+        switch (source) {
+            case GL_DEBUG_SOURCE_API:               std::cout << "Source: API"; break;
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     std::cout << "Source: Window System"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: Shader Compiler"; break;
+            case GL_DEBUG_SOURCE_THIRD_PARTY:       std::cout << "Source: Third Party"; break;
+            case GL_DEBUG_SOURCE_APPLICATION:       std::cout << "Source: Application"; break;
+            case GL_DEBUG_SOURCE_OTHER:             std::cout << "Source: Other"; break;
+            default:                                std::cout << "Source: Unknown"; break;
+        }
+        std::cout << std::endl;
+        switch (type) {
+            case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error"; break;
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behaviour"; break;
+            case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability"; break;
+            case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Performance"; break;
+            case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker"; break;
+            case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
+            case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
+            case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
+            default:                                std::cout << "Type: Unknown"; break;
+        }
+        std::cout << std::endl;
+        switch (severity) {
+            case GL_DEBUG_SEVERITY_HIGH:            std::cout << "Severity: high"; break;
+            case GL_DEBUG_SEVERITY_MEDIUM:          std::cout << "Severity: medium"; break;
+            case GL_DEBUG_SEVERITY_LOW:             std::cout << "Severity: low"; break;
+            case GL_DEBUG_SEVERITY_NOTIFICATION:    std::cout << "Severity: notification"; break;
+            default:                                std::cout << "Source: Unknown"; break;
+        }
+        std::cout << std::endl;
+        std::cout << std::endl;
+    }
+
+    static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
+        auto pOpenGlRenderEngine = (OpenGLRenderEngine *)glfwGetWindowUserPointer(pWindow);
+        pOpenGlRenderEngine->framebufferResized = true;
+        pOpenGlRenderEngine->settings.resolution[0] = width;
+        pOpenGlRenderEngine->settings.resolution[1] = height;
+        pOpenGlRenderEngine->camera.updateSettings();
+        pOpenGlRenderEngine->prepassFramebuffer.rebuild();
+    }
+
     GLFWmonitor *monitor{};
+    std::deque<std::function<void()>> deletionQueue{};
 };

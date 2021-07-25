@@ -34,40 +34,6 @@
 #include <functional>
 
 class VulkanRenderEngine {
-private:
-    vkb::Instance instance{};
-    VmaAllocator allocator{};
-    VkSurfaceKHR surface{};
-    std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
-    std::vector<VkImageView> swapchainImageViews{};
-    VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
-    size_t currentFrame{};
-    bool framebufferResized{false};
-    float previousTime{};
-    std::deque<std::function<void()>> engineDeletionQueue{};
-    vkb::Device device{};
-    std::vector<VkFence> inFlightFences{};
-    vkb::Swapchain swapchain{};
-    std::vector<VkFence> imagesInFlight{};
-    std::vector<VkSemaphore> imageAvailableSemaphores{};
-    std::vector<VkSemaphore> renderFinishedSemaphores{};
-    VkQueue graphicsQueue{};
-    VkQueue presentQueue{};
-    VkQueue transferQueue{};
-    VkQueue computeQueue{};
-    VulkanBuffer scratchBuffer{};
-    std::deque<std::function<void()>> recreationDeletionQueue{};
-    VulkanAccelerationStructure topLevelAccelerationStructure{};
-    VulkanCommandBuffer commandBuffer{};
-    std::vector<VulkanRenderable *> renderables{};
-
-    static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-        auto vulkanRenderEngine = (VulkanRenderEngine *)glfwGetWindowUserPointer(pWindow);
-        vulkanRenderEngine->framebufferResized = true;
-        vulkanRenderEngine->settings.resolution[0] = width;
-        vulkanRenderEngine->settings.resolution[1] = height;
-    }
-
 public:
     explicit VulkanRenderEngine() {
         renderEngineLink.device = &device;
@@ -209,7 +175,6 @@ public:
         camera.create(&renderEngineLink);
         createSwapchain(true);
         engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); });
-        initialized = true;
     }
 
     void createSwapchain(bool fullRecreate = false) {
@@ -263,7 +228,7 @@ public:
         camera.updateSettings();
     }
 
-    virtual void loadRenderable(VulkanRenderable *renderable, bool append) {
+    void loadRenderable(VulkanRenderable *renderable, bool append = true) {
         //destroy previously created renderable if any
         renderable->destroy();
         //upload mesh, vertex, and transformation data
@@ -338,7 +303,7 @@ public:
         if (append) { renderables.push_back(renderable); }
     }
 
-    virtual bool update() {
+    bool update() {
         //GPU synchronization
         if (window == nullptr) { return false; }
         if (renderables.empty()) { return glfwWindowShouldClose(window) != 1; }
@@ -471,13 +436,46 @@ public:
         engineDeletionQueue.clear();
     }
 
-    bool initialized{false};
     GLFWmonitor *monitor{};
+    GLFWwindow *window{};
     VulkanSettings settings{};
     VulkanCamera camera{};
-    GLFWwindow *window{};
-    int frameNumber{};
-    float frameTime{};
     VulkanRenderPass renderPass{};
     VulkanGraphicsEngineLink renderEngineLink{};
+    float frameTime{};
+    int frameNumber{};
+
+private:
+    vkb::Swapchain swapchain{};
+    vkb::Instance instance{};
+    vkb::Device device{};
+    VmaAllocator allocator{};
+    VkSurfaceKHR surface{};
+    VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
+    VkQueue graphicsQueue{};
+    VkQueue presentQueue{};
+    VkQueue transferQueue{};
+    VkQueue computeQueue{};
+    std::vector<VkImageView> swapchainImageViews{};
+    std::vector<VkFence> inFlightFences{};
+    std::vector<VkFence> imagesInFlight{};
+    std::vector<VkSemaphore> imageAvailableSemaphores{};
+    std::vector<VkSemaphore> renderFinishedSemaphores{};
+    std::vector<VulkanRenderable *> renderables{};
+    VulkanAccelerationStructure topLevelAccelerationStructure{};
+    VulkanCommandBuffer commandBuffer{};
+    VulkanBuffer scratchBuffer{};
+    std::deque<std::function<void()>> engineDeletionQueue{};
+    std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
+    std::deque<std::function<void()>> recreationDeletionQueue{};
+    size_t currentFrame{};
+    bool framebufferResized{false};
+    float previousTime{};
+
+    static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
+        auto vulkanRenderEngine = (VulkanRenderEngine *)glfwGetWindowUserPointer(pWindow);
+        vulkanRenderEngine->framebufferResized = true;
+        vulkanRenderEngine->settings.resolution[0] = width;
+        vulkanRenderEngine->settings.resolution[1] = height;
+    }
 };

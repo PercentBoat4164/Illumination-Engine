@@ -23,7 +23,7 @@ public:
             glAttachShader(ID, shader.ID);
         }
         deletionQueue.emplace_back([&] { for (const OpenGLShader& shader : createdWith.shaders) { glDetachShader(ID, shader.ID); } });
-        deletionQueue.emplace_back([&] { for (const OpenGLShader& shader : createdWith.shaders) { shader.destroy(); } });
+        deletionQueue.emplace_back([&] { for (OpenGLShader& shader : createdWith.shaders) { shader.destroy(); } });
         glLinkProgram(ID);
         glGetProgramiv(ID, GL_LINK_STATUS, reinterpret_cast<GLint *>(&linked));
         if (!linked) {
