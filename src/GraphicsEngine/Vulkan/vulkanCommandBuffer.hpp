@@ -29,7 +29,7 @@ public:
         if (vkAllocateCommandBuffers(creationDevice.device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) { throw std::runtime_error("failed to allocate command buffers!"); }
     }
 
-    void resetCommandBuffers(const std::vector<int>& resetIndices) {
+    void resetCommandBuffer(const std::vector<int>& resetIndices) {
         for (int i : resetIndices) { this->resetCommandBuffer(i); }
     }
 
@@ -38,7 +38,7 @@ public:
         vkResetCommandBuffer(commandBuffers[resetIndex], commandBufferResetFlags);
     }
 
-    void recordCommandBuffers(const std::vector<int>& recordIndices) {
+    void recordCommandBuffer(const std::vector<int>& recordIndices) {
         for (int i : recordIndices) { this->recordCommandBuffer(i); }
     }
 

@@ -15,7 +15,7 @@ class VulkanShader {
 public:
     struct CreateInfo {
         //Required
-        const char *filename{};
+        std::string filename{};
     };
 
     std::vector<char> data{};
@@ -30,17 +30,23 @@ public:
     void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
-        if (createdWith.filename != nullptr) {
+        if (!createdWith.filename.empty()) {
+            std::string filenamePrefix = createdWith.filename.substr(0, createdWith.filename.substr(0, createdWith.filename.find_last_of('/')).find_last_of('/'));
+            std::string filenameSuffix = createdWith.filename.substr(createdWith.filename.find_last_of('/'), createdWith.filename.length() - createdWith.filename.find_last_of('/'));
+            if (linkedRenderEngine->settings->rayTracing) { createdWith.filename = filenamePrefix + "/VulkanRayTracingShaders" + filenameSuffix; } else { createdWith.filename = filenamePrefix + "/VulkanRasterizationShaders" + filenameSuffix; }
+            std::ifstream rawFile(createdWith.filename, std::ios::ate | std::ios::binary);
+            if (!rawFile.is_open()) { throw std::runtime_error("failed to open file: " + std::string(createdWith.filename)); }
+            rawFile.close();
             data.clear();
-            std::string compiledFileName = ((std::string)createdWith.filename).substr(0, std::string(createdWith.filename).find_last_of('.')) + ".spv";
+            std::string compiledFileName = std::string(createdWith.filename).substr(0, std::string(createdWith.filename).find_last_of('.')) + ".spv";
             if (system((GLSLC + (std::string)createdWith.filename + " -o " + compiledFileName + " --target-env=vulkan1.2").c_str()) != 0) { throw std::runtime_error("failed to compile Shaders!"); }
-            std::ifstream file(compiledFileName, std::ios::ate | std::ios::binary);
-            if (!file.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName.append("\n as file: " + compiledFileName)); }
-            size_t fileSize = (size_t) file.tellg();
+            std::ifstream compiledFile(compiledFileName, std::ios::ate | std::ios::binary);
+            if (!compiledFile.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName); }
+            size_t fileSize = (size_t) compiledFile.tellg();
             data.resize(fileSize);
-            file.seekg(0);
-            file.read(data.data(), (std::streamsize)fileSize);
-            file.close();
+            compiledFile.seekg(0);
+            compiledFile.read(data.data(), (std::streamsize)fileSize);
+            compiledFile.close();
         }
         VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
         shaderModuleCreateInfo.codeSize = data.size();

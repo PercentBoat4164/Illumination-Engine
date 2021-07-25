@@ -14,19 +14,28 @@
 class VulkanGraphicsEngineLink {
 public:
     struct PhysicalDeviceInfo {
-        // Properties
-        VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
+        //Device Properties
+        VkPhysicalDeviceProperties physicalDeviceProperties{};
 
+        // Extension Properties
+        VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
         void *pNextHighestProperty = &physicalDeviceMemoryProperties;
 
-        // Features
+        // Device Features
+        VkPhysicalDeviceFeatures physicalDeviceFeatures{};
+
+        // Extension Features
         VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR};
         VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES, &physicalDeviceAccelerationStructureFeatures};
         VkPhysicalDeviceDescriptorIndexingFeaturesEXT physicalDeviceDescriptorIndexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT, &physicalDeviceBufferDeviceAddressFeatures};
         VkPhysicalDeviceRayQueryFeaturesKHR physicalDeviceRayQueryFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR, &physicalDeviceDescriptorIndexingFeatures};
         VkPhysicalDeviceRayTracingPipelineFeaturesKHR physicalDeviceRayTracingPipelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR, &physicalDeviceRayQueryFeatures};
-
         void *pNextHighestFeature = &physicalDeviceRayTracingPipelineFeatures;
+
+        //Engine Features
+        VkBool32 anisotropicFiltering{false};
+        VkBool32 msaaSmoothing{false};
+        VkBool32 rayTracing{false};
     };
 
     VulkanSettings *settings = nullptr;
@@ -36,9 +45,9 @@ public:
     VkCommandPool *commandPool{};
     VmaAllocator *allocator{};
     VkQueue *graphicsQueue{};
-    VkQueue *computeQueue{}; // Unused for now
+    VkQueue *presentQueue{};
     VkQueue *transferQueue{}; // Unused for now
-    VkQueue *protectedQueue{}; // Unused for now
+    VkQueue *computeQueue{}; // Unused for now
     std::vector<VkImageView> *swapchainImageViews{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
     PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{};
@@ -46,9 +55,6 @@ public:
     PFN_vkDestroyAccelerationStructureKHR vkDestroyAccelerationStructureKHR{};
     PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR{};
     PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR{};
-    PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR{};
-    PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR{};
-    PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR{};
     PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
     PhysicalDeviceInfo supportedPhysicalDeviceInfo{};
     PhysicalDeviceInfo enabledPhysicalDeviceInfo{};
@@ -60,17 +66,15 @@ public:
         vkDestroyAccelerationStructureKHR = reinterpret_cast<PFN_vkDestroyAccelerationStructureKHR>(vkGetDeviceProcAddr(device->device, "vkDestroyAccelerationStructureKHR"));
         vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(vkGetDeviceProcAddr(device->device, "vkGetAccelerationStructureBuildSizesKHR"));
         vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device->device, "vkGetAccelerationStructureDeviceAddressKHR"));
-        vkCmdTraceRaysKHR = reinterpret_cast<PFN_vkCmdTraceRaysKHR>(vkGetDeviceProcAddr(device->device, "vkCmdTraceRaysKHR"));
-        vkGetRayTracingShaderGroupHandlesKHR = reinterpret_cast<PFN_vkGetRayTracingShaderGroupHandlesKHR>(vkGetDeviceProcAddr(device->device, "vkGetRayTracingShaderGroupHandlesKHR"));
-        vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(device->device, "vkCreateRayTracingPipelinesKHR"));
         vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device->device, "vkAcquireNextImageKHR"));
-        VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
-        deviceProperties2.pNext = supportedPhysicalDeviceInfo.pNextHighestProperty;
-        vkGetPhysicalDeviceProperties2(device->physical_device.physical_device, &deviceProperties2);
-        VkPhysicalDeviceFeatures2 deviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-        deviceFeatures2.pNext = supportedPhysicalDeviceInfo.pNextHighestFeature;
-        vkGetPhysicalDeviceFeatures2(device->physical_device.physical_device, &deviceFeatures2);
-        vkGetPhysicalDeviceMemoryProperties(device->physical_device.physical_device, &supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
+        VkPhysicalDeviceProperties2 physicalDeviceProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        physicalDeviceProperties.pNext = supportedPhysicalDeviceInfo.pNextHighestProperty;
+        vkGetPhysicalDeviceProperties2(device->physical_device.physical_device, &physicalDeviceProperties);
+        supportedPhysicalDeviceInfo.physicalDeviceProperties = physicalDeviceProperties.properties;
+        VkPhysicalDeviceFeatures2 physicalDeviceFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+        physicalDeviceFeatures.pNext = supportedPhysicalDeviceInfo.pNextHighestFeature;
+        vkGetPhysicalDeviceFeatures2(device->physical_device.physical_device, &physicalDeviceFeatures);
+        supportedPhysicalDeviceInfo.physicalDeviceFeatures = physicalDeviceFeatures.features;
     }
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
@@ -97,21 +101,31 @@ public:
     }
 
     VkBool32 enableFeature(VkBool32 *feature) {
-        feature = (VkBool32 *)(feature - (VkBool32 *)&enabledPhysicalDeviceInfo + (VkBool32 *)&supportedPhysicalDeviceInfo);
+        *feature = *testFeature(feature);
         return *feature;
     }
 
     std::vector<VkBool32> enableFeature(const std::vector<VkBool32 *>& features) {
         std::vector<VkBool32> results{};
         results.reserve(static_cast<unsigned int>(features.size() + 1));
-        results[0] = VK_TRUE;
+        results[0] = VK_FALSE;
         for (VkBool32 *feature : features) { results.push_back(enableFeature(feature)); }
-        for (VkBool32 result : results) {
-            if (!result) {
-                results[0] = VK_FALSE;
-                break;
-            }
-        }
+        for (VkBool32 result : results) { if (!result) { break; } }
+        results[0] = VK_TRUE;
+        return results;
+    }
+
+    VkBool32 *testFeature(const VkBool32 *feature) {
+        return (feature - (VkBool32 *)&enabledPhysicalDeviceInfo + (VkBool32 *)&supportedPhysicalDeviceInfo);
+    }
+
+    std::vector<VkBool32> testFeature(const std::vector<VkBool32 *>& features) {
+        std::vector<VkBool32> results{};
+        results.reserve(static_cast<unsigned int>(features.size() + 1));
+        results[0] = VK_FALSE;
+        for (VkBool32 *feature : features) { results.push_back(*testFeature(feature)); }
+        for (VkBool32 result : results) { if (!result) { break; } }
+        results[0] = VK_TRUE;
         return results;
     }
 };

@@ -3,7 +3,7 @@
 #extension GL_EXT_ray_tracing : enable
 #extension GL_EXT_ray_query : enable
 
-layout(binding = 1) uniform sampler2D abledo;
+layout(binding = 1) uniform sampler2D diffuse;
 layout(binding = 2) uniform accelerationStructureEXT topLevelAS;
 
 layout(location = 0) in vec3 fragColor;
@@ -21,7 +21,7 @@ void main() {
     rayQueryInitializeEXT(rayQuery, topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT, 0xFF, worldPosition, 0.001, vec3(0, 0, 1), 1000.0);
 
     // Start the ray traversal, rayQueryProceedEXT returns false if the traversal is complete
-    while (rayQueryProceedEXT(rayQuery)) { }
+    while (rayQueryProceedEXT(rayQuery)) {  }
 
     // If the intersection has hit a triangle, the fragment is shadowed
     if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionTriangleEXT ) { outColor *= 10; }
