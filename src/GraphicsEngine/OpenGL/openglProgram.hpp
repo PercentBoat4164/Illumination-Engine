@@ -17,10 +17,13 @@ public:
         createdWith = *createInfo;
         int infoLogLength{};
         ID = glCreateProgram();
+        deletionQueue.emplace_back([&] { glDeleteProgram(ID); });
         for (OpenGLShader shader : createdWith.shaders) {
             if (!shader.compiled) { shader.compile(); }
             glAttachShader(ID, shader.ID);
         }
+        deletionQueue.emplace_back([&] { for (const OpenGLShader& shader : createdWith.shaders) { glDetachShader(ID, shader.ID); } });
+        deletionQueue.emplace_back([&] { for (const OpenGLShader& shader : createdWith.shaders) { shader.destroy(); } });
         glLinkProgram(ID);
         glGetProgramiv(ID, GL_LINK_STATUS, reinterpret_cast<GLint *>(&linked));
         if (!linked) {
@@ -29,13 +32,6 @@ public:
             glGetProgramInfoLog(ID, infoLogLength, &infoLogLength, &errorMessage[0]);
             printf("%s\n", &errorMessage[0]);
             throw std::runtime_error("failed to link program!");
-        }
-    }
-
-    void destroy() {
-        for (const OpenGLShader& shader : createdWith.shaders) {
-            glDetachShader(ID, shader.ID);
-            shader.destroy();
         }
     }
 
@@ -74,4 +70,12 @@ public:
         glUniform2fv(glGetUniformLocation(ID, name), 1, &data[0]);
         glUseProgram(oldID);
     }
+
+    void destroy() {
+        for (const std::function<void()> &function : deletionQueue) { function(); }
+        deletionQueue.clear();
+    }
+
+private:
+    std::deque<std::function<void()>> deletionQueue{};
 };

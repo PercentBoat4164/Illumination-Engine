@@ -54,10 +54,10 @@ public:
             OpenGLTexture::CreateInfo textureCreateInfo{};
             textureCreateInfo.filename = filenames[i];
             textureCreateInfo.format = OPENGL_TEXTURE;
-            textures[i].destroy();
             textures[i].create(&textureCreateInfo);
             textures[i].upload();
         }
+        deletionQueue.emplace_back([&] { for (OpenGLTexture& texture : textures) { texture.destroy(); } });
     }
 
     void loadModel(const char *filename = nullptr) {
@@ -94,8 +94,11 @@ public:
         vertices.swap(tmp);
         triangleCount = static_cast<uint32_t>(indices.size()) / 3;
         glGenVertexArrays(1, &vertexArrayObject);
+        deletionQueue.emplace_back([&] { glDeleteVertexArrays(1, &vertexArrayObject); });
         glGenBuffers(1, &vertexBuffer);
+        deletionQueue.emplace_back([&] { glDeleteBuffers(1, &vertexBuffer); });
         glGenBuffers(1, &indexBuffer);
+        deletionQueue.emplace_back([&] { glDeleteBuffers(1, &indexBuffer); });
         glBindVertexArray(vertexArrayObject);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(vertices.size() * sizeof(vertices[0])), vertices.data(), GL_STATIC_DRAW);
@@ -119,10 +122,18 @@ public:
         std::vector<OpenGLShader> shaders{filenames.size()};
         for (uint32_t i = 0; i < filenames.size(); ++i) {
             OpenGLShader::CreateInfo shaderCreateInfo{filenames[i]};
-            shaders[i].destroy();
             shaders[i].create(&shaderCreateInfo);
         }
         OpenGLProgram::CreateInfo programCreateInfo{shaders};
         program.create(&programCreateInfo);
+        deletionQueue.emplace_back([&] { program.destroy(); });
     }
+
+    void destroy() {
+        for (const std::function<void()> &function : deletionQueue) { function(); }
+        deletionQueue.clear();
+    }
+
+private:
+    std::deque<std::function<void()>> deletionQueue{};
 };

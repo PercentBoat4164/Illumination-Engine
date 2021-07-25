@@ -37,6 +37,7 @@ public:
         file.close();
         data = shaderCode.str();
         ID = glCreateShader(createdWith.shaderType);
+        deletionQueue.emplace_back([&] { glDeleteShader(ID); });
     }
 
     void compile() {
@@ -57,4 +58,12 @@ public:
     void destroy() const {
         glDeleteShader(ID);
     }
+
+    void destroy() {
+        for (const std::function<void()> &function : deletionQueue) { function(); }
+        deletionQueue.clear();
+    }
+
+private:
+    std::deque<std::function<void()>> deletionQueue{};
 };

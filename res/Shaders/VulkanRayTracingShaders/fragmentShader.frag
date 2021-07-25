@@ -16,7 +16,7 @@ layout(location = 0) out vec4 outColor;
 //Add POM
 
 void main() {
-    outColor = texture(abledo, fragTexCoord) * 0.1f;
+    outColor = texture(diffuse, fragTexCoord) * 0.1f;
     rayQueryEXT rayQuery;
     rayQueryInitializeEXT(rayQuery, topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT, 0xFF, worldPosition, 0.001, vec3(0, 0, 1), 1000.0);
 

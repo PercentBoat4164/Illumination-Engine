@@ -15,11 +15,16 @@ public:
         createdWith = *createInfo;
         stbi_set_flip_vertically_on_load(true);
         data = stbi_load(createdWith.filename, &createdWith.width, &createdWith.height, &channels, STBI_rgb_alpha);
+        deletionQueue.emplace_back([&] { stbi_image_free(data); });
         glGenTextures(1, &ID);
+        deletionQueue.emplace_back([&] { glDeleteTextures(1, &ID); });
     }
 
     void destroy() override {
-        stbi_image_free(data);
-        glDeleteTextures(1, &ID);
+        for (const std::function<void()> &function : deletionQueue) { function(); }
+        deletionQueue.clear();
     }
+
+private:
+    std::deque<std::function<void()>> deletionQueue{};
 };

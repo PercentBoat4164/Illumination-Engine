@@ -64,10 +64,9 @@ int main(int argc, char **argv) {
 #ifdef ILLUMINATION_ENGINE_VULKAN
     if (input == "v") {
         try {
-            VulkanSettings settings{};
-            VulkanRenderEngine renderEngine{settings};
+            VulkanRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
-            renderEngine.camera.position = {0, 0, 2};
+            renderEngine.camera.position = {0, 2, 0.5f};
 //            VulkanRenderable cube = VulkanRenderable("res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
 //            VulkanRenderable quad = VulkanRenderable("res/Models/Quad/quad.obj", {"res/Models/Quad/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
 //            VulkanRenderable vikingRoom = VulkanRenderable("res/Models/VikingRoom/vikingRoom.obj", {"res/Models/VikingRoom/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
@@ -178,11 +177,11 @@ int main(int argc, char **argv) {
             OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/VikingRoom/vikingRoom.obj", {"res/Models/VikingRoom/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
             OpenGLRenderable statue = OpenGLRenderable("res/Models/AncientStatue/ancientStatue.obj", {"res/Models/AncientStatue/ancientStatue.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {7, 0, 0});
             OpenGLRenderable ball = OpenGLRenderable("res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"});
-            renderEngine.uploadRenderable(&cube);
-            renderEngine.uploadRenderable(&quad);
-            renderEngine.uploadRenderable(&vikingRoom);
-            renderEngine.uploadRenderable(&statue);
-            renderEngine.uploadRenderable(&ball);
+            renderEngine.loadRenderable(&cube);
+            renderEngine.loadRenderable(&quad);
+            renderEngine.loadRenderable(&vikingRoom);
+            renderEngine.loadRenderable(&statue);
+            renderEngine.loadRenderable(&ball);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
@@ -198,7 +197,7 @@ int main(int argc, char **argv) {
                 glfwPollEvents();
                 float velocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-                    for (OpenGLRenderable *renderable : renderEngine.renderables) { renderEngine.uploadRenderable(renderable, false); }
+                    for (OpenGLRenderable *renderable : renderEngine.renderables) { renderEngine.loadRenderable(renderable, false); }
                     renderEngine.updateSettings();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                     renderEngine.settings.fullscreen ^= 1;
@@ -206,10 +205,10 @@ int main(int argc, char **argv) {
                     lastF2 = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = 1;
-                    renderEngine.updateSettings();
+                    renderEngine.handleMSAAChange();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_4)) {
                     renderEngine.settings.msaaSamples = 4;
-                    renderEngine.updateSettings();
+                    renderEngine.handleMSAAChange();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
                     renderEngine.updateSettings();

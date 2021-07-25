@@ -69,8 +69,7 @@ private:
     }
 
 public:
-    explicit VulkanRenderEngine(VulkanSettings &initialSettings, GLFWwindow *attachWindow = nullptr) {
-        settings = initialSettings;
+    explicit VulkanRenderEngine() {
         renderEngineLink.device = &device;
         renderEngineLink.swapchain = &swapchain;
         renderEngineLink.settings = &settings;
@@ -94,9 +93,9 @@ public:
         instance = instanceBuilder.value();
         //build window
         engineDeletionQueue.emplace_front([&] { vkb::destroy_instance(instance); });
-        if (attachWindow == nullptr) { glfwInit(); }
+        glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        window = glfwCreateWindow(static_cast<int>(settings.resolution[0]), static_cast<int>(settings.resolution[1]), settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+        window = glfwCreateWindow(static_cast<int>(settings.resolution[0]), static_cast<int>(settings.resolution[1]), settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
         // load icons
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes)/sizeof(int)];

@@ -31,6 +31,7 @@ public:
     virtual void create(CreateInfo *createInfo) {
         createdWith = *createInfo;
         glGenTextures(1, &ID);
+        deletionQueue.emplace_back([&] { glDeleteTextures(1, &ID); });
     }
 
     virtual void upload() {
@@ -48,6 +49,10 @@ public:
     }
 
     virtual void destroy() {
-        glDeleteTextures(1, &ID);
+        for (const std::function<void()> &function : deletionQueue) { function(); }
+        deletionQueue.clear();
     }
+
+private:
+    std::deque<std::function<void()>> deletionQueue{};
 };

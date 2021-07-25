@@ -81,26 +81,27 @@ public:
         pOpenGlRenderEngine->prepassFramebuffer.rebuild();
     }
 
-    explicit OpenGLRenderEngine(GLFWwindow *attachWindow = nullptr) {
+    explicit OpenGLRenderEngine() {
         if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
         window = glfwCreateWindow(1, 1, "Finding OpenGL version...", nullptr, nullptr);
         glfwMakeContextCurrent(window);
-        std::string version = std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)));
+        renderEngineLink.openglVersion = std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)));
+        glGetIntegerv(GL_MAX_SAMPLES, &renderEngineLink.maxMSAASamples);
         glfwDestroyWindow(window);
         glfwTerminate();
         glfwInit();
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(version.substr(0, 1)));
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(version.substr(2, 1)));
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(renderEngineLink.openglVersion.substr(0, 1)));
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(renderEngineLink.openglVersion.substr(2, 1)));
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
-        #ifdef __APPLE__
+#ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        #endif
-        #ifdef _DEBUG
+#endif
+#ifdef _DEBUG
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-        #endif
-        window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, attachWindow);
+#endif
+        window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
         // load icon
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes)/sizeof(int)];
@@ -124,14 +125,14 @@ public:
         glfwMakeContextCurrent(window);
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-        #if defined(_WIN32)
+#if defined(_WIN32)
         glfwSwapInterval(settings.vSync ? 1 : 0);
-        #else
+#else
         glfwSwapInterval(0); // VSync is mandatory on Linux in OpenGL due to high frame rates (>4000) causing system freezes.
-        #endif
+#endif
         glewExperimental = true;
         if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
-        #ifdef _DEBUG
+#ifdef _DEBUG
         int flags;
         glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
@@ -140,7 +141,7 @@ public:
             glDebugMessageCallback(glDebugOutput, nullptr);
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         }
-        #endif
+#endif
         // Build engine
         renderEngineLink.settings = &settings;
         camera.create(&renderEngineLink);
@@ -155,11 +156,37 @@ public:
         prepassProgram.create(&prepassProgramCreateInfo);
     }
 
-    void uploadRenderable(OpenGLRenderable *renderable, bool append = true) {
+    void handleMSAAChange() {
+        glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(renderEngineLink.openglVersion.substr(0, 1)));
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(renderEngineLink.openglVersion.substr(2, 1)));
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
+#ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+#ifdef _DEBUG
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
+        GLFWwindow *newWindow = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, window);
+        glfwMakeContextCurrent(window);
+        glfwDestroyWindow(window);
+        window = newWindow;
+        reloadRenderables();
+    }
+
+    void loadRenderable(OpenGLRenderable *renderable, bool append = true) {
         renderable->loadModel(renderable->modelFilename);
         renderable->loadShaders(renderable->shaderFilenames);
         renderable->loadTextures(renderable->textureFilenames);
         if (append) { renderables.push_back(renderable); }
+    }
+
+    void reloadRenderables() {
+        for (OpenGLRenderable *renderable : renderables) {
+            renderable->destroy();
+            loadRenderable(renderable, false);
+        }
     }
 
     bool update() {
@@ -169,6 +196,7 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER, prepassFramebuffer.ID);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+        glEnable(GL_MULTISAMPLE);
         prepassFramebuffer.clear();
         glUseProgram(prepassProgram.ID);
         glActiveTexture(GL_TEXTURE0);
