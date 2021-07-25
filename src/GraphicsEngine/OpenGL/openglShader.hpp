@@ -55,10 +55,6 @@ public:
         }
     }
 
-    void destroy() const {
-        glDeleteShader(ID);
-    }
-
     void destroy() {
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();

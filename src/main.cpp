@@ -72,11 +72,11 @@ int main(int argc, char **argv) {
 //            VulkanRenderable vikingRoom = VulkanRenderable("res/Models/VikingRoom/vikingRoom.obj", {"res/Models/VikingRoom/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
             VulkanRenderable statue = VulkanRenderable("res/Models/AncientStatue/ancientStatue.obj", {"res/Models/AncientStatue/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0});
 //            VulkanRenderable ball = VulkanRenderable("res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
-//            renderEngine.loadRenderable(&cube, true);
-//            renderEngine.loadRenderable(&quad, true);
-//            renderEngine.loadRenderable(&vikingRoom, true);
-            renderEngine.loadRenderable(&statue, true);
-//            renderEngine.loadRenderable(&ball, true);
+//            renderEngine.loadRenderable(&cube);
+//            renderEngine.loadRenderable(&quad);
+//            renderEngine.loadRenderable(&vikingRoom);
+            renderEngine.loadRenderable(&statue);
+//            renderEngine.loadRenderable(&ball);
             double lastTab{0};
             double lastF2{0};
             double lastEsc{0};
