@@ -37,7 +37,7 @@ public:
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
         vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
-        deletionQueue.emplace_front([&]{ if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); image = VK_NULL_HANDLE; } });
+        deletionQueue.emplace_front([&]{ vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
         imageFormat = createdWith.format;
         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageViewCreateInfo imageViewCreateInfo{};
@@ -51,19 +51,24 @@ public:
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         imageViewCreateInfo.subresourceRange.layerCount = 1;
         if (vkCreateImageView(linkedRenderEngine->device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr); view = VK_NULL_HANDLE; });
+        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr); });
         transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         VulkanBuffer scratchBuffer{};
-        VulkanBuffer::CreateInfo scratchBufferCreateInfo{static_cast<VkDeviceSize>(createdWith.width * createdWith.height * 4), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
-        memcpy(scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo), pixels, createdWith.width * createdWith.height * 4);
-        scratchBuffer.toImage(image, createdWith.width, createdWith.height);
+        VulkanBuffer::CreateInfo scratchBufferCreateInfo{};
+        scratchBufferCreateInfo.size = createdWith.width * createdWith.height * 4;
+        scratchBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        scratchBufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo);
+        scratchBuffer.uploadData(pixels, createdWith.width * createdWith.height * 4);
+        scratchBuffer.toImage(*this, createdWith.width, createdWith.height);
         /**@todo: Add support for more mipmap interpolation methods. Currently only linear interpolation is supported.*/
         if (createdWith.mipMapping) {
+            VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
+            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
             VkFormatProperties formatProperties{};
             vkGetPhysicalDeviceFormatProperties(linkedRenderEngine->device->physical_device.physical_device, imageFormat, &formatProperties);
             if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) { throw std::runtime_error("texture image format " + std::to_string(imageFormat) + " does not support linear blitting!"); }
-            VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
-            VkImageMemoryBarrier imageMemoryBarrier{};
+            VkImageMemoryBarrier imageMemoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
             imageMemoryBarrier.image = image;
             imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -101,8 +106,14 @@ public:
                 if (mipWidth > 1) { mipWidth /= 2; }
                 if (mipHeight > 1) { mipHeight /= 2; }
             }
+            imageMemoryBarrier.subresourceRange.baseMipLevel = mipLevels - 1;
+            imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
             linkedRenderEngine->endSingleTimeCommands(commandBuffer);
-            transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;

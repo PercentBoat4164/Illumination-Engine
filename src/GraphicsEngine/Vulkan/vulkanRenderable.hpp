@@ -1,11 +1,3 @@
-/**@todo: Add instancing.
- * - LOW PRIORITY: This is only an optimization for specific scenarios.
- */
-
-/**@todo: Rewrite this class to work with the ray tracer and rasterizer.
- * - HIGH PRIORITY: This will enable much easier code maintenance.
- */
-
 /**@todo: Allow loading models and textures into RAM without loading them into VRAM.
  * - MEDIUM PRIORITY: Useful and easy to implement feature.
  */
@@ -69,13 +61,13 @@ public:
         uniformBufferObject = {glm::mat4(1.0f), camera.view, camera.proj};
         glm::quat quaternion = glm::quat(glm::radians(rotation));
         uniformBufferObject.model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
-        memcpy(uniformBuffer.data, &uniformBufferObject, sizeof(VulkanUniformBufferObject));
+        modelBuffer.uploadData(&uniformBufferObject, sizeof(VulkanUniformBufferObject));
     }
 
     std::deque<std::function<void(VulkanRenderable asset)>> deletionQueue{};
     std::vector<uint32_t> indices{};
     std::vector<VulkanVertex> vertices{};
-    VulkanBuffer uniformBuffer{};
+    VulkanBuffer modelBuffer{};
     VulkanBuffer vertexBuffer{};
     VulkanBuffer indexBuffer{};
     VulkanBuffer transformationBuffer{};

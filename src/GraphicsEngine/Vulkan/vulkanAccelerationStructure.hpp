@@ -4,7 +4,8 @@ class VulkanAccelerationStructure : public VulkanBuffer {
 public:
     VkAccelerationStructureKHR accelerationStructure{};
 
-    void *create (VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) override {
+    void create (VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) override {
+        deletionQueue.clear();
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
         std::vector<uint32_t> geometryCounts{};
@@ -28,8 +29,12 @@ public:
             accelerationStructureInstance.mask = 0xFF;
             accelerationStructureInstance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
             accelerationStructureInstance.accelerationStructureReference = createdWith.bottomLevelAccelerationStructureDeviceAddress;
-            VulkanBuffer::CreateInfo instanceBufferCreateInfo{sizeof(VkAccelerationStructureInstanceKHR), VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_CPU_TO_GPU};
-            memcpy(instanceBuffer.create(linkedRenderEngine, &instanceBufferCreateInfo), &accelerationStructureInstance, sizeof(VkAccelerationStructureInstanceKHR));
+            VulkanBuffer::CreateInfo instanceBufferCreateInfo{};
+            instanceBufferCreateInfo.size = sizeof(VkAccelerationStructureInstanceKHR);
+            instanceBufferCreateInfo.usage = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
+            instanceBufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+            instanceBuffer.create(linkedRenderEngine, &instanceBufferCreateInfo);
+            instanceBuffer.uploadData(&accelerationStructureInstance, sizeof(VkAccelerationStructureInstanceKHR));
             accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
             accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
             accelerationStructureGeometry.geometry.instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
@@ -43,25 +48,25 @@ public:
         accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
         VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR};
         linkedRenderEngine->vkGetAccelerationStructureBuildSizesKHR(linkedRenderEngine->device->device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accelerationStructureBuildGeometryInfo, &createdWith.primitiveCount, &accelerationStructureBuildSizesInfo);
-        bufferSize = accelerationStructureBuildSizesInfo.accelerationStructureSize;
+        createdWith.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
         VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
-        bufferCreateInfo.size = bufferSize;
+        bufferCreateInfo.size = createdWith.size;
         bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create acceleration structure!"); }
-        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
+        deletionQueue.emplace_front([&]{ vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
         VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR};
         accelerationStructureCreateInfo.buffer = buffer;
-        accelerationStructureCreateInfo.size = bufferSize;
+        accelerationStructureCreateInfo.size = createdWith.size;
         accelerationStructureCreateInfo.type = createdWith.type;
         linkedRenderEngine->vkCreateAccelerationStructureKHR(linkedRenderEngine->device->device, &accelerationStructureCreateInfo, nullptr, &accelerationStructure);
-        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { linkedRenderEngine->vkDestroyAccelerationStructureKHR(linkedRenderEngine->device->device, accelerationStructure, nullptr); } });
+        deletionQueue.emplace_front([&]{ linkedRenderEngine->vkDestroyAccelerationStructureKHR(linkedRenderEngine->device->device, accelerationStructure, nullptr); });
         VkAccelerationStructureDeviceAddressInfoKHR accelerationStructureDeviceAddressInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR};
         accelerationStructureDeviceAddressInfo.accelerationStructure = accelerationStructure;
         deviceAddress = linkedRenderEngine->vkGetAccelerationStructureDeviceAddressKHR(linkedRenderEngine->device->device, &accelerationStructureDeviceAddressInfo);
-        vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
-        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
+//        vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
+//        deletionQueue.emplace_front([&]{ vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); });
         VulkanBuffer::CreateInfo scratchBufferCreateInfo{accelerationStructureBuildSizesInfo.accelerationStructureSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         VulkanBuffer scratchBuffer{};
         scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo);
@@ -76,7 +81,6 @@ public:
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
         scratchBuffer.destroy();
         if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) { instanceBuffer.destroy(); }
-        return data;
     }
 
 //    void update() {

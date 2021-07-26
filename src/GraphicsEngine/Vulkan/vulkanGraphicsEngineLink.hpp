@@ -18,7 +18,7 @@ public:
         VkPhysicalDeviceProperties physicalDeviceProperties{};
 
         // Extension Properties
-        VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{};
+        VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2};
         void *pNextHighestProperty = &physicalDeviceMemoryProperties;
 
         // Device Features
@@ -68,13 +68,13 @@ public:
         vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device->device, "vkGetAccelerationStructureDeviceAddressKHR"));
         vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device->device, "vkAcquireNextImageKHR"));
         VkPhysicalDeviceProperties2 physicalDeviceProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
-        physicalDeviceProperties.pNext = supportedPhysicalDeviceInfo.pNextHighestProperty;
         vkGetPhysicalDeviceProperties2(device->physical_device.physical_device, &physicalDeviceProperties);
         supportedPhysicalDeviceInfo.physicalDeviceProperties = physicalDeviceProperties.properties;
         VkPhysicalDeviceFeatures2 physicalDeviceFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
         physicalDeviceFeatures.pNext = supportedPhysicalDeviceInfo.pNextHighestFeature;
         vkGetPhysicalDeviceFeatures2(device->physical_device.physical_device, &physicalDeviceFeatures);
         supportedPhysicalDeviceInfo.physicalDeviceFeatures = physicalDeviceFeatures.features;
+        vkGetPhysicalDeviceMemoryProperties(device->physical_device.physical_device, &supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);
     }
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {

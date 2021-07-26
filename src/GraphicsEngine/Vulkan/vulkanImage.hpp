@@ -4,7 +4,8 @@
 
 enum VulkanImageType {
     VULKAN_DEPTH = 0x00000000,
-    VULKAN_COLOR = 0x00000001
+    VULKAN_COLOR = 0x00000001,
+    VULKAN_TEXTURE = 0x00000002
 };
 
 class VulkanImage {
@@ -16,18 +17,18 @@ public:
         VkImageUsageFlags usage{};
         VmaMemoryUsage allocationUsage{};
 
-        //Optional for either image type
+        //Optional
         int width = 0, height = 0;                                  //OPTIONAL - will default to swapchain size for non-texture images
 
-        //Only use for non-texture images
-        VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;  //OPTIONAL
-        VkImageLayout imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;      //OPTIONAL
-        VulkanImageType imageType = VULKAN_COLOR;                          //OPTIONAL
-        VulkanBuffer *dataSource = nullptr;                         //OPTIONAL
+        //Optional; Only use for non-texture images
+        VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_1_BIT};
+        VkImageLayout imageLayout{VK_IMAGE_LAYOUT_UNDEFINED};
+        VulkanImageType imageType{};
+        VulkanBuffer *dataSource{};
 
         //Only use for texture images
-        const char *filename{};                                     //REQUIRED
-        bool mipMapping = false;                                     //OPTIONAL
+        const char *filename{};
+        bool mipMapping{false};
     };
 
     VkImage image{};
@@ -64,7 +65,7 @@ public:
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
         vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
-        deletionQueue.emplace_front([&]{ if(image != VK_NULL_HANDLE) { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); image = VK_NULL_HANDLE; } });
+        deletionQueue.emplace_front([&]{ vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
         imageFormat = createdWith.format;
         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageViewCreateInfo imageViewCreateInfo{};
@@ -78,66 +79,81 @@ public:
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         imageViewCreateInfo.subresourceRange.layerCount = 1;
         if (vkCreateImageView(linkedRenderEngine->device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr); view = VK_NULL_HANDLE; });
+        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr);});
         if (createdWith.dataSource != nullptr) {
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-            createdWith.dataSource->toImage(image, createdWith.width, createdWith.height);
+            createdWith.dataSource->toImage(*this, createdWith.width, createdWith.height);
         }
         if (createdWith.imageLayout != imageLayout) { transitionLayout(createdWith.imageLayout); }
     }
 
-    [[maybe_unused]] void toBuffer(VkBuffer buffer, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
+    void toBuffer(const VulkanBuffer& buffer, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
         bool noCommandBuffer{false};
         if (commandBuffer == nullptr) { noCommandBuffer = true; }
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
         region.bufferImageHeight = 0;
-        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.aspectMask = createdWith.imageType == VULKAN_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
         region.imageSubresource.mipLevel = 0;
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = 1;
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {width, height, 1};
         if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
-        vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer, 1, &region);
+        vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1, &region);
         if (noCommandBuffer) { linkedRenderEngine->endSingleTimeCommands(commandBuffer); }
     }
 
     void transitionLayout(VkImageLayout newLayout, VkCommandBuffer commandBuffer = nullptr) {
+        if (imageLayout == newLayout) { return; }
         bool noCommandBuffer{false};
         if (commandBuffer == nullptr) { noCommandBuffer = true; }
-        VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
-        barrier.oldLayout = imageLayout;
-        barrier.newLayout = newLayout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = image;
-        barrier.subresourceRange.aspectMask = newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = mipLevels;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-        VkPipelineStageFlags sourceStage{VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
-        VkPipelineStageFlags destinationStage{VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT};
+        VkImageMemoryBarrier imageMemoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+        imageMemoryBarrier.oldLayout = imageLayout;
+        imageMemoryBarrier.newLayout = newLayout;
+        imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.image = image;
+        imageMemoryBarrier.subresourceRange.aspectMask = newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.levelCount = mipLevels;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+        imageMemoryBarrier.subresourceRange.layerCount = 1;
+        VkPipelineStageFlags sourceStage{};
+        VkPipelineStageFlags destinationStage{};
         if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            imageMemoryBarrier.srcAccessMask = 0;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         } else if (imageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
             sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         } else if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            imageMemoryBarrier.srcAccessMask = 0;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        }
+        } else if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = 0;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        } else if (imageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        } else if (imageLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        } else { throw std::runtime_error("Unknown transfer parameters!"); }
         if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
-        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
         if (noCommandBuffer) { linkedRenderEngine->endSingleTimeCommands(commandBuffer); }
         imageLayout = newLayout;
     }
@@ -147,3 +163,14 @@ protected:
     VmaAllocation allocation{};
     std::deque<std::function<void()>> deletionQueue{};
 };
+
+void VulkanBuffer::toImage(const VulkanImage& image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer) const {
+    bool noCommandBuffer{commandBuffer == VK_NULL_HANDLE};
+    VkBufferImageCopy region{};
+    region.imageSubresource.aspectMask = image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;;
+    region.imageSubresource.layerCount = 1;
+    region.imageExtent = {width, height, 1};
+    if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
+    vkCmdCopyBufferToImage(commandBuffer, buffer, image.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    if (noCommandBuffer) { linkedRenderEngine->endSingleTimeCommands(commandBuffer); }
+}

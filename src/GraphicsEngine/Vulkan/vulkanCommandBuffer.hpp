@@ -6,18 +6,25 @@ public:
     std::vector<VkCommandBuffer> commandBuffers{};
 
     void destroy() {
+        for (const std::function<void()>& function : commandBufferDeletionQueue) { function(); }
+        commandBufferDeletionQueue.clear();
         for (const std::function<void()>& function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
-    void create(vkb::Device &engineDevice, vkb::QueueType commandQueue) {
-        creationDevice = engineDevice;
+    void freeCommandBuffers() {
+        for (const std::function<void()>& function : commandBufferDeletionQueue) { function(); }
+        commandBufferDeletionQueue.clear();
+    };
+
+    void create(VulkanGraphicsEngineLink *engineLink, vkb::QueueType commandQueue) {
+        linkedRenderEngine = engineLink;
         queue = commandQueue;
         VkCommandPoolCreateInfo commandPoolCreateInfo{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
-        commandPoolCreateInfo.queueFamilyIndex = creationDevice.get_queue_index(queue).value();
+        commandPoolCreateInfo.queueFamilyIndex = linkedRenderEngine->device->get_queue_index(queue).value();
         commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        if (vkCreateCommandPool(creationDevice.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) { throw std::runtime_error("failed to create command pool!"); }
-        deletionQueue.emplace_front([&]{ vkDestroyCommandPool(creationDevice.device, commandPool, nullptr); });
+        if (vkCreateCommandPool(linkedRenderEngine->device->device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) { throw std::runtime_error("failed to create command pool!"); }
+        deletionQueue.emplace_front([&]{ vkDestroyCommandPool(linkedRenderEngine->device->device, commandPool, nullptr); });
     }
 
     void createCommandBuffers(int commandBufferCount) {
@@ -26,7 +33,8 @@ public:
         commandBufferAllocateInfo.commandPool = commandPool;
         commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
-        if (vkAllocateCommandBuffers(creationDevice.device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) { throw std::runtime_error("failed to allocate command buffers!"); }
+        if (vkAllocateCommandBuffers(linkedRenderEngine->device->device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) { throw std::runtime_error("failed to allocate command buffers!"); }
+        commandBufferDeletionQueue.emplace_front([&] { vkFreeCommandBuffers(linkedRenderEngine->device->device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data()); });
     }
 
     void resetCommandBuffer(const std::vector<int>& resetIndices) {
@@ -49,6 +57,7 @@ public:
 
 private:
     std::deque<std::function<void()>> deletionQueue{};
+    std::deque<std::function<void()>> commandBufferDeletionQueue{};
     vkb::QueueType queue{};
-    vkb::Device creationDevice{};
+    VulkanGraphicsEngineLink *linkedRenderEngine{};
 };

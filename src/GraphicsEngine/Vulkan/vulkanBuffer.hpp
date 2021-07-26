@@ -5,10 +5,12 @@
 #include <deque>
 #include <functional>
 
+class VulkanImage;
+
 class VulkanBuffer {
 public:
     struct CreateInfo {
-        //Only required for buffer || shader binding table creation
+        //Only required for buffer
         VkDeviceSize size{};
         VkBufferUsageFlags usage{};
         VmaMemoryUsage allocationUsage{};
@@ -28,58 +30,56 @@ public:
 
         //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR
         VkDeviceAddress bottomLevelAccelerationStructureDeviceAddress{};
+
+        //Optional
+        void *data{};
+
+        //Required only if data != nullptr
+        uint32_t sizeOfData{};
     };
 
     void *data{};
     VkBuffer buffer{};
-    VkDeviceSize bufferSize{};
     VkDeviceAddress deviceAddress{};
     CreateInfo createdWith{};
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
-        data = nullptr;
     }
 
-    virtual void *create(VulkanGraphicsEngineLink *engineLink, CreateInfo *createInfo) {
+    virtual void create(VulkanGraphicsEngineLink *engineLink, CreateInfo *createInfo) {
+        deletionQueue.clear();
         linkedRenderEngine = engineLink;
         createdWith = *createInfo;
-        bufferSize = createdWith.size;
         VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
-        bufferCreateInfo.size = bufferSize;
+        bufferCreateInfo.size = createdWith.size;
         bufferCreateInfo.usage = createdWith.usage;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
         if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
-        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); buffer = VK_NULL_HANDLE; } });
-        vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
-        deletionQueue.emplace_front([&]{ if (buffer != VK_NULL_HANDLE) { vmaUnmapMemory(*linkedRenderEngine->allocator, allocation); } });
+        deletionQueue.emplace_front([&]{ vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
+        if (createdWith.data != nullptr) {
+            if (createdWith.sizeOfData > createdWith.size) { throw std::runtime_error("VulkanBuffer::CreateInfo::sizeOfData must not be greater than VulkanBuffer::CreateInfo::size"); }
+            vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
+            memcpy(data, createdWith.data, createdWith.sizeOfData);
+            vmaUnmapMemory(*linkedRenderEngine->allocator, allocation);
+        }
         if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
             VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
             bufferDeviceAddressInfo.buffer = buffer;
             deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         }
-        return data;
     }
 
-    void toImage(VkImage image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
-        bool noCommandBuffer{false};
-        if (commandBuffer == nullptr) { noCommandBuffer = true; }
-        VkBufferImageCopy region{};
-        region.bufferOffset = 0;
-        region.bufferRowLength = 0;
-        region.bufferImageHeight = 0;
-        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.imageSubresource.mipLevel = 0;
-        region.imageSubresource.baseArrayLayer = 0;
-        region.imageSubresource.layerCount = 1;
-        region.imageOffset = {0, 0, 0};
-        region.imageExtent = {width, height, 1};
-        if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
-        vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-        if (noCommandBuffer) { linkedRenderEngine->endSingleTimeCommands(commandBuffer); }
+    void uploadData(void *input, uint32_t sizeOfInput) {
+        if (sizeOfInput > createdWith.size) { throw std::runtime_error("sizeOfInput must not be greater than VulkanBuffer::CreateInfo::size"); }
+        vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
+        memcpy(data, input, sizeOfInput);
+        vmaUnmapMemory(*linkedRenderEngine->allocator, allocation);
     }
+
+    void toImage(const VulkanImage& image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const;
 
 protected:
     std::deque<std::function<void()>> deletionQueue{};

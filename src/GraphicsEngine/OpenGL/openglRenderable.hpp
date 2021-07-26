@@ -1,8 +1,3 @@
-/**@todo: Add a graphics engine link
- * - HIGH PRIORITY: Will enable a better code structure
- */
-
-
 #pragma once
 
 #include "openglVertex.hpp"

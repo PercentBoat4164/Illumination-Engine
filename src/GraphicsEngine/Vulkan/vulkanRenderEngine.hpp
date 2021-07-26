@@ -50,7 +50,7 @@ public:
         //build instance
         vkb::InstanceBuilder builder;
         builder.set_app_name(settings.applicationName.c_str()).set_app_version(settings.applicationVersion[0], settings.applicationVersion[1], settings.applicationVersion[2]).require_api_version(settings.requiredVulkanVersion[0], settings.requiredVulkanVersion[1], settings.requiredVulkanVersion[2]);
-#ifdef _DEBUG
+#ifndef NDEBUG
         /* Validation layers hamper performance. Therefore to eek out extra speed from the GPU they will be turned off if the program is run in 'Release' mode. */
         if (systemInfo->validation_layers_available) { builder.request_validation_layers(); }
         if (systemInfo->debug_utils_available) { builder.use_default_debug_messenger(); }
@@ -100,7 +100,9 @@ public:
         //-------------------
         std::vector<const char *> rayTracingExtensions{
                 VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
                 VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+                VK_KHR_RAY_QUERY_EXTENSION_NAME,
                 VK_KHR_SPIRV_1_4_EXTENSION_NAME
         };
         std::vector<std::vector<const char *>> extensionGroups{
@@ -126,7 +128,8 @@ public:
                 &renderEngineLink.enabledPhysicalDeviceInfo.rayTracing,
                 &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress,
                 &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure,
-                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayQueryFeatures.rayQuery
+                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayQueryFeatures.rayQuery,
+                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline
         };
         std::vector<std::vector<VkBool32 *>> extensionFeatureGroups{
                 rayTracingFeatures
@@ -139,6 +142,13 @@ public:
                 renderEngineLink.enableFeature(deviceFeatureGroup);
             }
         }
+        for (const std::vector<VkBool32 *>& extensionFeatureGroup : extensionFeatureGroups) {
+            if (renderEngineLink.testFeature(std::vector<VkBool32 *>(extensionFeatureGroup.begin() + 1, extensionFeatureGroup.end()))[0]) {
+                *extensionFeatureGroup[0] = VK_TRUE;
+                *(extensionFeatureGroup[0] - (VkBool32 *)&renderEngineLink.enabledPhysicalDeviceInfo + (VkBool32 *)&renderEngineLink.supportedPhysicalDeviceInfo) = VK_TRUE;
+                renderEngineLink.enableFeature(extensionFeatureGroup);
+            }
+        }
         //build final device
         vkb::detail::Result<vkb::PhysicalDevice> finalPhysicalDeviceBuilder = selector.set_surface(surface).add_desired_extensions(*extensionGroups.data()).set_required_features(renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
         vkb::DeviceBuilder finalLogicalDeviceBuilder{finalPhysicalDeviceBuilder.value()};
@@ -147,13 +157,6 @@ public:
         device = finalLogicalDevice.value();
         renderEngineLink.build();
         //Enable required features
-        for (const std::vector<VkBool32 *>& extensionFeatureGroup : extensionFeatureGroups) {
-            if (renderEngineLink.testFeature(std::vector<VkBool32 *>(extensionFeatureGroup.begin() + 1, extensionFeatureGroup.end()))[0]) {
-                *extensionFeatureGroup[0] = VK_TRUE;
-                *(extensionFeatureGroup[0] - (VkBool32 *)&renderEngineLink.enabledPhysicalDeviceInfo + (VkBool32 *)&renderEngineLink.supportedPhysicalDeviceInfo) = VK_TRUE;
-                renderEngineLink.enableFeature(extensionFeatureGroup);
-            }
-        }
         engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
         //get queues
         graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
@@ -169,7 +172,7 @@ public:
         vmaCreateAllocator(&allocatorInfo, &allocator);
         engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(allocator); });
         //Create commandPool
-        commandBuffer.create(device, vkb::QueueType::graphics);
+        commandBuffer.create(&renderEngineLink, vkb::QueueType::graphics);
         engineDeletionQueue.emplace_front([&] { commandBuffer.destroy(); });
         //delete scratch buffer
         engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
@@ -203,6 +206,7 @@ public:
             oneTimeOptionalDeletionQueue.clear();
             //Create commandBuffers
             commandBuffer.createCommandBuffers((int) swapchain.image_count);
+            oneTimeOptionalDeletionQueue.emplace_front([&] { commandBuffer.freeCommandBuffers(); });
             //Create sync objects
             imageAvailableSemaphores.resize(swapchain.image_count);
             renderFinishedSemaphores.resize(swapchain.image_count);
@@ -232,44 +236,57 @@ public:
             framebufferCreateInfo.swapchainImageView = (*renderEngineLink.swapchainImageViews)[i];
             framebuffers[i].create(&renderEngineLink, &framebufferCreateInfo);
         }
-        recreationDeletionQueue.emplace_back([&] { for (VulkanFramebuffer &framebuffer : framebuffers) { framebuffer.destroy(); } });
+        recreationDeletionQueue.emplace_front([&] { for (VulkanFramebuffer &framebuffer : framebuffers) { framebuffer.destroy(); } });
         camera.updateSettings();
     }
 
     void loadRenderable(VulkanRenderable *renderable, bool append = true) {
-        //destroy previously created renderable if any
         renderable->destroy();
-        //upload mesh, vertex, and transformation data
-        VulkanBuffer::CreateInfo vertexBufferCreateInfo{sizeof(renderable->vertices[0]) * renderable->vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
-        if (settings.rayTracing) { vertexBufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
-        memcpy(renderable->vertexBuffer.create(&renderEngineLink, &vertexBufferCreateInfo), renderable->vertices.data(), sizeof(renderable->vertices[0]) * renderable->vertices.size());
+        //upload index, vertex, uniform, and transformation data
+        VulkanBuffer::CreateInfo bufferCreateInfo{};
+        bufferCreateInfo.size = sizeof(renderable->vertices[0]) * renderable->vertices.size();
+        bufferCreateInfo.usage = settings.rayTracing ? VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        renderable->vertexBuffer.create(&renderEngineLink, &bufferCreateInfo);
+        renderable->vertexBuffer.uploadData(renderable->vertices.data(), sizeof(renderable->vertices[0]) * renderable->vertices.size());
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.vertexBuffer.destroy(); });
-        VulkanBuffer::CreateInfo indexBufferCreateInfo{sizeof(renderable->indices[0]) * renderable->indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
-        if (settings.rayTracing) { indexBufferCreateInfo.usage |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
-        memcpy(renderable->indexBuffer.create(&renderEngineLink, &indexBufferCreateInfo), renderable->indices.data(), sizeof(renderable->indices[0]) * renderable->indices.size());
+        bufferCreateInfo.size = sizeof(renderable->indices[0]) * renderable->indices.size();
+        bufferCreateInfo.usage ^= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        renderable->indexBuffer.create(&renderEngineLink, &bufferCreateInfo);
+        renderable->indexBuffer.uploadData(renderable->indices.data(), sizeof(renderable->indices[0]) * renderable->indices.size());
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.indexBuffer.destroy(); });
         if (settings.rayTracing) {
-            VulkanBuffer::CreateInfo transformationBufferCreateInfo{sizeof(renderable->transformationMatrix), VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
-            memcpy(renderable->transformationBuffer.create(&renderEngineLink, &transformationBufferCreateInfo), &renderable->transformationMatrix, sizeof(VkTransformMatrixKHR));
+            bufferCreateInfo.size = sizeof(renderable->transformationMatrix);
+            bufferCreateInfo.usage ^= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+            renderable->transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
+            renderable->transformationBuffer.uploadData(&renderable->transformationMatrix, sizeof(renderable->transformationMatrix));
             renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
         }
+        bufferCreateInfo.size = sizeof(VulkanUniformBufferObject);
+        bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        renderable->modelBuffer.create(&renderEngineLink, &bufferCreateInfo);
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.modelBuffer.destroy(); });
         //upload textures
         renderable->textureImages.resize(renderable->textures.size());
         for (unsigned int i = 0; i < renderable->textures.size(); ++i) {
             renderable->textureImages[i].destroy();
-            VulkanTexture::CreateInfo textureImageCreateInfo{VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY, renderable->textureImages[i].createdWith.width, renderable->textureImages[i].createdWith.height};
+            VulkanTexture::CreateInfo textureImageCreateInfo{};
+            textureImageCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+            textureImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            textureImageCreateInfo.usage = settings.mipMapping ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT : VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            textureImageCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
+            textureImageCreateInfo.width = renderable->textureImages[i].createdWith.width;
+            textureImageCreateInfo.height = renderable->textureImages[i].createdWith.height;
             textureImageCreateInfo.filename = renderable->textures[i];
             textureImageCreateInfo.mipMapping = settings.mipMapping;
+            textureImageCreateInfo.imageType = VULKAN_TEXTURE;
             renderable->textureImages[i].create(&renderEngineLink, &textureImageCreateInfo);
         }
-        //build uniform buffers
-        VulkanBuffer::CreateInfo uniformBufferCreateInfo {sizeof(VulkanUniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
-        memcpy(renderable->uniformBuffer.create(&renderEngineLink, &uniformBufferCreateInfo), &renderable->uniformBufferObject, sizeof(VulkanUniformBufferObject));
-        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.uniformBuffer.destroy(); });
         //build shaders
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
         renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable) { for (const VulkanShader& shader : thisRenderable.shaders) { shader.destroy(); } });
+        /**@todo: Write code for rebuilding and updating acceleration structures to allow movement.*/
         /* This setup is temporary, but for the purposes of testing only the most recently uploaded model will be included in the raytracing. */
         if (settings.rayTracing) {
             VulkanAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
@@ -294,11 +311,11 @@ public:
         if (settings.rayTracing) {
             renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}};
             renderableDescriptorSetCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
-            renderableDescriptorSetCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0], &topLevelAccelerationStructure};
+            renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textureImages[0], &topLevelAccelerationStructure};
         } else {
             renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}};
             renderableDescriptorSetCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
-            renderableDescriptorSetCreateInfo.data = {&renderable->uniformBuffer, &renderable->textureImages[0]};
+            renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textureImages[0]};
         }
         renderable->descriptorSet.create(&renderEngineLink, &renderableDescriptorSetCreateInfo);
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.descriptorSet.destroy(); });
@@ -357,7 +374,7 @@ public:
             }
         }
         vkCmdEndRenderPass(commandBuffer.commandBuffers[imageIndex]);
-        if (vkEndCommandBuffer(commandBuffer.commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record command buffer!"); }
+        if (vkEndCommandBuffer(commandBuffer.commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record draw command buffer!"); }
         //Submit
         VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
         VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
@@ -371,7 +388,8 @@ public:
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
         vkResetFences(device.device, 1, &inFlightFences[currentFrame]);
-        if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command buffer!"); }
+        VkResult test = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
+        if ( test != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command buffer!"); }
         //Present
         VkSwapchainKHR swapchains[] = {swapchain.swapchain};
         VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
@@ -398,7 +416,6 @@ public:
 
     void reloadRenderables() {
         for (VulkanRenderable *renderable : renderables) {
-            renderable->destroy();
             loadRenderable(renderable, false);
         }
     }
@@ -434,7 +451,6 @@ public:
     }
 
     void destroy() {
-        camera.destroy();
         for (VulkanRenderable *renderable : renderables) { renderable->destroy(); }
         for (std::function<void()>& function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();

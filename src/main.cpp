@@ -77,9 +77,7 @@ int main(int argc, char **argv) {
 //            renderEngine.loadRenderable(&vikingRoom);
             renderEngine.loadRenderable(&statue);
 //            renderEngine.loadRenderable(&ball);
-            double lastTab{0};
-            double lastF2{0};
-            double lastEsc{0};
+            double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
@@ -92,10 +90,10 @@ int main(int argc, char **argv) {
                 float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
                     renderEngine.reloadRenderables();
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastKey > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
                     renderEngine.handleFullscreenSettingsChange();
-                    lastF2 = glfwGetTime();
+                    lastKey = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
                     renderEngine.createSwapchain(true);
@@ -105,9 +103,12 @@ int main(int argc, char **argv) {
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
                     renderEngine.reloadRenderables();
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_R)) {
-                    if (renderEngine.renderEngineLink.enabledPhysicalDeviceInfo.rayTracing) { renderEngine.settings.rayTracing ^= 1; }
-                    renderEngine.reloadRenderables();
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_R) & (glfwGetTime() - lastKey > .2)) {
+                    if (renderEngine.renderEngineLink.enabledPhysicalDeviceInfo.rayTracing) {
+                        renderEngine.settings.rayTracing ^= 1;
+                        renderEngine.reloadRenderables();
+                    } else { std::cout << "This machine does not support the Vulkan extensions required for ray tracing." << std::endl; }
+                    lastKey = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
@@ -115,7 +116,7 @@ int main(int argc, char **argv) {
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_D) & captureInput) { renderEngine.camera.position += renderEngine.camera.right * velocity; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * velocity; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastTab > .2)) {
+                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastKey > .2)) {
                     int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
                     if (mode == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
@@ -133,9 +134,9 @@ int main(int argc, char **argv) {
                             glfwSetCursorPosCallback(renderEngine.window, vulkanRasterizerCursorCallback);
                         }
                     }
-                    lastTab = glfwGetTime();
+                    lastKey = glfwGetTime();
                     captureInput = !captureInput;
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastEsc > .2)) {
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastKey > .2)) {
                     if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
                     if (renderEngine.settings.fullscreen) {
                         renderEngine.settings.fullscreen = false;
@@ -146,7 +147,7 @@ int main(int argc, char **argv) {
                         glfwSetCursorPosCallback(renderEngine.window, nullptr);
                         captureInput = false;
                     }
-                    lastEsc = glfwGetTime();
+                    lastKey = glfwGetTime();
                 }
                 //move renderables
 //                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
@@ -156,6 +157,7 @@ int main(int argc, char **argv) {
                 int sum{0};
                 std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
                 glfwSetWindowTitle(renderEngine.window, (std::string("Illumination Engine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
+                std::flush(std::cout);
             }
             renderEngine.destroy();
         } catch (const std::exception& e) {
