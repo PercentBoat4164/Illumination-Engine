@@ -98,11 +98,9 @@ int main(int argc, char **argv) {
                     lastF2 = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-                    renderEngine.renderPass.createFramebuffers();
                     renderEngine.createSwapchain(true);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-                    renderEngine.renderPass.createFramebuffers();
                     renderEngine.createSwapchain(true);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;

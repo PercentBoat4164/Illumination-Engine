@@ -20,6 +20,7 @@
 #include "vulkanSettings.hpp"
 #include "vulkanCommandBuffer.hpp"
 #include "vulkanTexture.hpp"
+#include "vulkanFramebuffer.hpp"
 
 #include <VkBootstrap.h>
 
@@ -223,8 +224,15 @@ public:
             //re-upload renderables
             for (VulkanRenderable *renderable : renderables) { loadRenderable(renderable, false); }
         }
-        //Recreate framebuffers without recreating entire RenderPass.
-        renderPass.createFramebuffers();
+        //Recreate framebuffers
+        VulkanFramebuffer::CreateInfo framebufferCreateInfo{};
+        framebuffers.resize(renderEngineLink.swapchain->image_count);
+        for (uint32_t i = 0; i < renderEngineLink.swapchain->image_count; ++i) {
+            framebufferCreateInfo.renderPass = renderPass;
+            framebufferCreateInfo.swapchainImageView = (*renderEngineLink.swapchainImageViews)[i];
+            framebuffers[i].create(&renderEngineLink, &framebufferCreateInfo);
+        }
+        recreationDeletionQueue.emplace_back([&] { for (VulkanFramebuffer &framebuffer : framebuffers) { framebuffer.destroy(); } });
         camera.updateSettings();
     }
 
@@ -333,7 +341,7 @@ public:
         scissor.offset = {0, 0};
         scissor.extent = swapchain.extent;
         vkCmdSetScissor(commandBuffer.commandBuffers[imageIndex], 0, 1, &scissor);
-        VkRenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(imageIndex);
+        VkRenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(framebuffers[imageIndex]);
         vkCmdBeginRenderPass(commandBuffer.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(commandBuffer.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderables[0]->pipeline.pipeline);
         camera.update();
@@ -461,6 +469,7 @@ private:
     std::vector<VkFence> imagesInFlight{};
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
+    std::vector<VulkanFramebuffer> framebuffers{};
     std::vector<VulkanRenderable *> renderables{};
     VulkanAccelerationStructure topLevelAccelerationStructure{};
     VulkanCommandBuffer commandBuffer{};

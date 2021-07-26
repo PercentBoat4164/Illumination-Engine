@@ -5,26 +5,17 @@
 
 #include <deque>
 #include <functional>
-/**@todo: Rework this class to be like the others and depend on a VulkanFramebuffer class.
- * - MEDIUM PRIORITY: Important to keep code consistent, and to ease development in the future, but not crucial to make the engine work.
- */
+
+class VulkanFramebuffer;
+
 class VulkanRenderPass {
 public:
     VkRenderPass renderPass{};
-    std::vector<VkFramebuffer> framebuffers{};
-    std::vector<VkClearValue> clearValues{};
-
-    void destroy() {
-        for (std::function<void()>& function : framebufferDeletionQueue) { function(); }
-        framebufferDeletionQueue.clear();
-        for (std::function<void()>& function : renderPassDeletionQueue) { function(); }
-        renderPassDeletionQueue.clear();
-    }
 
     void create(VulkanGraphicsEngineLink *engineLink) {
         //destroy all old stuffs
-        for (std::function<void()>& function : renderPassDeletionQueue) { function(); }
-        renderPassDeletionQueue.clear();
+        for (std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
         //update engine link
         linkedRenderEngine = engineLink;
         //create renderPass
@@ -87,62 +78,17 @@ public:
         renderPassCreateInfo.dependencyCount = 1;
         renderPassCreateInfo.pDependencies = &subpassDependency;
         if (vkCreateRenderPass(linkedRenderEngine->device->device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
-        renderPassDeletionQueue.emplace_front([&]{ vkDestroyRenderPass(linkedRenderEngine->device->device, renderPass, nullptr); });
+        deletionQueue.emplace_front([&]{ vkDestroyRenderPass(linkedRenderEngine->device->device, renderPass, nullptr); });
     }
 
-    void createFramebuffers() {
-        for (std::function<void()>& function : framebufferDeletionQueue) { function(); }
-        framebufferDeletionQueue.clear();
-        //Set clear values based on multisampling settings
-        clearValues.resize(linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3);
-        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-        clearValues[1].depthStencil = {1.0f, 0};
-        if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { clearValues[2].color = {0.0f, 0.0f, 0.0f, 1.0f}; }
-        //Create framebuffer images
-        VulkanImage::CreateInfo colorImageCreateInfo{linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
-        colorImageCreateInfo.msaaSamples = linkedRenderEngine->settings->msaaSamples;
-        colorImage.create(linkedRenderEngine, &colorImageCreateInfo);
-        framebufferDeletionQueue.emplace_front([&]{ colorImage.destroy(); });
-        VulkanImage::CreateInfo depthImageCreateInfo{VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
-        depthImageCreateInfo.msaaSamples = linkedRenderEngine->settings->msaaSamples;
-        depthImageCreateInfo.imageType = VULKAN_DEPTH;
-        depthImageCreateInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        depthImage.create(linkedRenderEngine, &depthImageCreateInfo);
-        framebufferDeletionQueue.emplace_front([&]{ depthImage.destroy(); });
-        //create framebuffers
-        framebuffers.resize(linkedRenderEngine->swapchain->image_count);
-        std::vector<VkImageView> framebufferAttachments{};
-        for (unsigned int i = 0; i < framebuffers.size(); i++) {
-            if (linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT) { framebufferAttachments = {(*linkedRenderEngine->swapchainImageViews)[i], depthImage.view}; }
-            else { framebufferAttachments = {colorImage.view, depthImage.view, (*linkedRenderEngine->swapchainImageViews)[i]}; }
-            VkFramebufferCreateInfo framebufferCreateInfo{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
-            framebufferCreateInfo.renderPass = renderPass;
-            framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(framebufferAttachments.size());
-            framebufferCreateInfo.pAttachments = framebufferAttachments.data();
-            framebufferCreateInfo.width = linkedRenderEngine->swapchain->extent.width;
-            framebufferCreateInfo.height = linkedRenderEngine->swapchain->extent.height;
-            framebufferCreateInfo.layers = 1;
-            if (vkCreateFramebuffer(linkedRenderEngine->device->device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
-        }
-        framebufferDeletionQueue.emplace_front([&]{ for (VkFramebuffer framebuffer : framebuffers) { vkDestroyFramebuffer(linkedRenderEngine->device->device, framebuffer, nullptr); } });
-    }
+    VkRenderPassBeginInfo beginRenderPass(const VulkanFramebuffer& framebuffer);
 
-    VkRenderPassBeginInfo beginRenderPass(unsigned int framebufferIndex = 0) {
-        VkRenderPassBeginInfo renderPassBeginInfo{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-        renderPassBeginInfo.renderArea.offset = {0, 0};
-        renderPassBeginInfo.renderArea.extent = linkedRenderEngine->swapchain->extent;
-        renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        renderPassBeginInfo.pClearValues = clearValues.data();
-        renderPassBeginInfo.renderPass = renderPass;
-        if (framebufferIndex > framebuffers.size()) { throw std::runtime_error(std::string("framebuffers[") + std::to_string(framebufferIndex) + "] does not exist!"); }
-        renderPassBeginInfo.framebuffer = framebuffers[framebufferIndex];
-        return renderPassBeginInfo;
+    void destroy() {
+        for (std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
     }
 
 private:
-    std::deque<std::function<void()>> framebufferDeletionQueue{};
-    std::deque<std::function<void()>> renderPassDeletionQueue{};
+    std::deque<std::function<void()>> deletionQueue{};
     VulkanGraphicsEngineLink *linkedRenderEngine{};
-    VulkanImage colorImage{};
-    VulkanImage depthImage{};
 };
