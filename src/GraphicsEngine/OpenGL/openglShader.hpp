@@ -2,6 +2,8 @@
 
 #include <fstream>
 #include <sstream>
+#include <deque>
+#include <functional>
 
 class OpenGLShader {
 public:
