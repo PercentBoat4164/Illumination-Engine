@@ -43,7 +43,7 @@ public:
         glfwDestroyWindow(window);
         glfwTerminate();
         glfwInit();
-        deletionQueue.emplace_back([&] { glFinish(); glfwTerminate(); });
+        deletionQueue.emplace_front([&] { glFinish(); glfwTerminate(); });
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(renderEngineLink.openglVersion.substr(0, 1)));
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(renderEngineLink.openglVersion.substr(2, 1)));
@@ -52,7 +52,7 @@ public:
 #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-#ifdef _DEBUG
+#ifndef NDEBUG
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
@@ -82,11 +82,11 @@ public:
 #if defined(_WIN32)
         glfwSwapInterval(settings.vSync ? 1 : 0);
 #else
-        glfwSwapInterval(0); // VSync is mandatory on Linux in OpenGL due to high frame rates (>4000) causing system freezes.
+        glfwSwapInterval(settings.vSync ? 1 : 0); // VSync is mandatory on Linux in OpenGL due to high frame rates (>4000) causing system freezes.
 #endif
         glewExperimental = true;
         if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
-#ifdef _DEBUG
+#ifndef NDEBUG
         int flags;
         glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
@@ -101,7 +101,7 @@ public:
         camera.create(&renderEngineLink);
         OpenGLFramebuffer::CreateInfo prepassFramebufferCreateInfo{true};
         prepassFramebuffer.create(&renderEngineLink, &prepassFramebufferCreateInfo);
-        deletionQueue.emplace_back([&] { prepassFramebuffer.destroy(); });
+        deletionQueue.emplace_front([&] { prepassFramebuffer.destroy(); });
         std::vector<OpenGLShader> prepassShaders{2};
         OpenGLShader::CreateInfo prepassShadersCreateInfo{"res/Shaders/OpenGLShaders/prepassVertexShader.vert"};
         prepassShaders[0].create(&prepassShadersCreateInfo);
@@ -109,26 +109,7 @@ public:
         prepassShaders[1].create(&prepassShadersCreateInfo);
         OpenGLProgram::CreateInfo prepassProgramCreateInfo{prepassShaders};
         prepassProgram.create(&prepassProgramCreateInfo);
-        deletionQueue.emplace_back([&] { prepassProgram.destroy(); });
-    }
-
-    void handleMSAAChange() {
-        glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(renderEngineLink.openglVersion.substr(0, 1)));
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(renderEngineLink.openglVersion.substr(2, 1)));
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
-#ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-#ifdef _DEBUG
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-#endif
-        GLFWwindow *newWindow = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, window);
-        glfwMakeContextCurrent(window);
-        glfwDestroyWindow(window);
-        window = newWindow;
-        reloadRenderables();
+        deletionQueue.emplace_front([&] { prepassProgram.destroy(); });
     }
 
     void loadRenderable(OpenGLRenderable *renderable, bool append = true) {

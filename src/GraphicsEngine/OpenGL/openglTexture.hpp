@@ -15,9 +15,9 @@ public:
         createdWith = *createInfo;
         stbi_set_flip_vertically_on_load(true);
         data = stbi_load(createdWith.filename, &createdWith.width, &createdWith.height, &channels, STBI_rgb_alpha);
-        deletionQueue.emplace_back([&] { stbi_image_free(data); });
+        deletionQueue.emplace_front([&] { stbi_image_free(data); });
         glGenTextures(1, &ID);
-        deletionQueue.emplace_back([&] { glDeleteTextures(1, &ID); });
+        deletionQueue.emplace_front([&] { glDeleteTextures(1, &ID); });
     }
 
     void destroy() override {

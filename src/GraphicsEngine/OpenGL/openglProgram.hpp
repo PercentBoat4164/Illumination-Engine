@@ -17,13 +17,13 @@ public:
         createdWith = *createInfo;
         int infoLogLength{};
         ID = glCreateProgram();
-        deletionQueue.emplace_back([&] { glDeleteProgram(ID); });
+        deletionQueue.emplace_front([&] { glDeleteProgram(ID); });
         for (OpenGLShader shader : createdWith.shaders) {
             if (!shader.compiled) { shader.compile(); }
             glAttachShader(ID, shader.ID);
         }
-        deletionQueue.emplace_back([&] { for (const OpenGLShader& shader : createdWith.shaders) { glDetachShader(ID, shader.ID); } });
-        deletionQueue.emplace_back([&] { for (OpenGLShader& shader : createdWith.shaders) { shader.destroy(); } });
+        deletionQueue.emplace_front([&] { for (const OpenGLShader& shader : createdWith.shaders) { glDetachShader(ID, shader.ID); } });
+        deletionQueue.emplace_front([&] { for (OpenGLShader& shader : createdWith.shaders) { shader.destroy(); } });
         glLinkProgram(ID);
         glGetProgramiv(ID, GL_LINK_STATUS, reinterpret_cast<GLint *>(&linked));
         if (!linked) {

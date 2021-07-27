@@ -31,7 +31,7 @@ public:
     virtual void create(CreateInfo *createInfo) {
         createdWith = *createInfo;
         glGenTextures(1, &ID);
-        deletionQueue.emplace_back([&] { glDeleteTextures(1, &ID); });
+        deletionQueue.emplace_front([&] { glDeleteTextures(1, &ID); });
     }
 
     virtual void upload() {

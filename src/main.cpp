@@ -84,12 +84,15 @@ int main(int argc, char **argv) {
             std::vector<float> recordedFPS{};
             float recordedFPSCount{200};
             recordedFPS.resize((size_t)recordedFPSCount);
+            double tempTime{};
             while (renderEngine.update()) {
                 //Process inputs
                 glfwPollEvents();
                 float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
+                    tempTime = glfwGetTime();
                     renderEngine.reloadRenderables();
+                    glfwSetTime(tempTime);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastKey > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
                     renderEngine.handleFullscreenSettingsChange();
@@ -102,11 +105,15 @@ int main(int argc, char **argv) {
                     renderEngine.createSwapchain(true);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
+                    tempTime = glfwGetTime();
                     renderEngine.reloadRenderables();
+                    glfwSetTime(tempTime);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_R) & (glfwGetTime() - lastKey > .2)) {
                     if (renderEngine.renderEngineLink.enabledPhysicalDeviceInfo.rayTracing) {
                         renderEngine.settings.rayTracing ^= 1;
+                        tempTime = glfwGetTime();
                         renderEngine.reloadRenderables();
+                        glfwSetTime(tempTime);
                     } else { std::cout << "This machine does not support the Vulkan extensions required for ray tracing." << std::endl; }
                     lastKey = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
@@ -192,26 +199,24 @@ int main(int argc, char **argv) {
             float recordedFPSCount{10};
             recordedFPS.resize((size_t)recordedFPSCount);
             renderEngine.camera.position = {0, 0, 2};
+            double tempTime{};
             while (renderEngine.update() != 1) {
                 //Process inputs
                 glfwPollEvents();
                 float velocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
-                    for (OpenGLRenderable *renderable : renderEngine.renderables) { renderEngine.loadRenderable(renderable, false); }
-                    renderEngine.updateSettings();
+                    tempTime = glfwGetTime();
+                    renderEngine.reloadRenderables();
+                    glfwSetTime(tempTime);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastF2 > .2)) {
                     renderEngine.settings.fullscreen ^= 1;
                     renderEngine.updateSettings();
                     lastF2 = glfwGetTime();
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
-                    renderEngine.settings.msaaSamples = 1;
-                    renderEngine.handleMSAAChange();
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_4)) {
-                    renderEngine.settings.msaaSamples = 4;
-                    renderEngine.handleMSAAChange();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
-                    renderEngine.updateSettings();
+                    tempTime = glfwGetTime();
+                    renderEngine.reloadRenderables();
+                    glfwSetTime(tempTime);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }

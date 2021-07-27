@@ -39,7 +39,7 @@ public:
         file.close();
         data = shaderCode.str();
         ID = glCreateShader(createdWith.shaderType);
-        deletionQueue.emplace_back([&] { glDeleteShader(ID); });
+        deletionQueue.emplace_front([&] { glDeleteShader(ID); });
     }
 
     void compile() {
