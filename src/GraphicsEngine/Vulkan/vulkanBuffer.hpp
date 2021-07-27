@@ -29,7 +29,7 @@ public:
         VkDeviceAddress transformationBufferAddress{};
 
         //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR
-        VkDeviceAddress bottomLevelAccelerationStructureDeviceAddress{};
+        std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
 
         //Optional
         void *data{};

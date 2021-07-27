@@ -4,10 +4,6 @@
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
 #include "GraphicsEngine/Vulkan/vulkanRenderEngine.hpp"
-//#include "GraphicsEngine/Vulkan/vulkanRenderEngineRasterizer.hpp"
-#ifdef ILLUMINATION_ENGINE_VULKAN_RAY_TRACING
-//#include "GraphicsEngine/Vulkan/vulkanRenderEngineRayTracer.hpp"
-#endif
 #endif
 #ifdef ILLUMINATION_ENGINE_OPENGL
 #include "GraphicsEngine/OpenGL/openglRenderEngine.hpp"
@@ -66,17 +62,18 @@ int main(int argc, char **argv) {
         try {
             VulkanRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
-            renderEngine.camera.position = {0, 2, 0.5f};
-//            VulkanRenderable cube = VulkanRenderable("res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
-//            VulkanRenderable quad = VulkanRenderable("res/Models/Quad/quad.obj", {"res/Models/Quad/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
-//            VulkanRenderable vikingRoom = VulkanRenderable("res/Models/VikingRoom/vikingRoom.obj", {"res/Models/VikingRoom/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            VulkanRenderable statue = VulkanRenderable("res/Models/AncientStatue/ancientStatue.obj", {"res/Models/AncientStatue/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0});
-//            VulkanRenderable ball = VulkanRenderable("res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
-//            renderEngine.loadRenderable(&cube);
-//            renderEngine.loadRenderable(&quad);
-//            renderEngine.loadRenderable(&vikingRoom);
+            renderEngine.camera.position = {0, 0, 2};
+            VulkanRenderable cube = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
+            VulkanRenderable quad = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/Quad/quad.obj", {"res/Models/Quad/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
+            VulkanRenderable vikingRoom = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/VikingRoom/vikingRoom.obj", {"res/Models/VikingRoom/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+            VulkanRenderable ball = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
+            VulkanRenderable statue = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj", {"res/Models/AncientStatue/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {7, 0, 0});
+            renderEngine.loadRenderable(&cube);
+            renderEngine.loadRenderable(&quad);
+            renderEngine.loadRenderable(&vikingRoom);
+            renderEngine.loadRenderable(&ball);
             renderEngine.loadRenderable(&statue);
-//            renderEngine.loadRenderable(&ball);
+            renderEngine.build();
             double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
@@ -86,6 +83,7 @@ int main(int argc, char **argv) {
             recordedFPS.resize((size_t)recordedFPSCount);
             double tempTime{};
             while (renderEngine.update()) {
+                renderEngine.build();
                 //Process inputs
                 glfwPollEvents();
                 float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
@@ -157,8 +155,8 @@ int main(int argc, char **argv) {
                     lastKey = glfwGetTime();
                 }
                 //move renderables
-//                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
-//                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
+                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
+                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};
@@ -217,6 +215,8 @@ int main(int argc, char **argv) {
                     tempTime = glfwGetTime();
                     renderEngine.reloadRenderables();
                     glfwSetTime(tempTime);
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
+                    std::cout << "Ray tracing is not supported in OpenGL ... yet." << std::endl;
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }

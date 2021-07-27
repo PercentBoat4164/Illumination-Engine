@@ -48,7 +48,7 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(renderEngineLink.openglVersion.substr(0, 1)));
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(renderEngineLink.openglVersion.substr(2, 1)));
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
+        glfwWindowHint(GLFW_DOUBLEBUFFER, settings.vSync);
 #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif

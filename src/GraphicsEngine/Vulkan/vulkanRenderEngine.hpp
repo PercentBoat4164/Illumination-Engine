@@ -255,17 +255,17 @@ public:
         renderable->indexBuffer.create(&renderEngineLink, &bufferCreateInfo);
         renderable->indexBuffer.uploadData(renderable->indices.data(), sizeof(renderable->indices[0]) * renderable->indices.size());
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.indexBuffer.destroy(); });
-        if (settings.rayTracing) {
-            bufferCreateInfo.size = sizeof(renderable->transformationMatrix);
-            bufferCreateInfo.usage ^= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-            renderable->transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
-            renderable->transformationBuffer.uploadData(&renderable->transformationMatrix, sizeof(renderable->transformationMatrix));
-            renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
-        }
         bufferCreateInfo.size = sizeof(VulkanUniformBufferObject);
         bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         renderable->modelBuffer.create(&renderEngineLink, &bufferCreateInfo);
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.modelBuffer.destroy(); });
+        if (settings.rayTracing) {
+            bufferCreateInfo.size = sizeof(renderable->transformationMatrix);
+            bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            renderable->transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
+            renderable->update(camera);
+            renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
+        }
         //upload textures
         renderable->textureImages.resize(renderable->textures.size());
         for (unsigned int i = 0; i < renderable->textures.size(); ++i) {
@@ -298,20 +298,13 @@ public:
             renderableBottomLevelAccelerationStructureCreateInfo.transformationBufferAddress = renderable->transformationBuffer.deviceAddress;
             renderable->bottomLevelAccelerationStructure.create(&renderEngineLink, &renderableBottomLevelAccelerationStructureCreateInfo);
             renderable->deletionQueue.emplace_front([&] (VulkanRenderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
-            topLevelAccelerationStructure.destroy();
-            VulkanAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
-            topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
-            topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
-            topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
-            topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddress = renderable->bottomLevelAccelerationStructure.deviceAddress;
-            topLevelAccelerationStructure.create(&renderEngineLink, &topLevelAccelerationStructureCreateInfo);
         }
         //build graphics pipeline and descriptor set for this renderable
         DescriptorSet::CreateInfo renderableDescriptorSetCreateInfo{};
         if (settings.rayTracing) {
             renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}};
             renderableDescriptorSetCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
-            renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textureImages[0], &topLevelAccelerationStructure};
+            renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textureImages[0], std::nullopt};
         } else {
             renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}};
             renderableDescriptorSetCreateInfo.shaderStages = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
@@ -326,6 +319,22 @@ public:
         renderable->pipeline.create(&renderEngineLink, &renderablePipelineCreateInfo);
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.pipeline.destroy(); });
         if (append) { renderables.push_back(renderable); }
+    }
+
+    void build() {
+        if (settings.rayTracing) {
+            topLevelAccelerationStructure.destroy();
+            std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
+            bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
+            for (VulkanRenderable *renderable : renderables) { bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress); }
+            VulkanAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
+            topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+            topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
+            topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
+            topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddresses = bottomLevelAccelerationStructureDeviceAddresses;
+            topLevelAccelerationStructure.create(&renderEngineLink, &topLevelAccelerationStructureCreateInfo);
+            for (VulkanRenderable *renderable : renderables) { renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
+        }
     }
 
     bool update() {
@@ -415,9 +424,8 @@ public:
     }
 
     void reloadRenderables() {
-        for (VulkanRenderable *renderable : renderables) {
-            loadRenderable(renderable, false);
-        }
+        for (VulkanRenderable *renderable : renderables) { loadRenderable(renderable, false); }
+        build();
     }
 
     void handleFullscreenSettingsChange() {

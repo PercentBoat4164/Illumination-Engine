@@ -29,7 +29,8 @@
 
 class VulkanRenderable {
 public:
-    VulkanRenderable(const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
+    VulkanRenderable(VulkanGraphicsEngineLink *engineLink, const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
+        linkedRenderEngine = engineLink;
         position = initialPosition;
         rotation = initialRotation;
         scale = initialScale;
@@ -58,10 +59,14 @@ public:
     }
 
     void update(const VulkanCamera& camera) {
-        uniformBufferObject = {glm::mat4(1.0f), camera.view, camera.proj};
         glm::quat quaternion = glm::quat(glm::radians(rotation));
-        uniformBufferObject.model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
+        glm::mat4 matrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
+        uniformBufferObject = {matrix, camera.view, camera.proj, (float)glfwGetTime()};
         modelBuffer.uploadData(&uniformBufferObject, sizeof(VulkanUniformBufferObject));
+        if (linkedRenderEngine->settings->rayTracing) {
+            transformationMatrix = {uniformBufferObject.model[0][0], uniformBufferObject.model[0][1], uniformBufferObject.model[0][2], uniformBufferObject.model[3][0], uniformBufferObject.model[1][0], uniformBufferObject.model[1][1], uniformBufferObject.model[1][2], uniformBufferObject.model[3][1], uniformBufferObject.model[2][0], uniformBufferObject.model[2][1], uniformBufferObject.model[2][2], uniformBufferObject.model[3][2]};
+            transformationBuffer.uploadData(&transformationMatrix, sizeof(transformationMatrix));
+        }
     }
 
     std::deque<std::function<void(VulkanRenderable asset)>> deletionQueue{};
@@ -72,6 +77,7 @@ public:
     VulkanBuffer indexBuffer{};
     VulkanBuffer transformationBuffer{};
     VulkanPipeline pipeline{};
+    VulkanGraphicsEngineLink *linkedRenderEngine{};
     DescriptorSet descriptorSet{};
     VulkanAccelerationStructure bottomLevelAccelerationStructure{};
     VulkanUniformBufferObject uniformBufferObject{};
