@@ -264,7 +264,8 @@ public:
             bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
             renderable->transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
             renderable->update(camera);
-            renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
+            renderable->deletionQueue.emplace_front([&] (VulkanRenderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
+            renderable->deletionQueue.emplace_front([&] (VulkanRenderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
         }
         //upload textures
         renderable->textureImages.resize(renderable->textures.size());
@@ -286,19 +287,6 @@ public:
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
         renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable) { for (const VulkanShader& shader : thisRenderable.shaders) { shader.destroy(); } });
-        /**@todo: Write code for rebuilding and updating acceleration structures to allow movement.*/
-        /* This setup is temporary, but for the purposes of testing only the most recently uploaded model will be included in the raytracing. */
-        if (settings.rayTracing) {
-            VulkanAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
-            renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
-            renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
-            renderableBottomLevelAccelerationStructureCreateInfo.primitiveCount = renderable->triangleCount;
-            renderableBottomLevelAccelerationStructureCreateInfo.vertexBufferAddress = renderable->vertexBuffer.deviceAddress;
-            renderableBottomLevelAccelerationStructureCreateInfo.indexBufferAddress = renderable->indexBuffer.deviceAddress;
-            renderableBottomLevelAccelerationStructureCreateInfo.transformationBufferAddress = renderable->transformationBuffer.deviceAddress;
-            renderable->bottomLevelAccelerationStructure.create(&renderEngineLink, &renderableBottomLevelAccelerationStructureCreateInfo);
-            renderable->deletionQueue.emplace_front([&] (VulkanRenderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
-        }
         //build graphics pipeline and descriptor set for this renderable
         DescriptorSet::CreateInfo renderableDescriptorSetCreateInfo{};
         if (settings.rayTracing) {
@@ -319,22 +307,6 @@ public:
         renderable->pipeline.create(&renderEngineLink, &renderablePipelineCreateInfo);
         renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.pipeline.destroy(); });
         if (append) { renderables.push_back(renderable); }
-    }
-
-    void build() {
-        if (settings.rayTracing) {
-            topLevelAccelerationStructure.destroy();
-            std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
-            bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
-            for (VulkanRenderable *renderable : renderables) { bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress); }
-            VulkanAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
-            topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
-            topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
-            topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
-            topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddresses = bottomLevelAccelerationStructureDeviceAddresses;
-            topLevelAccelerationStructure.create(&renderEngineLink, &topLevelAccelerationStructureCreateInfo);
-            for (VulkanRenderable *renderable : renderables) { renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
-        }
     }
 
     bool update() {
@@ -369,12 +341,28 @@ public:
         vkCmdSetScissor(commandBuffer.commandBuffers[imageIndex], 0, 1, &scissor);
         VkRenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(framebuffers[imageIndex]);
         vkCmdBeginRenderPass(commandBuffer.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        /**@todo: Make only one pipeline exist.*/
         vkCmdBindPipeline(commandBuffer.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderables[0]->pipeline.pipeline);
+        //Update camera
         camera.update();
+        //Rpdate renderables
+        for (VulkanRenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera); } }
+        if (settings.rayTracing) {
+            topLevelAccelerationStructure.destroy();
+            std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
+            bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
+            for (VulkanRenderable *renderable : renderables) { bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress); }
+            VulkanAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
+            topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+            topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
+            topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
+            topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddresses = bottomLevelAccelerationStructureDeviceAddresses;
+            topLevelAccelerationStructure.create(&renderEngineLink, &topLevelAccelerationStructureCreateInfo);
+            for (VulkanRenderable *renderable : renderables) { renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
+        }
+        //Render
         for (VulkanRenderable *renderable : renderables) {
             if (renderable->render) {
-                //update renderable
-                renderable->update(camera);
                 //record command buffer for this renderable
                 vkCmdBindVertexBuffers(commandBuffer.commandBuffers[imageIndex], 0, 1, &renderable->vertexBuffer.buffer, offsets);
                 vkCmdBindIndexBuffer(commandBuffer.commandBuffers[imageIndex], renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -425,7 +413,6 @@ public:
 
     void reloadRenderables() {
         for (VulkanRenderable *renderable : renderables) { loadRenderable(renderable, false); }
-        build();
     }
 
     void handleFullscreenSettingsChange() {

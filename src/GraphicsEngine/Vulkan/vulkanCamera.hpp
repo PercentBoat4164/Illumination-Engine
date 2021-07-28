@@ -23,7 +23,6 @@ public:
         view = {glm::lookAt(position, position + front, up)};
         proj = {glm::perspective(glm::radians(horizontalFOV), double(linkedRenderEngine->settings->resolution[0]) / linkedRenderEngine->settings->resolution[1], 0.01, linkedRenderEngine->settings->renderDistance)};
         proj[1][1] *= -1.0f;
-        CameraUBO ubo = {glm::inverse(view), glm::inverse(proj)};
     }
 
     void updateSettings() {
@@ -32,13 +31,7 @@ public:
         horizontalFOV = tanh(tan(linkedRenderEngine->settings->fov*(ILLUMINATION_ENGINE_PI/360)) * 1 / aspectRatio) * (360 / ILLUMINATION_ENGINE_PI);
     };
 
-    struct CameraUBO {
-        alignas(16) glm::mat4 view{};
-        alignas(16) glm::mat4 proj{};
-    };
-
     VulkanGraphicsEngineLink *linkedRenderEngine{};
-    VulkanBuffer viewProjectionBuffer{};
     glm::vec3 position{0, 0, 2};
     float yaw{-90};
     float pitch{0};

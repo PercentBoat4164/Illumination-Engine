@@ -73,17 +73,15 @@ int main(int argc, char **argv) {
             renderEngine.loadRenderable(&vikingRoom);
             renderEngine.loadRenderable(&ball);
             renderEngine.loadRenderable(&statue);
-            renderEngine.build();
             double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
             std::vector<float> recordedFPS{};
-            float recordedFPSCount{200};
+            float recordedFPSCount{10};
             recordedFPS.resize((size_t)recordedFPSCount);
             double tempTime{};
             while (renderEngine.update()) {
-                renderEngine.build();
                 //Process inputs
                 glfwPollEvents();
                 float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
@@ -155,8 +153,8 @@ int main(int argc, char **argv) {
                     lastKey = glfwGetTime();
                 }
                 //move renderables
-                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
-                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
+                cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
+                ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};
