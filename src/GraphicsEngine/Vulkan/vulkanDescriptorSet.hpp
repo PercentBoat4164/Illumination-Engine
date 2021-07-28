@@ -32,7 +32,6 @@ public:
     }
 
     void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
-        deletionQueue.clear();
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
         if (createdWith.maxIndex > 1) { assert(linkedRenderEngine->enabledPhysicalDeviceInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount); }

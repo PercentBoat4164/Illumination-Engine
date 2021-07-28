@@ -5,7 +5,6 @@ public:
     VkAccelerationStructureKHR accelerationStructure{};
 
     void create (VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) override {
-        deletionQueue.clear();
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
         std::vector<uint32_t> geometryCounts{};

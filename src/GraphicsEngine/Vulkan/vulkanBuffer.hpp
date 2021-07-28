@@ -49,7 +49,6 @@ public:
     }
 
     virtual void create(VulkanGraphicsEngineLink *engineLink, CreateInfo *createInfo) {
-        deletionQueue.clear();
         linkedRenderEngine = engineLink;
         createdWith = *createInfo;
         VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
