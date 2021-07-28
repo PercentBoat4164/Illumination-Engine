@@ -213,7 +213,7 @@ int main(int argc, char **argv) {
                     tempTime = glfwGetTime();
                     renderEngine.reloadRenderables();
                     glfwSetTime(tempTime);
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
+                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_R)) {
                     std::cout << "Ray tracing is not supported in OpenGL ... yet." << std::endl;
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
