@@ -42,10 +42,15 @@ public:
     VkBuffer buffer{};
     VkDeviceAddress deviceAddress{};
     CreateInfo createdWith{};
+    bool created{false};
 
     void destroy() {
+        if (!created) {
+            throw std::runtime_error("Calling VulkanBuffer::destroy() on a buffer for which VulkanBuffer::create() has not been called is illegal.");
+        }
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
+        created = false;
     }
 
     virtual void create(VulkanGraphicsEngineLink *engineLink, CreateInfo *createInfo) {
@@ -57,9 +62,9 @@ public:
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
         if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
-        deletionQueue.emplace_front([&]{ vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
+        deletionQueue.emplace_front([&] { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
         if (createdWith.data != nullptr) {
-            if (createdWith.sizeOfData > createdWith.size) { throw std::runtime_error("VulkanBuffer::CreateInfo::sizeOfData must not be greater than VulkanBuffer::CreateInfo::size"); }
+            if (createdWith.sizeOfData > createdWith.size) { throw std::runtime_error("VulkanBuffer::CreateInfo::sizeOfData must not be greater than VulkanBuffer::CreateInfo::size."); }
             vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
             memcpy(data, createdWith.data, createdWith.sizeOfData);
             vmaUnmapMemory(*linkedRenderEngine->allocator, allocation);
@@ -69,16 +74,18 @@ public:
             bufferDeviceAddressInfo.buffer = buffer;
             deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
         }
+        created = true;
     }
 
     void uploadData(void *input, uint32_t sizeOfInput) {
-        if (sizeOfInput > createdWith.size) { throw std::runtime_error("sizeOfInput must not be greater than VulkanBuffer::CreateInfo::size"); }
+        if (!created) { throw std::runtime_error("Calling VulkanBuffer::uploadData() on a buffer for which VulkanBuffer::create() has not been called is illegal."); }
+        if (sizeOfInput > createdWith.size) { throw std::runtime_error("sizeOfInput must not be greater than VulkanBuffer::CreateInfo::size."); }
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         memcpy(data, input, sizeOfInput);
         vmaUnmapMemory(*linkedRenderEngine->allocator, allocation);
     }
 
-    void toImage(const VulkanImage& image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const;
+    void toImage(const VulkanImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const;
 
 protected:
     std::deque<std::function<void()>> deletionQueue{};

@@ -21,7 +21,7 @@
 
 class VulkanSettings {
 public:
-    bool rayTracing{true};
+    bool rayTracing{false};
     std::string applicationName{"Illumination Engine"};
     std::array<int, 3> applicationVersion{0, 0, 1};
     std::array<int, 3> requiredVulkanVersion{1, 2, 0};

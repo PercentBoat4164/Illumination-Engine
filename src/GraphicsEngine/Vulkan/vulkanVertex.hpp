@@ -45,4 +45,4 @@ public:
     bool operator==(const VulkanVertex &other) const { return pos == other.pos && color == other.color && texCoord == other.texCoord; }
 };
 
-template<> struct std::hash<VulkanVertex> { size_t operator()(VulkanVertex const& vertex) const { return hash<glm::vec3>()(vertex.pos); } };
+template<> struct std::hash<VulkanVertex> { size_t operator()(VulkanVertex const &vertex) const { return hash<glm::vec3>()(vertex.pos); } };

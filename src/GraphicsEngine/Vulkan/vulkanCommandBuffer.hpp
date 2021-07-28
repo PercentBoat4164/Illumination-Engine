@@ -6,14 +6,14 @@ public:
     std::vector<VkCommandBuffer> commandBuffers{};
 
     void destroy() {
-        for (const std::function<void()>& function : commandBufferDeletionQueue) { function(); }
+        for (const std::function<void()> &function : commandBufferDeletionQueue) { function(); }
         commandBufferDeletionQueue.clear();
-        for (const std::function<void()>& function : deletionQueue) { function(); }
+        for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
     void freeCommandBuffers() {
-        for (const std::function<void()>& function : commandBufferDeletionQueue) { function(); }
+        for (const std::function<void()> &function : commandBufferDeletionQueue) { function(); }
         commandBufferDeletionQueue.clear();
     };
 
@@ -24,7 +24,7 @@ public:
         commandPoolCreateInfo.queueFamilyIndex = linkedRenderEngine->device->get_queue_index(queue).value();
         commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         if (vkCreateCommandPool(linkedRenderEngine->device->device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) { throw std::runtime_error("failed to create command pool!"); }
-        deletionQueue.emplace_front([&]{ vkDestroyCommandPool(linkedRenderEngine->device->device, commandPool, nullptr); });
+        deletionQueue.emplace_front([&] { vkDestroyCommandPool(linkedRenderEngine->device->device, commandPool, nullptr); });
     }
 
     void createCommandBuffers(int commandBufferCount) {
@@ -37,7 +37,7 @@ public:
         commandBufferDeletionQueue.emplace_front([&] { vkFreeCommandBuffers(linkedRenderEngine->device->device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data()); });
     }
 
-    void resetCommandBuffer(const std::vector<int>& resetIndices) {
+    void resetCommandBuffer(const std::vector<int> &resetIndices) {
         for (int i : resetIndices) { this->resetCommandBuffer(i); }
     }
 
@@ -46,7 +46,7 @@ public:
         vkResetCommandBuffer(commandBuffers[resetIndex], commandBufferResetFlags);
     }
 
-    void recordCommandBuffer(const std::vector<int>& recordIndices) {
+    void recordCommandBuffer(const std::vector<int> &recordIndices) {
         for (int i : recordIndices) { this->recordCommandBuffer(i); }
     }
 

@@ -48,7 +48,7 @@ void openglWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
 #endif
 
 int main(int argc, char **argv) {
-    glfwWindowHint(GLFW_MAXIMIZED, 1);
+//    glfwWindowHint(GLFW_MAXIMIZED, 1);
     std::string selection;
     std::string input;
     if (argc > 1) { input = *argv[1]; }

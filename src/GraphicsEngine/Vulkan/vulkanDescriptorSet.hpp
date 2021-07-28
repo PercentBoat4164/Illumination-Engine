@@ -27,7 +27,7 @@ public:
     CreateInfo createdWith{};
 
     void destroy() {
-        for (const std::function<void()>& function : deletionQueue) { function(); }
+        for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
@@ -64,7 +64,7 @@ public:
         descriptorPoolCreateInfo.pPoolSizes = createdWith.poolSizes.data();
         descriptorPoolCreateInfo.maxSets = 1;
         if (vkCreateDescriptorPool(linkedRenderEngine->device->device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); }
-        deletionQueue.emplace_front([&]{ vkDestroyDescriptorPool(linkedRenderEngine->device->device, descriptorPool, nullptr); });
+        deletionQueue.emplace_front([&] { vkDestroyDescriptorPool(linkedRenderEngine->device->device, descriptorPool, nullptr); });
         VkDescriptorSetVariableDescriptorCountAllocateInfoEXT descriptorSetVariableDescriptorCountAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT};
         descriptorSetVariableDescriptorCountAllocateInfo.descriptorSetCount = 1;
         descriptorSetVariableDescriptorCountAllocateInfo.pDescriptorCounts = &createdWith.maxIndex;

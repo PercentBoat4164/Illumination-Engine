@@ -59,7 +59,7 @@ private:
     std::deque<std::function<void()>> deletionQueue{};
 };
 
-VkRenderPassBeginInfo VulkanRenderPass::beginRenderPass(const VulkanFramebuffer& framebuffer) {
+VkRenderPassBeginInfo VulkanRenderPass::beginRenderPass(const VulkanFramebuffer &framebuffer) {
     VkRenderPassBeginInfo renderPassBeginInfo{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
     renderPassBeginInfo.renderArea.offset = {0, 0};
     renderPassBeginInfo.renderArea.extent = linkedRenderEngine->swapchain->extent;

@@ -135,14 +135,14 @@ public:
                 rayTracingFeatures
         };
         //===========================
-        for (const std::vector<VkBool32 *>& deviceFeatureGroup : deviceFeatureGroups) {
+        for (const std::vector<VkBool32 *> &deviceFeatureGroup : deviceFeatureGroups) {
             if (renderEngineLink.testFeature(std::vector<VkBool32 *>(deviceFeatureGroup.begin() + 1, deviceFeatureGroup.end()))[0]) {
                 *deviceFeatureGroup[0] = VK_TRUE;
                 *(deviceFeatureGroup[0] - (VkBool32 *)&renderEngineLink.enabledPhysicalDeviceInfo + (VkBool32 *)&renderEngineLink.supportedPhysicalDeviceInfo) = VK_TRUE;
                 renderEngineLink.enableFeature(deviceFeatureGroup);
             }
         }
-        for (const std::vector<VkBool32 *>& extensionFeatureGroup : extensionFeatureGroups) {
+        for (const std::vector<VkBool32 *> &extensionFeatureGroup : extensionFeatureGroups) {
             if (renderEngineLink.testFeature(std::vector<VkBool32 *>(extensionFeatureGroup.begin() + 1, extensionFeatureGroup.end()))[0]) {
                 *extensionFeatureGroup[0] = VK_TRUE;
                 *(extensionFeatureGroup[0] - (VkBool32 *)&renderEngineLink.enabledPhysicalDeviceInfo + (VkBool32 *)&renderEngineLink.supportedPhysicalDeviceInfo) = VK_TRUE;
@@ -175,17 +175,16 @@ public:
         commandBuffer.create(&renderEngineLink, vkb::QueueType::graphics);
         engineDeletionQueue.emplace_front([&] { commandBuffer.destroy(); });
         //delete scratch buffer
-        engineDeletionQueue.emplace_front([&] { scratchBuffer.destroy(); });
         camera.create(&renderEngineLink);
         createSwapchain(true);
-        engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); });
+        if (settings.rayTracing) { engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); }); }
     }
 
     void createSwapchain(bool fullRecreate = false) {
         //Make sure no other GPU operations are ongoing
         vkDeviceWaitIdle(device.device);
         //Clear recreationDeletionQueue
-        for (std::function<void()>& function : recreationDeletionQueue) { function(); }
+        for (std::function<void()> &function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
         //Create swapchain
         vkb::SwapchainBuilder swapchainBuilder{ device };
@@ -193,9 +192,9 @@ public:
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         swapchain = swap_ret.value();
         renderEngineLink.swapchainImages = swapchain.get_images().value();
-        recreationDeletionQueue.emplace_front([&]{ vkb::destroy_swapchain(swapchain); });
+        recreationDeletionQueue.emplace_front([&] { vkb::destroy_swapchain(swapchain); });
         swapchainImageViews = swapchain.get_image_views().value();
-        recreationDeletionQueue.emplace_front([&]{ swapchain.destroy_image_views(swapchainImageViews); });
+        recreationDeletionQueue.emplace_front([&] { swapchain.destroy_image_views(swapchainImageViews); });
         renderEngineLink.swapchainImageViews = &swapchainImageViews;
         //clear images marked as in flight
         imagesInFlight.clear();
@@ -227,6 +226,7 @@ public:
             oneTimeOptionalDeletionQueue.emplace_front([&] { renderPass.destroy(); });
             //re-upload renderables
             for (VulkanRenderable *renderable : renderables) { loadRenderable(renderable, false); }
+            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VulkanRenderable *renderable : renderables) { renderable->destroy(); } });
         }
         //Recreate framebuffers
         VulkanFramebuffer::CreateInfo framebufferCreateInfo{};
@@ -242,6 +242,7 @@ public:
 
     void loadRenderable(VulkanRenderable *renderable, bool append = true) {
         renderable->destroy();
+        renderable->reloadRenderable();
         //upload index, vertex, uniform, and transformation data
         VulkanBuffer::CreateInfo bufferCreateInfo{};
         bufferCreateInfo.size = sizeof(renderable->vertices[0]) * renderable->vertices.size();
@@ -249,23 +250,22 @@ public:
         bufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         renderable->vertexBuffer.create(&renderEngineLink, &bufferCreateInfo);
         renderable->vertexBuffer.uploadData(renderable->vertices.data(), sizeof(renderable->vertices[0]) * renderable->vertices.size());
-        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.vertexBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable *thisRenderable){ thisRenderable->vertexBuffer.destroy(); });
         bufferCreateInfo.size = sizeof(renderable->indices[0]) * renderable->indices.size();
         bufferCreateInfo.usage ^= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
         renderable->indexBuffer.create(&renderEngineLink, &bufferCreateInfo);
         renderable->indexBuffer.uploadData(renderable->indices.data(), sizeof(renderable->indices[0]) * renderable->indices.size());
-        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.indexBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable *thisRenderable){ thisRenderable->indexBuffer.destroy(); });
         bufferCreateInfo.size = sizeof(VulkanUniformBufferObject);
         bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         renderable->modelBuffer.create(&renderEngineLink, &bufferCreateInfo);
-        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable){ thisRenderable.modelBuffer.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable *thisRenderable){ thisRenderable->modelBuffer.destroy(); });
         if (settings.rayTracing) {
             bufferCreateInfo.size = sizeof(renderable->transformationMatrix);
             bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
             renderable->transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
-            renderable->update(camera);
-            renderable->deletionQueue.emplace_front([&] (VulkanRenderable thisRenderable) { thisRenderable.transformationBuffer.destroy(); });
-            renderable->deletionQueue.emplace_front([&] (VulkanRenderable thisRenderable) { thisRenderable.bottomLevelAccelerationStructure.destroy(); });
+            renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) { thisRenderable->transformationBuffer.destroy(); });
+            renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) { thisRenderable->bottomLevelAccelerationStructure.destroy(); });
         }
         //upload textures
         renderable->textureImages.resize(renderable->textures.size());
@@ -283,10 +283,11 @@ public:
             textureImageCreateInfo.imageType = VULKAN_TEXTURE;
             renderable->textureImages[i].create(&renderEngineLink, &textureImageCreateInfo);
         }
+        renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) { for (VulkanTexture textureImage : thisRenderable->textureImages) { textureImage.destroy(); } });
         //build shaders
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
-        renderable->deletionQueue.emplace_front([&](const VulkanRenderable& thisRenderable) { for (const VulkanShader& shader : thisRenderable.shaders) { shader.destroy(); } });
+        renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) { for (const VulkanShader &shader : thisRenderable->shaders) { shader.destroy(); } });
         //build graphics pipeline and descriptor set for this renderable
         DescriptorSet::CreateInfo renderableDescriptorSetCreateInfo{};
         if (settings.rayTracing) {
@@ -299,13 +300,13 @@ public:
             renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textureImages[0]};
         }
         renderable->descriptorSet.create(&renderEngineLink, &renderableDescriptorSetCreateInfo);
-        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.descriptorSet.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable *thisRenderable) { thisRenderable->descriptorSet.destroy(); });
         VulkanPipeline::CreateInfo renderablePipelineCreateInfo{};
         renderablePipelineCreateInfo.descriptorSet = &renderable->descriptorSet;
         renderablePipelineCreateInfo.renderPass = &renderPass;
         renderablePipelineCreateInfo.shaders = renderable->shaders;
         renderable->pipeline.create(&renderEngineLink, &renderablePipelineCreateInfo);
-        renderable->deletionQueue.emplace_front([&](VulkanRenderable thisRenderable) { thisRenderable.pipeline.destroy(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable *thisRenderable) { thisRenderable->pipeline.destroy(); });
         if (append) { renderables.push_back(renderable); }
     }
 
@@ -348,7 +349,7 @@ public:
         //Rpdate renderables
         for (VulkanRenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera); } }
         if (settings.rayTracing) {
-            topLevelAccelerationStructure.destroy();
+            if (topLevelAccelerationStructure.created) { topLevelAccelerationStructure.destroy(); }
             std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
             bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
             for (VulkanRenderable *renderable : renderables) { bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress); }
@@ -447,11 +448,11 @@ public:
 
     void destroy() {
         for (VulkanRenderable *renderable : renderables) { renderable->destroy(); }
-        for (std::function<void()>& function : recreationDeletionQueue) { function(); }
+        for (std::function<void()> &function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
-        for (std::function<void()>& function : oneTimeOptionalDeletionQueue) { function(); }
+        for (std::function<void()> &function : oneTimeOptionalDeletionQueue) { function(); }
         oneTimeOptionalDeletionQueue.clear();
-        for (std::function<void()>& function : engineDeletionQueue) { function(); }
+        for (std::function<void()> &function : engineDeletionQueue) { function(); }
         engineDeletionQueue.clear();
     }
 
@@ -484,7 +485,6 @@ private:
     std::vector<VulkanRenderable *> renderables{};
     VulkanAccelerationStructure topLevelAccelerationStructure{};
     VulkanCommandBuffer commandBuffer{};
-    VulkanBuffer scratchBuffer{};
     std::deque<std::function<void()>> engineDeletionQueue{};
     std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
     std::deque<std::function<void()>> recreationDeletionQueue{};

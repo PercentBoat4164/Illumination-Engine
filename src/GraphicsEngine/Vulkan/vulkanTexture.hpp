@@ -37,7 +37,7 @@ public:
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
         vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
-        deletionQueue.emplace_front([&]{ vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
+        deletionQueue.emplace_front([&] { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
         imageFormat = createdWith.format;
         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageViewCreateInfo imageViewCreateInfo{};

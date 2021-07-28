@@ -40,7 +40,7 @@ public:
     CreateInfo createdWith{};
 
     void destroy() {
-        for (std::function<void()>& function : deletionQueue) { function(); }
+        for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
@@ -65,7 +65,7 @@ public:
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
         vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
-        deletionQueue.emplace_front([&]{ vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
+        deletionQueue.emplace_front([&] { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
         imageFormat = createdWith.format;
         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageViewCreateInfo imageViewCreateInfo{};
@@ -87,7 +87,7 @@ public:
         if (createdWith.imageLayout != imageLayout) { transitionLayout(createdWith.imageLayout); }
     }
 
-    void toBuffer(const VulkanBuffer& buffer, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
+    void toBuffer(const VulkanBuffer &buffer, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
         bool noCommandBuffer{false};
         if (commandBuffer == nullptr) { noCommandBuffer = true; }
         VkBufferImageCopy region{};
@@ -164,7 +164,8 @@ protected:
     std::deque<std::function<void()>> deletionQueue{};
 };
 
-void VulkanBuffer::toImage(const VulkanImage& image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer) const {
+void VulkanBuffer::toImage(const VulkanImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer) const {
+    if (!created) { throw std::runtime_error("Calling VulkanBuffer::toImage() on a buffer for which VulkanBuffer::create() has not been called is illegal."); }
     bool noCommandBuffer{commandBuffer == VK_NULL_HANDLE};
     VkBufferImageCopy region{};
     region.imageSubresource.aspectMask = image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;;

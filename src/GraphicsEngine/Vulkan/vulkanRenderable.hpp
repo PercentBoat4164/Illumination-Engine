@@ -29,7 +29,7 @@
 
 class VulkanRenderable {
 public:
-    VulkanRenderable(VulkanGraphicsEngineLink *engineLink, const char *modelFileName, const std::vector<const char *>& textureFileNames, const std::vector<const char *>& shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
+    VulkanRenderable(VulkanGraphicsEngineLink *engineLink, const char *modelFileName, const std::vector<const char *> &textureFileNames, const std::vector<const char *> &shaderFileNames, glm::vec3 initialPosition = {0, 0, 0}, glm::vec3 initialRotation = {0, 0, 0}, glm::vec3 initialScale = {1, 1, 1}) {
         linkedRenderEngine = engineLink;
         position = initialPosition;
         rotation = initialRotation;
@@ -50,15 +50,18 @@ public:
         loadModel(modelName);
         loadTextures(textureNames);
         loadShaders(shaderNames);
+        created = true;
     }
 
     void destroy() {
+        if (!created) { return; }
         for (VulkanImage &textureImage : textureImages) { textureImage.destroy(); }
-        for (const std::function<void(VulkanRenderable)>& function : deletionQueue) { function(*this); }
+        for (const std::function<void(VulkanRenderable *)> &function : deletionQueue) { function(this); }
         deletionQueue.clear();
+        created = false;
     }
 
-    void update(const VulkanCamera& camera) {
+    void update(const VulkanCamera &camera) {
         glm::quat quaternion = glm::quat(glm::radians(rotation));
         glm::mat4 matrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
         uniformBufferObject = {matrix, camera.view, camera.proj, (float)glfwGetTime()};
@@ -66,7 +69,7 @@ public:
         if (linkedRenderEngine->settings->rayTracing) {
             transformationMatrix = {uniformBufferObject.model[0][0], uniformBufferObject.model[0][1], uniformBufferObject.model[0][2], uniformBufferObject.model[3][0], uniformBufferObject.model[1][0], uniformBufferObject.model[1][1], uniformBufferObject.model[1][2], uniformBufferObject.model[3][1], uniformBufferObject.model[2][0], uniformBufferObject.model[2][1], uniformBufferObject.model[2][2], uniformBufferObject.model[3][2]};
             transformationBuffer.uploadData(&transformationMatrix, sizeof(transformationMatrix));
-            bottomLevelAccelerationStructure.destroy();
+            if (bottomLevelAccelerationStructure.created) { bottomLevelAccelerationStructure.destroy(); }
             VulkanAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
             renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
             renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
@@ -78,7 +81,7 @@ public:
         }
     }
 
-    std::deque<std::function<void(VulkanRenderable asset)>> deletionQueue{};
+    std::deque<std::function<void(VulkanRenderable *asset)>> deletionQueue{};
     std::vector<uint32_t> indices{};
     std::vector<VulkanVertex> vertices{};
     VulkanBuffer modelBuffer{};
@@ -98,6 +101,7 @@ public:
     glm::vec3 rotation{};
     glm::vec3 scale{};
     bool render{true};
+    bool created{false};
     uint32_t triangleCount{};
     VkTransformMatrixKHR transformationMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
@@ -113,13 +117,13 @@ private:
         std::string warn, err;
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename)) { throw std::runtime_error(warn + err); }
         size_t reserveCount{};
-        for (const auto& shape : shapes) { reserveCount += shape.mesh.indices.size(); }
+        for (const auto &shape : shapes) { reserveCount += shape.mesh.indices.size(); }
         indices.reserve(reserveCount);
         vertices.reserve(reserveCount * (2 / 3)); // Allocates too much space! Let's procrastinate cutting it down.
         std::unordered_map<VulkanVertex, uint32_t> uniqueVertices{};
         uniqueVertices.reserve(reserveCount * (2 / 3)); // Also allocates too much space, but it will be deleted at the end of the function, so we don't care
-        for (const auto& shape : shapes) {
-            for (const auto& index : shape.mesh.indices) {
+        for (const auto &shape : shapes) {
+            for (const auto &index : shape.mesh.indices) {
                 VulkanVertex vertex{};
                 vertex.pos = { attrib.vertices[3 * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
                 vertex.texCoord = { attrib.texcoords[2 * index.texcoord_index], 1.f - attrib.texcoords[2 * index.texcoord_index + 1] };
@@ -138,7 +142,7 @@ private:
         triangleCount = static_cast<uint32_t>(indices.size()) / 3;
     }
 
-    void loadTextures(const std::vector<const char *>& filenames) {
+    void loadTextures(const std::vector<const char *> &filenames) {
         textures = filenames;
     }
 

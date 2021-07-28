@@ -105,7 +105,7 @@ public:
         return *feature;
     }
 
-    std::vector<VkBool32> enableFeature(const std::vector<VkBool32 *>& features) {
+    std::vector<VkBool32> enableFeature(const std::vector<VkBool32 *> &features) {
         std::vector<VkBool32> results{};
         results.reserve(static_cast<unsigned int>(features.size() + 1));
         results[0] = VK_FALSE;
@@ -119,7 +119,7 @@ public:
         return (feature - (VkBool32 *)&enabledPhysicalDeviceInfo + (VkBool32 *)&supportedPhysicalDeviceInfo);
     }
 
-    std::vector<VkBool32> testFeature(const std::vector<VkBool32 *>& features) {
+    std::vector<VkBool32> testFeature(const std::vector<VkBool32 *> &features) {
         std::vector<VkBool32> results{};
         results.reserve(static_cast<unsigned int>(features.size() + 1));
         results[0] = VK_FALSE;
