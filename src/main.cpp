@@ -176,11 +176,11 @@ int main(int argc, char **argv) {
         try {
             OpenGLRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
-            OpenGLRenderable cube = OpenGLRenderable("res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"});
+            OpenGLRenderable cube = OpenGLRenderable("res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 10, 1});
             OpenGLRenderable quad = OpenGLRenderable("res/Models/Quad/quad.obj", {"res/Models/Quad/quad_Color.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
             OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/VikingRoom/vikingRoom.obj", {"res/Models/VikingRoom/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
             OpenGLRenderable statue = OpenGLRenderable("res/Models/AncientStatue/ancientStatue.obj", {"res/Models/AncientStatue/ancientStatue.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {7, 0, 0});
-            OpenGLRenderable ball = OpenGLRenderable("res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"});
+            OpenGLRenderable ball = OpenGLRenderable("res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, -10, 1});
             renderEngine.loadRenderable(&cube);
             renderEngine.loadRenderable(&quad);
             renderEngine.loadRenderable(&vikingRoom);
@@ -257,8 +257,8 @@ int main(int argc, char **argv) {
                     lastKey = glfwGetTime();
                 }
                 //move renderables
-                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
-                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
+//                cube.position = {10 * cos(3 * glfwGetTime()), 10 * sin(3 * glfwGetTime()), 1};
+//                ball.position = {10 * -cos(3 * glfwGetTime()), 10 * -sin(3 * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1.0f / (float)renderEngine.frameTime;
                 int sum{0};

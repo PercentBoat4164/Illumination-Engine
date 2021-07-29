@@ -6,7 +6,6 @@ layout (location=2) in vec2 vTexCoords;
 layout (location=3) in vec3 vNormal;
 
 uniform mat4 MVP;
-uniform vec2 inResolution;
 
 out vec4 color;
 out vec2 texCoords;
@@ -18,5 +17,4 @@ void main() {
     color = vColor;
     texCoords = vTexCoords;
     normal = vNormal;
-    fragResolution = inResolution;
 }

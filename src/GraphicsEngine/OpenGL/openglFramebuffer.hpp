@@ -48,8 +48,8 @@ public:
             glClear(GL_COLOR_BUFFER_BIT | (createdWith.depth ? GL_DEPTH_BUFFER_BIT : 0));
             return;
         }
-        glClear(GL_COLOR_BUFFER_BIT | (createdWith.depth ? GL_DEPTH_BUFFER_BIT : 0));
         glBindFramebuffer(GL_FRAMEBUFFER, ID);
+        glClear(GL_COLOR_BUFFER_BIT | (createdWith.depth ? GL_DEPTH_BUFFER_BIT : 0));
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER_BINDING, oldDrawID);
         glBindFramebuffer(GL_READ_FRAMEBUFFER_BINDING, oldReadID);
     }
