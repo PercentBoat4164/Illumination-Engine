@@ -20,6 +20,7 @@ public:
     VkPipeline pipeline{};
 
     void destroy() {
+#pragma unroll 1
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
@@ -35,6 +36,7 @@ public:
         deletionQueue.emplace_front([&] { vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr); pipelineLayout = VK_NULL_HANDLE; });
         //prepare shaders
         std::vector<VkPipelineShaderStageCreateInfo> shaders{};
+#pragma unroll 1
         for (unsigned int i = 0; i < createdWith.shaders.size(); i++) {
             VkShaderModule shaderModule;
             VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
@@ -124,6 +126,7 @@ public:
         pipelineCreateInfo.renderPass = createdWith.renderPass->renderPass;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(linkedRenderEngine->device->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
+#pragma unroll 1
         for (VkPipelineShaderStageCreateInfo shader : shaders) { vkDestroyShaderModule(linkedRenderEngine->device->device, shader.module, nullptr); }
         deletionQueue.emplace_front([&] { vkDestroyPipeline(linkedRenderEngine->device->device, pipeline, nullptr); pipeline = VK_NULL_HANDLE; });
     }

@@ -6,13 +6,16 @@ public:
     std::vector<VkCommandBuffer> commandBuffers{};
 
     void destroy() {
+#pragma unroll 1
         for (const std::function<void()> &function : commandBufferDeletionQueue) { function(); }
         commandBufferDeletionQueue.clear();
+#pragma unroll 1
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
     void freeCommandBuffers() {
+#pragma unroll 1
         for (const std::function<void()> &function : commandBufferDeletionQueue) { function(); }
         commandBufferDeletionQueue.clear();
     };
@@ -37,7 +40,8 @@ public:
         commandBufferDeletionQueue.emplace_front([&] { vkFreeCommandBuffers(linkedRenderEngine->device->device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data()); });
     }
 
-    void resetCommandBuffer(const std::vector<int> &resetIndices) {
+    [[maybe_unused]] void resetCommandBuffer(const std::vector<int> &resetIndices) {
+#pragma unroll 1
         for (int i : resetIndices) { this->resetCommandBuffer(i); }
     }
 
@@ -46,7 +50,8 @@ public:
         vkResetCommandBuffer(commandBuffers[resetIndex], commandBufferResetFlags);
     }
 
-    void recordCommandBuffer(const std::vector<int> &recordIndices) {
+    [[maybe_unused]] void recordCommandBuffer(const std::vector<int> &recordIndices) {
+#pragma unroll 1
         for (int i : recordIndices) { this->recordCommandBuffer(i); }
     }
 

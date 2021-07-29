@@ -19,12 +19,15 @@ public:
     };
 
     std::vector<char> data{};
+    std::deque<std::function<void()>> deletionQueue{};
     VkShaderModule module{};
     VulkanGraphicsEngineLink *linkedRenderEngine{};
     CreateInfo createdWith{};
 
-    void destroy() const {
-        vkDestroyShaderModule(linkedRenderEngine->device->device, module, nullptr);
+    void destroy() {
+#pragma unroll 1
+        for (const std::function<void()>& function : deletionQueue) { function(); }
+        deletionQueue.clear();
     }
 
     void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
@@ -52,5 +55,6 @@ public:
         shaderModuleCreateInfo.codeSize = data.size();
         shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(data.data());
         if (vkCreateShaderModule(linkedRenderEngine->device->device, &shaderModuleCreateInfo, nullptr, &module) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
+        deletionQueue.emplace_front([&] { vkDestroyShaderModule(linkedRenderEngine->device->device, module, nullptr); });
     }
 };

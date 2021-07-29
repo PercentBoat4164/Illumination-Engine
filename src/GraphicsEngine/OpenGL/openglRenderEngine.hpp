@@ -59,6 +59,7 @@ public:
         // load icon
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes)/sizeof(int)];
+#pragma unroll 5
         for (unsigned long i = 0; i < sizeof(sizes)/sizeof(int); ++i) {
             std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -68,6 +69,7 @@ public:
             icons[i].width = width;
         }
         glfwSetWindowIcon(window, sizeof(icons)/sizeof(GLFWimage), icons);
+#pragma unroll 5
         for (GLFWimage icon : icons) { stbi_image_free(icon.pixels); }
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
@@ -92,7 +94,7 @@ public:
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
             glEnable(GL_DEBUG_OUTPUT);
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // makes sure errors are displayed synchronously
-            glDebugMessageCallback(glDebugOutput, nullptr);
+            glDebugMessageCallback(reinterpret_cast<GLDEBUGPROC>(glDebugOutput), nullptr);
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         }
 #endif
@@ -120,6 +122,7 @@ public:
     }
 
     void reloadRenderables() {
+#pragma unroll 1
         for (OpenGLRenderable *renderable : renderables) {
             renderable->destroy();
             loadRenderable(renderable, false);
@@ -137,6 +140,7 @@ public:
         prepassFramebuffer.clear();
         glUseProgram(prepassProgram.ID);
         glActiveTexture(GL_TEXTURE0);
+#pragma unroll 1
         for (OpenGLRenderable *renderable : renderables) {
             glBindTexture(GL_TEXTURE_2D, renderable->textures[0].ID);
             glBindVertexArray(renderable->vertexArrayObject);
@@ -150,6 +154,7 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, prepassFramebuffer.depthImage.ID);
+#pragma unroll 1
         for (OpenGLRenderable *renderable : renderables) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, renderable->textures[0].ID);
@@ -182,6 +187,7 @@ public:
             glfwGetWindowPos(window, &windowX, &windowY);
             glfwGetWindowSize(window, &windowWidth, &windowHeight);
             monitors = glfwGetMonitors(&monitorCount);
+#pragma unroll 1
             for (i = 0; i < monitorCount; i++) {
                 mode = glfwGetVideoMode(monitors[i]);
                 glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
@@ -211,14 +217,16 @@ public:
     int frameNumber{};
 
     void destroy() {
+#pragma unroll 1
         for (OpenGLRenderable *renderable : renderables) { renderable->destroy(); }
+#pragma unroll 1
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
 private:
-    static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
-        if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
+    static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, const char *message) {
+        if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
         std::cout << "---------------" << std::endl;
         std::cout << "Debug message (" << id << "): " <<  message << std::endl;
         switch (source) {

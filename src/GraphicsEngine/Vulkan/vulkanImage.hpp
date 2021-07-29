@@ -40,6 +40,7 @@ public:
     CreateInfo createdWith{};
 
     void destroy() {
+#pragma unroll 1
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
@@ -87,7 +88,7 @@ public:
         if (createdWith.imageLayout != imageLayout) { transitionLayout(createdWith.imageLayout); }
     }
 
-    void toBuffer(const VulkanBuffer &buffer, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
+    [[maybe_unused]] void toBuffer(const VulkanBuffer &buffer, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const {
         bool noCommandBuffer{false};
         if (commandBuffer == nullptr) { noCommandBuffer = true; }
         VkBufferImageCopy region{};
@@ -119,8 +120,8 @@ public:
         imageMemoryBarrier.subresourceRange.levelCount = mipLevels;
         imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
         imageMemoryBarrier.subresourceRange.layerCount = 1;
-        VkPipelineStageFlags sourceStage{};
-        VkPipelineStageFlags destinationStage{};
+        VkPipelineStageFlags sourceStage;
+        VkPipelineStageFlags destinationStage;
         if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
             imageMemoryBarrier.srcAccessMask = 0;
             imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -131,12 +132,7 @@ public:
             imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
             sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        } else if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-            imageMemoryBarrier.srcAccessMask = 0;
-            imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        } else if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) {
+        } else if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL | newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) {
             imageMemoryBarrier.srcAccessMask = 0;
             imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
@@ -168,7 +164,7 @@ void VulkanBuffer::toImage(const VulkanImage &image, uint32_t width, uint32_t he
     if (!created) { throw std::runtime_error("Calling VulkanBuffer::toImage() on a buffer for which VulkanBuffer::create() has not been called is illegal."); }
     bool noCommandBuffer{commandBuffer == VK_NULL_HANDLE};
     VkBufferImageCopy region{};
-    region.imageSubresource.aspectMask = image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;;
+    region.imageSubresource.aspectMask = image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.layerCount = 1;
     region.imageExtent = {width, height, 1};
     if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }

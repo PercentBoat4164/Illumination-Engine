@@ -60,6 +60,7 @@ public:
     }
 
     void destroy() {
+#pragma unroll 2
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }

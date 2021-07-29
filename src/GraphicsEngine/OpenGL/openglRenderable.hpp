@@ -14,6 +14,7 @@
 #include "../../../deps/stb_image.h"
 #endif
 
+#include <cstddef>
 #include <vector>
 #include <unordered_map>
 
@@ -45,6 +46,7 @@ public:
 
     void loadTextures(std::vector<const char *> filenames) {
         textures.resize(filenames.size());
+#pragma unroll 1
         for (uint32_t i = 0; i < filenames.size(); ++i) {
             OpenGLTexture::CreateInfo textureCreateInfo{};
             textureCreateInfo.filename = filenames[i];
@@ -52,7 +54,10 @@ public:
             textures[i].create(&textureCreateInfo);
             textures[i].upload();
         }
-        deletionQueue.emplace_front([&] { for (OpenGLTexture& texture : textures) { texture.destroy(); } });
+        deletionQueue.emplace_front([&] {
+#pragma unroll 1
+            for (OpenGLTexture& texture : textures) { texture.destroy(); }
+        });
     }
 
     void loadModel(const char *filename = nullptr) {
@@ -65,18 +70,20 @@ public:
         std::string warn, err;
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename)) { throw std::runtime_error(warn + err); }
         size_t reserveCount{};
+#pragma unroll 1
         for (const auto& shape : shapes) { reserveCount += shape.mesh.indices.size(); }
         indices.reserve(reserveCount);
         vertices.reserve(reserveCount * (2 / 3)); // Allocates too much space! Let's procrastinate cutting it down.
         std::unordered_map<OpenGLVertex, uint32_t> uniqueVertices{};
         uniqueVertices.reserve(reserveCount * (2 / 3)); // Also allocates too much space, but it will be deleted at the end of the function, so we don't care
         for (const auto& shape : shapes) {
+#pragma unroll 1
             for (const auto& index : shape.mesh.indices) {
                 OpenGLVertex vertex{};
-                vertex.pos = { attrib.vertices[3 * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
+                vertex.pos = { attrib.vertices[static_cast<std::vector<int>::size_type>(3) * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
                 vertex.color = {1.0f, 1.0f, 1.0f, 0.0f};
-                vertex.texCoords = {attrib.texcoords[2 * index.texcoord_index], attrib.texcoords[2 * index.texcoord_index + 1] };
-                vertex.normal = { attrib.normals[3 * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
+                vertex.texCoords = {attrib.texcoords[static_cast<std::vector<int>::size_type>(2) * index.texcoord_index], attrib.texcoords[2 * index.texcoord_index + 1] };
+                vertex.normal = { attrib.normals[static_cast<std::vector<int>::size_type>(3) * index.normal_index], attrib.normals[3 * index.normal_index + 1], attrib.normals[3 * index.normal_index + 2] };
                 if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
                     uniqueVertices.insert({vertex, static_cast<uint32_t>(vertices.size())});
                     vertices.push_back(vertex);
@@ -115,6 +122,7 @@ public:
 
     void loadShaders(std::vector<const char *> filenames) {
         std::vector<OpenGLShader> shaders{filenames.size()};
+#pragma unroll 1
         for (uint32_t i = 0; i < filenames.size(); ++i) {
             OpenGLShader::CreateInfo shaderCreateInfo{filenames[i]};
             shaders[i].create(&shaderCreateInfo);
@@ -125,9 +133,8 @@ public:
     }
 
     void destroy() {
-        for (const std::function<void()> &function : deletionQueue) {
-            function();
-        }
+#pragma unroll 5
+        for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 

@@ -21,6 +21,7 @@ public:
     }
 
     void destroy() override {
+#pragma unroll 2
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }

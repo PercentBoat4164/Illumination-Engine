@@ -7,6 +7,7 @@
 #include "../../../deps/stb_image.h"
 #endif
 
+#include <cstddef>
 #include <fstream>
 #include <cstring>
 
@@ -55,7 +56,7 @@ public:
         transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         VulkanBuffer scratchBuffer{};
         VulkanBuffer::CreateInfo scratchBufferCreateInfo{};
-        scratchBufferCreateInfo.size = createdWith.width * createdWith.height * 4;
+        scratchBufferCreateInfo.size = static_cast<VkDeviceSize>(createdWith.width * createdWith.height) * 4;
         scratchBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
         scratchBufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo);
@@ -77,6 +78,7 @@ public:
             imageMemoryBarrier.subresourceRange.layerCount = 1;
             imageMemoryBarrier.subresourceRange.levelCount = 1;
             int32_t mipWidth{createdWith.width}, mipHeight{createdWith.height};
+#pragma unroll 1
             for (uint32_t i = 1; i < mipLevels; ++i) {
                 imageMemoryBarrier.subresourceRange.baseMipLevel = i - 1;
                 imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
