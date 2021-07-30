@@ -234,7 +234,7 @@ private:
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
         auto pOpenGlRenderEngine = (OpenGLRenderEngine *)glfwGetWindowUserPointer(pWindow);
-        pOpenGlRenderEngine->framebufferResized = true;
+        pOpenGlRenderEngine->framebufferResized = false;
         pOpenGlRenderEngine->settings.resolution[0] = width;
         pOpenGlRenderEngine->settings.resolution[1] = height;
         pOpenGlRenderEngine->camera.updateSettings();

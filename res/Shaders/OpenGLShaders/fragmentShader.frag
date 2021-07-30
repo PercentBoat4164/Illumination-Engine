@@ -1,4 +1,15 @@
-#version 330 core
+#version 130
+
+/*
+ * This shader supports all GLSL version from 130 to 460 with no extensions.
+ *
+ * Example:
+ * #version 120 // Not supported
+ *
+ * #version 130 // Supported - Lowest supported version
+ *
+ * #version 460 // Supported - Highest supported version
+ */
 
 in vec2 fragmentTextureCoordinates;
 in vec3 interpolatedNormal;
