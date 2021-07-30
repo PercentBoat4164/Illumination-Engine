@@ -20,13 +20,12 @@ public:
         proj = glm::perspective(glm::radians(horizontalFOV), aspectRatio, 0.01, linkedRenderEngine->settings->renderDistance);
     }
 
-    glm::mat4 update() {
+    void update() {
         front = glm::normalize(glm::vec3{cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch))});
         right = glm::normalize(glm::cross(front, up));
         view = glm::lookAt(position, position + front, up);
         proj = glm::perspective(glm::radians(horizontalFOV), aspectRatio, 0.01, linkedRenderEngine->settings->renderDistance);
         proj[1][1] *= 1;
-        return proj * view;
     }
 
     void updateSettings() {

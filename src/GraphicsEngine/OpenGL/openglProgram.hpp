@@ -59,18 +59,29 @@ public:
         glUseProgram(oldID);
     }
 
-    void setValue(const char *name, glm::vec2 data) const {
+    void setValue(const char *name, glm::vec3 data) const {
         GLint oldID{};
         glGetIntegerv(GL_CURRENT_PROGRAM,  &oldID);
         if (ID == oldID) {
-            glUniform2fv(glGetUniformLocation(ID, name), 1, &data[0]);
+            glUniform3fv(glGetUniformLocation(ID, name), 1, &data[0]);
             return;
         }
         glUseProgram(ID);
-        glUniform2fv(glGetUniformLocation(ID, name), 1, &data[0]);
+        glUniform3fv(glGetUniformLocation(ID, name), 1, &data[0]);
         glUseProgram(oldID);
     }
 
+    void setValue(const char *name, glm::mat3 data) const {
+        GLint oldID{};
+        glGetIntegerv(GL_CURRENT_PROGRAM,  &oldID);
+        if (ID == oldID) {
+            glUniformMatrix3fv(glGetUniformLocation(ID, name), 1, GL_FALSE, &data[0][0]);
+            return;
+        }
+        glUseProgram(ID);
+        glUniformMatrix3fv(glGetUniformLocation(ID, name), 1, GL_FALSE, &data[0][0]);
+        glUseProgram(oldID);
+    }
     void destroy() {
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();

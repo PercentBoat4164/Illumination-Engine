@@ -34,6 +34,8 @@ public:
     glm::vec3 position{};
     glm::vec3 rotation{};
     glm::vec3 scale{};
+    glm::mat4 model{};
+    glm::mat3 normalMatrix{};
 
     explicit OpenGLRenderable(const char *modelPath, const std::vector<const char *>& texturePaths, const std::vector<const char *>& shaderPaths, glm::vec3 initialPosition = {0.0f, 0.0f, 0.0f}, glm::vec3 initialRotation = {0.0f, 0.0f, 0.0f}, glm::vec3 initialScale = {1.0f, 1.0f, 1.0f}) {
         position = initialPosition;
@@ -123,6 +125,11 @@ public:
         OpenGLProgram::CreateInfo programCreateInfo{shaders};
         program.create(&programCreateInfo);
         deletionQueue.emplace_front([&] { program.destroy(); });
+    }
+
+    void update() {
+        glm::quat quaternion = glm::quat(glm::radians(rotation));
+        model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
     }
 
     void destroy() {
