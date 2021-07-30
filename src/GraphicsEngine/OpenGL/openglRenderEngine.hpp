@@ -126,6 +126,8 @@ public:
             renderable->update();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, renderable->textures[0].ID);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, renderable->textures[renderable->textures.size() - 1].ID);
             glBindVertexArray(renderable->vertexArrayObject);
             glUseProgram(renderable->program.ID);
             glm::quat quaternion = glm::quat(glm::radians(renderable->rotation));
@@ -134,6 +136,7 @@ public:
             renderable->program.setValue("modelView", camera.view * renderable->model);
             renderable->program.setValue("model", renderable->model);
             renderable->program.setValue("diffuseTexture", 0);
+            renderable->program.setValue("specularTexture", 1);
             renderable->program.setValue("cameraPosition", camera.position);
            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(renderable->indices.size()), GL_UNSIGNED_INT, nullptr);
         }
