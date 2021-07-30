@@ -25,7 +25,6 @@ public:
             accelerationStructureGeometry.geometry.triangles.transformData = {createdWith.transformationBufferAddress};
         } else {
             std::vector<VkAccelerationStructureInstanceKHR> accelerationStructureInstance{createdWith.bottomLevelAccelerationStructureDeviceAddresses.size()};
-#pragma unroll 1
             for (uint32_t i = 0; i < createdWith.bottomLevelAccelerationStructureDeviceAddresses.size(); ++i) {
                 accelerationStructureInstance[i].transform = *createdWith.transformationMatrix;
                 accelerationStructureInstance[i].mask = 0xFF;

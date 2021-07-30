@@ -57,9 +57,7 @@ public:
 
     void destroy() {
         if (!created) { return; }
-#pragma unroll 1
         for (VulkanImage &textureImage : textureImages) { textureImage.destroy(); }
-#pragma unroll 9
         for (const std::function<void(VulkanRenderable *)> &function : deletionQueue) { function(this); }
         deletionQueue.clear();
         created = false;
@@ -121,14 +119,12 @@ private:
         std::string warn, err;
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename)) { throw std::runtime_error(warn + err); }
         size_t reserveCount{};
-#pragma unroll 1
         for (const auto &shape : shapes) { reserveCount += shape.mesh.indices.size(); }
         indices.reserve(reserveCount);
         vertices.reserve(reserveCount * (2 / 3)); // Allocates too much space! Let's procrastinate cutting it down.
         std::unordered_map<VulkanVertex, uint32_t> uniqueVertices{};
         uniqueVertices.reserve(reserveCount * (2 / 3)); // Also allocates too much space, but it will be deleted at the end of the function, so we don't care
         for (const auto &shape : shapes) {
-#pragma unroll 1
             for (const auto &index : shape.mesh.indices) {
                 VulkanVertex vertex{};
                 vertex.pos = { attrib.vertices[static_cast<std::vector<int>::size_type>(3) * index.vertex_index], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2] };
@@ -156,7 +152,6 @@ private:
     void loadShaders(const std::vector<const char *> &filenames) {
         shaderCreateInfos.clear();
         shaderCreateInfos.reserve(filenames.size());
-#pragma unroll 1
         for (const char *filename : filenames) {
             VulkanShader::CreateInfo shaderCreateInfo {filename};
             shaderCreateInfos.push_back(shaderCreateInfo);

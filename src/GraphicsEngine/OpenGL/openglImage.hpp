@@ -49,7 +49,6 @@ public:
     }
 
     virtual void destroy() {
-#pragma unroll 1
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }

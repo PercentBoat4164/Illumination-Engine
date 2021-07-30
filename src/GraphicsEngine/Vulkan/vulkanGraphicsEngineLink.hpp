@@ -109,9 +109,7 @@ public:
         std::vector<VkBool32> results{};
         results.reserve(static_cast<unsigned int>(features.size() + 1));
         results[0] = VK_FALSE;
-#pragma unroll 1
         for (VkBool32 *feature : features) { results.push_back(enableFeature(feature)); }
-#pragma unroll 1
         for (VkBool32 result : results) { if (!result) { break; } }
         results[0] = VK_TRUE;
         return results;
@@ -125,9 +123,7 @@ public:
         std::vector<VkBool32> results{};
         results.reserve(static_cast<unsigned int>(features.size() + 1));
         results[0] = VK_FALSE;
-#pragma unroll 1
         for (VkBool32 *feature : features) { results.push_back(*testFeature(feature)); }
-#pragma unroll 1
         for (VkBool32 result : results) { if (!result) { break; } }
         results[0] = VK_TRUE;
         return results;

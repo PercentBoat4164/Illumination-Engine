@@ -6,16 +6,13 @@ public:
     std::vector<VkCommandBuffer> commandBuffers{};
 
     void destroy() {
-#pragma unroll 1
         for (const std::function<void()> &function : commandBufferDeletionQueue) { function(); }
         commandBufferDeletionQueue.clear();
-#pragma unroll 1
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
 
     void freeCommandBuffers() {
-#pragma unroll 1
         for (const std::function<void()> &function : commandBufferDeletionQueue) { function(); }
         commandBufferDeletionQueue.clear();
     };
@@ -41,7 +38,6 @@ public:
     }
 
     [[maybe_unused]] void resetCommandBuffer(const std::vector<int> &resetIndices) {
-#pragma unroll 1
         for (int i : resetIndices) { this->resetCommandBuffer(i); }
     }
 
@@ -51,7 +47,6 @@ public:
     }
 
     [[maybe_unused]] void recordCommandBuffer(const std::vector<int> &recordIndices) {
-#pragma unroll 1
         for (int i : recordIndices) { this->recordCommandBuffer(i); }
     }
 

@@ -57,7 +57,6 @@ public:
         // load icon
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes)/sizeof(int)];
-#pragma unroll 5
         for (unsigned long i = 0; i < sizeof(sizes)/sizeof(int); ++i) {
             std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -67,7 +66,6 @@ public:
             icons[i].width = width;
         }
         glfwSetWindowIcon(window, sizeof(icons)/sizeof(GLFWimage), icons);
-#pragma unroll 5
         for (GLFWimage icon : icons) { stbi_image_free(icon.pixels); }
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
@@ -113,7 +111,6 @@ public:
     }
 
     void reloadRenderables() {
-#pragma unroll 1
         for (OpenGLRenderable *renderable : renderables) {
             renderable->destroy();
             loadRenderable(renderable, false);
@@ -124,7 +121,6 @@ public:
         if (glfwWindowShouldClose(window)) { return true; }
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#pragma unroll 1
         for (OpenGLRenderable *renderable : renderables) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, renderable->textures[0].ID);
@@ -155,7 +151,6 @@ public:
             glfwGetWindowPos(window, &windowX, &windowY);
             glfwGetWindowSize(window, &windowWidth, &windowHeight);
             monitors = glfwGetMonitors(&monitorCount);
-#pragma unroll 1
             for (i = 0; i < monitorCount; i++) {
                 mode = glfwGetVideoMode(monitors[i]);
                 glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
@@ -187,9 +182,7 @@ public:
     int frameNumber{};
 
     void destroy() {
-#pragma unroll 1
         for (OpenGLRenderable *renderable : renderables) { renderable->destroy(); }
-#pragma unroll 1
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }

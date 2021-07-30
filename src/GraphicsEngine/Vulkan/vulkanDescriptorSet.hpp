@@ -27,7 +27,6 @@ public:
     CreateInfo createdWith{};
 
     void destroy() {
-#pragma unroll 1
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
@@ -40,7 +39,6 @@ public:
         assert(createdWith.data.size() == createdWith.shaderStages.size() && createdWith.data.size() == createdWith.poolSizes.size());
         std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings{};
         descriptorSetLayoutBindings.reserve(createdWith.poolSizes.size());
-#pragma unroll 1
         for (unsigned long i = 0; i < createdWith.poolSizes.size(); ++i) {
             VkDescriptorSetLayoutBinding descriptorSetLayoutBinding{};
             descriptorSetLayoutBinding.descriptorType = createdWith.poolSizes[i].type;
@@ -80,7 +78,6 @@ public:
         bindings.reserve(createdWith.data.size());
         std::vector<std::optional<std::variant<VulkanAccelerationStructure *, VulkanImage *, VulkanBuffer *>>> data{};
         data.reserve(createdWith.data.size());
-#pragma unroll 1
         for (int i = 0; i < createdWith.data.size(); ++i) {
             if (createdWith.data[i].has_value()) {
                 bindings.push_back(i);
@@ -101,7 +98,6 @@ public:
         if (bindings.empty()) { bindings.resize(newData.size(), 0); }
         std::vector<VkWriteDescriptorSet> descriptorWrites{};
         descriptorWrites.resize(bindings.size());
-#pragma unroll 1
         for (unsigned long i = 0; i < bindings.size(); ++i) {
             if (newData[i].has_value()) {
                 VkWriteDescriptorSet writeDescriptorSet{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};

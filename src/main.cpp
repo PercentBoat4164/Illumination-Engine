@@ -81,7 +81,6 @@ int main(int argc, char **argv) {
             float recordedFPSCount{10};
             recordedFPS.resize((size_t)recordedFPSCount);
             double tempTime{};
-#pragma unroll 1
             while (renderEngine.update()) {
                 //Process inputs
                 glfwPollEvents();
@@ -195,7 +194,6 @@ int main(int argc, char **argv) {
             recordedFPS.resize((size_t)recordedFPSCount);
             renderEngine.camera.position = {0, 0, 2};
             double tempTime{};
-#pragma unroll 1
             while (renderEngine.update() != 1) {
                 //Process inputs
                 glfwPollEvents();

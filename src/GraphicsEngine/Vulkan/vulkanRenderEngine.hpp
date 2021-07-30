@@ -66,7 +66,6 @@ public:
         // load icons
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes)/sizeof(int)];
-#pragma unroll 5
         for (unsigned long i = 0; i < sizeof(sizes)/sizeof(int); ++i) {
             std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -76,7 +75,6 @@ public:
             icons[i].width = width;
         }
         glfwSetWindowIcon(window, sizeof(icons)/sizeof(GLFWimage), icons);
-#pragma unroll 5
         for (GLFWimage icon : icons) { stbi_image_free(icon.pixels); }
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
@@ -137,7 +135,6 @@ public:
                 rayTracingFeatures
         };
         //===========================
-#pragma unroll 1
         for (const std::vector<VkBool32 *> &deviceFeatureGroup : deviceFeatureGroups) {
             if (renderEngineLink.testFeature(std::vector<VkBool32 *>(deviceFeatureGroup.begin() + 1, deviceFeatureGroup.end()))[0]) {
                 *deviceFeatureGroup[0] = VK_TRUE;
@@ -145,7 +142,6 @@ public:
                 renderEngineLink.enableFeature(deviceFeatureGroup);
             }
         }
-#pragma unroll 1
         for (const std::vector<VkBool32 *> &extensionFeatureGroup : extensionFeatureGroups) {
             if (renderEngineLink.testFeature(std::vector<VkBool32 *>(extensionFeatureGroup.begin() + 1, extensionFeatureGroup.end()))[0]) {
                 *extensionFeatureGroup[0] = VK_TRUE;
@@ -188,7 +184,6 @@ public:
         //Make sure no other GPU operations are ongoing
         vkDeviceWaitIdle(device.device);
         //Clear recreationDeletionQueue
-#pragma unroll 1
         for (std::function<void()> &function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
         //Create swapchain
@@ -206,7 +201,6 @@ public:
         imagesInFlight.resize(swapchain.image_count, VK_NULL_HANDLE);
         //do the other stuff only if needed
         if (fullRecreate) {
-#pragma unroll 1
             for (std::function<void()> &function : oneTimeOptionalDeletionQueue) { function(); }
             oneTimeOptionalDeletionQueue.clear();
             //Create commandBuffers
@@ -219,48 +213,30 @@ public:
             VkSemaphoreCreateInfo semaphoreCreateInfo{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
             VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
             fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-#pragma unroll 1
             for (unsigned int i = 0; i < swapchain.image_count; i++) {
                 if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
                 if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
                 if (vkCreateFence(device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create fences!"); }
             }
-            oneTimeOptionalDeletionQueue.emplace_front([&] {
-#pragma unroll 1
-                for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(device.device, imageAvailableSemaphore, nullptr); }
-            });
-            oneTimeOptionalDeletionQueue.emplace_front([&] {
-#pragma unroll 1
-                for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); }
-            });
-            oneTimeOptionalDeletionQueue.emplace_front([&] {
-#pragma unroll 1
-                for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); }
-            });
+            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(device.device, imageAvailableSemaphore, nullptr); } });
+            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); } });
+            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); } });
             //Create render pass
             renderPass.create(&renderEngineLink);
             oneTimeOptionalDeletionQueue.emplace_front([&] { renderPass.destroy(); });
             //re-upload renderables
-#pragma unroll 1
             for (VulkanRenderable *renderable : renderables) { loadRenderable(renderable, false); }
-            oneTimeOptionalDeletionQueue.emplace_front([&] {
-#pragma unroll 1
-                for (VulkanRenderable *renderable : renderables) { renderable->destroy(); }
-            });
+            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VulkanRenderable *renderable : renderables) { renderable->destroy(); } });
         }
         //Recreate framebuffers
         VulkanFramebuffer::CreateInfo framebufferCreateInfo{};
         framebuffers.resize(renderEngineLink.swapchain->image_count);
-#pragma unroll 1
         for (uint32_t i = 0; i < renderEngineLink.swapchain->image_count; ++i) {
             framebufferCreateInfo.renderPass = renderPass;
             framebufferCreateInfo.swapchainImageView = (*renderEngineLink.swapchainImageViews)[i];
             framebuffers[i].create(&renderEngineLink, &framebufferCreateInfo);
         }
-        recreationDeletionQueue.emplace_front([&] {
-#pragma unroll 1
-            for (VulkanFramebuffer &framebuffer : framebuffers) { framebuffer.destroy(); }
-        });
+        recreationDeletionQueue.emplace_front([&] { for (VulkanFramebuffer &framebuffer : framebuffers) { framebuffer.destroy(); } });
         camera.updateSettings();
     }
 
@@ -293,7 +269,6 @@ public:
         }
         //upload textures
         renderable->textureImages.resize(renderable->textures.size());
-#pragma unroll 1
         for (unsigned int i = 0; i < renderable->textures.size(); ++i) {
             renderable->textureImages[i].destroy();
             VulkanTexture::CreateInfo textureImageCreateInfo{};
@@ -308,18 +283,11 @@ public:
             textureImageCreateInfo.imageType = VULKAN_TEXTURE;
             renderable->textureImages[i].create(&renderEngineLink, &textureImageCreateInfo);
         }
-        renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) {
-#pragma unroll 1
-            for (VulkanTexture textureImage : thisRenderable->textureImages) { textureImage.destroy(); }
-        });
+        renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) { for (VulkanTexture textureImage : thisRenderable->textureImages) { textureImage.destroy(); } });
         //build shaders
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
-#pragma unroll 1
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
-        renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) {
-#pragma unroll 1
-            for (VulkanShader &shader : thisRenderable->shaders) { shader.destroy(); }
-        });
+        renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) { for (VulkanShader &shader : thisRenderable->shaders) { shader.destroy(); } });
         //build graphics pipeline and descriptor set for this renderable
         DescriptorSet::CreateInfo renderableDescriptorSetCreateInfo{};
         if (settings.rayTracing) {
@@ -379,13 +347,11 @@ public:
         //Update camera
         camera.update();
         //Rpdate renderables
-#pragma unroll 1
         for (VulkanRenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera); } }
         if (settings.rayTracing) {
             if (topLevelAccelerationStructure.created) { topLevelAccelerationStructure.destroy(); }
             std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
             bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
-#pragma unroll 1
             for (VulkanRenderable *renderable : renderables) { bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress); }
             VulkanAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
             topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
@@ -393,11 +359,9 @@ public:
             topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
             topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddresses = bottomLevelAccelerationStructureDeviceAddresses;
             topLevelAccelerationStructure.create(&renderEngineLink, &topLevelAccelerationStructureCreateInfo);
-#pragma unroll 1
             for (VulkanRenderable *renderable : renderables) { renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
         }
         //Render
-#pragma unroll 1
         for (VulkanRenderable *renderable : renderables) {
             if (renderable->render) {
                 //record command buffer for this renderable
@@ -449,7 +413,6 @@ public:
     }
 
     void reloadRenderables() {
-#pragma unroll 1
         for (VulkanRenderable *renderable : renderables) { loadRenderable(renderable, false); }
     }
 
@@ -463,7 +426,6 @@ public:
             glfwGetWindowPos(window, &windowX, &windowY);
             glfwGetWindowSize(window, &windowWidth, &windowHeight);
             monitors = glfwGetMonitors(&monitorCount);
-#pragma unroll 1
             for (i = 0; i < monitorCount; i++) {
                 mode = glfwGetVideoMode(monitors[i]);
                 glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
@@ -485,15 +447,11 @@ public:
     }
 
     void destroy() {
-#pragma unroll 1
         for (VulkanRenderable *renderable : renderables) { renderable->destroy(); }
-#pragma unroll 1
         for (std::function<void()> &function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
-#pragma unroll 1
         for (std::function<void()> &function : oneTimeOptionalDeletionQueue) { function(); }
         oneTimeOptionalDeletionQueue.clear();
-#pragma unroll 1
         for (std::function<void()> &function : engineDeletionQueue) { function(); }
         engineDeletionQueue.clear();
     }

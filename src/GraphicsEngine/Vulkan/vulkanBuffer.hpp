@@ -48,7 +48,6 @@ public:
         if (!created) {
             throw std::runtime_error("Calling VulkanBuffer::destroy() on a buffer for which VulkanBuffer::create() has not been called is illegal.");
         }
-#pragma unroll 1
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
         created = false;

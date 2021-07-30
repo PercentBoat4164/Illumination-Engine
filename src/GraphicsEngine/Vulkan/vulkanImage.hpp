@@ -40,7 +40,6 @@ public:
     CreateInfo createdWith{};
 
     void destroy() {
-#pragma unroll 1
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }

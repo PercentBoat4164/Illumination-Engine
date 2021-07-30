@@ -18,19 +18,12 @@ public:
         int infoLogLength{};
         ID = glCreateProgram();
         deletionQueue.emplace_front([&] { glDeleteProgram(ID); });
-#pragma unroll 1
         for (OpenGLShader shader : createdWith.shaders) {
             if (!shader.compiled) { shader.compile(); }
             glAttachShader(ID, shader.ID);
         }
-        deletionQueue.emplace_front([&] {
-#pragma unroll 1
-            for (const OpenGLShader& shader : createdWith.shaders) { glDetachShader(ID, shader.ID); }
-        });
-        deletionQueue.emplace_front([&] {
-#pragma unroll 1
-            for (OpenGLShader& shader : createdWith.shaders) { shader.destroy(); }
-        });
+        deletionQueue.emplace_front([&] { for (const OpenGLShader& shader : createdWith.shaders) { glDetachShader(ID, shader.ID); } });
+        deletionQueue.emplace_front([&] { for (OpenGLShader& shader : createdWith.shaders) { shader.destroy(); } });
         glLinkProgram(ID);
         glGetProgramiv(ID, GL_LINK_STATUS, reinterpret_cast<GLint *>(&linked));
         if (!linked) {
@@ -79,7 +72,6 @@ public:
     }
 
     void destroy() {
-#pragma unroll 3
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }

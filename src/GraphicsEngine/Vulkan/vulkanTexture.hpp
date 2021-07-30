@@ -78,7 +78,6 @@ public:
             imageMemoryBarrier.subresourceRange.layerCount = 1;
             imageMemoryBarrier.subresourceRange.levelCount = 1;
             int32_t mipWidth{createdWith.width}, mipHeight{createdWith.height};
-#pragma unroll 1
             for (uint32_t i = 1; i < mipLevels; ++i) {
                 imageMemoryBarrier.subresourceRange.baseMipLevel = i - 1;
                 imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
