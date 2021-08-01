@@ -107,24 +107,24 @@ public:
 
     std::vector<VkBool32> enableFeature(const std::vector<VkBool32 *> &features) {
         std::vector<VkBool32> results{};
-        results.reserve(static_cast<unsigned int>(features.size() + 1));
+        results.resize(static_cast<unsigned int>(features.size() + 1));
         results[0] = VK_FALSE;
         for (VkBool32 *feature : features) { results.push_back(enableFeature(feature)); }
-        for (VkBool32 result : results) { if (!result) { break; } }
+        for (VkBool32 result : results) { if (!result) { return results; } }
         results[0] = VK_TRUE;
         return results;
     }
 
     VkBool32 *testFeature(const VkBool32 *feature) {
-        return (feature - (VkBool32 *)&enabledPhysicalDeviceInfo + (VkBool32 *)&supportedPhysicalDeviceInfo);
+        return feature - (VkBool32 *)&enabledPhysicalDeviceInfo + (VkBool32 *)&supportedPhysicalDeviceInfo;
     }
 
     std::vector<VkBool32> testFeature(const std::vector<VkBool32 *> &features) {
         std::vector<VkBool32> results{};
-        results.reserve(static_cast<unsigned int>(features.size() + 1));
+        results.resize(static_cast<unsigned int>(features.size() + 1));
         results[0] = VK_FALSE;
         for (VkBool32 *feature : features) { results.push_back(*testFeature(feature)); }
-        for (VkBool32 result : results) { if (!result) { break; } }
+        for (VkBool32 result : results) { if (!result) { return results; } }
         results[0] = VK_TRUE;
         return results;
     }
