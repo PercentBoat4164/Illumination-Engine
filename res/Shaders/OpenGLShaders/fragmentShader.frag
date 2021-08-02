@@ -25,7 +25,6 @@ const vec3 lightPosition = vec3(0.0f, 0.0f, 2.0f);
 const vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
 const float brightness = 10.0f;
 const float ambientStrength = 0.1f;
-const float specularStrength = 1.0f;
 
 void main() {
     float distanceFromFragmentToLight = length(fragmentPosition - lightPosition);

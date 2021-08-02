@@ -11,7 +11,6 @@ class OpenGLTexture : public OpenGLImage{
 public:
     void create(CreateInfo *createInfo) override {
         createdWith = *createInfo;
-        deletionQueue.emplace_front([&] { stbi_image_free(data); });
         glGenTextures(1, &ID);
         deletionQueue.emplace_front([&] { glDeleteTextures(1, &ID); });
     }

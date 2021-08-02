@@ -8,8 +8,9 @@
 enum OpenGLImageType {
     OPENGL_DEPTH = 0x00000000,
     OPENGL_COLOR = 0x00000001,
-    OPENGL_TEXTURE_DIFFUSE = 0x00000002,
-    OPENGL_TEXTURE_SPECULAR = 0x00000003
+    OPENGL_TEXTURE_UNKNOWN = 0x00000002,
+    OPENGL_TEXTURE_DIFFUSE = 0x00000003,
+    OPENGL_TEXTURE_SPECULAR = 0x00000004
 };
 
 class OpenGLImage {
@@ -19,15 +20,14 @@ public:
         OpenGLImageType format{};
 
         //Only required if format != OPENGL_TEXTURE_*
-        GLsizei width{}, height{};
+        int width{}, height{};
         stbi_uc *data{};
 
         //Only required if format == OPENGL_TEXTURE_*
-        const char *filename{};
+        std::string filename{};
     };
 
     CreateInfo createdWith{};
-    stbi_uc *data{};
     GLuint ID{};
 
     virtual void create(CreateInfo *createInfo) {
@@ -42,11 +42,9 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        if (createdWith.format == OPENGL_COLOR) { glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, createdWith.width, createdWith.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data); }
-        if (createdWith.format == OPENGL_DEPTH) { glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, createdWith.width, createdWith.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, data); }
-        if (createdWith.format >= OPENGL_TEXTURE_DIFFUSE) {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, createdWith.width, createdWith.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        }
+        if (createdWith.format == OPENGL_COLOR) { glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, createdWith.width, createdWith.height, 0, GL_RGB, GL_UNSIGNED_BYTE, createdWith.data); }
+        if (createdWith.format == OPENGL_DEPTH) { glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, createdWith.width, createdWith.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, createdWith.data); }
+        if (createdWith.format >= OPENGL_TEXTURE_DIFFUSE) { glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, createdWith.width, createdWith.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, createdWith.data); } else { deletionQueue.emplace_front([&] { stbi_image_free(createdWith.data); }); }
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 

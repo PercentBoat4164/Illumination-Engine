@@ -80,7 +80,7 @@ public:
 #if defined(_WIN32)
         glfwSwapInterval(settings.vSync ? 1 : 0);
 #else
-        glfwSwapInterval(settings.vSync ? 1 : 0);
+        glfwSwapInterval(1);
 #endif
         glewExperimental = true;
         if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
@@ -100,13 +100,11 @@ public:
         // Enable OpenGL features
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
-        glEnable(GL_MULTISAMPLE);
     }
 
     void loadRenderable(OpenGLRenderable *renderable, bool append = true) {
-        renderable->loadModel(renderable->modelFilename);
         renderable->loadShaders(renderable->shaderFilenames);
-        renderable->loadTextures(renderable->textureFilenames);
+        renderable->upload();
         if (append) { renderables.push_back(renderable); }
     }
 
@@ -123,24 +121,26 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         camera.update();
         for (OpenGLRenderable *renderable : renderables) {
-            renderable->update();
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, renderable->textures[0].ID);
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, renderable->textures[renderable->textures.size() - 1].ID);
-            glBindVertexArray(renderable->vertexArrayObject);
-            glUseProgram(renderable->program.ID);
-            glm::quat quaternion = glm::quat(glm::radians(renderable->rotation));
-            renderable->program.setValue("projection", camera.proj);
-            renderable->program.setValue("normalMatrix", glm::transpose(glm::inverse(renderable->model)));
-            renderable->program.setValue("modelView", camera.view * renderable->model);
-            renderable->program.setValue("model", renderable->model);
-            renderable->program.setValue("diffuseTexture", 0);
-            renderable->program.setValue("specularTexture", 1);
-            renderable->program.setValue("cameraPosition", camera.position);
-           glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(renderable->indices.size()), GL_UNSIGNED_INT, nullptr);
+            if (renderable->render) {
+                renderable->update();
+                for (OpenGLRenderable::OpenGLMesh mesh : renderable->meshes) {
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.textureIndices[0]].ID);
+                    glActiveTexture(GL_TEXTURE1);
+                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.textureIndices[mesh.textureIndices.size() - 1]].ID);
+                    renderable->program.setValue("projection", camera.proj);
+                    renderable->program.setValue("normalMatrix", glm::mat3(glm::transpose(glm::inverse(renderable->model))));
+                    renderable->program.setValue("viewModel", camera.view * renderable->model);
+                    renderable->program.setValue("model", renderable->model);
+                    renderable->program.setValue("diffuseTexture", 0);
+                    renderable->program.setValue("specularTexture", 1);
+                    renderable->program.setValue("cameraPosition", camera.position);
+                    glBindVertexArray(mesh.vertexArrayObject);
+                    glUseProgram(renderable->program.ID);
+                    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.indices.size()), GL_UNSIGNED_INT, nullptr);
+                }
+            }
         }
-        glFlush();
         glfwSwapBuffers(window);
         auto currentTime = (float)glfwGetTime();
         frameTime = currentTime - previousTime;
