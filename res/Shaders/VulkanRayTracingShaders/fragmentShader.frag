@@ -61,11 +61,7 @@ void main() {
     for (int i = 0; i < samples; ++i) {
         vec3 randomPointOnUnitSphere = normalize(vec3(gold_noise(gl_FragCoord.xy, time + 1 + i), gold_noise(gl_FragCoord.xy, time + 2 + i), gold_noise(gl_FragCoord.xy, time + 3 + i)));
         rayQueryInitializeEXT(rayQuery, topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT, 0xFF, fragmentPositionInWorldSpace, 0.001, -normalize(fragmentPositionInWorldSpace - (position + randomPointOnUnitSphere * radius)), distanceFromFragmentToLight);
-
-        // Start the ray traversal, rayQueryProceedEXT returns false if the traversal is complete
         while (rayQueryProceedEXT(rayQuery)) { }
-
-        // If the intersection has hit a triangle, the fragment is shadowed
         if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionTriangleEXT) { outColor += texture(diffuse, fragTexCoord) * vec4(color, 0) * lightIntensityAfterAttenuation; }
     }
     outColor /= samples;

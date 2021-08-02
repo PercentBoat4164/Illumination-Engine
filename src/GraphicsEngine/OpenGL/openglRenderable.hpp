@@ -1,3 +1,7 @@
+/**@todo: Add support for multiple textures.
+ * ie. normal maps, height maps, roughness maps, metallic maps and diffuse maps.
+ */
+
 #pragma once
 
 #include "openglVertex.hpp"
