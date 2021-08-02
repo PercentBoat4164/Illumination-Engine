@@ -8,7 +8,8 @@
 enum OpenGLImageType {
     OPENGL_DEPTH = 0x00000000,
     OPENGL_COLOR = 0x00000001,
-    OPENGL_TEXTURE = 0x00000002
+    OPENGL_TEXTURE_DIFFUSE = 0x00000002,
+    OPENGL_TEXTURE_SPECULAR = 0x00000003
 };
 
 class OpenGLImage {
@@ -17,10 +18,11 @@ public:
         //Required
         OpenGLImageType format{};
 
-        //Only required if format != OPENGL_TEXTURE
+        //Only required if format != OPENGL_TEXTURE_*
         GLsizei width{}, height{};
+        stbi_uc *data{};
 
-        //Only required if format == OPENGL_TEXTURE
+        //Only required if format == OPENGL_TEXTURE_*
         const char *filename{};
     };
 
@@ -42,7 +44,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         if (createdWith.format == OPENGL_COLOR) { glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, createdWith.width, createdWith.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data); }
         if (createdWith.format == OPENGL_DEPTH) { glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, createdWith.width, createdWith.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, data); }
-        if (createdWith.format == OPENGL_TEXTURE) {
+        if (createdWith.format >= OPENGL_TEXTURE_DIFFUSE) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, createdWith.width, createdWith.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         }
         glGenerateMipmap(GL_TEXTURE_2D);

@@ -31,7 +31,7 @@ set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
 # Extract dependencies
-execute_process(COMMAND ${CMAKE_COMMAND} -E rm -r deps)
+execute_process(COMMAND ${CMAKE_COMMAND} -E rm -r -f deps)
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf deps.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Copy data files and dlls

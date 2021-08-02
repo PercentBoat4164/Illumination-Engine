@@ -18,9 +18,20 @@
 #include "../../../deps/stb_image.h"
 #endif
 
+#include <../../../deps/assimp/include/assimp/Importer.hpp>
+#include <../../../deps/assimp/include/assimp/scene.h>
+#include <../../../deps/assimp/include/assimp/postprocess.h>
+
 #include <cstddef>
 #include <vector>
 #include <unordered_map>
+
+class OpenGLMesh {
+public:
+    std::vector<OpenGLVertex> vertices{};
+    std::vector<unsigned int> indices{};
+    std::vector<OpenGLTexture> textures{};
+};
 
 class OpenGLRenderable {
 public:
@@ -28,7 +39,9 @@ public:
     std::vector<const char *> shaderFilenames{};
     const char *modelFilename{};
     std::vector<OpenGLTexture> textures{};
+    std::vector<OpenGLMesh> meshes{};
     OpenGLProgram program{};
+    OpenGLGraphicsEngineLink *linkedRenderEngine{};
     unsigned int vertexBuffer{};
     unsigned int vertexArrayObject{};
     unsigned int indexBuffer{};
@@ -39,9 +52,9 @@ public:
     glm::vec3 rotation{};
     glm::vec3 scale{};
     glm::mat4 model{};
-    glm::mat3 normalMatrix{};
 
-    explicit OpenGLRenderable(const char *modelPath, const std::vector<const char *>& texturePaths, const std::vector<const char *>& shaderPaths, glm::vec3 initialPosition = {0.0f, 0.0f, 0.0f}, glm::vec3 initialRotation = {0.0f, 0.0f, 0.0f}, glm::vec3 initialScale = {1.0f, 1.0f, 1.0f}) {
+    explicit OpenGLRenderable(OpenGLGraphicsEngineLink *engineLink, const char *modelPath, const std::vector<const char *>& texturePaths, const std::vector<const char *>& shaderPaths, glm::vec3 initialPosition = {0.0f, 0.0f, 0.0f}, glm::vec3 initialRotation = {0.0f, 0.0f, 0.0f}, glm::vec3 initialScale = {1.0f, 1.0f, 1.0f}) {
+        linkedRenderEngine = engineLink;
         position = initialPosition;
         rotation = initialRotation;
         scale = initialScale;
@@ -50,12 +63,69 @@ public:
         shaderFilenames = shaderPaths;
     }
 
+    explicit OpenGLRenderable(OpenGLGraphicsEngineLink *engineLink, const char *filePath) {
+        linkedRenderEngine = engineLink;
+        Assimp::Importer importer{};
+        const aiScene *scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to import file: " + std::string(filePath)); }
+        std::string directory = std::string(filePath).substr(0, std::string(filePath).find_last_of('/'));
+        processNode(scene->mRootNode, scene);
+    }
+
+    void processNode(aiNode *node, const aiScene *scene) {
+        meshes.resize(node->mNumMeshes + meshes.size());
+        for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
+            aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+            meshes[i].vertices.resize(mesh->mNumVertices + meshes[i].vertices.size());
+            for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
+                meshes[i].vertices[j].pos.x = mesh->mVertices[i].x;
+                meshes[i].vertices[j].pos.y = mesh->mVertices[i].y;
+                meshes[i].vertices[j].pos.z = mesh->mVertices[i].z;
+                meshes[i].vertices[j].normal.x = mesh->mNormals[i].x;
+                meshes[i].vertices[j].normal.y = mesh->mNormals[i].y;
+                meshes[i].vertices[j].normal.z = mesh->mNormals[i].z;
+                if (mesh->mTextureCoords[0]) {
+                    meshes[i].vertices[j].texCoords.x = mesh->mTextureCoords[0][i].x;
+                    meshes[i].vertices[j].texCoords.y = mesh->mTextureCoords[0][i].y;
+                } else { meshes[i].vertices[j].texCoords = glm::vec2(0.0f, 0.0f); }
+            }
+            for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
+                aiFace face = mesh->mFaces[j];
+                meshes[i].indices.reserve(face.mNumIndices + meshes[i].indices.size());
+                for (unsigned int k = 0; k < face.mNumIndices; ++k) {
+                    meshes[i].indices.push_back(face.mIndices[j]);
+                }
+            }
+            if (mesh->mMaterialIndex >= 0) {
+                std::vector<std::pair<aiTextureType, OpenGLImageType>> textureTypes{
+                    {aiTextureType_DIFFUSE, OPENGL_TEXTURE_DIFFUSE},
+                    {aiTextureType_SPECULAR, OPENGL_TEXTURE_SPECULAR}
+                };
+                aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
+                for (std::pair<aiTextureType, OpenGLImageType> textureType : textureTypes) {
+                    for (unsigned int j = 0; j < material->GetTextureCount(textureType.first); ++j) {
+                        aiString path;
+                        material->GetTexture(textureType.first, j, &path);
+                        OpenGLTexture::CreateInfo textureCreateInfo{};
+                        textureCreateInfo.filename = path.C_Str();
+                        textureCreateInfo.format = textureType.second;
+                        meshes[i].textures[j].create(&textureCreateInfo);
+                    }
+                }
+            }
+        }
+        for (unsigned int i = 0; i < node->mNumChildren; ++i) { processNode(node->mChildren[i], scene); }
+    }
+
     void loadTextures(std::vector<const char *> filenames) {
+        stbi_set_flip_vertically_on_load(true);
+        int channels{0};
         textures.resize(filenames.size());
         for (uint32_t i = 0; i < filenames.size(); ++i) {
             OpenGLTexture::CreateInfo textureCreateInfo{};
             textureCreateInfo.filename = filenames[i];
-            textureCreateInfo.format = OPENGL_TEXTURE;
+            textureCreateInfo.format = OPENGL_TEXTURE_DIFFUSE;
+            textureCreateInfo.data = stbi_load(textureCreateInfo.filename, &textureCreateInfo.width, &textureCreateInfo.height, &channels, STBI_rgb_alpha);
             textures[i].create(&textureCreateInfo);
             textures[i].upload();
         }

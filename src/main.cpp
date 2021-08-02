@@ -175,15 +175,16 @@ int main(int argc, char **argv) {
         try {
             OpenGLRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
-            OpenGLRenderable cube = OpenGLRenderable("res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 10, 1});
-            OpenGLRenderable quad = OpenGLRenderable("res/Models/Quad/quad.obj", {"res/Models/Quad/quad_Color.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
-            OpenGLRenderable vikingRoom = OpenGLRenderable("res/Models/VikingRoom/vikingRoom.obj", {"res/Models/VikingRoom/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
-            OpenGLRenderable statue = OpenGLRenderable("res/Models/AncientStatue/ancientStatue.obj", {"res/Models/AncientStatue/ancientStatue.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {7, 0, 0});
-            OpenGLRenderable ball = OpenGLRenderable("res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png", "res/Models/Sphere/sphere_specular.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, -10, 1});
-            renderEngine.loadRenderable(&cube);
-            renderEngine.loadRenderable(&quad);
-            renderEngine.loadRenderable(&vikingRoom);
-            renderEngine.loadRenderable(&statue);
+//            OpenGLRenderable cube = OpenGLRenderable(&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 10, 1});
+//            OpenGLRenderable quad = OpenGLRenderable(&renderEngine.renderEngineLink, "res/Models/Quad/quad.obj", {"res/Models/Quad/quad_Color.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
+//            OpenGLRenderable vikingRoom = OpenGLRenderable(&renderEngine.renderEngineLink, "res/Models/VikingRoom/vikingRoom.obj", {"res/Models/VikingRoom/vikingRoom.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
+//            OpenGLRenderable statue = OpenGLRenderable(&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj", {"res/Models/AncientStatue/ancientStatue.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {7, 0, 0});
+//            OpenGLRenderable ball = OpenGLRenderable(&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png", "res/Models/Sphere/sphere_specular.png"}, {"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"}, {0, -10, 1});
+            OpenGLRenderable ball = OpenGLRenderable(&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj");
+//            renderEngine.loadRenderable(&cube);
+//            renderEngine.loadRenderable(&quad);
+//            renderEngine.loadRenderable(&vikingRoom);
+//            renderEngine.loadRenderable(&statue);
             renderEngine.loadRenderable(&ball);
             double lastKey{0};
             double lastCursorPosX{0};
@@ -255,7 +256,7 @@ int main(int argc, char **argv) {
                     lastKey = glfwGetTime();
                 }
                 //move renderables
-                cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
+//                cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
                 ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1.0f / (float)renderEngine.frameTime;
