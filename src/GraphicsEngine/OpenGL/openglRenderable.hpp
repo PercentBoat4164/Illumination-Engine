@@ -10,6 +10,8 @@
 #include <../../../deps/assimp/include/assimp/Importer.hpp>
 #include <../../../deps/assimp/include/assimp/scene.h>
 #include <../../../deps/assimp/include/assimp/postprocess.h>
+#include <glm/ext/quaternion_trigonometric.hpp>
+#include <glm/detail/type_quat.hpp>
 
 #include <cstddef>
 #include <vector>
