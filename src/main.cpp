@@ -65,12 +65,10 @@ int main(int argc, char **argv) {
             renderEngine.camera.position = {0, 0, 2};
             VulkanRenderable cube = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
             VulkanRenderable quad = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/Quad/quad.obj", {"res/Models/Quad/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
-            VulkanRenderable vikingRoom = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/VikingRoom/vikingRoom.obj", {"res/Models/VikingRoom/vikingRoom.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {0, 0, 0}, {5, 5, 5});
             VulkanRenderable ball = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
             VulkanRenderable statue = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj", {"res/Models/AncientStatue/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {7, 0, 0});
             renderEngine.loadRenderable(&cube);
             renderEngine.loadRenderable(&quad);
-            renderEngine.loadRenderable(&vikingRoom);
             renderEngine.loadRenderable(&ball);
             renderEngine.loadRenderable(&statue);
             double lastKey{0};
@@ -177,13 +175,13 @@ int main(int argc, char **argv) {
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
             OpenGLRenderable cube{"res/Models/Cube/cube.obj"};
             OpenGLRenderable quad{"res/Models/Quad/quad.obj"};
-            OpenGLRenderable vikingRoom{"res/Models/VikingRoom/vikingRoom.obj"};
+            OpenGLRenderable rock{"res/Models/Rock/rock.obj"};
             OpenGLRenderable statue{"res/Models/AncientStatue/ancientStatue.obj"};
             OpenGLRenderable ball{"res/Models/Sphere/sphere.obj"};
-            OpenGLRenderable backpack{"res/Models/TestBackpack/Survival_BackPack_2.fbx"};
+            OpenGLRenderable backpack{"res/Models/Backpack/Survival_BackPack_2.fbx"};
             renderEngine.loadRenderable(&cube);
             renderEngine.loadRenderable(&quad);
-            renderEngine.loadRenderable(&vikingRoom);
+            renderEngine.loadRenderable(&rock);
             renderEngine.loadRenderable(&statue);
             renderEngine.loadRenderable(&ball);
             renderEngine.loadRenderable(&backpack);
@@ -245,14 +243,14 @@ int main(int argc, char **argv) {
                     captureInput = !captureInput;
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastKey > .2)) {
                     if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
-                    if (renderEngine.settings.fullscreen) {
-                        renderEngine.settings.fullscreen = false;
-                        renderEngine.updateSettings();
-                    } if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
+                    else if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                         glfwSetCursorPosCallback(renderEngine.window, nullptr);
                         captureInput = false;
+                    } else if (renderEngine.settings.fullscreen) {
+                        renderEngine.settings.fullscreen = false;
+                        renderEngine.updateSettings();
                     }
                     lastKey = glfwGetTime();
                 }
@@ -261,7 +259,7 @@ int main(int argc, char **argv) {
                 ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
                 backpack.position = {0, 7, 0};
                 statue.position = {7, 0, 0};
-                vikingRoom.scale = {5, 5, 5};
+                rock.position = {-7, 0, 0};
                 quad.scale = {100, 100, 100};
                 quad.rotation = {90, 0, 0};
                 //update framerate gathered over past 'recordedFPSCount' frames
