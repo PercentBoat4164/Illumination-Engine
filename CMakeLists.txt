@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 project(IlluminationEngine)
 
-# Set CMake variables
 set(OpenGL_GL_PREFERENCE LEGACY)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS false)
@@ -9,7 +8,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 set(ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED false)
 
-# Get packages
 # Note: All install instructions are for Ubuntu Linux
 find_package(OpenGL REQUIRED) # install with "sudo apt install libglu1-mesa-dev mesa-common-dev"
 find_package(Vulkan) # install with "wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.182-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.182-focal.list;sudo apt update;sudo apt install vulkan-sdk"
@@ -20,24 +18,18 @@ if (ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED)
     find_package(assimp) # install with "sudo apt install assimp"
 endif()
 
-# Specify no docs, tests, or examples from GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-# Specify Assimp build parameters
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
-# Extract dependencies
-execute_process(COMMAND ${CMAKE_COMMAND} -E rm -r -f deps)
-execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf deps.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/deps.tar.xz)
 
-# Generate executable
 add_executable(IlluminationEngine src/main.cpp)
 
-# Add dependencies
 if (NOT assimp_FOUND)
     add_subdirectory(deps/assimp)
     message("Building with packaged assimp")
@@ -75,14 +67,13 @@ if (Vulkan_FOUND)
 endif()
 target_link_libraries(IlluminationEngine PUBLIC OpenGL::GL)
 
-# Add compile definitions based on supported features
 add_compile_definitions(ILLUMINATION_ENGINE_OPENGL)
 if (Vulkan_FOUND)
     add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
 endif()
 
-# Post build moves
-FILE(COPY res DESTINATION "${CMAKE_BINARY_DIR}")
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/res)
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/res ${CMAKE_BINARY_DIR}/res)
 if (WIN32)
     if ($ENV{CLION_IDE})
         if (CMAKE_BUILD_TYPE STREQUAL Debug)

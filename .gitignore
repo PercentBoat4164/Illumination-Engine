@@ -19,7 +19,4 @@
 /deps/stb_image.h
 /deps/tiny_obj_loader.h
 /deps/vk_mem_alloc.h
-/deps/glew32.dll
-/deps/glew32d.dll
-/deps/vulkanHeaders
 /deps/assimp/
