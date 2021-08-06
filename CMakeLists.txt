@@ -34,12 +34,6 @@ set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 execute_process(COMMAND ${CMAKE_COMMAND} -E rm -r -f deps)
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf deps.tar.xz WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Copy data files and dlls
-FILE(COPY res DESTINATION "${CMAKE_BINARY_DIR}")
-if (NOT $ENV{CLION_IDE})
-    FILE(COPY build/bin/Debug/glew32d.dll DESTINATION "${CMAKE_BINARY_DIR}/Debug")
-endif()
-
 # Generate executable
 add_executable(IlluminationEngine src/main.cpp)
 
@@ -86,3 +80,19 @@ add_compile_definitions(ILLUMINATION_ENGINE_OPENGL)
 if (Vulkan_FOUND)
     add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
 endif()
+
+# Post build moves
+FILE(COPY res DESTINATION "${CMAKE_BINARY_DIR}")
+if ($ENV{CLION_IDE})
+    if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+        add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/bin/glew32d.dll ${CMAKE_BINARY_DIR})
+        add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/glfw/src/glfw3d.dll ${CMAKE_BINARY_DIR})
+        add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/assimp/code/assimp-vc142-mtd.dll ${CMAKE_BINARY_DIR})
+    else ()
+        add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/bin/glew32.dll ${CMAKE_BINARY_DIR})
+        add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/glfw/src/glfw3.dll ${CMAKE_BINARY_DIR})
+        add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/assimp/code/assimp-vc142-mt.dll ${CMAKE_BINARY_DIR})
+    endif ()
+else ()
+    # Add Visual Studio file copies here. Change the else above to check specifically for Visual Studio.
+endif ()

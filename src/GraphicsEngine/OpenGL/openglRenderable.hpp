@@ -16,7 +16,6 @@
 class OpenGLRenderable {
 public:
     struct OpenGLMesh {
-    public:
         struct OpenGLVertex {
             glm::vec3 position{0.0f, 0.0f, 0.0f};
             glm::vec2 textureCoordinates{0.0f, 0.0f};
