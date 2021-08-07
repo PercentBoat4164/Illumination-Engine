@@ -82,8 +82,8 @@ public:
         VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
         linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
-        scratchBuffer.destroy();
-        if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) { instancesBuffer.destroy(); }
+        scratchBuffer.unload();
+        if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) { instancesBuffer.unload(); }
         created = true;
     }
 

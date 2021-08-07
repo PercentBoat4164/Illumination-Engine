@@ -25,12 +25,12 @@ public:
         std::vector<unsigned int> indices{};
         std::vector<OpenGLVertex> vertices{};
         unsigned int diffuseTexture{};
-        unsigned int specularTexture{};
-        unsigned int normalTexture{};
-        unsigned int metallicTexture{};
-        unsigned int roughnessTexture{};
         unsigned int emissionTexture{};
         unsigned int heightTexture{};
+        unsigned int metallicTexture{};
+        unsigned int normalTexture{};
+        unsigned int roughnessTexture{};
+        unsigned int specularTexture{};
         unsigned int vertexArrayObject;
         unsigned int vertexBuffer;
         unsigned int indexBuffer;
@@ -55,73 +55,11 @@ public:
         textures[0].create(&textureCreateInfo);
         Assimp::Importer importer{};
         const aiScene *scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to import file: " + std::string(filePath)); }
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to load texture image from file: " + std::string(filePath)); }
         std::string directory = std::string(filePath).substr(0, std::string(filePath).find_last_of('/'));
         meshes.reserve(scene->mNumMeshes);
         processNode(scene->mRootNode, scene, directory);
-    }
-
-    void processNode(aiNode *node, const aiScene *scene, const std::string& directory) {
-        for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
-            OpenGLMesh temporaryMesh{};
-            temporaryMesh.vertices.reserve(scene->mMeshes[node->mMeshes[i]]->mNumVertices);
-            for (unsigned int j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumVertices; ++j) {
-                OpenGLMesh::OpenGLVertex temporaryVertex{};
-                temporaryVertex.position.x = scene->mMeshes[node->mMeshes[i]]->mVertices[j].x;
-                temporaryVertex.position.y = scene->mMeshes[node->mMeshes[i]]->mVertices[j].y;
-                temporaryVertex.position.z = scene->mMeshes[node->mMeshes[i]]->mVertices[j].z;
-                temporaryVertex.normal.x = scene->mMeshes[node->mMeshes[i]]->mNormals[j].x;
-                temporaryVertex.normal.y = scene->mMeshes[node->mMeshes[i]]->mNormals[j].y;
-                temporaryVertex.normal.z = scene->mMeshes[node->mMeshes[i]]->mNormals[j].z;
-                if (scene->mMeshes[node->mMeshes[i]]->mNumUVComponents[0] > 0) {
-                    temporaryVertex.textureCoordinates.x = scene->mMeshes[node->mMeshes[i]]->mTextureCoords[0][j].x;
-                    temporaryVertex.textureCoordinates.y = scene->mMeshes[node->mMeshes[i]]->mTextureCoords[0][j].y;
-                }
-                temporaryMesh.vertices.push_back(temporaryVertex);
-            }
-            temporaryMesh.indices.reserve(static_cast<std::vector<unsigned int>::size_type>(scene->mMeshes[node->mMeshes[i]]->mNumFaces) * 3);
-            for (unsigned int j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++j) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[j].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[j].mIndices[k]); } }
-            if (scene->mMeshes[node->mMeshes[i]]->mMaterialIndex >= 0) {
-                std::vector<std::pair<unsigned int *, aiTextureType>> textureTypes{
-                    {&temporaryMesh.diffuseTexture, aiTextureType_DIFFUSE},
-                    {&temporaryMesh.specularTexture, aiTextureType_SPECULAR},
-                    {&temporaryMesh.roughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS},
-                    {&temporaryMesh.emissionTexture, aiTextureType_EMISSIVE},
-                    {&temporaryMesh.heightTexture, aiTextureType_HEIGHT},
-                    {&temporaryMesh.metallicTexture, aiTextureType_METALNESS},
-                    {&temporaryMesh.normalTexture, aiTextureType_NORMALS}
-                };
-                for (std::pair<unsigned int *, aiTextureType> textureType : textureTypes) {
-                    textures.reserve(scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) + textures.size());
-                    OpenGLTexture temporaryTexture{};
-                    int channels{};
-                    bool textureAlreadyLoaded{false};
-                    OpenGLTexture::CreateInfo textureCreateInfo{};
-                    aiString filename;
-                    scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTexture(textureType.second, 0, &filename);
-                    if (filename.length == 0) { continue; }
-                    std::string path {directory + '/' + std::string(filename.C_Str())};
-                    textureCreateInfo.filename = path;
-                    for (unsigned int k = 0; k < textures.size(); ++k) {
-                        if (std::strcmp(textures[k].createdWith.filename.c_str(), path.c_str()) == 0) {
-                            *textureType.first = k;
-                            textureAlreadyLoaded = true;
-                            break;
-                        }
-                    }
-                    if (!textureAlreadyLoaded) {
-                        textureCreateInfo.format = OPENGL_TEXTURE;
-                        textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
-                        if (!textureCreateInfo.data) { throw std::runtime_error("failed to open texture file: " + textureCreateInfo.filename); }
-                        temporaryTexture.create(&textureCreateInfo);
-                        textures.push_back(temporaryTexture);
-                        *textureType.first = textures.size() - 1;
-                    }
-                }
-            }
-            meshes.push_back(temporaryMesh);
-        }
-        for (unsigned int i = 0; i < node->mNumChildren; ++i) { processNode(node->mChildren[i], scene, directory); }
+        deletionQueue.emplace_front([&] { for (OpenGLTexture texture : textures) { texture.destroy(); } });
     }
 
     void loadShaders(std::vector<const char *> filenames) {
@@ -170,4 +108,67 @@ public:
 
 private:
     std::deque<std::function<void()>> deletionQueue{};
+
+    void processNode(aiNode *node, const aiScene *scene, const std::string& directory) {
+        for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
+            OpenGLMesh temporaryMesh{};
+            temporaryMesh.vertices.reserve(scene->mMeshes[node->mMeshes[i]]->mNumVertices);
+            for (unsigned int j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumVertices; ++j) {
+                OpenGLMesh::OpenGLVertex temporaryVertex{};
+                temporaryVertex.position.x = scene->mMeshes[node->mMeshes[i]]->mVertices[j].x;
+                temporaryVertex.position.y = scene->mMeshes[node->mMeshes[i]]->mVertices[j].y;
+                temporaryVertex.position.z = scene->mMeshes[node->mMeshes[i]]->mVertices[j].z;
+                temporaryVertex.normal.x = scene->mMeshes[node->mMeshes[i]]->mNormals[j].x;
+                temporaryVertex.normal.y = scene->mMeshes[node->mMeshes[i]]->mNormals[j].y;
+                temporaryVertex.normal.z = scene->mMeshes[node->mMeshes[i]]->mNormals[j].z;
+                if (scene->mMeshes[node->mMeshes[i]]->mNumUVComponents[0] > 0) {
+                    temporaryVertex.textureCoordinates.x = scene->mMeshes[node->mMeshes[i]]->mTextureCoords[0][j].x;
+                    temporaryVertex.textureCoordinates.y = scene->mMeshes[node->mMeshes[i]]->mTextureCoords[0][j].y;
+                }
+                temporaryMesh.vertices.push_back(temporaryVertex);
+            }
+            temporaryMesh.indices.reserve(static_cast<std::vector<unsigned int>::size_type>(scene->mMeshes[node->mMeshes[i]]->mNumFaces) * 3);
+            for (unsigned int j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++j) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[j].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[j].mIndices[k]); } }
+            if (scene->mMeshes[node->mMeshes[i]]->mMaterialIndex >= 0) {
+                std::vector<std::pair<unsigned int *, aiTextureType>> textureTypes{
+                    {&temporaryMesh.diffuseTexture, aiTextureType_DIFFUSE},
+                    {&temporaryMesh.emissionTexture, aiTextureType_EMISSIVE},
+                    {&temporaryMesh.heightTexture, aiTextureType_HEIGHT},
+                    {&temporaryMesh.metallicTexture, aiTextureType_METALNESS},
+                    {&temporaryMesh.normalTexture, aiTextureType_NORMALS},
+                    {&temporaryMesh.roughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS},
+                    {&temporaryMesh.specularTexture, aiTextureType_SPECULAR}
+                };
+                for (std::pair<unsigned int *, aiTextureType> textureType : textureTypes) {
+                    textures.reserve(scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) + textures.size());
+                    OpenGLTexture temporaryTexture{};
+                    int channels{};
+                    bool textureAlreadyLoaded{false};
+                    OpenGLTexture::CreateInfo textureCreateInfo{};
+                    aiString filename;
+                    scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTexture(textureType.second, 0, &filename);
+                    if (filename.length == 0) { continue; }
+                    std::string path {directory + '/' + std::string(filename.C_Str())};
+                    textureCreateInfo.filename = path;
+                    for (unsigned int k = 0; k < textures.size(); ++k) {
+                        if (std::strcmp(textures[k].createdWith.filename.c_str(), path.c_str()) == 0) {
+                            *textureType.first = k;
+                            textureAlreadyLoaded = true;
+                            break;
+                        }
+                    }
+                    if (!textureAlreadyLoaded) {
+                        textureCreateInfo.format = OPENGL_TEXTURE;
+                        textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
+                        if (!textureCreateInfo.data) { throw std::runtime_error("failed to load texture image from file: " + textureCreateInfo.filename); }
+                        temporaryTexture.create(&textureCreateInfo);
+                        textures.push_back(temporaryTexture);
+                        *textureType.first = textures.size() - 1;
+                    }
+                }
+            }
+            meshes.push_back(temporaryMesh);
+        }
+        for (unsigned int i = 0; i < node->mNumChildren; ++i) { processNode(node->mChildren[i], scene, directory); }
+    }
 };

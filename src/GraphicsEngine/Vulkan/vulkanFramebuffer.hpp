@@ -30,14 +30,16 @@ public:
         if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) {
             framebufferImageCreateInfo.imageType = VULKAN_COLOR;
             colorImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
-            deletionQueue.emplace_front([&] { colorImage.destroy(); });
+            colorImage.upload();
+            deletionQueue.emplace_front([&] { colorImage.unload(); });
         }
         framebufferImageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
         framebufferImageCreateInfo.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
         framebufferImageCreateInfo.imageType = VULKAN_DEPTH;
         framebufferImageCreateInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
         depthImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
-        deletionQueue.emplace_front([&] { depthImage.destroy(); });
+        depthImage.upload();
+        deletionQueue.emplace_front([&] { depthImage.unload(); });
         std::vector<VkImageView> framebufferAttachments{linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? createdWith.swapchainImageView : colorImage.view, depthImage.view, createdWith.swapchainImageView};
         VkFramebufferCreateInfo framebufferCreateInfo{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
         framebufferCreateInfo.renderPass = createdWith.renderPass.renderPass;

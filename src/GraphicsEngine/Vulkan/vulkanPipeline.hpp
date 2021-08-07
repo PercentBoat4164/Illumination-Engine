@@ -11,7 +11,7 @@ public:
     struct CreateInfo {
         //Required
         std::vector<VulkanShader> shaders{};
-        DescriptorSet *descriptorSet{};
+        VulkanDescriptorSet *descriptorSet{};
         VulkanRenderPass *renderPass{};
     };
 
@@ -82,6 +82,7 @@ public:
         rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
         VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
+        /**@todo: Make this depend on the device support of sampleRateShading*/
         multisampleStateCreateInfo.sampleShadingEnable = (linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT) || linkedRenderEngine->settings->rayTracing ? VK_FALSE : VK_TRUE;
         multisampleStateCreateInfo.minSampleShading = 1.0f;
         multisampleStateCreateInfo.rasterizationSamples = linkedRenderEngine->settings->msaaSamples;

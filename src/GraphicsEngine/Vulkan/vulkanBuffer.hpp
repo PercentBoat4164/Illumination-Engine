@@ -44,9 +44,10 @@ public:
     CreateInfo createdWith{};
     bool created{false};
 
-    void destroy() {
+    void unload() {
         if (!created) {
-            throw std::runtime_error("Calling VulkanBuffer::destroy() on a buffer for which VulkanBuffer::create() has not been called is illegal.");
+//            throw std::runtime_error("Calling VulkanBuffer::unload() on a buffer for which VulkanBuffer::create() has not been called is illegal.");
+            return;
         }
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
@@ -85,7 +86,7 @@ public:
         vmaUnmapMemory(*linkedRenderEngine->allocator, allocation);
     }
 
-    void toImage(const VulkanImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr) const;
+    void toImage(VulkanImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr);
 
 protected:
     std::deque<std::function<void()>> deletionQueue{};

@@ -13,9 +13,8 @@ vec3 color = vec3(0xe2, 0x58, 0x22) / 255;
 const int samples = 1;
 
 layout(binding = 1) uniform sampler2D diffuse;
-layout(binding = 2) uniform accelerationStructureEXT topLevelAS;
+layout(binding = 2) uniform accelerationStructureEXT topLevelAccelerationStructure;
 
-layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 fragmentPositionInWorldSpace;
 layout(location = 3) in float time;
@@ -60,7 +59,7 @@ void main() {
     rayQueryEXT rayQuery;
     for (int i = 0; i < samples; ++i) {
         vec3 randomPointOnUnitSphere = normalize(vec3(gold_noise(gl_FragCoord.xy, time + 1 + i), gold_noise(gl_FragCoord.xy, time + 2 + i), gold_noise(gl_FragCoord.xy, time + 3 + i)));
-        rayQueryInitializeEXT(rayQuery, topLevelAS, gl_RayFlagsTerminateOnFirstHitEXT, 0xFF, fragmentPositionInWorldSpace, 0.001, -normalize(fragmentPositionInWorldSpace - (position + randomPointOnUnitSphere * radius)), distanceFromFragmentToLight);
+        rayQueryInitializeEXT(rayQuery, topLevelAccelerationStructure, gl_RayFlagsTerminateOnFirstHitEXT, 0xFF, fragmentPositionInWorldSpace, 0.001, -normalize(fragmentPositionInWorldSpace - (position + randomPointOnUnitSphere * radius)), distanceFromFragmentToLight);
         while (rayQueryProceedEXT(rayQuery)) { }
         if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionTriangleEXT) { outColor += texture(diffuse, fragTexCoord) * vec4(color, 0) * lightIntensityAfterAttenuation; }
     }

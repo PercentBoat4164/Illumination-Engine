@@ -6,7 +6,7 @@
 #include <optional>
 #include <numeric>
 
-class DescriptorSet {
+class VulkanDescriptorSet {
 public:
     struct CreateInfo {
         //Required
@@ -17,7 +17,7 @@ public:
         //Optional
         uint32_t maxIndex{1};
 
-        //Required if maxIndex is used
+        //Required if maxIndex != 1
         VkDescriptorBindingFlagsEXT flags{0};
     };
 

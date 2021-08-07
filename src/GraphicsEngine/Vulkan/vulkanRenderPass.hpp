@@ -13,12 +13,9 @@ public:
     VkRenderPass renderPass{};
 
     void create(VulkanGraphicsEngineLink *engineLink) {
-        //destroy all old stuffs
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
-        //update engine link
         linkedRenderEngine = engineLink;
-        //create renderPass
         VkAttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format = linkedRenderEngine->swapchain->image_format;
         colorAttachmentDescription.samples = linkedRenderEngine->settings->msaaSamples;

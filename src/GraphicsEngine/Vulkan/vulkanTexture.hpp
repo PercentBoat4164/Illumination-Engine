@@ -13,16 +13,11 @@
 
 class VulkanTexture : public VulkanImage {
 public:
-    /**@todo: Combine as many command buffer submissions as possible together to reduce load on GPU.*/
     void create(VulkanGraphicsEngineLink *engineLink, CreateInfo *createInfo) override {
         createdWith = *createInfo;
         linkedRenderEngine = engineLink;
-        int channels{};
-        pixels = stbi_load(((std::string)createdWith.filename).c_str(), &createdWith.width, &createdWith.height, &channels, STBI_rgb_alpha);
-        if (!pixels) { throw std::runtime_error(("failed to load texture image from file: " + (std::string)createdWith.filename).c_str()); }
         mipLevels = std::max((static_cast<uint32_t>(std::floor(std::log2(std::max(createdWith.width, createdWith.height)))) + 1) * createdWith.mipMapping, static_cast<uint32_t>(1));
-        VkImageCreateInfo imageCreateInfo{};
-        imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageFormat = createdWith.format;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
         imageCreateInfo.extent.width = createdWith.width;
         imageCreateInfo.extent.height = createdWith.height;
@@ -32,18 +27,10 @@ public:
         imageCreateInfo.format = createdWith.format;
         imageCreateInfo.tiling = createdWith.tiling;
         imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageCreateInfo.usage = createdWith.usage;
+        imageCreateInfo.usage = createdWith.usage | (linkedRenderEngine->settings->mipMapping ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0);
         imageCreateInfo.samples = createdWith.msaaSamples;
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
-        vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr);
-        deletionQueue.emplace_front([&] { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
-        imageFormat = createdWith.format;
-        imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        VkImageViewCreateInfo imageViewCreateInfo{};
-        imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        imageViewCreateInfo.image = image;
         imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         imageViewCreateInfo.format = createdWith.format;
         imageViewCreateInfo.subresourceRange.aspectMask = createdWith.imageType == VulkanImageType::VULKAN_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
@@ -51,21 +38,48 @@ public:
         imageViewCreateInfo.subresourceRange.levelCount = mipLevels;
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         imageViewCreateInfo.subresourceRange.layerCount = 1;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        if (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering) {
+            samplerInfo.anisotropyEnable = linkedRenderEngine->settings->anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
+            samplerInfo.maxAnisotropy = linkedRenderEngine->settings->anisotropicFilterLevel;
+        }
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = linkedRenderEngine->settings->mipMapLevel;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = static_cast<float>(mipLevels);
+    }
+
+    /**@todo: Combine as many command buffer submissions as possible together to reduce load on GPU and CPU.*/
+    /**@todo: Allow either dataSource input or data input from the CreateInfo. Currently is only data for texture and only dataSource for other.*/
+    void upload() override {
+        if (vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
+        deletionQueue.emplace_front([&] { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
+        imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageViewCreateInfo.image = image;
         if (vkCreateImageView(linkedRenderEngine->device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr); });
-        transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr);});
+        if (vkCreateSampler(linkedRenderEngine->device->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
+        deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine->device->device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
         VulkanBuffer scratchBuffer{};
         VulkanBuffer::CreateInfo scratchBufferCreateInfo{};
         scratchBufferCreateInfo.size = static_cast<VkDeviceSize>(createdWith.width * createdWith.height) * 4;
         scratchBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
         scratchBufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo);
-        scratchBuffer.uploadData(pixels, createdWith.width * createdWith.height * 4);
-        scratchBuffer.toImage(*this, createdWith.width, createdWith.height);
+        scratchBuffer.uploadData(createdWith.data, createdWith.width * createdWith.height * 4);
+        VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
+        transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
+        scratchBuffer.toImage(*this, createdWith.width, createdWith.height, commandBuffer);
         /**@todo: Add support for more mipmap interpolation methods. Currently only linear interpolation is supported.*/
         if (createdWith.mipMapping) {
-            VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
-            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
             VkFormatProperties formatProperties{};
             vkGetPhysicalDeviceFormatProperties(linkedRenderEngine->device->physical_device.physical_device, imageFormat, &formatProperties);
             if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) { throw std::runtime_error("texture image format " + std::to_string(imageFormat) + " does not support linear blitting!"); }
@@ -113,33 +127,10 @@ public:
             imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
             vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-            linkedRenderEngine->endSingleTimeCommands(commandBuffer);
             imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
-        VkSamplerCreateInfo samplerInfo{};
-        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerInfo.magFilter = VK_FILTER_LINEAR;
-        samplerInfo.minFilter = VK_FILTER_LINEAR;
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.anisotropyEnable = linkedRenderEngine->settings->anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
-        samplerInfo.maxAnisotropy = linkedRenderEngine->settings->anisotropicFilterLevel;
-        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-        samplerInfo.unnormalizedCoordinates = VK_FALSE;
-        samplerInfo.compareEnable = VK_FALSE;
-        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.mipLodBias = linkedRenderEngine->settings->mipMapLevel;
-        samplerInfo.minLod = 0.0f;
-        samplerInfo.maxLod = static_cast<float>(mipLevels);
-        if (vkCreateSampler(linkedRenderEngine->device->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
-        deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine->device->device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
-        transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        scratchBuffer.destroy();
-        stbi_image_free(pixels);
+        transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBuffer);
+        linkedRenderEngine->endSingleTimeCommands(commandBuffer);
+        scratchBuffer.unload();
     }
-
-private:
-    stbi_uc *pixels{};
 };

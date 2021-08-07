@@ -48,12 +48,11 @@ void openglWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
 #endif
 
 int main(int argc, char **argv) {
-//    glfwWindowHint(GLFW_MAXIMIZED, 1);
     std::string selection;
     std::string input;
     if (argc > 1) { input = *argv[1]; }
     else {
-        std::cout << "'v': Run Vulkan rasterization engine\n'r': Run Vulkan raytracing engine\n'o': Run OpenGL render engine\n'p': Run Physics engine\n";
+        std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n";
         std::cin >> selection;
         input = selection[0];
     }
@@ -63,10 +62,10 @@ int main(int argc, char **argv) {
             VulkanRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, vulkanRasterizerWindowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
-            VulkanRenderable cube = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj", {"res/Models/Cube/cube.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
-            VulkanRenderable quad = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/Quad/quad.obj", {"res/Models/Quad/quad_Color.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {0, 0, 0}, {90, 0, 0}, {100, 100, 0});
-            VulkanRenderable ball = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj", {"res/Models/Sphere/sphere_diffuse.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"});
-            VulkanRenderable statue = VulkanRenderable(&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj", {"res/Models/AncientStatue/ancientStatue.png"}, {"res/Shaders/VulkanRasterizationShaders/vertexShader.vert", "res/Shaders/VulkanRasterizationShaders/fragmentShader.frag"}, {7, 0, 0});
+            VulkanRenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
+            VulkanRenderable quad{&renderEngine.renderEngineLink, "res/Models/Quad/quad.obj"};
+            VulkanRenderable ball{&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj"};
+            VulkanRenderable statue{&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj"};
             renderEngine.loadRenderable(&cube);
             renderEngine.loadRenderable(&quad);
             renderEngine.loadRenderable(&ball);
@@ -151,8 +150,8 @@ int main(int argc, char **argv) {
                     lastKey = glfwGetTime();
                 }
                 //move renderables
-                cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
-                ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
+//                cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
+//                ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};
@@ -212,7 +211,7 @@ int main(int argc, char **argv) {
                     renderEngine.reloadRenderables();
                     glfwSetTime(tempTime);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_R) & (glfwGetTime() - lastKey > .2)) {
-                    std::cout << "Ray tracing is not supported in OpenGL ... yet." << std::endl;
+                    std::cout << "Ray tracing is not supported in OpenGL ... yet." << std::endl; // Some offline raytracer might be implemented at some point. It will require version 3.3 or greater.
                     lastKey = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
                 if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
