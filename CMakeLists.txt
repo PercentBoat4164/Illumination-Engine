@@ -84,7 +84,7 @@ endif()
 # Post build moves
 FILE(COPY res DESTINATION "${CMAKE_BINARY_DIR}")
 if ($ENV{CLION_IDE})
-    if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+    if (CMAKE_BUILD_TYPE STREQUAL Debug)
         add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/bin/glew32d.dll ${CMAKE_BINARY_DIR})
         add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/glfw/src/glfw3d.dll ${CMAKE_BINARY_DIR})
         add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/assimp/code/assimp-vc142-mtd.dll ${CMAKE_BINARY_DIR})
@@ -94,5 +94,5 @@ if ($ENV{CLION_IDE})
         add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/assimp/code/assimp-vc142-mt.dll ${CMAKE_BINARY_DIR})
     endif ()
 else ()
-    # Add Visual Studio file copies here. Change the else above to check specifically for Visual Studio.
+    # Add Visual Studio file copies here. Change the else above to check specifically for Visual Studio. When doing the if statement for debug compiling, be careful because it is case sensitive. The case used in CLion may not be the same as is used in Visual Studio.
 endif ()
