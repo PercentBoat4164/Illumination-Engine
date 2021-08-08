@@ -26,7 +26,7 @@ set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/deps.tar.xz)
+execute_process(WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} COMMAND ${CMAKE_COMMAND} -E tar xzf deps.tar.xz)
 
 add_executable(IlluminationEngine src/main.cpp)
 
