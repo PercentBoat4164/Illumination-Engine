@@ -26,7 +26,7 @@ set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
-execute_process(WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} COMMAND ${CMAKE_COMMAND} -E tar xzf deps.tar.xz)
+execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory deps COMMAND ${CMAKE_COMMAND} -E tar xJ deps.tar.xz WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_executable(IlluminationEngine src/main.cpp)
 
@@ -72,8 +72,7 @@ if (Vulkan_FOUND)
     add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
 endif()
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/res)
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/res ${CMAKE_BINARY_DIR}/res)
+add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/res ${CMAKE_BINARY_DIR}/res)
 if (WIN32)
     if ($ENV{CLION_IDE})
         if (CMAKE_BUILD_TYPE STREQUAL Debug)

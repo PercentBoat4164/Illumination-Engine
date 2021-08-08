@@ -44,7 +44,7 @@ public:
         samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         if (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering) {
-            samplerInfo.anisotropyEnable = linkedRenderEngine->settings->anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
+            samplerInfo.anisotropyEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering & (linkedRenderEngine->settings->anisotropicFilterLevel > 0)) ? VK_TRUE : VK_FALSE;
             samplerInfo.maxAnisotropy = linkedRenderEngine->settings->anisotropicFilterLevel;
         }
         samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;

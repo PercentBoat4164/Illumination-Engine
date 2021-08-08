@@ -83,7 +83,7 @@ public:
         rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
         VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
         /**@todo: Make this depend on the device support of sampleRateShading*/
-        multisampleStateCreateInfo.sampleShadingEnable = (linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT) || linkedRenderEngine->settings->rayTracing ? VK_FALSE : VK_TRUE;
+        multisampleStateCreateInfo.sampleShadingEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.msaaSmoothing & (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT)) ? VK_TRUE : VK_FALSE;
         multisampleStateCreateInfo.minSampleShading = 1.0f;
         multisampleStateCreateInfo.rasterizationSamples = linkedRenderEngine->settings->msaaSamples;
         VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
@@ -93,7 +93,7 @@ public:
         pipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
         pipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
         pipelineDepthStencilStateCreateInfo.back.compareOp = VK_COMPARE_OP_ALWAYS;
-        VkPipelineColorBlendAttachmentState colorBlendAttachmentState{}; // Alpha blending is done here
+        VkPipelineColorBlendAttachmentState colorBlendAttachmentState{};
         colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         colorBlendAttachmentState.blendEnable = linkedRenderEngine->settings->rayTracing ? VK_FALSE : VK_TRUE;
         colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;

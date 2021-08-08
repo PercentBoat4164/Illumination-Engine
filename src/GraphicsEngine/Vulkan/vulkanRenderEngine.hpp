@@ -89,7 +89,8 @@ public:
         vkb::detail::Result<vkb::Device> temporaryLogicalDevice = temporaryLogicalDeviceBuilder.build();
         if (!temporaryLogicalDevice) { throw std::runtime_error("failed to create Vulkan device! Error: " + temporaryLogicalDevice.error().message() + "\n"); }
         device = temporaryLogicalDevice.value();
-        renderEngineLink.build();
+        bool renderDocCapturing = std::getenv("ENABLE_VULKAN_RENDERDOC_CAPTURE") != nullptr;
+        renderEngineLink.build(renderDocCapturing);
         vkb::destroy_device(device);
         //EXTENSION SELECTION
         //-------------------
@@ -101,7 +102,7 @@ public:
                 VK_KHR_SPIRV_1_4_EXTENSION_NAME
         };
         std::vector<std::vector<const char *>> extensionGroups{
-//            rayTracingExtensions
+            rayTracingExtensions
         };
         //DEVICE FEATURE SELECTION
         //------------------------
@@ -127,7 +128,7 @@ public:
                 &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline
         };
         std::vector<std::vector<VkBool32 *>> extensionFeatureGroups{
-//                rayTracingFeatures
+                rayTracingFeatures
         };
         //===========================
         for (const std::vector<VkBool32 *> &deviceFeatureGroup : deviceFeatureGroups) {
@@ -144,14 +145,14 @@ public:
                 renderEngineLink.enableFeature(extensionFeatureGroup);
             }
         }
-        selector.set_surface(surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete); //.set_required_features(renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures)
         if (!extensionGroups.empty()) { selector.add_desired_extensions(*extensionGroups.data()); }
-        vkb::detail::Result<vkb::PhysicalDevice> finalPhysicalDeviceBuilder = selector.select();
+        vkb::detail::Result<vkb::PhysicalDevice> finalPhysicalDeviceBuilder = selector.set_surface(surface).set_required_features(renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
         vkb::DeviceBuilder finalLogicalDeviceBuilder{finalPhysicalDeviceBuilder.value()};
-        vkb::detail::Result<vkb::Device> finalLogicalDevice = finalLogicalDeviceBuilder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature).build();
+        finalLogicalDeviceBuilder.add_pNext(renderDocCapturing ? renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestRenderDocCompatibleFeature : renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature);
+        vkb::detail::Result<vkb::Device> finalLogicalDevice = finalLogicalDeviceBuilder.build();
         if (!finalLogicalDevice) { throw std::runtime_error("failed to create Vulkan device. Error: " + finalLogicalDevice.error().message() + "\n"); }
         device = finalLogicalDevice.value();
-        renderEngineLink.build();
+        renderEngineLink.build(renderDocCapturing);
         engineDeletionQueue.emplace_front([&] { vkb::destroy_device(device); });
         graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
         presentQueue = device.get_queue(vkb::QueueType::present).value();
@@ -179,7 +180,6 @@ public:
         vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(settings.vSync ? VK_PRESENT_MODE_FIFO_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(settings.resolution[0], settings.resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         swapchain = swap_ret.value();
-        renderEngineLink.swapchainImages = swapchain.get_images().value();
         recreationDeletionQueue.emplace_front([&] { vkb::destroy_swapchain(swapchain); });
         swapchainImageViews = swapchain.get_image_views().value();
         recreationDeletionQueue.emplace_front([&] { swapchain.destroy_image_views(swapchainImageViews); });
@@ -251,7 +251,13 @@ public:
                 mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->transformationBuffer.unload(); });
                 mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->bottomLevelAccelerationStructure.unload(); });
             }
-            for (VulkanTexture &texture : renderable->textures) { texture.upload(); }
+            for (VulkanTexture &texture : renderable->textures) {
+                texture.unload();
+                VulkanTexture::CreateInfo textureCreateInfo{texture.createdWith};
+                textureCreateInfo.mipMapping = settings.mipMapping;
+                texture.create(&renderEngineLink, &textureCreateInfo);
+                texture.upload();
+            }
             VulkanDescriptorSet::CreateInfo renderableDescriptorSetCreateInfo{};
             if (settings.rayTracing) {
                 renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}};

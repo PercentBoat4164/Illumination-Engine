@@ -25,12 +25,15 @@ public:
         VkPhysicalDeviceFeatures physicalDeviceFeatures{};
 
         // Extension Features
-        VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR};
+        // NOTE: Ray tracing features are on the bottom of the pNext stack so that a pointer to higher up on the stack can grab only the structures supported by RenderDoc.
+        VkPhysicalDeviceDescriptorIndexingFeaturesEXT physicalDeviceDescriptorIndexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT};
+        // All the below are ray tracing features, and cannot be loaded by RenderDoc.
+        VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR, &physicalDeviceDescriptorIndexingFeatures};
         VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES, &physicalDeviceAccelerationStructureFeatures};
-        VkPhysicalDeviceDescriptorIndexingFeaturesEXT physicalDeviceDescriptorIndexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT, &physicalDeviceBufferDeviceAddressFeatures};
-        VkPhysicalDeviceRayQueryFeaturesKHR physicalDeviceRayQueryFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR, &physicalDeviceDescriptorIndexingFeatures};
+        VkPhysicalDeviceRayQueryFeaturesKHR physicalDeviceRayQueryFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR, &physicalDeviceBufferDeviceAddressFeatures};
         VkPhysicalDeviceRayTracingPipelineFeaturesKHR physicalDeviceRayTracingPipelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR, &physicalDeviceRayQueryFeatures};
         void *pNextHighestFeature = &physicalDeviceRayTracingPipelineFeatures;
+        void *pNextHighestRenderDocCompatibleFeature = &physicalDeviceDescriptorIndexingFeatures;
 
         //Engine Features
         VkBool32 anisotropicFiltering{false};
@@ -41,13 +44,12 @@ public:
     VulkanSettings *settings = nullptr;
     vkb::Device *device{};
     vkb::Swapchain *swapchain{};
-    std::vector<VkImage> swapchainImages{};
     VkCommandPool *commandPool{};
     VmaAllocator *allocator{};
     VkQueue *graphicsQueue{};
     VkQueue *presentQueue{};
-    VkQueue *transferQueue{}; // Unused for now
-    VkQueue *computeQueue{}; // Unused for now
+    VkQueue *transferQueue{};
+    VkQueue *computeQueue{};
     std::vector<VkImageView> *swapchainImageViews{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
     PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{};
@@ -59,7 +61,7 @@ public:
     PhysicalDeviceInfo supportedPhysicalDeviceInfo{};
     PhysicalDeviceInfo enabledPhysicalDeviceInfo{};
 
-    void build() {
+    void build(bool renderDocCapturing = false) {
         vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(vkGetDeviceProcAddr(device->device, "vkGetBufferDeviceAddressKHR"));
         vkCmdBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkCmdBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device->device, "vkCmdBuildAccelerationStructuresKHR"));
         vkCreateAccelerationStructureKHR = reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(vkGetDeviceProcAddr(device->device, "vkCreateAccelerationStructureKHR"));
@@ -71,7 +73,7 @@ public:
         vkGetPhysicalDeviceProperties2(device->physical_device.physical_device, &physicalDeviceProperties);
         supportedPhysicalDeviceInfo.physicalDeviceProperties = physicalDeviceProperties.properties;
         VkPhysicalDeviceFeatures2 physicalDeviceFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-        physicalDeviceFeatures.pNext = supportedPhysicalDeviceInfo.pNextHighestFeature;
+        physicalDeviceFeatures.pNext = renderDocCapturing ? supportedPhysicalDeviceInfo.pNextHighestRenderDocCompatibleFeature : supportedPhysicalDeviceInfo.pNextHighestFeature;
         vkGetPhysicalDeviceFeatures2(device->physical_device.physical_device, &physicalDeviceFeatures);
         supportedPhysicalDeviceInfo.physicalDeviceFeatures = physicalDeviceFeatures.features;
         vkGetPhysicalDeviceMemoryProperties(device->physical_device.physical_device, &supportedPhysicalDeviceInfo.physicalDeviceMemoryProperties);

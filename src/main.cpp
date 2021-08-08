@@ -64,12 +64,16 @@ int main(int argc, char **argv) {
             renderEngine.camera.position = {0, 0, 2};
             VulkanRenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
             VulkanRenderable quad{&renderEngine.renderEngineLink, "res/Models/Quad/quad.obj"};
-            VulkanRenderable ball{&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj"};
+            VulkanRenderable rock{&renderEngine.renderEngineLink, "res/Models/Rock/rock.obj"};
             VulkanRenderable statue{&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj"};
+            VulkanRenderable ball{&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj"};
+            VulkanRenderable backpack{&renderEngine.renderEngineLink, "res/Models/Backpack/Survival_BackPack_2.fbx"};
             renderEngine.loadRenderable(&cube);
             renderEngine.loadRenderable(&quad);
-            renderEngine.loadRenderable(&ball);
+            renderEngine.loadRenderable(&rock);
             renderEngine.loadRenderable(&statue);
+            renderEngine.loadRenderable(&ball);
+            renderEngine.loadRenderable(&backpack);
             double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
@@ -92,10 +96,14 @@ int main(int argc, char **argv) {
                     lastKey = glfwGetTime();
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+                    tempTime = glfwGetTime();
                     renderEngine.createSwapchain(true);
+                    glfwSetTime(tempTime);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
+                    tempTime = glfwGetTime();
                     renderEngine.createSwapchain(true);
+                    glfwSetTime(tempTime);
                 } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
                     tempTime = glfwGetTime();
@@ -150,8 +158,13 @@ int main(int argc, char **argv) {
                     lastKey = glfwGetTime();
                 }
                 //move renderables
-//                cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
-//                ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
+                cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
+                ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
+                backpack.position = {0, 7, 0};
+                statue.position = {7, 0, 0};
+                rock.position = {-7, 0, 0};
+                quad.scale = {100, 100, 100};
+                quad.rotation = {90, 0, 0};
                 //update framerate gathered over past 'recordedFPSCount' frames
                 recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
                 int sum{0};

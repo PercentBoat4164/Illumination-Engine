@@ -126,7 +126,7 @@ public:
     std::vector<VulkanShader> shaders{};
     glm::vec3 position{};
     glm::vec3 rotation{};
-    glm::vec3 scale{};
+    glm::vec3 scale{1.0f, 1.0f, 1.0f};
     bool render{true};
     bool created{false};
     uint32_t triangleCount{};
