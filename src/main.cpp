@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cmath>
-#include <algorithm>
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
 #include "GraphicsEngine/Vulkan/vulkanRenderEngine.hpp"
@@ -78,38 +77,35 @@ int main(int argc, char **argv) {
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
-            std::vector<float> recordedFPS{};
-            float recordedFPSCount{10};
-            recordedFPS.resize((size_t)recordedFPSCount);
             double tempTime{};
             while (renderEngine.update()) {
                 //Process inputs
                 glfwPollEvents();
-                float velocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
+                float maxVelocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
                     tempTime = glfwGetTime();
                     renderEngine.reloadRenderables();
                     glfwSetTime(tempTime);
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastKey > .2)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastKey > .2)) {
                     renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
                     renderEngine.handleFullscreenSettingsChange();
                     lastKey = glfwGetTime();
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
                     tempTime = glfwGetTime();
                     renderEngine.createSwapchain(true);
                     glfwSetTime(tempTime);
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_8)) {
                     renderEngine.settings.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
                     tempTime = glfwGetTime();
                     renderEngine.createSwapchain(true);
                     glfwSetTime(tempTime);
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
                     tempTime = glfwGetTime();
                     renderEngine.reloadRenderables();
                     glfwSetTime(tempTime);
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_R) & (glfwGetTime() - lastKey > .2)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_R) & (glfwGetTime() - lastKey > .2)) {
                     if (renderEngine.renderEngineLink.enabledPhysicalDeviceInfo.rayTracing) {
                         renderEngine.settings.rayTracing ^= 1;
                         tempTime = glfwGetTime();
@@ -117,14 +113,14 @@ int main(int argc, char **argv) {
                         glfwSetTime(tempTime);
                     } else { std::cout << "This machine does not support the Vulkan extensions required for ray tracing." << std::endl; }
                     lastKey = glfwGetTime();
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_D) & captureInput) { renderEngine.camera.position += renderEngine.camera.right * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastKey > .2)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { maxVelocity *= 6; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_D) & captureInput) { renderEngine.camera.position += renderEngine.camera.right * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastKey > .2)) {
                     int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
                     if (mode == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
@@ -144,7 +140,7 @@ int main(int argc, char **argv) {
                     }
                     lastKey = glfwGetTime();
                     captureInput = !captureInput;
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastKey > .2)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastKey > .2)) {
                     if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
                     if (renderEngine.settings.fullscreen) {
                         renderEngine.settings.fullscreen = false;
@@ -165,12 +161,6 @@ int main(int argc, char **argv) {
                 rock.position = {-7, 0, 0};
                 quad.scale = {100, 100, 100};
                 quad.rotation = {90, 0, 0};
-                //update framerate gathered over past 'recordedFPSCount' frames
-                recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1 / renderEngine.frameTime;
-                int sum{0};
-                std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
-                glfwSetWindowTitle(renderEngine.window, (std::string("Illumination Engine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
-                std::flush(std::cout);
             }
             renderEngine.destroy();
         } catch (const std::exception& e) {
@@ -185,6 +175,7 @@ int main(int argc, char **argv) {
         try {
             OpenGLRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
+            renderEngine.camera.position = {0, 0, 2};
             OpenGLRenderable cube{"res/Models/Cube/cube.obj"};
             OpenGLRenderable quad{"res/Models/Quad/quad.obj"};
             OpenGLRenderable rock{"res/Models/Rock/rock.obj"};
@@ -201,39 +192,35 @@ int main(int argc, char **argv) {
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
-            std::vector<float> recordedFPS{};
-            float recordedFPSCount{10};
-            recordedFPS.resize((size_t)recordedFPSCount);
-            renderEngine.camera.position = {0, 0, 2};
             double tempTime{};
             while (renderEngine.update() != 1) {
                 //Process inputs
                 glfwPollEvents();
-                float velocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
+                float maxVelocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
                     tempTime = glfwGetTime();
                     renderEngine.reloadRenderables();
                     glfwSetTime(tempTime);
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastKey > .2)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastKey > .2)) {
                     renderEngine.settings.fullscreen ^= 1;
                     renderEngine.updateSettings();
                     lastKey = glfwGetTime();
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_M)) {
                     renderEngine.settings.mipMapping ^= 1;
                     tempTime = glfwGetTime();
                     renderEngine.reloadRenderables();
                     glfwSetTime(tempTime);
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_R) & (glfwGetTime() - lastKey > .2)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_R) & (glfwGetTime() - lastKey > .2)) {
                     std::cout << "Ray tracing is not supported in OpenGL ... yet." << std::endl; // Some offline raytracer might be implemented at some point. It will require version 3.3 or greater.
                     lastKey = glfwGetTime();
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { velocity *= 6; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_D) & captureInput) { renderEngine.camera.position += renderEngine.camera.right * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * velocity; }
-                if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastKey > .2)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_CONTROL) & captureInput) { maxVelocity *= 6; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_W) & captureInput) { renderEngine.camera.position += renderEngine.camera.front * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_A) & captureInput) { renderEngine.camera.position -= renderEngine.camera.right * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_S) & captureInput) { renderEngine.camera.position -= renderEngine.camera.front * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_D) & captureInput) { renderEngine.camera.position += renderEngine.camera.right * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * maxVelocity; }
+                if (glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastKey > .2)) {
                     int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
                     if (mode == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
@@ -253,7 +240,7 @@ int main(int argc, char **argv) {
                     }
                     lastKey = glfwGetTime();
                     captureInput = !captureInput;
-                } if ((bool)glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastKey > .2)) {
+                } if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastKey > .2)) {
                     if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
                     else if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
@@ -274,11 +261,6 @@ int main(int argc, char **argv) {
                 rock.position = {-7, 0, 0};
                 quad.scale = {100, 100, 100};
                 quad.rotation = {90, 0, 0};
-                //update framerate gathered over past 'recordedFPSCount' frames
-                recordedFPS[(size_t)std::fmod((float)renderEngine.frameNumber, recordedFPSCount)] = 1.0f / (float)renderEngine.frameTime;
-                int sum{0};
-                std::for_each(recordedFPS.begin(), recordedFPS.end(), [&] (int n) { sum += n; });
-                glfwSetWindowTitle(renderEngine.window, (std::string("Illumination Engine - ") + std::to_string((float)sum / recordedFPSCount)).c_str());
             }
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;

@@ -96,14 +96,14 @@ public:
         uniformBufferObject = {matrix, camera.view, camera.proj, (float)glfwGetTime()};
         modelBuffer.uploadData(&uniformBufferObject, sizeof(VulkanUniformBufferObject));
         if (linkedRenderEngine->settings->rayTracing) {
-            for (VulkanMesh mesh : meshes) {
+            for (VulkanMesh &mesh : meshes) {
                 mesh.transformationMatrix = {
                         uniformBufferObject.model[0][0], uniformBufferObject.model[0][1], uniformBufferObject.model[0][2], uniformBufferObject.model[3][0],
                         uniformBufferObject.model[1][0], uniformBufferObject.model[1][1], uniformBufferObject.model[1][2], uniformBufferObject.model[3][1],
                         uniformBufferObject.model[2][0], uniformBufferObject.model[2][1], uniformBufferObject.model[2][2], uniformBufferObject.model[3][2]
                 };
                 mesh.transformationBuffer.uploadData(&mesh.transformationMatrix, sizeof(mesh.transformationMatrix));
-                if (mesh.bottomLevelAccelerationStructure.created) { mesh.bottomLevelAccelerationStructure.unload(); }
+                mesh.bottomLevelAccelerationStructure.destroy();
                 VulkanAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
                 renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
                 renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
@@ -153,7 +153,7 @@ private:
                 temporaryMesh.vertices.push_back(temporaryVertex);
             }
             temporaryMesh.indices.reserve(static_cast<std::vector<unsigned int>::size_type>(scene->mMeshes[node->mMeshes[i]]->mNumFaces) * 3);
-            for (unsigned int j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++j) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[j].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[j].mIndices[k]); } }
+            for (; triangleCount < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++triangleCount) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[triangleCount].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[triangleCount].mIndices[k]); } }
             if (scene->mMeshes[node->mMeshes[i]]->mMaterialIndex >= 0) {
                 std::vector<std::pair<unsigned int *, aiTextureType>> textureTypes{
                     {&temporaryMesh.diffuseTexture, aiTextureType_DIFFUSE},

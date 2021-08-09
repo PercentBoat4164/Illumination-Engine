@@ -7,8 +7,6 @@ public:
     void create (VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) override {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
-        std::vector<uint32_t> geometryCounts{};
-        geometryCounts.reserve(createdWith.primitiveCount);
         VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR};
         VulkanBuffer instancesBuffer{};
         VkAccelerationStructureGeometryKHR accelerationStructureGeometry{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR};
@@ -82,8 +80,8 @@ public:
         VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
         linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
-        scratchBuffer.unload();
-        if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) { instancesBuffer.unload(); }
+        scratchBuffer.destroy();
+        if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) { instancesBuffer.destroy(); }
         created = true;
     }
 

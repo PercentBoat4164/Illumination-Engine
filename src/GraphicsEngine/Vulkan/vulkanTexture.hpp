@@ -131,6 +131,6 @@ public:
         }
         transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBuffer);
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
-        scratchBuffer.unload();
+        scratchBuffer.destroy();
     }
 };

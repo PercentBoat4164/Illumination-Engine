@@ -44,7 +44,7 @@ public:
     uint32_t mipLevels{};
     CreateInfo createdWith{};
 
-    void unload() {
+    void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }

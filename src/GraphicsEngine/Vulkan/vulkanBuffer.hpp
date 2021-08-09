@@ -44,11 +44,7 @@ public:
     CreateInfo createdWith{};
     bool created{false};
 
-    void unload() {
-        if (!created) {
-//            throw std::runtime_error("Calling VulkanBuffer::unload() on a buffer for which VulkanBuffer::create() has not been called is illegal.");
-            return;
-        }
+    void destroy() {
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
         created = false;

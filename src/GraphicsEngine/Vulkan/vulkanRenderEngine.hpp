@@ -169,7 +169,7 @@ public:
         engineDeletionQueue.emplace_front([&] { commandBuffer.destroy(); });
         camera.create(&renderEngineLink);
         createSwapchain(true);
-        if (settings.rayTracing) { engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.unload(); }); }
+        if (settings.rayTracing) { engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); }); }
     }
 
     void createSwapchain(bool fullRecreate = false) {
@@ -232,27 +232,27 @@ public:
         bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         bufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         renderable->modelBuffer.create(&renderEngineLink, &bufferCreateInfo);
-        renderable->deletionQueue.emplace_front([&](VulkanRenderable *thisRenderable){ thisRenderable->modelBuffer.unload(); });
+        renderable->deletionQueue.emplace_front([&](VulkanRenderable *thisRenderable){ thisRenderable->modelBuffer.destroy(); });
         for (VulkanRenderable::VulkanMesh &mesh : renderable->meshes) {
             bufferCreateInfo.size = sizeof(mesh.vertices[0]) * mesh.vertices.size();
             bufferCreateInfo.usage = settings.rayTracing ? VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             mesh.vertexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.vertexBuffer.uploadData(mesh.vertices.data(), sizeof(mesh.vertices[0]) * mesh.vertices.size());
-            mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->vertexBuffer.unload(); });
+            mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->vertexBuffer.destroy(); });
             bufferCreateInfo.size = sizeof(mesh.indices[0]) * mesh.indices.size();
             bufferCreateInfo.usage ^= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
             mesh.indexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.indexBuffer.uploadData(mesh.indices.data(), sizeof(mesh.indices[0]) * mesh.indices.size());
-            mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->indexBuffer.unload(); });
+            mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->indexBuffer.destroy(); });
             if (settings.rayTracing) {
                 bufferCreateInfo.size = sizeof(mesh.transformationMatrix);
                 bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
                 mesh.transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
-                mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->transformationBuffer.unload(); });
-                mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->bottomLevelAccelerationStructure.unload(); });
+                mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->transformationBuffer.destroy(); });
+                mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->bottomLevelAccelerationStructure.destroy(); });
             }
             for (VulkanTexture &texture : renderable->textures) {
-                texture.unload();
+                texture.destroy();
                 VulkanTexture::CreateInfo textureCreateInfo{texture.createdWith};
                 textureCreateInfo.mipMapping = settings.mipMapping;
                 texture.create(&renderEngineLink, &textureCreateInfo);
@@ -277,7 +277,7 @@ public:
             mesh.pipeline.create(&renderEngineLink, &renderablePipelineCreateInfo);
             mesh.deletionQueue.emplace_front([&] (VulkanRenderable::VulkanMesh *thisMesh) { thisMesh->pipeline.destroy(); });
         }
-        renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) { for (VulkanTexture &texture : thisRenderable->textures) { texture.unload(); } });
+        renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) { for (VulkanTexture &texture : thisRenderable->textures) { texture.destroy(); } });
         renderable->deletionQueue.emplace_front([&] (VulkanRenderable *thisRenderable) { for (VulkanRenderable::VulkanMesh &mesh : thisRenderable->meshes) { mesh.destroy(); } });
         if (append) { renderables.push_back(renderable); }
     }
@@ -314,14 +314,10 @@ public:
         camera.update();
         for (VulkanRenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera); } }
         if (settings.rayTracing) {
+            topLevelAccelerationStructure.destroy();
             std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
             bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
-            for (VulkanRenderable *renderable : renderables) {
-                if (renderable->render) {
-                    if (settings.rayTracing) { for (const VulkanRenderable::VulkanMesh& mesh : renderable->meshes) { bottomLevelAccelerationStructureDeviceAddresses.push_back(mesh.bottomLevelAccelerationStructure.deviceAddress); } }
-                }
-            }
-            if (topLevelAccelerationStructure.created) { topLevelAccelerationStructure.unload(); }
+            for (VulkanRenderable *renderable : renderables) { if (renderable->render & settings.rayTracing) { for (const VulkanRenderable::VulkanMesh &mesh : renderable->meshes) { bottomLevelAccelerationStructureDeviceAddresses.push_back(mesh.bottomLevelAccelerationStructure.deviceAddress); } } }
             VulkanAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
             topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
             topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
@@ -331,7 +327,7 @@ public:
         }
         for (VulkanRenderable *renderable : renderables) {
             if (renderable->render) {
-                for (VulkanRenderable::VulkanMesh& mesh : renderable->meshes) {
+                for (VulkanRenderable::VulkanMesh &mesh : renderable->meshes) {
                     if (settings.rayTracing) { mesh.descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
                     vkCmdBindVertexBuffers(commandBuffer.commandBuffers[imageIndex], 0, 1, &mesh.vertexBuffer.buffer, offsets);
                     vkCmdBindIndexBuffer(commandBuffer.commandBuffers[imageIndex], mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
