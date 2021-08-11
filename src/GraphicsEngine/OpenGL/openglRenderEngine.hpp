@@ -256,6 +256,8 @@ private:
         pOpenGlRenderEngine->settings.resolution[0] = width;
         pOpenGlRenderEngine->settings.resolution[1] = height;
         pOpenGlRenderEngine->camera.updateSettings();
+        glViewport(0, 0, (GLsizei)pOpenGlRenderEngine->settings.resolution[0], (GLsizei)pOpenGlRenderEngine->settings.resolution[1]);
+        glScissor(0, 0, (GLsizei)pOpenGlRenderEngine->settings.resolution[0], (GLsizei)pOpenGlRenderEngine->settings.resolution[1]);
     }
 
     GLFWmonitor *monitor{};
