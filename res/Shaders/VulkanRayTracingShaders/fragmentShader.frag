@@ -50,6 +50,11 @@ float fbm(float x) {
     return v;
 }
 
+vec4 aces(vec4 x) {
+    vec4 tonemapped = clamp((x * (2.51f * x + 0.03f)) / (x * (2.43f * x + 0.59f) + 0.14f), 0.0f, 1.0f);
+    return vec4(tonemapped.x, tonemapped.y, tonemapped.z, 1.0f);
+}
+
 void main() {
     float brightness = 50 * fbm(time);
     color *= vec3(max(fbm(time)*3, 1.0), 1, 1);
@@ -64,4 +69,5 @@ void main() {
         if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionTriangleEXT) { outColor += texture(diffuse, fragTexCoord) * vec4(color, 0) * lightIntensityAfterAttenuation; }
     }
     outColor /= samples;
+    outColor = aces(outColor);
 }

@@ -26,6 +26,11 @@ const vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
 const float brightness = 10.0f;
 const float ambientStrength = 0.0f;
 
+vec4 aces(vec4 x) {
+    vec4 tonemapped = clamp((x * (2.51f * x + 0.03f)) / (x * (2.43f * x + 0.59f) + 0.14f), 0.0f, 1.0f);
+    return vec4(tonemapped.x, tonemapped.y, tonemapped.z, 1.0f);
+}
+
 void main() {
     float distanceFromFragmentToLight = length(fragmentPosition - lightPosition);
     float lightIntensityAfterAttenuation = 1 / ( 1 + distanceFromFragmentToLight + distanceFromFragmentToLight * distanceFromFragmentToLight) * brightness;
@@ -35,5 +40,5 @@ void main() {
     vec3 viewDirection = normalize(cameraPosition - fragmentPosition);
     vec3 reflectDirection = reflect(-lightDirection, interpolatedNormal);
     vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(viewDirection, reflectDirection), 0.0f), 32.0f) * lightColor * lightIntensityAfterAttenuation;
-    fragmentColor = vec4((ambient + diffuse + specular), 1.0f) * texture(diffuseTexture, fragmentTextureCoordinates);
+    fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f) * texture(diffuseTexture, fragmentTextureCoordinates));
 }
