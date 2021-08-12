@@ -169,7 +169,7 @@ public:
         engineDeletionQueue.emplace_front([&] { commandBuffer.destroy(); });
         camera.create(&renderEngineLink);
         createSwapchain(true);
-        if (settings.rayTracing) { engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); }); }
+        engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); });
     }
 
     void createSwapchain(bool fullRecreate = false) {
@@ -187,10 +187,10 @@ public:
         imagesInFlight.clear();
         imagesInFlight.resize(swapchain.image_count, VK_NULL_HANDLE);
         if (fullRecreate) {
-            for (std::function<void()> &function : oneTimeOptionalDeletionQueue) { function(); }
-            oneTimeOptionalDeletionQueue.clear();
+            for (std::function<void()> &function : fullRecreationDeletionQueue) { function(); }
+            fullRecreationDeletionQueue.clear();
             commandBuffer.createCommandBuffers((int) swapchain.image_count);
-            oneTimeOptionalDeletionQueue.emplace_front([&] { commandBuffer.freeCommandBuffers(); });
+            fullRecreationDeletionQueue.emplace_front([&] { commandBuffer.freeCommandBuffers(); });
             imageAvailableSemaphores.resize(swapchain.image_count);
             renderFinishedSemaphores.resize(swapchain.image_count);
             inFlightFences.resize(swapchain.image_count);
@@ -202,13 +202,13 @@ public:
                 if (vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
                 if (vkCreateFence(device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create fences!"); }
             }
-            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(device.device, imageAvailableSemaphore, nullptr); } });
-            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); } });
-            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); } });
+            fullRecreationDeletionQueue.emplace_front([&] { for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(device.device, imageAvailableSemaphore, nullptr); } });
+            fullRecreationDeletionQueue.emplace_front([&] { for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(device.device, renderFinishedSemaphore, nullptr); } });
+            fullRecreationDeletionQueue.emplace_front([&] { for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(device.device, inFlightFence, nullptr); } });
             renderPass.create(&renderEngineLink);
-            oneTimeOptionalDeletionQueue.emplace_front([&] { renderPass.destroy(); });
+            fullRecreationDeletionQueue.emplace_front([&] { renderPass.destroy(); });
             for (VulkanRenderable *renderable : renderables) { loadRenderable(renderable, false); }
-            oneTimeOptionalDeletionQueue.emplace_front([&] { for (VulkanRenderable *renderable : renderables) { renderable->destroy(); } });
+            fullRecreationDeletionQueue.emplace_front([&] { for (VulkanRenderable *renderable : renderables) { renderable->destroy(); } });
         }
         VulkanFramebuffer::CreateInfo framebufferCreateInfo{};
         framebuffers.resize(renderEngineLink.swapchain->image_count);
@@ -407,11 +407,11 @@ public:
     }
 
     void destroy() {
-        for (VulkanRenderable *renderable : renderables) { (*renderable).destroy(); }
+        for (VulkanRenderable *renderable : renderables) { renderable->destroy(); }
         for (std::function<void()> &function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
-        for (std::function<void()> &function : oneTimeOptionalDeletionQueue) { function(); }
-        oneTimeOptionalDeletionQueue.clear();
+        for (std::function<void()> &function : fullRecreationDeletionQueue) { function(); }
+        fullRecreationDeletionQueue.clear();
         for (std::function<void()> &function : engineDeletionQueue) { function(); }
         engineDeletionQueue.clear();
     }
@@ -446,7 +446,7 @@ private:
     VulkanAccelerationStructure topLevelAccelerationStructure{};
     VulkanCommandBuffer commandBuffer{};
     std::deque<std::function<void()>> engineDeletionQueue{};
-    std::deque<std::function<void()>> oneTimeOptionalDeletionQueue{};
+    std::deque<std::function<void()>> fullRecreationDeletionQueue{};
     std::deque<std::function<void()>> recreationDeletionQueue{};
     size_t currentFrame{};
     bool framebufferResized{false};

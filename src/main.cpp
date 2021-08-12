@@ -9,7 +9,7 @@
 #endif
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
-void vulkanRasterizerCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
+void vulkanCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     auto pRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
     xOffset *= pRenderEngine->settings.mouseSensitivity;
     yOffset *= pRenderEngine->settings.mouseSensitivity;
@@ -77,9 +77,8 @@ int main(int argc, char **argv) {
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
-            double tempTime{};
+            double tempTime;
             while (renderEngine.update()) {
-                //Process inputs
                 glfwPollEvents();
                 float maxVelocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
@@ -130,12 +129,12 @@ int main(int argc, char **argv) {
                         if (glfwGetWindowAttrib(renderEngine.window, GLFW_HOVERED)) {
                             glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                             glfwSetCursorPos(renderEngine.window, 0, 0);
-                            glfwSetCursorPosCallback(renderEngine.window, vulkanRasterizerCursorCallback);
+                            glfwSetCursorPosCallback(renderEngine.window, vulkanCursorCallback);
                             glfwSetCursorPos(renderEngine.window, lastCursorPosX, lastCursorPosY);
                         } else {
                             glfwSetCursorPos(renderEngine.window, 0, 0);
                             glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                            glfwSetCursorPosCallback(renderEngine.window, vulkanRasterizerCursorCallback);
+                            glfwSetCursorPosCallback(renderEngine.window, vulkanCursorCallback);
                         }
                     }
                     lastKey = glfwGetTime();
@@ -153,7 +152,6 @@ int main(int argc, char **argv) {
                     }
                     lastKey = glfwGetTime();
                 }
-                //move renderables
                 cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
                 ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
                 backpack.position = {0, 7, 0};
@@ -192,9 +190,8 @@ int main(int argc, char **argv) {
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
-            double tempTime{};
+            double tempTime;
             while (renderEngine.update() != 1) {
-                //Process inputs
                 glfwPollEvents();
                 float maxVelocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
@@ -253,7 +250,6 @@ int main(int argc, char **argv) {
                     }
                     lastKey = glfwGetTime();
                 }
-                //move renderables
                 cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
                 ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
                 backpack.position = {0, 7, 0};

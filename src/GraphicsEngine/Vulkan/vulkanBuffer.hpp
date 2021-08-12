@@ -45,6 +45,7 @@ public:
     bool created{false};
 
     void destroy() {
+        if (!created) { return; }
         for (std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
         created = false;
