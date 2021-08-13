@@ -90,10 +90,10 @@ public:
         created = false;
     }
 
-    void update(const VulkanCamera &camera) {
+    void update(const VulkanCamera &camera, float time) {
         glm::quat quaternion = glm::quat(glm::radians(rotation));
         glm::mat4 matrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
-        uniformBufferObject = {matrix, camera.view, camera.proj, (float)glfwGetTime()};
+        uniformBufferObject = {matrix, camera.view, camera.proj, time};
         modelBuffer.uploadData(&uniformBufferObject, sizeof(VulkanUniformBufferObject));
         if (linkedRenderEngine->settings->rayTracing) {
             for (VulkanMesh &mesh : meshes) {

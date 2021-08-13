@@ -39,13 +39,16 @@ float noise(float x) {
 }
 
 float fbm(float x) {
-    float v = 0.0;
-    float a = 0.5;
-    float shift = float(100);
+    float v = 0.0f;
+    float a = 0.5f;
+    float j = 0.0f;
+    float f = 0.0f;
     for (int i = 0; i < 5; ++i) {
-        v += a * noise(x);
-        x = x * 2.0 + shift;
-        a *= 0.5;
+        j = floor(x);
+        f = fract(x);
+        v += a * mix(hash(j), hash(j + 1.0f), f * f * (3.0f - 2.0f * f));
+        x = x * 2.0f + 100;
+        a *= 0.5f;
     }
     return v;
 }
@@ -56,8 +59,10 @@ vec4 aces(vec4 x) {
 }
 
 void main() {
-    float brightness = 50 * fbm(time);
-    color *= vec3(max(fbm(time)*3, 1.0), 1, 1);
+    float fbmResultAtThisTime = fbm(time);
+    float fbmResultAtDifferentTime = fbm(time + 100000);
+    float brightness = 40 * fbmResultAtThisTime;
+    color *= vec3(max(fbmResultAtDifferentTime * 2, 1.0), 1, 1);
     outColor = vec4(0);
     float distanceFromFragmentToLight = distance(fragmentPositionInWorldSpace, vec3(0, 0, 2));
     float lightIntensityAfterAttenuation = 1 / ( 1 + distanceFromFragmentToLight + distanceFromFragmentToLight * distanceFromFragmentToLight) * brightness;

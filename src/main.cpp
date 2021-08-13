@@ -141,14 +141,14 @@ int main(int argc, char **argv) {
                     captureInput = !captureInput;
                 } if (glfwGetKey(renderEngine.window, GLFW_KEY_ESCAPE) & (glfwGetTime() - lastKey > .2)) {
                     if (!captureInput & !renderEngine.settings.fullscreen) { glfwSetWindowShouldClose(renderEngine.window, 1); }
-                    if (renderEngine.settings.fullscreen) {
-                        renderEngine.settings.fullscreen = false;
-                        renderEngine.handleFullscreenSettingsChange();
-                    } if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
+                    else if (glfwGetInputMode(renderEngine.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                         glfwSetCursorPosCallback(renderEngine.window, nullptr);
                         captureInput = false;
+                    } else if (renderEngine.settings.fullscreen) {
+                        renderEngine.settings.fullscreen = false;
+                        renderEngine.handleFullscreenSettingsChange();
                     }
                     lastKey = glfwGetTime();
                 }

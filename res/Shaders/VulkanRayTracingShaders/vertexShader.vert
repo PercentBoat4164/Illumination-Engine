@@ -22,5 +22,5 @@ void main() {
     outPos = vec3(ubo.model * vec4(inPosition, 1.0f));
     gl_Position = ubo.proj * ubo.view * vec4(outPos, 1.0f);
     fragTexCoord = inTexCoord;
-    time = fract(ubo.time);
+    time = ubo.time;
 }
