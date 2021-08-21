@@ -1,35 +1,30 @@
 cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 project(IlluminationEngine)
-
 set(OpenGL_GL_PREFERENCE LEGACY)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS false)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
 set(ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED false)
-
 # Note: All install instructions are for Ubuntu Linux
 find_package(OpenGL REQUIRED) # install with "sudo apt install libglu1-mesa-dev mesa-common-dev"
-find_package(Vulkan) # install with "wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.182-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.182-focal.list;sudo apt update;sudo apt install vulkan-sdk"
+find_package(Vulkan) # install with "wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-focal.list https://packages.lunarg.com/vulkan/lunarg-vulkan-focal.list;sudo apt update;sudo apt install vulkan-sdk"
 if (ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED)
     find_package(GLEW) # install with "sudo apt install libglew-dev"
     find_package(glfw3) # install with "sudo apt install libglfw3-dev"
     find_package(glm) # install with "sudo apt install libglm-dev"
     find_package(assimp) # install with "sudo apt install assimp"
 endif()
-
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-
-execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory deps COMMAND ${CMAKE_COMMAND} -E tar xJ deps.tar.xz WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-add_executable(IlluminationEngine src/main.cpp)
-
+if (NOT EXISTS "${CMAKE_SOURCE_DIR}/deps")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xJ deps.tar.xz WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif ()
+file(GLOB_RECURSE vulkan_shaders_to_compile res/Shaders/Vulkan*/*)
+add_executable(IlluminationEngine src/main.cpp ${vulkan_shaders_to_compile})
 if (NOT assimp_FOUND)
     add_subdirectory(deps/assimp)
     message("Building with packaged assimp")
@@ -64,14 +59,21 @@ endif()
 if (Vulkan_FOUND)
     add_subdirectory(deps/vk-bootstrap)
     target_link_libraries(IlluminationEngine PUBLIC vk-bootstrap Vulkan::Vulkan)
+    add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
+    if (WIN32)
+        set(glslc "glslc.exe")
+    else ()
+        set(glslc "glslc")
+    endif()
+    foreach (shader ${vulkan_shaders_to_compile})
+        get_filename_component(shader_extension ${shader} LAST_EXT)
+        if (shader_extension MATCHES ".spv")
+            add_custom_command(OUTPUT ${shader}.spv COMMAND ${glslc} ${shader} -g -o ${shader}.spv DEPENDS ${shader} COMMENT "Compiling ${shader}")
+        endif()
+    endforeach()
 endif()
 target_link_libraries(IlluminationEngine PUBLIC OpenGL::GL)
-
 add_compile_definitions(ILLUMINATION_ENGINE_OPENGL)
-if (Vulkan_FOUND)
-    add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
-endif()
-
 add_custom_command(TARGET IlluminationEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/res ${CMAKE_BINARY_DIR}/res)
 if (WIN32)
     if ($ENV{CLION_IDE})

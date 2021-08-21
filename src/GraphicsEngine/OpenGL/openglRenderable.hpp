@@ -94,6 +94,7 @@ public:
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(OpenGLMesh::OpenGLVertex), (void *)offsetof(OpenGLMesh::OpenGLVertex, normal));
         }
         for (OpenGLTexture &texture : textures) { texture.upload(); }
+        deletionQueue.emplace_front([&] { for (OpenGLTexture texture : textures) { texture.destroy(); } });
     }
 
     void update() {
@@ -104,6 +105,7 @@ public:
     void destroy() {
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
+        textures.resize(1);
     }
 
 private:
