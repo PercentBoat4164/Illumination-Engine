@@ -174,12 +174,12 @@ int main(int argc, char **argv) {
             OpenGLRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
-            OpenGLRenderable cube{"res/Models/Cube/cube.obj"};
-            OpenGLRenderable quad{"res/Models/Quad/quad.obj"};
-            OpenGLRenderable rock{"res/Models/Rock/rock.obj"};
-            OpenGLRenderable statue{"res/Models/AncientStatue/ancientStatue.obj"};
-            OpenGLRenderable ball{"res/Models/Sphere/sphere.obj"};
-            OpenGLRenderable backpack{"res/Models/Backpack/Survival_BackPack_2.fbx"};
+            OpenGLRenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
+            OpenGLRenderable quad{&renderEngine.renderEngineLink, "res/Models/Quad/quad.obj"};
+            OpenGLRenderable rock{&renderEngine.renderEngineLink, "res/Models/Rock/rock.obj"};
+            OpenGLRenderable statue{&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj"};
+            OpenGLRenderable ball{&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj"};
+            OpenGLRenderable backpack{&renderEngine.renderEngineLink, "res/Models/Backpack/Survival_BackPack_2.fbx"};
             renderEngine.loadRenderable(&cube);
             renderEngine.loadRenderable(&quad);
             renderEngine.loadRenderable(&rock);

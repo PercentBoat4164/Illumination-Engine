@@ -54,7 +54,6 @@ public:
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
-        // load icon
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes)/sizeof(int)];
         for (unsigned long i = 0; i < sizeof(sizes)/sizeof(int); ++i) {
@@ -94,15 +93,14 @@ public:
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         }
 #endif
-        // Build engine
         renderEngineLink.settings = &settings;
         camera.create(&renderEngineLink);
-        // Enable OpenGL features
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
     }
 
     void loadRenderable(OpenGLRenderable *renderable, bool append = true) {
+        renderable->load();
         renderable->loadShaders(renderable->shaderFilenames);
         renderable->upload();
         if (append) { renderables.push_back(renderable); }
@@ -126,29 +124,29 @@ public:
                 for (const OpenGLRenderable::OpenGLMesh& mesh : renderable->meshes) {
                     glActiveTexture(GL_TEXTURE0);
                     glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.diffuseTexture].ID);
-                    glActiveTexture(GL_TEXTURE5);
+                    glActiveTexture(GL_TEXTURE1);
                     glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.emissionTexture].ID);
-                    glActiveTexture(GL_TEXTURE6);
+                    glActiveTexture(GL_TEXTURE2);
                     glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.heightTexture].ID);
                     glActiveTexture(GL_TEXTURE3);
                     glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.metallicTexture].ID);
-                    glActiveTexture(GL_TEXTURE2);
-                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.normalTexture].ID);
                     glActiveTexture(GL_TEXTURE4);
+                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.normalTexture].ID);
+                    glActiveTexture(GL_TEXTURE5);
                     glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.roughnessTexture].ID);
-                    glActiveTexture(GL_TEXTURE1);
+                    glActiveTexture(GL_TEXTURE6);
                     glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.specularTexture].ID);
                     renderable->program.setValue("projection", camera.proj);
                     renderable->program.setValue("normalMatrix", glm::mat3(glm::transpose(glm::inverse(renderable->model))));
                     renderable->program.setValue("viewModel", camera.view * renderable->model);
                     renderable->program.setValue("model", renderable->model);
                     renderable->program.setValue("diffuseTexture", 0);
-                    renderable->program.setValue("emissionTexture", 5);
-                    renderable->program.setValue("heightTexture", 6);
+                    renderable->program.setValue("emissionTexture", 1);
+                    renderable->program.setValue("heightTexture", 2);
                     renderable->program.setValue("metallicTexture", 3);
-                    renderable->program.setValue("normalTexture", 2);
-                    renderable->program.setValue("roughnessTexture", 4);
-                    renderable->program.setValue("specularTexture", 1);
+                    renderable->program.setValue("normalTexture", 4);
+                    renderable->program.setValue("roughnessTexture", 5);
+                    renderable->program.setValue("specularTexture", 6);
                     renderable->program.setValue("cameraPosition", camera.position);
                     glBindVertexArray(mesh.vertexArrayObject);
                     glUseProgram(renderable->program.ID);
@@ -168,7 +166,6 @@ public:
     void updateSettings() {
         if (settings.fullscreen) {
             glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);
-            //find monitor that window is on
             int monitorCount{}, i, windowX{}, windowY{}, windowWidth{}, windowHeight{}, monitorX{}, monitorY{}, monitorWidth, monitorHeight, bestMonitorWidth{}, bestMonitorHeight{}, bestMonitorRefreshRate{}, overlap, bestOverlap{0};
             GLFWmonitor **monitors;
             const GLFWvidmode *mode;
@@ -189,7 +186,6 @@ public:
                     bestMonitorRefreshRate = mode->refreshRate;
                 }
             }
-            //put window in fullscreen on that monitor
             glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
             settings.resolution = {bestMonitorWidth, bestMonitorHeight};
         } else {
@@ -206,7 +202,10 @@ public:
     int frameNumber{};
 
     void destroy() {
-        for (OpenGLRenderable *renderable : renderables) { renderable->destroy(); }
+        for (OpenGLRenderable *renderable : renderables) {
+            renderable->destroy();
+            renderable->program.destroy();
+        }
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }

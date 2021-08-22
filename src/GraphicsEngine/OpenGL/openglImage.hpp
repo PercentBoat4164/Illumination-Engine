@@ -19,6 +19,7 @@ public:
 
         //Only required if format != OPENGL_TEXTURE_*
         int width{}, height{};
+        bool mipMapping{true};
         stbi_uc *data{};
 
         //Only required if format == OPENGL_TEXTURE_*
@@ -43,7 +44,7 @@ public:
         if (createdWith.format == OPENGL_COLOR) { glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, createdWith.width, createdWith.height, 0, GL_RGB, GL_UNSIGNED_BYTE, createdWith.data); }
         if (createdWith.format == OPENGL_DEPTH) { glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, createdWith.width, createdWith.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, createdWith.data); }
         if (createdWith.format >= OPENGL_TEXTURE) { glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, createdWith.width, createdWith.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, createdWith.data); } else { deletionQueue.emplace_front([&] { stbi_image_free(createdWith.data); }); }
-        glGenerateMipmap(GL_TEXTURE_2D);
+        if (createdWith.mipMapping) { glGenerateMipmap(GL_TEXTURE_2D); }
     }
 
     virtual void destroy() {

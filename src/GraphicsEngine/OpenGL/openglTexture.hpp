@@ -9,15 +9,19 @@
 
 class OpenGLTexture : public OpenGLImage{
 public:
+    bool created{false};
+
     void create(CreateInfo *createInfo) override {
         createdWith = *createInfo;
         glGenTextures(1, &ID);
         deletionQueue.emplace_front([&] { glDeleteTextures(1, &ID); });
+        created = true;
     }
 
     void destroy() override {
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
+        created = false;
     }
 
 private:

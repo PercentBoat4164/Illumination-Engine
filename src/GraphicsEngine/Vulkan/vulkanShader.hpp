@@ -60,7 +60,7 @@ public:
         rawFile.close();
         data.clear();
         std::string compiledFileName = createdWith.filename + ".spv";
-        if (system((GLSLC + createdWith.filename + " -o " + compiledFileName + " --target-env=vulkan1.2").c_str()) != 0) { if (compiled) { std::cout << "Could not compile shaders...using pre-compiled shaders instead." << std::endl; } else { throw std::runtime_error("failed to compile Shaders!"); } }
+        if (system((GLSLC + createdWith.filename + " -o " + compiledFileName + " --target-env=vulkan1.2").c_str()) != 0) { if (compiled) { std::cout << "Could not compile shaders...using pre-compiled shaders instead." << std::endl; } else { throw std::runtime_error("failed to compile shaders: " + createdWith.filename); } }
         compiled = true;
     }
 };

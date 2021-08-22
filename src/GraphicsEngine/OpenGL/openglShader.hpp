@@ -19,6 +19,7 @@ public:
     std::string data{};
     uint32_t ID{};
     bool compiled{false};
+    std::string oldData{};
 
     void create(CreateInfo *createInfo) {
         createdWith = *createInfo;
@@ -37,6 +38,7 @@ public:
         std::stringstream shaderCode{};
         shaderCode << file.rdbuf();
         file.close();
+        oldData = data;
         data = shaderCode.str();
         ID = glCreateShader(createdWith.shaderType);
         deletionQueue.emplace_front([&] { glDeleteShader(ID); });
@@ -45,16 +47,22 @@ public:
     void compile() {
         int infoLogLength{};
         const char *shaderSource = data.c_str();
+        bool compiledThisTime{false};
         glShaderSource(ID, 1, &shaderSource, nullptr);
         glCompileShader(ID);
-        glGetShaderiv(ID, GL_COMPILE_STATUS, reinterpret_cast<GLint *>(&compiled));
-        if (!compiled) {
+        glGetShaderiv(ID, GL_COMPILE_STATUS, reinterpret_cast<GLint *>(&compiledThisTime));
+        if (!compiledThisTime) {
             glGetShaderiv(ID, GL_INFO_LOG_LENGTH, &infoLogLength);
             std::vector<char> errorMessage(infoLogLength + 1);
             glGetShaderInfoLog(ID, infoLogLength, &infoLogLength, &errorMessage[0]);
             printf("%s\n", &errorMessage[0]);
-            throw std::runtime_error("failed to compile shader: " + static_cast<std::string>(createdWith.filename));
+            if (compiled) {
+                std::cout << "Could not compile shaders...using pre-compiled shaders instead." << std::endl;
+                data = oldData;
+                compile();
+            } else { throw std::runtime_error("failed to compile shaders: " + static_cast<std::string>(createdWith.filename)); }
         }
+        compiled = compiled | compiledThisTime;
     }
 
     void destroy() {
