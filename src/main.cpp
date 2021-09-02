@@ -9,8 +9,8 @@
 #endif
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
-void vulkanCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto pRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
+static void vulkanCursorCallback(GLFWwindow *pWindow, double xOffset, double yOffset) {
+    auto pRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(pWindow));
     xOffset *= pRenderEngine->settings.mouseSensitivity;
     yOffset *= pRenderEngine->settings.mouseSensitivity;
     pRenderEngine->camera.yaw -= (float) xOffset;
@@ -18,18 +18,18 @@ void vulkanCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
     if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
     pRenderEngine->camera.front = glm::normalize(glm::vec3{cos(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.pitch))});
-    glfwSetCursorPos(window, 0, 0);
+    glfwSetCursorPos(pWindow, 0, 0);
 }
 
-void vulkanRasterizerWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
-    auto pRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(window));
+static void vulkanRasterizerWindowPositionCallback(GLFWwindow *pWindow, int xPos, int yPos) {
+    auto pRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(pWindow));
     if (!pRenderEngine->settings.fullscreen) { pRenderEngine->settings.windowPosition = {xPos, yPos}; }
 }
 #endif
 
 #ifdef ILLUMINATION_ENGINE_OPENGL
-void openglCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    auto pRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
+static void openglCursorCallback(GLFWwindow *pWindow, double xOffset, double yOffset) {
+    auto pRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(pWindow));
     xOffset *= pRenderEngine->settings.mouseSensitivity;
     yOffset *= pRenderEngine->settings.mouseSensitivity;
     pRenderEngine->camera.yaw -= (float) xOffset;
@@ -37,11 +37,11 @@ void openglCursorCallback(GLFWwindow *window, double xOffset, double yOffset) {
     if (pRenderEngine->camera.pitch > 89.99f) { pRenderEngine->camera.pitch = 89.99f; }
     if (pRenderEngine->camera.pitch < -89.99f) { pRenderEngine->camera.pitch = -89.99f; }
     pRenderEngine->camera.front = glm::normalize(glm::vec3{cos(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.yaw)) * cos(glm::radians(pRenderEngine->camera.pitch)), sin(glm::radians(pRenderEngine->camera.pitch))});
-    glfwSetCursorPos(window, 0, 0);
+    glfwSetCursorPos(pWindow, 0, 0);
 }
 
-void openglWindowPositionCallback(GLFWwindow *window, int xPos, int yPos) {
-    auto pOpenGlRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(window));
+static void openglWindowPositionCallback(GLFWwindow *pWindow, int xPos, int yPos) {
+    auto pOpenGlRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(pWindow));
     if (!pOpenGlRenderEngine->settings.fullscreen) { pOpenGlRenderEngine->settings.windowPosition = {xPos, yPos}; }
 }
 #endif
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
                     renderEngine.reloadRenderables();
                     glfwSetTime(tempTime);
                 } if (glfwGetKey(renderEngine.window, GLFW_KEY_F2) & (glfwGetTime() - lastKey > .2)) {
-                    renderEngine.settings.fullscreen = !renderEngine.settings.fullscreen;
+                    renderEngine.settings.fullscreen ^= 1;
                     renderEngine.handleFullscreenSettingsChange();
                     lastKey = glfwGetTime();
                 } if (glfwGetKey(renderEngine.window, GLFW_KEY_1)) {
@@ -180,12 +180,24 @@ int main(int argc, char **argv) {
             OpenGLRenderable statue{&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj"};
             OpenGLRenderable ball{&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj"};
             OpenGLRenderable backpack{&renderEngine.renderEngineLink, "res/Models/Backpack/Survival_BackPack_2.fbx"};
-            renderEngine.loadRenderable(&cube);
-            renderEngine.loadRenderable(&quad);
-            renderEngine.loadRenderable(&rock);
-            renderEngine.loadRenderable(&statue);
-            renderEngine.loadRenderable(&ball);
-            renderEngine.loadRenderable(&backpack);
+            cube.prepare();
+            cube.upload();
+            quad.prepare();
+            quad.upload();
+            rock.prepare();
+            rock.upload();
+            statue.prepare();
+            statue.upload();
+            ball.prepare();
+            ball.upload();
+            backpack.prepare();
+            backpack.upload();
+            renderEngine.renderables.push_back(&cube);
+            renderEngine.renderables.push_back(&quad);
+            renderEngine.renderables.push_back(&rock);
+            renderEngine.renderables.push_back(&statue);
+            renderEngine.renderables.push_back(&ball);
+            renderEngine.renderables.push_back(&backpack);
             double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};

@@ -48,6 +48,8 @@ public:
     glm::mat4 model{1.0f};
     const char *path{};
     bool render{true};
+    bool loaded{false};
+    bool uploaded{false};
 
     explicit OpenGLRenderable(OpenGLGraphicsEngineLink *engineLink, const char *filePath) {
         linkedRenderEngine = engineLink;
@@ -59,40 +61,37 @@ public:
         textureCreateInfo.mipMapping = linkedRenderEngine->settings->mipMapping;
         textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
         textures[0].create(&textureCreateInfo);
-        load();
-        loadShaders(shaderFilenames);
     }
 
-    void loadShaders(std::vector<const char *> filenames) {
-        shaders.resize(filenames.size());
-        for (uint32_t i = 0; i < filenames.size(); ++i) {
-            OpenGLShader::CreateInfo shaderCreateInfo{filenames[i]};
+    void prepare() {
+        Assimp::Importer importer{};
+        const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to prepare scene from file: " + std::string(path)); }
+        std::string directory = std::string(path).substr(0, std::string(path
+        ).find_last_of('/'));
+        meshes.clear();
+        meshes.reserve(scene->mNumMeshes);
+        processNode(scene->mRootNode, scene, directory);
+        deletionQueue.emplace_front([&] { for (OpenGLTexture texture : textures) { texture.destroy(); } });
+        shaders.resize(shaderFilenames.size());
+        for (uint32_t i = 0; i < shaderFilenames.size(); ++i) {
+            OpenGLShader::CreateInfo shaderCreateInfo{shaderFilenames[i]};
             shaders[i].create(&shaderCreateInfo);
             shaders[i].compile();
         }
         OpenGLProgram::CreateInfo programCreateInfo{shaders};
         program.create(&programCreateInfo);
-    }
-
-    void load() {
-        Assimp::Importer importer{};
-        const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to load scene from file: " + std::string(path)); }
-        std::string directory = std::string(path).substr(0, std::string(path
-        ).find_last_of('/'));
-        meshes.reserve(scene->mNumMeshes);
-        processNode(scene->mRootNode, scene, directory);
-        deletionQueue.emplace_front([&] { for (OpenGLTexture texture : textures) { texture.destroy(); } });
+        loaded = true;
     }
 
     void upload() {
         for (OpenGLMesh &mesh : meshes) {
             glGenVertexArrays(1, &mesh.vertexArrayObject);
-            deletionQueue.emplace_front([&] { glDeleteVertexArrays(1, &mesh.vertexArrayObject); });
+            unloadQueue.emplace_front([&] { glDeleteVertexArrays(1, &mesh.vertexArrayObject); });
             glGenBuffers(1, &mesh.vertexBuffer);
-            deletionQueue.emplace_front([&] { glDeleteBuffers(1, &mesh.vertexBuffer); });
+            unloadQueue.emplace_front([&] { glDeleteBuffers(1, &mesh.vertexBuffer); });
             glGenBuffers(1, &mesh.indexBuffer);
-            deletionQueue.emplace_front([&] { glDeleteBuffers(1, &mesh.indexBuffer); });
+            unloadQueue.emplace_front([&] { glDeleteBuffers(1, &mesh.indexBuffer); });
             glBindVertexArray(mesh.vertexArrayObject);
             glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBuffer);
             glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(mesh.vertices.size() * sizeof(mesh.vertices[0])), mesh.vertices.data(), GL_STATIC_DRAW);
@@ -106,7 +105,34 @@ public:
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(OpenGLMesh::OpenGLVertex), (void *)offsetof(OpenGLMesh::OpenGLVertex, normal));
         }
         for (OpenGLTexture &texture : textures) { texture.upload(); }
-        deletionQueue.emplace_front([&] { for (OpenGLTexture texture : textures) { texture.destroy(); } });
+        uploaded = true;
+    }
+
+    void unload() {
+        for (const std::function<void()> &function : unloadQueue) { function(); }
+        unloadQueue.clear();
+        textures.resize(1);
+        uploaded = false;
+    }
+
+    void reprepare() {
+        bool toUpload{false};
+        if (uploaded) { toUpload = true; }
+        if (loaded) {
+            destroy();
+            prepare();
+            if (toUpload) { upload(); }
+        } else {
+            prepare();
+            if (toUpload) { upload(); }
+        }
+    }
+
+    void reupload() {
+        if (uploaded) {
+            unload();
+            upload();
+        } else { upload(); }
     }
 
     void update() {
@@ -115,13 +141,15 @@ public:
     }
 
     void destroy() {
+        unload();
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
-        textures.resize(1);
+        loaded = false;
     }
 
 private:
     std::deque<std::function<void()>> deletionQueue{};
+    std::deque<std::function<void()>> unloadQueue{};
 
     void processNode(aiNode *node, const aiScene *scene, const std::string& directory) {
         for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
@@ -176,7 +204,7 @@ private:
                             textureCreateInfo.format = OPENGL_TEXTURE;
                             textureCreateInfo.mipMapping = linkedRenderEngine->settings->mipMapping;
                             textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
-                            if (!textureCreateInfo.data) { throw std::runtime_error("failed to load texture image from file: " + textureCreateInfo.filename); }
+                            if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
                             temporaryTexture.create(&textureCreateInfo);
                             textures.push_back(temporaryTexture);
                             *textureType.first = textures.size() - 1;

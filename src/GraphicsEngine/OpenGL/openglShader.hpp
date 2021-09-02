@@ -34,7 +34,7 @@ public:
             if (extension == "comp") { createdWith.shaderType = GL_COMPUTE_SHADER; }
         }
         std::ifstream file(createdWith.filename, std::ios::in);
-        if (!file.is_open()) { throw std::runtime_error("failed to load shader: " + static_cast<std::string>(createdWith.filename)); }
+        if (!file.is_open()) { throw std::runtime_error("failed to prepare shader: " + static_cast<std::string>(createdWith.filename)); }
         std::stringstream shaderCode{};
         shaderCode << file.rdbuf();
         file.close();

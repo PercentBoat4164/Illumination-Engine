@@ -65,7 +65,7 @@ public:
         for (unsigned long i = 0; i < sizeof(sizes) / sizeof(sizes[0]); ++i) {
             std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) { throw std::runtime_error("failed to load icon image from file: " + filename); }
+            if (!pixels) { throw std::runtime_error("failed to prepare icon image from file: " + filename); }
             icons[i].pixels = pixels;
             icons[i].height = height;
             icons[i].width = width;

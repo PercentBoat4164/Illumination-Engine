@@ -30,10 +30,9 @@ public:
     OpenGLCamera camera{};
     std::vector<OpenGLRenderable *> renderables;
     OpenGLGraphicsEngineLink renderEngineLink{};
-    bool framebufferResized{false};
 
     explicit OpenGLRenderEngine() {
-        if(!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
+        if (!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
         window = glfwCreateWindow(1, 1, "Finding OpenGL version...", nullptr, nullptr);
         glfwMakeContextCurrent(window);
         renderEngineLink.openglVersion = std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)));
@@ -41,7 +40,10 @@ public:
         glfwDestroyWindow(window);
         glfwTerminate();
         glfwInit();
-        deletionQueue.emplace_front([&] { glFinish(); glfwTerminate(); });
+        deletionQueue.emplace_front([&] {
+            glFinish();
+            glfwTerminate();
+        });
         glfwWindowHint(GLFW_SAMPLES, settings.msaaSamples);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, std::stoi(renderEngineLink.openglVersion.substr(0, 1)));
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, std::stoi(renderEngineLink.openglVersion.substr(2, 1)));
@@ -55,17 +57,17 @@ public:
 #endif
         window = glfwCreateWindow(settings.resolution[0], settings.resolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
-        GLFWimage icons[sizeof(sizes)/sizeof(int)];
-        for (unsigned long i = 0; i < sizeof(sizes)/sizeof(int); ++i) {
+        GLFWimage icons[sizeof(sizes) / sizeof(int)];
+        for (unsigned long i = 0; i < sizeof(sizes) / sizeof(int); ++i) {
             std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) { throw std::runtime_error("failed to load texture image from file: " + filename); }
+            if (!pixels) { throw std::runtime_error("failed to prepare texture image from file: " + filename); }
             icons[i].pixels = pixels;
             icons[i].height = height;
             icons[i].width = width;
         }
-        glfwSetWindowIcon(window, sizeof(icons)/sizeof(GLFWimage), icons);
-        for (GLFWimage icon : icons) { stbi_image_free(icon.pixels); }
+        glfwSetWindowIcon(window, sizeof(icons) / sizeof(GLFWimage), icons);
+        for (GLFWimage icon: icons) { stbi_image_free(icon.pixels); }
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         int xPos{settings.windowPosition[0]}, yPos{settings.windowPosition[1]};
         glfwGetWindowPos(window, &xPos, &yPos);
@@ -99,18 +101,8 @@ public:
         glEnable(GL_CULL_FACE);
     }
 
-    void loadRenderable(OpenGLRenderable *renderable, bool append = true) {
-        renderable->load();
-        renderable->loadShaders(renderable->shaderFilenames);
-        renderable->upload();
-        if (append) { renderables.push_back(renderable); }
-    }
-
     void reloadRenderables() {
-        for (OpenGLRenderable *renderable : renderables) {
-            renderable->destroy();
-            loadRenderable(renderable, false);
-        }
+        for (OpenGLRenderable *renderable : renderables) { renderable->reprepare(); }
     }
 
     bool update() {
@@ -159,7 +151,6 @@ public:
         frameTime = currentTime - previousTime;
         previousTime = currentTime;
         ++frameNumber;
-        framebufferResized = false;
         return false;
     }
 
@@ -251,7 +242,6 @@ private:
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
         auto pOpenGlRenderEngine = (OpenGLRenderEngine *)glfwGetWindowUserPointer(pWindow);
-        pOpenGlRenderEngine->framebufferResized = false;
         pOpenGlRenderEngine->settings.resolution[0] = width;
         pOpenGlRenderEngine->settings.resolution[1] = height;
         pOpenGlRenderEngine->camera.updateSettings();

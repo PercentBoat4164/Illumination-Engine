@@ -82,7 +82,6 @@ public:
         rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
         VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
-        /**@todo: Make this depend on the device support of sampleRateShading*/
         multisampleStateCreateInfo.sampleShadingEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.msaaSmoothing & (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT)) ? VK_TRUE : VK_FALSE;
         multisampleStateCreateInfo.minSampleShading = 1.0f;
         multisampleStateCreateInfo.rasterizationSamples = linkedRenderEngine->settings->msaaSamples;

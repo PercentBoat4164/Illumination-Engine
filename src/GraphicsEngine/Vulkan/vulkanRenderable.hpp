@@ -68,11 +68,11 @@ public:
         textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
         textureCreateInfo.imageType = VULKAN_TEXTURE;
         textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.width, &textureCreateInfo.height, &channels, STBI_rgb_alpha);
-        if (!textureCreateInfo.data) { throw std::runtime_error("failed to load texture image from file: " + textureCreateInfo.filename); }
+        if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
         textures[0].create(linkedRenderEngine, &textureCreateInfo);
         Assimp::Importer importer{};
         const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to load texture image from file: " + std::string(filePath)); }
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath)); }
         std::string directory = std::string(filePath).substr(0, std::string(filePath).find_last_of('/'));
         meshes.reserve(scene->mNumMeshes);
         processNode(scene->mRootNode, scene, directory);
@@ -189,7 +189,7 @@ private:
                         textureCreateInfo.mipMapping = linkedRenderEngine->settings->mipMapping;
                         textureCreateInfo.imageType = VULKAN_TEXTURE;
                         textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
-                        if (!textureCreateInfo.data) { throw std::runtime_error("failed to load texture image from file: " + textureCreateInfo.filename); }
+                        if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
                         temporaryTexture.create(linkedRenderEngine, &textureCreateInfo);
                         textures.push_back(temporaryTexture);
                         *textureType.first = textures.size() - 1;
