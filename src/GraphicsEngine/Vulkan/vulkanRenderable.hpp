@@ -10,16 +10,11 @@
 #include "vulkanUniformBufferObject.hpp"
 #include "vulkanGraphicsEngineLink.hpp"
 
-#include <../../../deps/assimp/include/assimp/Importer.hpp>
-#include <../../../deps/assimp/include/assimp/scene.h>
-#include <../../../deps/assimp/include/assimp/postprocess.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include <glm/gtc/quaternion.hpp>
-
-#ifndef TINYOBJLOADER_IMPLEMENTATION
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <../../../deps/tiny_obj_loader.h>
-#endif
 
 #include <cstddef>
 #include <fstream>

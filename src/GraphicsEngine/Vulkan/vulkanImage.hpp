@@ -2,7 +2,7 @@
 
 #include "vulkanBuffer.hpp"
 
-#include "../../../deps/stb_image.h"
+#include <stb_image.h>
 
 enum VulkanImageType {
     VULKAN_DEPTH = 0x00000000,

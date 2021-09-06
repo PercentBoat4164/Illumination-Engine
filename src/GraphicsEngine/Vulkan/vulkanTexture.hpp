@@ -4,7 +4,7 @@
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../../deps/stb_image.h"
+#include <stb_image.h>
 #endif
 
 #include <cstddef>

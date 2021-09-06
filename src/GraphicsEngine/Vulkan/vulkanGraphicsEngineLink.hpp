@@ -6,7 +6,7 @@
 
 #ifndef VMA_IMPLEMENTATION
 #define VMA_IMPLEMENTATION
-#include "../../../deps/vk_mem_alloc.h"
+#include <vk_mem_alloc.h>
 #endif
 
 #include <vector>

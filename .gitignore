@@ -1,20 +1,12 @@
 # Project exclude paths
 # Visual Studio Code
-/.idea/
-/.vs/
-/.vscode/
-/CMakeFiles/
-/build/
-/out/
+/.vs
+/.vscode
+/CMakeFiles
+/build
+/out
 # CLion
-/*-build/
-/venv/
+/*-build
+/.idea
 # Dependencies extracted from deps/otherSources.tar.xz
-/deps/glew
-/deps/glfw
-/deps/glm
-/deps/vk-bootstrap
-/deps/stb_image.h
-/deps/tiny_obj_loader.h
-/deps/vk_mem_alloc.h
-/deps/assimp/
+/deps

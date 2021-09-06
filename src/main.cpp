@@ -174,30 +174,8 @@ int main(int argc, char **argv) {
             OpenGLRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
-            OpenGLRenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
-            OpenGLRenderable quad{&renderEngine.renderEngineLink, "res/Models/Quad/quad.obj"};
-            OpenGLRenderable rock{&renderEngine.renderEngineLink, "res/Models/Rock/rock.obj"};
-            OpenGLRenderable statue{&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj"};
-            OpenGLRenderable ball{&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj"};
-            OpenGLRenderable backpack{&renderEngine.renderEngineLink, "res/Models/Backpack/Survival_BackPack_2.fbx"};
-            cube.prepare();
-            cube.upload();
-            quad.prepare();
-            quad.upload();
-            rock.prepare();
-            rock.upload();
-            statue.prepare();
-            statue.upload();
-            ball.prepare();
-            ball.upload();
-            backpack.prepare();
-            backpack.upload();
-            renderEngine.renderables.push_back(&cube);
-            renderEngine.renderables.push_back(&quad);
-            renderEngine.renderables.push_back(&rock);
-            renderEngine.renderables.push_back(&statue);
-            renderEngine.renderables.push_back(&ball);
-            renderEngine.renderables.push_back(&backpack);
+            std::vector<OpenGLRenderable> renderables{6, OpenGLRenderable{nullptr, nullptr}};
+            renderEngine.loadRenderables({"res/Models/Cube/cube.obj", "res/Models/Quad/quad.obj", "res/Models/Rock/rock.obj", "res/Models/AncientStatue/ancientStatue.obj", "res/Models/Sphere/sphere.obj", "res/Models/Backpack/Survival_BackPack_2.fbx"}, renderables);
             double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
@@ -262,13 +240,13 @@ int main(int argc, char **argv) {
                     }
                     lastKey = glfwGetTime();
                 }
-                cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
-                ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
-                backpack.position = {0, 7, 0};
-                statue.position = {7, 0, 0};
-                rock.position = {-7, 0, 0};
-                quad.scale = {100, 100, 100};
-                quad.rotation = {90, 0, 0};
+                renderEngine.renderables[0]->position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
+                renderEngine.renderables[1]->position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
+                renderEngine.renderables[2]->position = {0, 7, 0};
+                renderEngine.renderables[3]->position = {7, 0, 0};
+                renderEngine.renderables[4]->position = {-7, 0, 0};
+                renderEngine.renderables[5]->scale = {100, 100, 100};
+                renderEngine.renderables[5]->rotation = {90, 0, 0};
             }
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;

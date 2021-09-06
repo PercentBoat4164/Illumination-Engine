@@ -3,9 +3,10 @@
 #include "openglProgram.hpp"
 #include "openglTexture.hpp"
 
-#include <../../../deps/assimp/include/assimp/Importer.hpp>
-#include <../../../deps/assimp/include/assimp/scene.h>
-#include <../../../deps/assimp/include/assimp/postprocess.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/detail/type_quat.hpp>
 
@@ -54,6 +55,9 @@ public:
     explicit OpenGLRenderable(OpenGLGraphicsEngineLink *engineLink, const char *filePath) {
         linkedRenderEngine = engineLink;
         path = filePath;
+    }
+
+    void create() {
         int channels{};
         OpenGLTexture::CreateInfo textureCreateInfo{};
         textureCreateInfo.filename = std::string("res/Models/NoTexture.png");
