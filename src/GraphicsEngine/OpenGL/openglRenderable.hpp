@@ -71,12 +71,10 @@ public:
         Assimp::Importer importer{};
         const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to prepare scene from file: " + std::string(path)); }
-        std::string directory = std::string(path).substr(0, std::string(path
-        ).find_last_of('/'));
+        std::string directory = std::string(path).substr(0, std::string(path).find_last_of('/'));
         meshes.clear();
         meshes.reserve(scene->mNumMeshes);
         processNode(scene->mRootNode, scene, directory);
-        deletionQueue.emplace_front([&] { for (OpenGLTexture texture : textures) { texture.destroy(); } });
         shaders.resize(shaderFilenames.size());
         for (uint32_t i = 0; i < shaderFilenames.size(); ++i) {
             OpenGLShader::CreateInfo shaderCreateInfo{shaderFilenames[i]};
@@ -115,6 +113,7 @@ public:
     void unload() {
         for (const std::function<void()> &function : unloadQueue) { function(); }
         unloadQueue.clear();
+        for (OpenGLTexture texture : textures) { texture.destroy(); }
         textures.resize(1);
         uploaded = false;
     }

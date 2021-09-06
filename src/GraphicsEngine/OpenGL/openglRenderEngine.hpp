@@ -105,23 +105,14 @@ public:
         for (OpenGLRenderable *renderable : renderables) { renderable->reprepare(); }
     }
 
-    void loadRenderable(const std::string& filePath, OpenGLRenderable thisRenderable) {
-        renderables.resize(1);
-        thisRenderable = OpenGLRenderable(&renderEngineLink, filePath.c_str());
-        thisRenderable.create();
-        thisRenderable.prepare();
-        thisRenderable.upload();
-        renderables[renderables.size()] = &thisRenderable;
-    }
-
-    void loadRenderables(std::vector<std::string> filePaths, std::vector<OpenGLRenderable> theseRenderables) {
+    void loadRenderables(std::vector<const char *> filePaths, std::vector<OpenGLRenderable> *theseRenderables) {
         renderables.resize(filePaths.size());
-        for (unsigned int i = 0; i < filePaths.size() - 1; i++) {
-            theseRenderables[i] = OpenGLRenderable(&renderEngineLink, filePaths[i].c_str());
-            theseRenderables[i].create();
-            theseRenderables[i].prepare();
-            theseRenderables[i].upload();
-            renderables[renderables.size() - filePaths.size() + i] = &theseRenderables[i];
+        for (unsigned int i = 0; i < filePaths.size(); i++) {
+            (*theseRenderables)[i] = OpenGLRenderable{&renderEngineLink, filePaths[i]};
+            (*theseRenderables)[i].create();
+            (*theseRenderables)[i].prepare();
+            (*theseRenderables)[i].upload();
+            renderables[renderables.size() - filePaths.size() + i] = &(*theseRenderables)[i];
         }
     }
 

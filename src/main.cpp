@@ -174,8 +174,10 @@ int main(int argc, char **argv) {
             OpenGLRenderEngine renderEngine{};
             glfwSetWindowPosCallback(renderEngine.window, openglWindowPositionCallback);
             renderEngine.camera.position = {0, 0, 2};
-            std::vector<OpenGLRenderable> renderables{6, OpenGLRenderable{nullptr, nullptr}};
-            renderEngine.loadRenderables({"res/Models/Cube/cube.obj", "res/Models/Quad/quad.obj", "res/Models/Rock/rock.obj", "res/Models/AncientStatue/ancientStatue.obj", "res/Models/Sphere/sphere.obj", "res/Models/Backpack/Survival_BackPack_2.fbx"}, renderables);
+//            std::vector<OpenGLRenderable> renderables{6, OpenGLRenderable{nullptr, nullptr}};
+//            renderEngine.loadRenderables({"res/Models/Cube/cube.obj", "res/Models/Quad/quad.obj", "res/Models/Rock/rock.obj", "res/Models/AncientStatue/ancientStatue.obj", "res/Models/Sphere/sphere.obj", "res/Models/Backpack/Survival_BackPack_2.fbx"}, &renderables);
+            std::vector<OpenGLRenderable> renderable{1, OpenGLRenderable{nullptr, nullptr}};
+            renderEngine.loadRenderables({"res/Models/Quad/quad.obj"}, &renderable);
             double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
@@ -240,13 +242,15 @@ int main(int argc, char **argv) {
                     }
                     lastKey = glfwGetTime();
                 }
-                renderEngine.renderables[0]->position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
-                renderEngine.renderables[1]->position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
-                renderEngine.renderables[2]->position = {0, 7, 0};
-                renderEngine.renderables[3]->position = {7, 0, 0};
-                renderEngine.renderables[4]->position = {-7, 0, 0};
-                renderEngine.renderables[5]->scale = {100, 100, 100};
-                renderEngine.renderables[5]->rotation = {90, 0, 0};
+//                renderables[0].position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
+//                renderables[4].position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
+//                renderables[2].position = {0, 7, 0};
+//                renderables[3].position = {7, 0, 0};
+//                renderables[5].position = {-7, 0, 0};
+//                renderables[1].scale = {100, 100, 100};
+//                renderables[1].rotation = {90, 0, 0};
+                renderable[0].scale = {100, 100, 100};
+                renderable[0].rotation = {90, 0, 0};
             }
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
