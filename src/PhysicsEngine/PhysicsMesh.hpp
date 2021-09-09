@@ -1,5 +1,5 @@
 #pragma once
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -17,6 +17,7 @@ public:
     std::vector<glm::vec3> getTri(int tri) {
 
         std::vector<glm::vec3> output; //create a variable to store the function's output
+        
         //ensure the triangle exists
         if(indices.size() >= 3 * tri + 2) {
 
