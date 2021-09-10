@@ -6,7 +6,7 @@ set(CMAKE_CXX_EXTENSIONS false)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED false)
 # Note: All install instructions are for Ubuntu Linux
-find_package(OpenGL REQUIRED) # install with "sudo apt install libglu1-mesa-dev mesa-common-dev"
+find_package(OpenGL REQUIRED) # install with "sudo apt install libglu1-mesa-dev mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev"
 find_package(Vulkan) # install with "wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.189-focal.list https://packages.lunarg.com/vulkan/1.2.189/lunarg-vulkan-1.2.189-focal.list;sudo apt update;sudo apt install vulkan-sdk"
 if (ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED)
     find_package(GLEW) # install with "sudo apt install libglew-dev"
@@ -20,14 +20,16 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-#**@todo: Make this also go if the tarball is newer than the directory.
-#**@todo: Make debug versions of this script that times the CMake commands.
-if ((NOT EXISTS ${CMAKE_SOURCE_DIR}/deps) AND CMAKE_BUILD_TYPE STREQUAL Debug)
+if (((NOT EXISTS ${CMAKE_SOURCE_DIR}/deps) OR ${CMAKE_SOURCE_DIR}/deps.tar.xz IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/deps) AND CMAKE_BUILD_TYPE STREQUAL Debug)
+    if (EXISTS ${CMAKE_SOURCE_DIR}/deps)
+        file(RENAME ${CMAKE_SOURCE_DIR}/deps ${CMAKE_SOURCE_DIR}/dep)
+    endif()
+    file(REMOVE_RECURSE ${CMAKE_SOURCE_DIR}/dep)
     message("Unpacking dependencies tarball...")
     file(ARCHIVE_EXTRACT INPUT ${CMAKE_SOURCE_DIR}/deps.tar.xz DESTINATION ${CMAKE_SOURCE_DIR}/dep)
     file(RENAME ${CMAKE_SOURCE_DIR}/dep/deps ${CMAKE_SOURCE_DIR}/deps)
     file(REMOVE_RECURSE ${CMAKE_SOURCE_DIR}/dep)
-    message("Finished")
+    file(TOUCH_NOCREATE ${CMAKE_SOURCE_DIR}/deps)
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     while(NOT EXISTS ${CMAKE_SOURCE_DIR}/deps)
     endwhile()
