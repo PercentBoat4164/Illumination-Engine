@@ -47,10 +47,10 @@ public:
     void compile() {
         int infoLogLength{};
         const char *shaderSource = data.c_str();
-        bool compiledThisTime{false};
+        GLint compiledThisTime{false};
         glShaderSource(ID, 1, &shaderSource, nullptr);
         glCompileShader(ID);
-        glGetShaderiv(ID, GL_COMPILE_STATUS, reinterpret_cast<GLint *>(&compiledThisTime));
+        glGetShaderiv(ID, GL_COMPILE_STATUS, &compiledThisTime);
         if (!compiledThisTime) {
             glGetShaderiv(ID, GL_INFO_LOG_LENGTH, &infoLogLength);
             std::vector<char> errorMessage(infoLogLength + 1);
