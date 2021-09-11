@@ -110,7 +110,7 @@ public:
     std::vector<VkBool32> enableFeature(const std::vector<VkBool32 *> &features) {
         std::vector<VkBool32> results{};
         results.reserve(static_cast<unsigned int>(features.size() + 1));
-        results[0] = VK_TRUE;
+        results.push_back(VK_TRUE);
         for (VkBool32 *feature : features) { results.push_back(enableFeature(feature)); }
         for (VkBool32 result : results) {
             if (!result) {
@@ -128,7 +128,7 @@ public:
     std::vector<VkBool32> testFeature(const std::vector<VkBool32 *> &features) {
         std::vector<VkBool32> results{};
         results.reserve(static_cast<unsigned int>(features.size() + 1));
-        results[0] = VK_TRUE;
+        results.push_back(VK_TRUE);
         for (VkBool32 *feature : features) { results.push_back(*testFeature(feature)); }
         for (VkBool32 result : results) {
             if (!result) {
