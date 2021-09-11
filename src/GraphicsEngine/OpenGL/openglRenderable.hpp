@@ -35,6 +35,7 @@ public:
         unsigned int vertexArrayObject;
         unsigned int vertexBuffer;
         unsigned int indexBuffer;
+        unsigned int triangleCount{};
     };
 
     std::vector<const char *> shaderFilenames{"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"};
@@ -171,7 +172,7 @@ private:
                 temporaryMesh.vertices.push_back(temporaryVertex);
             }
             temporaryMesh.indices.reserve(static_cast<std::vector<unsigned int>::size_type>(scene->mMeshes[node->mMeshes[i]]->mNumFaces) * 3);
-            for (unsigned int j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++j) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[j].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[j].mIndices[k]); } }
+            for (; temporaryMesh.triangleCount < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++temporaryMesh.triangleCount) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mIndices[k]); } }
             if (scene->mMeshes[node->mMeshes[i]]->mMaterialIndex >= 0) {
                 std::vector<std::pair<unsigned int *, aiTextureType>> textureTypes{
                     {&temporaryMesh.diffuseTexture, aiTextureType_DIFFUSE},
@@ -186,12 +187,12 @@ private:
                     if (scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) > 0) {
                         textures.reserve(scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) + textures.size());
                         OpenGLTexture temporaryTexture{};
-                        int channels{};
+                        OpenGLTexture::CreateInfo textureCreateInfo{};
                         bool textureAlreadyLoaded{false};
                         aiString filename;
                         scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTexture(textureType.second, 0, &filename);
                         if (filename.length == 0) { continue; }
-                        std::string texturePath {directory + '/' + std::string(filename.C_Str())};
+                        std::string texturePath{directory + '/' + std::string(filename.C_Str())};
                         for (unsigned int k = 0; k < textures.size(); ++k) {
                             if (std::strcmp(textures[k].createdWith.filename.c_str(), texturePath.c_str()) == 0) {
                                 *textureType.first = k;
@@ -200,7 +201,7 @@ private:
                             }
                         }
                         if (!textureAlreadyLoaded) {
-                            OpenGLTexture::CreateInfo textureCreateInfo{};
+                            int channels{};
                             textureCreateInfo.filename = texturePath;
                             textureCreateInfo.format = OPENGL_TEXTURE;
                             textureCreateInfo.mipMapping = linkedRenderEngine->settings->mipMapping;
@@ -210,7 +211,6 @@ private:
                             textures.push_back(temporaryTexture);
                             *textureType.first = textures.size() - 1;
                         }
-                        temporaryTexture.destroy();
                     }
                 }
             }

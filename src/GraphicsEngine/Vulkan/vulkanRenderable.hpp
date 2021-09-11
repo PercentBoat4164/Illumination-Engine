@@ -34,6 +34,7 @@ public:
         unsigned int normalTexture{};
         unsigned int roughnessTexture{};
         unsigned int specularTexture{};
+        unsigned int triangleCount{};
         VulkanBuffer vertexBuffer{};
         VulkanBuffer indexBuffer{};
         VulkanBuffer transformationBuffer{};
@@ -102,7 +103,7 @@ public:
                 VulkanAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
                 renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
                 renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
-                renderableBottomLevelAccelerationStructureCreateInfo.primitiveCount = triangleCount;
+                renderableBottomLevelAccelerationStructureCreateInfo.primitiveCount = temporaryMeshtriangleCount;
                 renderableBottomLevelAccelerationStructureCreateInfo.vertexBufferAddress = mesh.vertexBuffer.deviceAddress;
                 renderableBottomLevelAccelerationStructureCreateInfo.indexBufferAddress = mesh.indexBuffer.deviceAddress;
                 renderableBottomLevelAccelerationStructureCreateInfo.transformationBufferAddress = mesh.transformationBuffer.deviceAddress;
@@ -124,7 +125,7 @@ public:
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
     bool render{true};
     bool created{false};
-    uint32_t triangleCount{};
+    uint32_t temporaryMeshtriangleCount{};
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 
 
@@ -148,7 +149,7 @@ private:
                 temporaryMesh.vertices.push_back(temporaryVertex);
             }
             temporaryMesh.indices.reserve(static_cast<std::vector<unsigned int>::size_type>(scene->mMeshes[node->mMeshes[i]]->mNumFaces) * 3);
-            for (; triangleCount < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++triangleCount) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[triangleCount].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[triangleCount].mIndices[k]); } }
+            for (; temporaryMesh.triangleCount < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++temporaryMesh.triangleCount) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mIndices[k]); } }
             if (scene->mMeshes[node->mMeshes[i]]->mMaterialIndex >= 0) {
                 std::vector<std::pair<unsigned int *, aiTextureType>> textureTypes{
                     {&temporaryMesh.diffuseTexture, aiTextureType_DIFFUSE},
@@ -160,34 +161,37 @@ private:
                     {&temporaryMesh.specularTexture, aiTextureType_SPECULAR}
                 };
                 for (std::pair<unsigned int *, aiTextureType> textureType : textureTypes) {
-                    VulkanTexture temporaryTexture{};
-                    bool textureAlreadyLoaded{false};
-                    VulkanTexture::CreateInfo textureCreateInfo{};
-                    aiString filename;
-                    scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTexture(textureType.second, 0, &filename);
-                    if (filename.length == 0) { continue; }
-                    std::string path {directory + '/' + std::string(filename.C_Str())};
-                    for (unsigned int k = 0; k < textures.size(); ++k) {
-                        if (std::strcmp(textures[k].createdWith.filename.c_str(), path.c_str()) == 0) {
-                            *textureType.first = k;
-                            textureAlreadyLoaded = true;
-                            break;
+                    if (scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) > 0) {
+                        textures.reserve(scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) + textures.size());
+                        VulkanTexture temporaryTexture{};
+                        VulkanTexture::CreateInfo textureCreateInfo{};
+                        bool textureAlreadyLoaded{false};
+                        aiString filename;
+                        scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTexture(textureType.second, 0, &filename);
+                        if (filename.length == 0) { continue; }
+                        std::string texturePath{directory + '/' + std::string(filename.C_Str())};
+                        for (unsigned int k = 0; k < textures.size(); ++k) {
+                            if (std::strcmp(textures[k].createdWith.filename.c_str(), texturePath.c_str()) == 0) {
+                                *textureType.first = k;
+                                textureAlreadyLoaded = true;
+                                break;
+                            }
                         }
-                    }
-                    if (!textureAlreadyLoaded) {
-                        int channels{};
-                        textureCreateInfo.filename = path;
-                        textureCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-                        textureCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-                        textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-                        textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-                        textureCreateInfo.mipMapping = linkedRenderEngine->settings->mipMapping;
-                        textureCreateInfo.imageType = VULKAN_TEXTURE;
-                        textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
-                        if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
-                        temporaryTexture.create(linkedRenderEngine, &textureCreateInfo);
-                        textures.push_back(temporaryTexture);
-                        *textureType.first = textures.size() - 1;
+                        if (!textureAlreadyLoaded) {
+                            int channels{};
+                            textureCreateInfo.filename = texturePath;
+                            textureCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+                            textureCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+                            textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+                            textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
+                            textureCreateInfo.mipMapping = linkedRenderEngine->settings->mipMapping;
+                            textureCreateInfo.imageType = VULKAN_TEXTURE;
+                            textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
+                            if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
+                            temporaryTexture.create(linkedRenderEngine, &textureCreateInfo);
+                            textures.push_back(temporaryTexture);
+                            *textureType.first = textures.size() - 1;
+                        }
                     }
                 }
             }
