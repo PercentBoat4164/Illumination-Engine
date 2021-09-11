@@ -124,6 +124,19 @@ public:
         for (OpenGLRenderable *renderable : renderables) {
             if (renderable->render) {
                 renderable->update();
+                glUseProgram(renderable->program.ID);
+                renderable->program.setValue("projection", camera.proj);
+                renderable->program.setValue("normalMatrix", glm::mat3(glm::transpose(glm::inverse(renderable->model))));
+                renderable->program.setValue("viewModel", camera.view * renderable->model);
+                renderable->program.setValue("model", renderable->model);
+                renderable->program.setValue("diffuseTexture", 0);
+                renderable->program.setValue("emissionTexture", 1);
+                renderable->program.setValue("heightTexture", 2);
+                renderable->program.setValue("metallicTexture", 3);
+                renderable->program.setValue("normalTexture", 4);
+                renderable->program.setValue("roughnessTexture", 5);
+                renderable->program.setValue("specularTexture", 6);
+                renderable->program.setValue("cameraPosition", camera.position);
                 for (const OpenGLRenderable::OpenGLMesh& mesh : renderable->meshes) {
                     glActiveTexture(GL_TEXTURE0);
                     glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.diffuseTexture].ID);
@@ -139,20 +152,7 @@ public:
                     glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.roughnessTexture].ID);
                     glActiveTexture(GL_TEXTURE6);
                     glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.specularTexture].ID);
-                    renderable->program.setValue("projection", camera.proj);
-                    renderable->program.setValue("normalMatrix", glm::mat3(glm::transpose(glm::inverse(renderable->model))));
-                    renderable->program.setValue("viewModel", camera.view * renderable->model);
-                    renderable->program.setValue("model", renderable->model);
-                    renderable->program.setValue("diffuseTexture", 0);
-                    renderable->program.setValue("emissionTexture", 1);
-                    renderable->program.setValue("heightTexture", 2);
-                    renderable->program.setValue("metallicTexture", 3);
-                    renderable->program.setValue("normalTexture", 4);
-                    renderable->program.setValue("roughnessTexture", 5);
-                    renderable->program.setValue("specularTexture", 6);
-                    renderable->program.setValue("cameraPosition", camera.position);
                     glBindVertexArray(mesh.vertexArrayObject);
-                    glUseProgram(renderable->program.ID);
                     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.indices.size()), GL_UNSIGNED_INT, nullptr);
                 }
             }

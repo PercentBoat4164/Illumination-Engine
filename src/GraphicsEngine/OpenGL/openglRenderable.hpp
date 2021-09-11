@@ -113,14 +113,12 @@ public:
     void unload() {
         for (const std::function<void()> &function : unloadQueue) { function(); }
         unloadQueue.clear();
-        for (OpenGLTexture texture : textures) { texture.destroy(); }
         textures.resize(1);
         uploaded = false;
     }
 
     void reprepare() {
-        bool toUpload{false};
-        if (uploaded) { toUpload = true; }
+        bool toUpload{uploaded};
         if (loaded) {
             destroy();
             prepare();
@@ -212,6 +210,7 @@ private:
                             textures.push_back(temporaryTexture);
                             *textureType.first = textures.size() - 1;
                         }
+                        temporaryTexture.destroy();
                     }
                 }
             }

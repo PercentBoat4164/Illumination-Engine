@@ -18,6 +18,19 @@ public:
         created = true;
     }
 
+    void upload() override {
+        glBindTexture(GL_TEXTURE_2D, ID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, createdWith.mipMapping ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (createdWith.format == OPENGL_TEXTURE) {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, createdWith.width, createdWith.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, createdWith.data);
+            deletionQueue.emplace_front([&] { stbi_image_free(createdWith.data); });
+        }
+        if (createdWith.mipMapping) { glGenerateMipmap(GL_TEXTURE_2D); }
+    }
+
     void destroy() override {
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
