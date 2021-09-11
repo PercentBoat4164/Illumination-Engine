@@ -76,7 +76,7 @@ endif ()
 if (Vulkan_FOUND)
     add_subdirectory(${CMAKE_SOURCE_DIR}/deps/vk-bootstrap)
     target_include_directories(IlluminationEngine PRIVATE ${CMAKE_SOURCE_DIR}/deps)
-    target_link_libraries(IlluminationEngine PUBLIC vk-bootstrap ${vk-bootstrap_LIBRARIES}Vulkan::Vulkan)
+    target_link_libraries(IlluminationEngine PUBLIC vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
     add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
     find_program(GLSLC glslc REQUIRED) # Note: this may require changes for Windows compatibility.
     foreach (shader ${vulkan_shaders_to_compile})
