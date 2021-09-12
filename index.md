@@ -17,9 +17,9 @@ Here is a list of a few packages that you will need to download:
 
 ### Linux:
 
-  Required: cmake, c++-9, libglu1-mesa-dev, mesa-common-dev
+  Required: cmake, c++-9, libglu1-mesa-dev, mesa-common-dev, libxrandr-dev, libxinerama-dev, libxcursor-dev, libxi-dev
 
-    sudo apt install cmake c++-9 libglu1-mesa-dev mesa-common-dev
+    sudo apt install cmake c++-9 libglu1-mesa-dev mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
   
   Recommended: libglew-dev, libglfw3-dev, libglm-dev
 
