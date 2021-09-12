@@ -1,24 +1,12 @@
 # Project exclude paths
-/.idea/
-/.vs/
-/.vscode/
-/CMakeFiles/
-/build/
-/cmake-build-debug-coverage/
-/debug-build/
-/out/
-/release-build/
-/venv/
+# Visual Studio Code
+/.vs
+/.vscode
+/CMakeFiles
+/build
+/out
+# CLion
+/*-build
+/.idea
 # Dependencies extracted from deps/otherSources.tar.xz
-/deps/glew
-/deps/glfw
-/deps/glm
-/deps/vk-bootstrap
-/deps/stb_image.h
-/deps/tiny_obj_loader.h
-/deps/vk_mem_alloc.h
-/deps/glew32.dll
-/deps/glew32d.dll
-# Downloaded models
-/Models.tar.xz
-/src/Models
+/deps
