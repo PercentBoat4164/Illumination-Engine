@@ -172,10 +172,9 @@ int main(int argc, char **argv) {
     if (input == "o") {
         try {
             OpenGLRenderEngine renderEngine{};
+            renderEngine.camera.position = {0, 0, 2};
             std::vector<OpenGLRenderable> renderables{6, OpenGLRenderable{nullptr, nullptr}};
             renderEngine.loadRenderables({"res/Models/Cube/cube.obj", "res/Models/Quad/quad.obj", "res/Models/Rock/rock.obj", "res/Models/AncientStatue/ancientStatue.obj", "res/Models/Sphere/sphere.obj", "res/Models/Backpack/Survival_BackPack_2.fbx"}, &renderables);
-            std::vector<OpenGLRenderable> renderable{1, OpenGLRenderable{nullptr, nullptr}};
-            renderEngine.loadRenderables({"res/Models/Quad/quad.obj"}, &renderable);
             double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};

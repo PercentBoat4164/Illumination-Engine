@@ -103,7 +103,7 @@ public:
                 VulkanAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
                 renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
                 renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
-                renderableBottomLevelAccelerationStructureCreateInfo.primitiveCount = temporaryMeshtriangleCount;
+                renderableBottomLevelAccelerationStructureCreateInfo.primitiveCount = mesh.triangleCount;
                 renderableBottomLevelAccelerationStructureCreateInfo.vertexBufferAddress = mesh.vertexBuffer.deviceAddress;
                 renderableBottomLevelAccelerationStructureCreateInfo.indexBufferAddress = mesh.indexBuffer.deviceAddress;
                 renderableBottomLevelAccelerationStructureCreateInfo.transformationBufferAddress = mesh.transformationBuffer.deviceAddress;
@@ -125,7 +125,6 @@ public:
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
     bool render{true};
     bool created{false};
-    uint32_t temporaryMeshtriangleCount{};
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 
 

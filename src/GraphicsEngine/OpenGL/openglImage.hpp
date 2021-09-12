@@ -19,11 +19,13 @@ public:
 
         //Only required if format != OPENGL_TEXTURE_*
         int width{}, height{};
-        bool mipMapping{true};
-        stbi_uc *data{};
 
         //Only required if format == OPENGL_TEXTURE_*
         std::string filename{};
+
+        //Optional
+        bool mipMapping{true};
+        stbi_uc *data{};
     };
 
     CreateInfo createdWith{};

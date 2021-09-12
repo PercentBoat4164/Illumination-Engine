@@ -59,12 +59,10 @@ public:
     }
 
     void create() {
-        int channels{};
         OpenGLTexture::CreateInfo textureCreateInfo{};
         textureCreateInfo.filename = std::string("res/Models/NoTexture.png");
         textureCreateInfo.format = OPENGL_TEXTURE;
         textureCreateInfo.mipMapping = linkedRenderEngine->settings->mipMapping;
-        textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
         textures[0].create(&textureCreateInfo);
     }
 
@@ -76,6 +74,8 @@ public:
         meshes.clear();
         meshes.reserve(scene->mNumMeshes);
         processNode(scene->mRootNode, scene, directory);
+        deletionQueue.emplace_front([&] { for (OpenGLTexture texture : textures) { texture.destroy(); } });
+        for (OpenGLTexture &texture : textures) { texture.upload(); }
         shaders.resize(shaderFilenames.size());
         for (uint32_t i = 0; i < shaderFilenames.size(); ++i) {
             OpenGLShader::CreateInfo shaderCreateInfo{shaderFilenames[i]};
@@ -107,7 +107,6 @@ public:
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(OpenGLMesh::OpenGLVertex), (void *)offsetof(OpenGLMesh::OpenGLVertex, normal));
         }
-        for (OpenGLTexture &texture : textures) { texture.upload(); }
         uploaded = true;
     }
 
@@ -120,21 +119,14 @@ public:
 
     void reprepare() {
         bool toUpload{uploaded};
-        if (loaded) {
-            destroy();
-            prepare();
-            if (toUpload) { upload(); }
-        } else {
-            prepare();
-            if (toUpload) { upload(); }
-        }
+        if (loaded) { destroy(); }
+        prepare();
+        if (toUpload) { upload(); }
     }
 
     void reupload() {
-        if (uploaded) {
-            unload();
-            upload();
-        } else { upload(); }
+        if (uploaded) { unload(); }
+        upload();
     }
 
     void update() {
@@ -153,6 +145,7 @@ private:
     std::deque<std::function<void()>> deletionQueue{};
     std::deque<std::function<void()>> unloadQueue{};
 
+    /**@todo: Move all of the textures to a vector in the render engine.*/
     void processNode(aiNode *node, const aiScene *scene, const std::string& directory) {
         for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
             OpenGLMesh temporaryMesh{};
@@ -201,14 +194,12 @@ private:
                             }
                         }
                         if (!textureAlreadyLoaded) {
-                            int channels{};
                             textureCreateInfo.filename = texturePath;
                             textureCreateInfo.format = OPENGL_TEXTURE;
                             textureCreateInfo.mipMapping = linkedRenderEngine->settings->mipMapping;
-                            textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
-                            if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
                             temporaryTexture.create(&textureCreateInfo);
                             textures.push_back(temporaryTexture);
+                            textures[textures.size() - 1].prepare();
                             *textureType.first = textures.size() - 1;
                         }
                     }
