@@ -38,8 +38,7 @@ public:
     }
 
     void unload() {
-        destroy();
-        glGenTextures(1, &ID);
+        stbi_image_free(createdWith.data);
     }
 
     virtual void upload() {

@@ -74,8 +74,8 @@ public:
         meshes.clear();
         meshes.reserve(scene->mNumMeshes);
         processNode(scene->mRootNode, scene, directory);
+        unloadQueue.emplace_front([&] { for (OpenGLTexture texture : textures) { texture.unload(); } });
         deletionQueue.emplace_front([&] { for (OpenGLTexture texture : textures) { texture.destroy(); } });
-        for (OpenGLTexture &texture : textures) { texture.upload(); }
         shaders.resize(shaderFilenames.size());
         for (uint32_t i = 0; i < shaderFilenames.size(); ++i) {
             OpenGLShader::CreateInfo shaderCreateInfo{shaderFilenames[i]};
@@ -107,6 +107,7 @@ public:
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(OpenGLMesh::OpenGLVertex), (void *)offsetof(OpenGLMesh::OpenGLVertex, normal));
         }
+        for (OpenGLTexture &texture : textures) { texture.upload(); }
         uploaded = true;
     }
 
