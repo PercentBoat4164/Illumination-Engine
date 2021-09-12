@@ -11,7 +11,9 @@ We hope to add macOS compatibility to the game engine in the coming months.
 
 ## Getting Started
 
-To get started, you will need a few packages. Also, make sure that you are using your favorite IDE.
+For the best experience using this graphics engine, please make sure that your graphics drivers are up-to-date.
+
+To get started, you will need a few packages.
 
 Here is a list of a few packages that you will need to download:
 
@@ -45,4 +47,4 @@ Required: [cmake](https://cmake.org/download/)
 
 ## Support
 
-If you are having any trouble, check out our [documentation](https://percentboat4164.github.io/CrystalEngine/docs/index.html) or [report an issue on Github](https://github.com/PercentBoat4164/CrystalEngine/issues).
+If you are having any trouble, check out our [documentation](https://percentboat4164.github.io/Illumination-Engine/docs/index.html) or [report an issue on Github](https://github.com/PercentBoat4164/Illumination-Engine/issues).
