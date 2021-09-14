@@ -81,7 +81,7 @@ public:
         glfwSetWindowUserPointer(window, this);
         if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS) { throw std::runtime_error("failed to create window surface!"); }
         engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(instance.instance, surface, nullptr); });
-        /**@todo: Implement a device selection scheme for systems with multiple dedicated GPUs.*/
+        /**@todo: Implement a device selection scheme for systems with multiple GPUs.*/
         vkb::PhysicalDeviceSelector selector{instance};
         vkb::detail::Result<vkb::PhysicalDevice> temporaryPhysicalDeviceBuilder = selector.set_surface(surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
         if (!temporaryPhysicalDeviceBuilder) { throw std::runtime_error("failed to select Vulkan Physical Device! Does your device support Vulkan? Error: " + temporaryPhysicalDeviceBuilder.error().message() + "\n"); }
