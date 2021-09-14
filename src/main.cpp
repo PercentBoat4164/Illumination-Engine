@@ -1,7 +1,7 @@
 #include <iostream>
 //#include <cmath>
 
-#include "GraphicsEngine/Merged/RenderEngine.hpp"
+#include "GraphicsModule/Merged/RenderEngine.hpp"
 
 //#ifdef ILLUMINATION_ENGINE_VULKAN
 //#include "GraphicsEngine/Vulkan/vulkanRenderEngine.hpp"
@@ -49,10 +49,15 @@
 //#endif
 
 int main(int argc, char **argv) {
-    RenderEngineLink engineData{};
-    engineData.api.name = "Vulkan";
-    engineData.api.getVersion();
-    printf("%s %s\n", engineData.api.name.c_str(), engineData.api.version.name.c_str());
+    std::string selection;
+    std::string input;
+    if (argc > 1) { input = *argv[1]; } else {
+        std::cout << "'v': Run Vulkan render engine\n'o': Run OpenGL render engine\n";
+        std::cin >> selection;
+        input = selection[0];
+    }
+    RenderEngine renderEngine{input == "v" ? "Vulkan" : "OpenGL"};
+    renderEngine.create();
 }
 
 //
