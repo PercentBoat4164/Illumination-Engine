@@ -42,4 +42,6 @@ struct Settings{
 public:
     std::string applicationName{};
     Version applicationVersion{};
+    int resolution[2] {800, 600};
+    GLFWmonitor *monitor{};
 };

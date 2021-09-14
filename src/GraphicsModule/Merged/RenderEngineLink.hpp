@@ -29,7 +29,7 @@ public:
         Version version{};
 
         Version getVersion() {
-#ifdef ILLUMINATION_ENGINE_VULKAN
+            #ifdef ILLUMINATION_ENGINE_VULKAN
             if (name == "Vulkan") {
                 auto vkEnumerateDeviceInstanceVersion = reinterpret_cast<PFN_vkEnumerateInstanceVersion>(vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
                 if (vkEnumerateDeviceInstanceVersion == nullptr) { version = Version{"1.0.0"}; } else {
@@ -38,8 +38,8 @@ public:
                     version = Version{VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion)};
                 }
             }
-#endif
-#ifdef ILLUMINATION_ENGINE_VULKAN
+            #endif
+            #ifdef ILLUMINATION_ENGINE_VULKAN
             if (name == "OpenGL") {
                 if (GLEW_VERSION_1_1) { version = Version{"1.1.0"}; }
                 if (GLEW_VERSION_1_2) { version = Version{"1.2.0"}; }
@@ -71,18 +71,15 @@ public:
                     std::cerr << "\tRecovery successful" << std::endl;
                 }
             }
-#endif
+            #endif
             return version;
         }
     };
 
     class PhysicalDevice {
     public:
-        struct Info {
-#ifdef ILLUMINATION_ENGINE_VULKAN
-            //Device Properties
-            VkPhysicalDeviceProperties properties{};
-
+        struct APIComponents {
+            #ifdef ILLUMINATION_ENGINE_VULKAN
             // Extension Properties
             VkPhysicalDeviceMemoryProperties memoryProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2};
             void *pNextHighestProperty = &memoryProperties;
@@ -100,17 +97,47 @@ public:
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR, &rayQueryFeatures};
             // Automatically checks for RenderDoc capture, and simulates a device that does not support anything that RenderDoc does not support.
             void *pNextHighestFeature = std::getenv("ENABLE_VULKAN_RENDERDOC_CAPTURE") != nullptr ? static_cast<void *>(&descriptorIndexingFeatures) : static_cast<void *>(&rayTracingPipelineFeatures);
-#endif
+            #endif
             // Engine Features
             bool anisotropicFiltering{false};
             bool msaaSmoothing{false};
             bool rayTracing{false};
         };
 
-        Info enabledInfo;
-        Info supportedInfo;
+        class Info {
+        public:
+            API *api;
+            #ifdef ILLUMINATION_ENGINE_VULKAN
+            VkPhysicalDeviceProperties properties{};
+            #endif
+            std::string vendor{};
+            std::string name{};
 
-#ifdef ILLUMINATION_ENGINE_VULKAN
+            Info generateInfo() {
+            #ifdef ILLUMINATION_ENGINE_VULKAN
+                if (api->name == "Vulkan") {
+                    api->version = Version{VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion), VK_VERSION_PATCH(properties.apiVersion)};
+                    vendor = std::to_string(properties.vendorID);
+                    name = properties.deviceName;
+                    name = name.substr(name.find_first_of(' ') + 1, name.length() - name.find_first_of(' ') - 1);
+                }
+                #endif
+                #ifdef ILLUMINATION_ENGINE_OPENGL
+                if (api->name == "OpenGL") {
+                    vendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
+                    name = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+                    name = name.substr(name.find_first_of(' ') + 1, name.find_first_of('/') - name.find_first_of(' ') - 1);
+                }
+                #endif
+                return *this;
+            }
+        };
+
+        Info info;
+        APIComponents enabledAPIComponents;
+        APIComponents supportedAPIComponents;
+
+        #ifdef ILLUMINATION_ENGINE_VULKAN
 
         VkBool32 enableFeature(VkBool32 *feature) {
             *feature = *testFeature(feature);
@@ -128,7 +155,7 @@ public:
         }
 
         VkBool32 *testFeature(const VkBool32 *feature) {
-            return feature - (VkBool32 *)&enabledInfo + (VkBool32 *)&supportedInfo;
+            return feature - (VkBool32 *)&enabledAPIComponents + (VkBool32 *)&supportedAPIComponents;
         }
 
         std::vector<VkBool32> testFeature(const std::vector<VkBool32 *> &features) {
@@ -140,11 +167,12 @@ public:
             results[0] = VK_TRUE;
             return results;
         }
-#endif
+        #endif
     };
 
     void create() {
-#ifdef ILLUMINATION_ENGINE_VULKAN
+        physicalDevice.info.api = &api;
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         if (api.name == "Vulkan") {
             vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(vkGetDeviceProcAddr(device.device, "vkGetBufferDeviceAddressKHR"));
             vkCmdBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkCmdBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device.device, "vkCmdBuildAccelerationStructuresKHR"));
@@ -155,14 +183,14 @@ public:
             vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device.device, "vkAcquireNextImageKHR"));
             VkPhysicalDeviceProperties2 physicalDeviceProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
             vkGetPhysicalDeviceProperties2(device.physical_device.physical_device, &physicalDeviceProperties);
-            physicalDevice.supportedInfo.properties = physicalDeviceProperties.properties;
+            physicalDevice.info.properties = physicalDeviceProperties.properties;
             VkPhysicalDeviceFeatures2 physicalDeviceFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-            physicalDeviceFeatures.pNext = physicalDevice.supportedInfo.pNextHighestFeature;
+            physicalDeviceFeatures.pNext = physicalDevice.supportedAPIComponents.pNextHighestFeature;
             vkGetPhysicalDeviceFeatures2(device.physical_device.physical_device, &physicalDeviceFeatures);
-            physicalDevice.supportedInfo.physicalDeviceFeatures = physicalDeviceFeatures.features;
-            vkGetPhysicalDeviceMemoryProperties(device.physical_device.physical_device, &physicalDevice.supportedInfo.memoryProperties);
+            physicalDevice.supportedAPIComponents.physicalDeviceFeatures = physicalDeviceFeatures.features;
+            vkGetPhysicalDeviceMemoryProperties(device.physical_device.physical_device, &physicalDevice.supportedAPIComponents.memoryProperties);
         }
-#endif
+        #endif
     }
 
     API api;
@@ -170,9 +198,11 @@ public:
     Settings settings;
     GLFWwindow *window{};
     log4cplus::Logger graphicsModuleLogger;
-#ifdef ILLUMINATION_ENGINE_VULKAN
+    bool framebufferResized{false};
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     vkb::Device device{};
     vkb::Instance instance{};
+    VkSurfaceKHR surface{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
     PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{};
     PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR{};
@@ -180,14 +210,15 @@ public:
     PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR{};
     PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR{};
     PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
-#endif
+    #endif
 
     ~RenderEngineLink() {
-#ifdef ILLUMINATION_ENGINE_VULKAN
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         if (api.name == "Vulkan") {
+            vkDestroySurfaceKHR(instance.instance, surface, nullptr);
             vkb::destroy_device(device);
             vkb::destroy_instance(instance);
         }
-#endif
+        #endif
     }
 };
