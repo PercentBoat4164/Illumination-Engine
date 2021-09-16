@@ -14,6 +14,8 @@ if (ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED)
     find_package(glm) # install with "sudo apt install libglm-dev"
     find_package(assimp) # install with "sudo apt install assimp"
 endif ()
+#Illumination Engine options
+add_compile_definitions(ILLUMINATION_ENGINE_LOG)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -42,6 +44,7 @@ file(COPY ${CMAKE_SOURCE_DIR}/res DESTINATION ${CMAKE_BINARY_DIR}/bin)
 file(GLOB_RECURSE vulkan_shaders_to_compile res/Shaders/Vulkan*/*)
 file(GLOB_RECURSE opengl_shaders_to_compile res/Shaders/OpenGL*/*)
 add_executable(IlluminationEngine src/main.cpp ${vulkan_shaders_to_compile} ${opengl_shaders_to_compile})
+target_include_directories(IlluminationEngine PRIVATE ${CMAKE_SOURCE_DIR}/src)
 set_target_properties(IlluminationEngine PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set_target_properties(IlluminationEngine PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 add_subdirectory(${CMAKE_SOURCE_DIR}/deps/assimp)

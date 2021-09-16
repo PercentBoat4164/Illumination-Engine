@@ -40,8 +40,8 @@ public:
 
 struct Settings{
 public:
-    std::string applicationName{};
-    Version applicationVersion{};
+    std::string applicationName{"Illumination Engine"};
+    Version applicationVersion{"0.0.0"};
     int resolution[2] {800, 600};
     GLFWmonitor *monitor{};
 };

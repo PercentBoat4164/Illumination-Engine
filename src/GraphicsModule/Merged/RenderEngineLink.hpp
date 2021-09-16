@@ -5,6 +5,11 @@
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
 #include <vulkan/vulkan.h>
+#include <VkBootstrap.h>
+#ifndef VMA_IMPLEMENTATION
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
+#endif
 #endif
 
 #ifdef ILLUMINATION_ENGINE_OPENGL
@@ -14,10 +19,7 @@
 #endif
 #endif
 
-#include <VkBootstrap.h>
-#include <vk_mem_alloc.h>
 #include <GLFW/glfw3.h>
-#include <log4cplus/logger.h>
 
 #include "Settings.hpp"
 
@@ -39,7 +41,7 @@ public:
                 }
             }
             #endif
-            #ifdef ILLUMINATION_ENGINE_VULKAN
+            #ifdef ILLUMINATION_ENGINE_OPENGL
             if (name == "OpenGL") {
                 if (GLEW_VERSION_1_1) { version = Version{"1.1.0"}; }
                 if (GLEW_VERSION_1_2) { version = Version{"1.2.0"}; }
@@ -61,14 +63,12 @@ public:
                 if (GLEW_VERSION_4_5) { version = Version{"4.5.0"}; }
                 if (GLEW_VERSION_4_6) { version = Version{"4.6.0"}; }
                 if (version.name == "0.0.0") {
-                    std::cerr << "GLEW was not initialized before call to RenderEngineLink::API::getVersion()\n\tAttempting recovery" << std::endl;
-                    if (!glfwInit()) { std::cerr << "\tGLFW failed to initialize\n\tStopping attempt to recover from previous error" << std::endl; }
+                    glfwInit();
                     GLFWwindow *temporaryWindow = glfwCreateWindow(1, 1, "Gathering OpenGL Data...", nullptr, nullptr);
                     glfwMakeContextCurrent(temporaryWindow);
                     version = Version{std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)))};
                     glfwDestroyWindow(temporaryWindow);
                     glfwTerminate();
-                    std::cerr << "\tRecovery successful" << std::endl;
                 }
             }
             #endif
@@ -85,7 +85,7 @@ public:
             void *pNextHighestProperty = &memoryProperties;
 
             // Device Features
-            VkPhysicalDeviceFeatures physicalDeviceFeatures{};
+            VkPhysicalDeviceFeatures features{};
 
             // Extension Features
             // NOTE: Ray tracing features are on the bottom of the pNext stack so that a pointer to higher up on the stack can grab only the structures supported by RenderDoc.
@@ -170,6 +170,17 @@ public:
         #endif
     };
 
+    struct Created{
+        bool glfw{};
+        bool window{};
+        bool link{};
+        #ifdef ILLUMINATION_ENGINE_VULKAN
+        bool instance{};
+        bool device{};
+        bool surface{};
+        #endif
+    };
+
     void create() {
         physicalDevice.info.api = &api;
         #ifdef ILLUMINATION_ENGINE_VULKAN
@@ -187,7 +198,7 @@ public:
             VkPhysicalDeviceFeatures2 physicalDeviceFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
             physicalDeviceFeatures.pNext = physicalDevice.supportedAPIComponents.pNextHighestFeature;
             vkGetPhysicalDeviceFeatures2(device.physical_device.physical_device, &physicalDeviceFeatures);
-            physicalDevice.supportedAPIComponents.physicalDeviceFeatures = physicalDeviceFeatures.features;
+            physicalDevice.supportedAPIComponents.features = physicalDeviceFeatures.features;
             vkGetPhysicalDeviceMemoryProperties(device.physical_device.physical_device, &physicalDevice.supportedAPIComponents.memoryProperties);
         }
         #endif
@@ -197,11 +208,12 @@ public:
     PhysicalDevice physicalDevice;
     Settings settings;
     GLFWwindow *window{};
-    log4cplus::Logger graphicsModuleLogger;
     bool framebufferResized{false};
-    #ifdef ILLUMINATION_ENGINE_VULKAN
+    Created created{};
+#ifdef ILLUMINATION_ENGINE_VULKAN
     vkb::Device device{};
     vkb::Instance instance{};
+    VmaAllocator allocator{};
     VkSurfaceKHR surface{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
     PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{};
