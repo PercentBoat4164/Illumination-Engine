@@ -26,6 +26,7 @@ public:
 
 void Log::create(const std::string &name) {
     logName = name;
+    std::replace(logName.begin(), logName.end(), ' ', '_');
     log4cplus::SharedAppenderPtr consoleAppender{new log4cplus::ConsoleAppender()};
     consoleAppender->setName(logName + "Console");
     log4cplus::SharedAppenderPtr fileAppender{new log4cplus::FileAppender(logName + ".log")};
@@ -42,11 +43,9 @@ void Log::create(const std::string &name) {
 void Log::addModule(const std::string &name) {
     if (this != nullptr) {
         if (!modules.contains(name)) {
-            std::string logNameNoSpace = logName;
-            std::replace(logNameNoSpace.begin(), logNameNoSpace.end(), ' ', '_');
             std::string nameNoSpace = name;
             std::replace(nameNoSpace.begin(), nameNoSpace.end(), ' ', '_');
-            log4cplus::SharedAppenderPtr fileAppender{new log4cplus::FileAppender(logNameNoSpace + "_" + nameNoSpace + ".log")};
+            log4cplus::SharedAppenderPtr fileAppender{new log4cplus::FileAppender(logName + "_" + nameNoSpace + ".log")};
             fileAppender->setName(name);
             std::unique_ptr<log4cplus::Layout> layout = std::unique_ptr<log4cplus::Layout>(new log4cplus::TTCCLayout);
             fileAppender->setLayout(reinterpret_cast<std::unique_ptr<log4cplus::Layout> &&>(layout));

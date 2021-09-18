@@ -42,6 +42,7 @@ struct Settings{
 public:
     std::string applicationName{"Illumination Engine"};
     Version applicationVersion{"0.0.0"};
+    bool vSync{true};
     int resolution[2] {800, 600};
     GLFWmonitor *monitor{};
 };

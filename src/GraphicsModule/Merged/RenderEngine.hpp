@@ -19,6 +19,11 @@ public:
     RenderEngineLink renderEngineLink;
     Log *log{};
 
+    std::vector<VkFence> inFlightFences{};
+    std::vector<VkFence> imagesInFlight{};
+    std::vector<VkSemaphore> imageAvailableSemaphores{};
+    std::vector<VkSemaphore> renderFinishedSemaphores{};
+
     explicit RenderEngine(const std::string& API, Log *pLog = nullptr) {
         log = pLog;
         log->addModule("Graphics module");
@@ -37,9 +42,11 @@ public:
             vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
             if (!instanceBuilder) { log->log("failed to create Vulkan instance: " + instanceBuilder.error().message() + "\n", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
             renderEngineLink.instance = instanceBuilder.value();
+            renderEngineLink.created.instance = true;
         }
         #endif
         if (!glfwInit()) { log->log("GLFW failed to initialize", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+        renderEngineLink.created.glfw = true;
     }
 
     void create() {
@@ -58,6 +65,7 @@ public:
         #endif
         glfwMakeContextCurrent(nullptr);
         renderEngineLink.window = glfwCreateWindow(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1], (renderEngineLink.settings.applicationName + " v" + renderEngineLink.settings.applicationVersion.name).c_str(), renderEngineLink.settings.monitor, nullptr);
+        renderEngineLink.created.window = true;
         glfwMakeContextCurrent(renderEngineLink.window);
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes) / sizeof(int)];
@@ -78,6 +86,7 @@ public:
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") {
             if (glfwCreateWindowSurface(renderEngineLink.instance.instance, renderEngineLink.window, nullptr, &renderEngineLink.surface) != VK_SUCCESS) { log->log("failed to create window surface", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            renderEngineLink.created.surface = true;
             vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
             vkb::detail::Result<vkb::PhysicalDevice> temporaryPhysicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
             if (!temporaryPhysicalDeviceBuilder) { log->log("Physical device creation: " + temporaryPhysicalDeviceBuilder.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
@@ -85,8 +94,11 @@ public:
             vkb::detail::Result<vkb::Device> temporaryLogicalDevice = temporaryLogicalDeviceBuilder.build();
             if (!temporaryLogicalDevice) { log->log("Logical device creation: " + temporaryLogicalDevice.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
             renderEngineLink.device = temporaryLogicalDevice.value();
+            renderEngineLink.created.device = true;
             renderEngineLink.create();
+            renderEngineLink.created.renderEngineLink = true;
             vkb::destroy_device(renderEngineLink.device);
+            renderEngineLink.created.device = false;
             //EXTENSION SELECTION
             //-------------------
             std::vector<const char *> rayTracingExtensions{
@@ -149,12 +161,14 @@ public:
             vkb::detail::Result<vkb::Device> finalLogicalDevice = finalLogicalDeviceBuilder.build();
             if (!finalLogicalDevice) { log->log("failed to create final device after initial device was successfully created", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
             renderEngineLink.device = finalLogicalDevice.value();
+            renderEngineLink.created.device = true;
             VmaAllocatorCreateInfo allocatorInfo{};
             allocatorInfo.physicalDevice = renderEngineLink.device.physical_device.physical_device;
             allocatorInfo.device = renderEngineLink.device.device;
             allocatorInfo.instance = renderEngineLink.instance.instance;
             allocatorInfo.flags = renderEngineLink.physicalDevice.enabledAPIComponents.rayTracing ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0;
             vmaCreateAllocator(&allocatorInfo, &renderEngineLink.allocator);
+            renderEngineLink.created.allocator = true;
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
@@ -167,6 +181,7 @@ public:
             #endif
             glewExperimental = true;
             if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
+            renderEngineLink.created.glew = true;
             #ifndef NDEBUG
             int flags;
             glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -210,14 +225,29 @@ public:
         create();
     }
 
+    void handleWindowResize() {
+        if (renderEngineLink.api.name == "Vulkan") {
+            vkDeviceWaitIdle(renderEngineLink.device.device);
+            // Delete everything in recreation queue
+            vkb::SwapchainBuilder swapchainBuilder{renderEngineLink.device};
+            vkb::detail::Result<vkb::Swapchain> swapchainBuild = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).build();
+            if (!swapchainBuild) { log->log("failed to create swapchain.", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            renderEngineLink.swapchain = swapchainBuild.value();
+            renderEngineLink.created.swapchain = true;
+            renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
+            imagesInFlight.clear();
+            imagesInFlight.resize(renderEngineLink.swapchain.image_count, VK_NULL_HANDLE);
+        }
+    }
+
     ~RenderEngine() {
         if (renderEngineLink.api.name == "OpenGL") { glFinish(); }
         glfwTerminate();
     }
 
 private:
-#ifdef ILLUMINATION_ENGINE_OPENGL
     static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
+        #ifdef ILLUMINATION_ENGINE_OPENGL
         if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
         std::cout << "---------------" << std::endl;
         std::cout << "Debug message (" << id << "): " <<  message << std::endl;
@@ -253,13 +283,11 @@ private:
         }
         std::cout << std::endl;
         std::cout << std::endl;
+        #endif
     }
-#endif
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
         auto renderEngine = (RenderEngine *)glfwGetWindowUserPointer(pWindow);
-        renderEngine->renderEngineLink.framebufferResized = true;
-        renderEngine->renderEngineLink.settings.resolution[0] = width;
-        renderEngine->renderEngineLink.settings.resolution[1] = height;
+        renderEngine->handleWindowResize();
     }
 };

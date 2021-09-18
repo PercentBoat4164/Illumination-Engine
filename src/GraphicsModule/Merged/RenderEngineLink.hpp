@@ -173,12 +173,27 @@ public:
     struct Created{
         bool glfw{};
         bool window{};
-        bool link{};
+        bool renderEngineLink{};
         #ifdef ILLUMINATION_ENGINE_VULKAN
         bool instance{};
         bool device{};
         bool surface{};
+        bool swapchain{};
+        bool allocator{};
         #endif
+        #ifdef ILLUMINATION_ENGINE_OPENGL
+        bool glew{};
+        #endif
+
+        inline bool all(const std::string& API) const {
+            #ifdef ILLUMINATION_ENGINE_VULKAN
+            if (API == "Vulkan") { return glfw & window & renderEngineLink & instance & device & surface & swapchain & allocator; }
+            #endif
+            #ifdef ILLUMINATION_ENGINE_OPENGL
+            if (API == "OpenGL") { return glfw & window & renderEngineLink & glew; }
+            #endif
+            return true;
+        }
     };
 
     void create() {
@@ -213,6 +228,8 @@ public:
 #ifdef ILLUMINATION_ENGINE_VULKAN
     vkb::Device device{};
     vkb::Instance instance{};
+    vkb::Swapchain swapchain{};
+    std::vector<VkImageView> swapchainImageViews{};
     VmaAllocator allocator{};
     VkSurfaceKHR surface{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};

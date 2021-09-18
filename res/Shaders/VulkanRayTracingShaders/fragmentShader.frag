@@ -5,7 +5,7 @@
 const float PHI = 1.61803398874989484820459;
 
 //LIGHT DATA
-const vec3 position = vec3(0, 0, 2);
+vec3 position = vec3(0, 0, 2);
 const float radius = 0.06f;
 vec3 color = vec3(0xe2, 0x58, 0x22) / 255;
 
@@ -14,6 +14,12 @@ const int samples = 1;
 
 layout(binding = 1) uniform sampler2D diffuse;
 layout(binding = 2) uniform accelerationStructureEXT topLevelAccelerationStructure;
+layout(binding = 3) uniform VulkanCameraData {
+    vec3 position;
+    vec3 viewVector;
+    vec3 upVector;
+    vec3 rightVector;
+} cameraData;
 
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 fragmentPositionInWorldSpace;
@@ -59,6 +65,7 @@ vec4 aces(vec4 x) {
 }
 
 void main() {
+    position = cameraData.position + vec3(1, 1, 1);
     float fbmResultAtThisTime = fbm(time);
     float fbmResultAtDifferentTime = fbm(time + 100000);
     float brightness = 40 * fbmResultAtThisTime;
