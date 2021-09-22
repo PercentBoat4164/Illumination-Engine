@@ -33,7 +33,7 @@ public:
     float mipMapLevel{0.0f};
     bool fullscreen{false};
     int refreshRate{60};
-    bool vSync{true};
+    bool vSync{false};
     std::array<uint32_t, 2> resolution{defaultWindowResolution};
     double fov{90};
     double renderDistance{1000000};

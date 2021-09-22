@@ -159,6 +159,10 @@ int main(int argc, char **argv) {
                 rock.position = {-7, 0, 0};
                 quad.scale = {100, 100, 100};
                 quad.rotation = {90, 0, 0};
+                if (renderEngine.frameNumber % 10 == 0) {
+                    renderEngine.settings.applicationName = "Illumination Engine - FPS:" + std::to_string(1 / renderEngine.frameTime);
+                    glfwSetWindowTitle(renderEngine.window, renderEngine.settings.applicationName.c_str());
+                }
             }
             renderEngine.destroy();
         } catch (const std::exception& e) {
@@ -246,6 +250,10 @@ int main(int argc, char **argv) {
                 renderables[5].position = {-7, 0, 0};
                 renderables[1].scale = {100, 100, 100};
                 renderables[1].rotation = {90, 0, 0};
+                if (renderEngine.frameNumber % 10 == 0) {
+                    renderEngine.settings.applicationName = "Illumination Engine - FPS:" + std::to_string(1 / renderEngine.frameTime);
+                    glfwSetWindowTitle(renderEngine.window, renderEngine.settings.applicationName.c_str());
+                }
             }
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
