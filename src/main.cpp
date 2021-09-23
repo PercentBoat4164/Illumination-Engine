@@ -25,6 +25,15 @@ static void vulkanRasterizerWindowPositionCallback(GLFWwindow *pWindow, int xPos
     auto pRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(pWindow));
     if (!pRenderEngine->settings.fullscreen) { pRenderEngine->settings.windowPosition = {xPos, yPos}; }
 }
+
+static void vulkanWindowFocusCallback(GLFWwindow *pWindow, int focused) {
+    if (focused) {
+        auto pVulkanRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(pWindow));
+        glfwSetInputMode(pVulkanRenderEngine->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetCursorPosCallback(pVulkanRenderEngine->window, nullptr);
+        pVulkanRenderEngine->captureInput ^= true;
+    }
+}
 #endif
 
 #ifdef ILLUMINATION_ENGINE_OPENGL
@@ -43,6 +52,15 @@ static void openglCursorCallback(GLFWwindow *pWindow, double xOffset, double yOf
 static void openglWindowPositionCallback(GLFWwindow *pWindow, int xPos, int yPos) {
     auto pOpenGlRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(pWindow));
     if (!pOpenGlRenderEngine->settings.fullscreen) { pOpenGlRenderEngine->settings.windowPosition = {xPos, yPos}; }
+}
+
+static void openglWindowFocusCallback(GLFWwindow *pWindow, int focused) {
+    if (focused) {
+        auto pOpenGLRenderEngine = static_cast<OpenGLRenderEngine *>(glfwGetWindowUserPointer(pWindow));
+        glfwSetInputMode(pOpenGLRenderEngine->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetCursorPosCallback(pOpenGLRenderEngine->window, nullptr);
+        pOpenGLRenderEngine->captureInput ^= true;
+    }
 }
 #endif
 
@@ -78,7 +96,9 @@ int main(int argc, char **argv) {
             double lastCursorPosY{0};
             bool captureInput{};
             double tempTime;
+            glfwSetWindowFocusCallback(renderEngine.window, vulkanWindowFocusCallback);
             while (renderEngine.update()) {
+                int cursorMode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
                 glfwPollEvents();
                 float maxVelocity = renderEngine.frameTime * renderEngine.settings.movementSpeed;
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
@@ -120,12 +140,11 @@ int main(int argc, char **argv) {
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * maxVelocity; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * maxVelocity; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastKey > .2)) {
-                    int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
-                    if (mode == GLFW_CURSOR_DISABLED) {
+                    if (cursorMode == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                         glfwSetCursorPosCallback(renderEngine.window, nullptr);
-                    } else if (mode == GLFW_CURSOR_NORMAL) {
+                    } else if (cursorMode == GLFW_CURSOR_NORMAL) {
                         if (glfwGetWindowAttrib(renderEngine.window, GLFW_HOVERED)) {
                             glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                             glfwSetCursorPos(renderEngine.window, 0, 0);
@@ -184,7 +203,9 @@ int main(int argc, char **argv) {
             double lastCursorPosY{0};
             bool captureInput{};
             double tempTime;
+            glfwSetWindowFocusCallback(renderEngine.window, openglWindowFocusCallback);
             while (renderEngine.update() != 1) {
+                int cursorMode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
                 glfwPollEvents();
                 float maxVelocity = (float)renderEngine.frameTime * (float)renderEngine.settings.movementSpeed;
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_F1)) {
@@ -211,12 +232,11 @@ int main(int argc, char **argv) {
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_LEFT_SHIFT) & captureInput) { renderEngine.camera.position -= renderEngine.camera.up * maxVelocity; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_SPACE) & captureInput) { renderEngine.camera.position += renderEngine.camera.up * maxVelocity; }
                 if (glfwGetKey(renderEngine.window, GLFW_KEY_TAB) & (glfwGetTime() - lastKey > .2)) {
-                    int mode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
-                    if (mode == GLFW_CURSOR_DISABLED) {
+                    if (cursorMode == GLFW_CURSOR_DISABLED) {
                         glfwGetCursorPos(renderEngine.window, &lastCursorPosX, &lastCursorPosY);
                         glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                         glfwSetCursorPosCallback(renderEngine.window, nullptr);
-                    } else if (mode == GLFW_CURSOR_NORMAL) {
+                    } else if (cursorMode == GLFW_CURSOR_NORMAL) {
                         if (glfwGetWindowAttrib(renderEngine.window, GLFW_HOVERED)) {
                             glfwSetInputMode(renderEngine.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                             glfwSetCursorPos(renderEngine.window, 0, 0);

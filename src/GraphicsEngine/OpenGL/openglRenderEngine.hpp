@@ -202,6 +202,7 @@ public:
     double frameTime{};
     double previousTime{};
     int frameNumber{};
+    bool captureInput{};
 
     void destroy() {
         for (OpenGLRenderable *renderable : renderables) {

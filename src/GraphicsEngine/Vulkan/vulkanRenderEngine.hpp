@@ -425,6 +425,7 @@ public:
     VulkanGraphicsEngineLink renderEngineLink{};
     float frameTime{};
     int frameNumber{};
+    bool captureInput{};
 
 private:
     vkb::Swapchain swapchain{};
