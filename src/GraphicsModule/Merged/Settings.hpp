@@ -44,4 +44,5 @@ public:
     Version applicationVersion{"0.0.0"};
     int resolution[2] {800, 600};
     GLFWmonitor *monitor{};
+    bool vSync{};
 };
