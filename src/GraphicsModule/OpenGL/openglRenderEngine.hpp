@@ -22,6 +22,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <thread>
 
 class OpenGLRenderEngine {
 public:
@@ -105,12 +106,20 @@ public:
         for (OpenGLRenderable *renderable : renderables) { renderable->reprepare(); }
     }
 
-    void loadRenderables(std::vector<const char *> filePaths, std::vector<OpenGLRenderable> *theseRenderables) {
+    static void loadRenderable(OpenGLRenderable *renderableToLoad) {
+        renderableToLoad->create();
+        renderableToLoad->prepare();
+    }
+
+    void loadRenderables(const std::vector<const char *>& filePaths, std::vector<OpenGLRenderable> *theseRenderables) {
         renderables.resize(filePaths.size());
-        for (unsigned int i = 0; i < filePaths.size(); i++) {
-            (*theseRenderables)[i] = OpenGLRenderable{&renderEngineLink, filePaths[i]};
-            (*theseRenderables)[i].create();
-            (*theseRenderables)[i].prepare();
+        std::vector<std::thread> threads{filePaths.size()};
+        for (unsigned int i = 0; i < filePaths.size(); ++i) {
+            (*theseRenderables)[i] = OpenGLRenderable(&renderEngineLink, filePaths[i]);
+            threads[i] = std::thread(loadRenderable, &(*theseRenderables)[i]);
+        }
+        for (unsigned int i = 0; i < filePaths.size(); ++i) {
+            threads[i].join();
             (*theseRenderables)[i].upload();
             renderables[renderables.size() - filePaths.size() + i] = &(*theseRenderables)[i];
         }

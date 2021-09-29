@@ -89,10 +89,10 @@ public:
             renderEngineLink.created.surface = true;
             vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
             vkb::detail::Result<vkb::PhysicalDevice> temporaryPhysicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
-            if (!temporaryPhysicalDeviceBuilder) { log->log("Physical device creation: " + temporaryPhysicalDeviceBuilder.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            log->log("Physical device creation: " + temporaryPhysicalDeviceBuilder.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
             vkb::DeviceBuilder temporaryLogicalDeviceBuilder{temporaryPhysicalDeviceBuilder.value()};
             vkb::detail::Result<vkb::Device> temporaryLogicalDevice = temporaryLogicalDeviceBuilder.build();
-            if (!temporaryLogicalDevice) { log->log("Logical device creation: " + temporaryLogicalDevice.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            log->log("Logical device creation: " + temporaryLogicalDevice.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
             renderEngineLink.device = temporaryLogicalDevice.value();
             renderEngineLink.created.device = true;
             renderEngineLink.create();
@@ -199,6 +199,18 @@ public:
         renderEngineLink.physicalDevice.info.generateInfo();
         log->log(renderEngineLink.api.name + ' ' + renderEngineLink.api.version.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
         log->log(renderEngineLink.physicalDevice.info.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        handleWindowSizeChange();
+    }
+
+    void handleWindowSizeChange() {
+        if (renderEngineLink.api.name == "Vulkan") {
+            vkDeviceWaitIdle(renderEngineLink.device.device);
+            // clear recreation deletion queue
+            vkb::SwapchainBuilder swapchainBuilder{ renderEngineLink.device };
+            vkb::detail::Result<vkb::Swapchain> swapchainBuilderResults = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).build();
+            log->log(swapchainBuilderResults.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
+
+        }
     }
 
     void changeAPI(const std::string& API) {
@@ -218,7 +230,7 @@ public:
             if (systemInfo->debug_utils_available) { builder.use_default_debug_messenger(); }
             #endif
             vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
-            if (!instanceBuilder) { log->log("Failed to create Vulkan instance. Error: " + instanceBuilder.error().message() + "\n", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            log->log(instanceBuilder.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
             renderEngineLink.instance = instanceBuilder.value();
         }
         #endif
