@@ -45,5 +45,4 @@ public:
     bool vSync{true};
     int resolution[2] {800, 600};
     GLFWmonitor *monitor{};
-    bool vSync{};
 };

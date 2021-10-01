@@ -22,6 +22,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Settings.hpp"
+#include "LogModule/Log.hpp"
 
 class RenderEngineLink{
 public:
@@ -178,19 +179,19 @@ public:
         bool instance{};
         bool device{};
         bool surface{};
-        bool swapchain{};
         bool allocator{};
+        bool swapchain{};
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
         bool glew{};
         #endif
 
-        inline bool all(const std::string& API) const {
+        [[nodiscard]] inline bool all(const API& newAPI) const {
             #ifdef ILLUMINATION_ENGINE_VULKAN
-            if (API == "Vulkan") { return glfw & window & renderEngineLink & instance & device & surface & swapchain & allocator; }
+            if (newAPI.name == "Vulkan") { return glfw & window & renderEngineLink & instance & device & surface & swapchain & allocator; }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
-            if (API == "OpenGL") { return glfw & window & renderEngineLink & glew; }
+            if (newAPI.name == "OpenGL") { return glfw & window & renderEngineLink & glew; }
             #endif
             return true;
         }
@@ -220,12 +221,13 @@ public:
     }
 
     API api;
+    Log *log;
     PhysicalDevice physicalDevice;
     Settings settings;
     GLFWwindow *window{};
     bool framebufferResized{false};
     Created created{};
-#ifdef ILLUMINATION_ENGINE_VULKAN
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     vkb::Device device{};
     vkb::Instance instance{};
     vkb::Swapchain swapchain{};
@@ -241,13 +243,41 @@ public:
     PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
     #endif
 
-    ~RenderEngineLink() {
+    void destroy() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (api.name == "Vulkan") {
-            vkDestroySurfaceKHR(instance.instance, surface, nullptr);
-            vkb::destroy_device(device);
-            vkb::destroy_instance(instance);
+            if (created.swapchain) {
+                swapchain.destroy_image_views(swapchainImageViews);
+                /**@todo: Check if swapchainImageViews is not nullptr at this time. If it is pointing to something it is invalid; reset it.*/
+                vkb::destroy_swapchain(swapchain);
+                created.swapchain = false;
+            }
+            if (created.allocator) {
+                vmaDestroyAllocator(allocator);
+                created.allocator = false;
+            }
+            if (created.surface) {
+                vkDestroySurfaceKHR(instance.instance, surface, nullptr);
+                created.surface = false;
+            }
+            if (created.device) {
+                vkb::destroy_device(device);
+                created.device = false;
+            }
+            if (created.instance) {
+                destroy_instance(instance);
+                created.instance = false;
+            }
         }
         #endif
+        #ifdef ILLUMINATION_ENGINE_OPENGL
+        if (api.name == "OpenGL") {
+            glFinish();
+        }
+        #endif
+    }
+
+    ~RenderEngineLink() {
+        destroy();
     }
 };
