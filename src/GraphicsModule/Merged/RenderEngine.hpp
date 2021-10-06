@@ -13,6 +13,8 @@
 #include "LogModule/Log.hpp"
 #include "RenderEngineLink.hpp"
 #include "CommandPool.hpp"
+#include "Buffer.hpp"
+#include "Image.hpp"
 
 
 class RenderEngine {
@@ -189,7 +191,7 @@ public:
             if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
                 glEnable(GL_DEBUG_OUTPUT);
                 glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // makes sure errors are displayed synchronously
-                glDebugMessageCallback(glDebugOutput, nullptr);
+                glDebugMessageCallback(glDebugOutput, &renderEngineLink);
                 glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
             }
             #endif
@@ -210,6 +212,7 @@ public:
             vkb::SwapchainBuilder swapchainBuilder{ renderEngineLink.device };
             vkb::detail::Result<vkb::Swapchain> swapchainBuilderResults = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).build();
             if (!swapchainBuilderResults) { renderEngineLink.log->log("failed to create swapchain.", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            destroy_swapchain(renderEngineLink.swapchain);
             renderEngineLink.swapchain = swapchainBuilderResults.value();
             renderEngineLink.created.swapchain = true;
             renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
@@ -244,16 +247,7 @@ public:
     }
 
     void destroy() {
-        #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == "Vulkan") {
-            renderEngineLink.destroy();
-        }
-        #endif
-        #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (renderEngineLink.api.name == "OpenGL") {
-            renderEngineLink.destroy();
-        }
-        #endif
+        renderEngineLink.destroy();
         glfwTerminate();
     }
 
@@ -265,45 +259,46 @@ private:
     static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
         #ifdef ILLUMINATION_ENGINE_OPENGL
         if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
-        std::cout << "---------------" << std::endl;
-        std::cout << "Debug message (" << id << "): " <<  message << std::endl;
+        std::string sourceText{};
+        std::string typeText{};
+        std::string severityText{};
         switch (source) {
-            case GL_DEBUG_SOURCE_API:               std::cout << "Source: API"; break;
-            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     std::cout << "Source: Window System"; break;
-            case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: Shader Compiler"; break;
-            case GL_DEBUG_SOURCE_THIRD_PARTY:       std::cout << "Source: Third Party"; break;
-            case GL_DEBUG_SOURCE_APPLICATION:       std::cout << "Source: Application"; break;
-            case GL_DEBUG_SOURCE_OTHER:             std::cout << "Source: Other"; break;
-            default:                                std::cout << "Source: Unknown"; break;
+            case GL_DEBUG_SOURCE_API:               sourceText = "API"; break;
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     sourceText = "Window System"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:   sourceText = "Shader Compiler"; break;
+            case GL_DEBUG_SOURCE_THIRD_PARTY:       sourceText = "Third Party"; break;
+            case GL_DEBUG_SOURCE_APPLICATION:       sourceText = "Application"; break;
+            case GL_DEBUG_SOURCE_OTHER:             sourceText = "Other"; break;
+            default:                                sourceText = "Unknown"; break;
         }
-        std::cout << std::endl;
         switch (type) {
-            case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error"; break;
-            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
-            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behaviour"; break;
-            case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability"; break;
-            case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Performance"; break;
-            case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker"; break;
-            case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
-            case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
-            case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
-            default:                                std::cout << "Type: Unknown"; break;
+            case GL_DEBUG_TYPE_ERROR:               typeText = "Error"; break;
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeText = "Deprecated Behaviour"; break;
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  typeText = "Undefined Behaviour"; break;
+            case GL_DEBUG_TYPE_PORTABILITY:         typeText = "Portability"; break;
+            case GL_DEBUG_TYPE_PERFORMANCE:         typeText = "Performance"; break;
+            case GL_DEBUG_TYPE_MARKER:              typeText = "Marker"; break;
+            case GL_DEBUG_TYPE_PUSH_GROUP:          typeText = "Push Group"; break;
+            case GL_DEBUG_TYPE_POP_GROUP:           typeText = "Pop Group"; break;
+            case GL_DEBUG_TYPE_OTHER:               typeText = "Other"; break;
+            default:                                typeText = "Unknown"; break;
         }
-        std::cout << std::endl;
         switch (severity) {
-            case GL_DEBUG_SEVERITY_HIGH:            std::cout << "Severity: high"; break;
-            case GL_DEBUG_SEVERITY_MEDIUM:          std::cout << "Severity: medium"; break;
-            case GL_DEBUG_SEVERITY_LOW:             std::cout << "Severity: low"; break;
-            case GL_DEBUG_SEVERITY_NOTIFICATION:    std::cout << "Severity: notification"; break;
-            default:                                std::cout << "Source: Unknown"; break;
+            case GL_DEBUG_SEVERITY_HIGH:            severityText = "High"; break;
+            case GL_DEBUG_SEVERITY_MEDIUM:          severityText = "Medium"; break;
+            case GL_DEBUG_SEVERITY_LOW:             severityText = "Low"; break;
+            case GL_DEBUG_SEVERITY_NOTIFICATION:    severityText = "Notification"; break;
+            default:                                severityText = "Unknown"; break;
         }
-        std::cout << std::endl;
-        std::cout << std::endl;
+        auto renderEngineLink = static_cast<RenderEngineLink *>(const_cast<void *>(userParam));
+        renderEngineLink->log->log("OpenGL Error: " + sourceText + " produced a" + static_cast<std::string>(static_cast<std::string>("aeiouAEIOU").find(typeText[0]) ? "n " : " ") + typeText + " of " + severityText + " severity level which says: " + message, severity == (GL_DEBUG_SEVERITY_HIGH | GL_DEBUG_SEVERITY_MEDIUM) ? log4cplus::DEBUG_LOG_LEVEL : severity == (GL_DEBUG_SEVERITY_LOW) ? log4cplus::WARN_LOG_LEVEL : log4cplus::INFO_LOG_LEVEL, "Graphics Module");
         #endif
     }
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
         auto renderEngine = (RenderEngine *)glfwGetWindowUserPointer(pWindow);
+        renderEngine->renderEngineLink.settings.resolution[0] = width;
+        renderEngine->renderEngineLink.settings.resolution[1] = height;
         renderEngine->handleWindowSizeChange();
     }
 };

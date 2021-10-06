@@ -13,6 +13,7 @@ enum VulkanImageType {
 class VulkanImage {
 public:
     struct CreateInfo {
+    public:
         //Required
         VkFormat format{};
         VkImageTiling tiling{};

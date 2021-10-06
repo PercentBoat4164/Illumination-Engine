@@ -248,7 +248,6 @@ public:
         if (api.name == "Vulkan") {
             if (created.swapchain) {
                 swapchain.destroy_image_views(swapchainImageViews);
-                /**@todo: Check if swapchainImageViews is not nullptr at this time. If it is pointing to something it is invalid; reset it.*/
                 vkb::destroy_swapchain(swapchain);
                 created.swapchain = false;
             }

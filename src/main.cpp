@@ -1,6 +1,30 @@
+#include "GraphicsModule/Merged/RenderEngine.hpp"
+
+#include <sstream>
 #include <iostream>
 
-#include "GraphicsModule/Merged/RenderEngine.hpp"
+template <typename ObjectType> void saveObjectToFile(ObjectType *objectToSave, const std::string& filename) {
+    unsigned long objectSize = sizeof(ObjectType);
+    std::ofstream file{};
+    std::vector<char> fileContents{static_cast<char>(objectSize)};
+    std::memcpy(fileContents.data(), reinterpret_cast<void *>(objectToSave), objectSize);
+    file.open(filename);
+    file.write(fileContents.data(), static_cast<std::streamsize>(objectSize));
+    std::flush(file);
+    file.close();
+}
+
+template <typename ObjectType> ObjectType loadObjectFromFile(ObjectType *objectToLoad, const std::string& filename) {
+    unsigned long objectSize = sizeof(ObjectType);
+    std::ifstream file{};
+    file.open(filename);
+    std::stringstream fileContents{};
+    fileContents << file.rdbuf();
+    file.close();
+    ObjectType result{"OpenGL"};
+    std::memcpy(reinterpret_cast<void *>(&result), reinterpret_cast<const void *>(fileContents.str().c_str()), objectSize);
+    return result;
+}
 
 int main(int argc, char **argv) {
     std::string selection;
