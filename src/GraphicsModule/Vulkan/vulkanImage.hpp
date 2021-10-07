@@ -82,7 +82,7 @@ public:
     }
 
     /**@todo: Combine as many command buffer submissions as possible together to reduce prepare on GPU.*/
-    /**@todo: Allow either dataSource input or data input from the CreateInfo. Currently is only data for texture and only dataSource for other.*/
+    /**@todo: Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     virtual void upload() {
         if (vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
         deletionQueue.emplace_front([&] { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });

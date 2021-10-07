@@ -29,7 +29,7 @@ public:
     explicit RenderEngine(const std::string& API, Log *pLog = nullptr) {
         renderEngineLink.log = pLog;
         renderEngineLink.log->addModule("Graphics module");
-        renderEngineLink.log->log("Creating render engine...", log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        renderEngineLink.log->log("Creating window", log4cplus::INFO_LOG_LEVEL, "Graphics module");
         renderEngineLink.api.name = API;
         renderEngineLink.log = pLog;
         #ifdef ILLUMINATION_ENGINE_VULKAN
@@ -53,6 +53,7 @@ public:
     }
 
     void create() {
+        renderEngineLink.log->log("Initializing " + renderEngineLink.api.name + " API", log4cplus::INFO_LOG_LEVEL, "Graphics module");
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") { glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); }
         #endif
@@ -75,7 +76,7 @@ public:
         for (unsigned long i = 0; i < sizeof(sizes) / sizeof(int); ++i) {
             std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) { renderEngineLink.log->log("failed to prepare texture image from file: " + filename, log4cplus::WARN_LOG_LEVEL, "Graphics module"); }
+            if (!pixels) { renderEngineLink.log->log("Failed to prepare texture image from file: " + filename, log4cplus::WARN_LOG_LEVEL, "Graphics module"); }
             icons[i].pixels = pixels;
             icons[i].height = height;
             icons[i].width = width;
@@ -183,7 +184,7 @@ public:
             glfwSwapInterval(1);
             #endif
             glewExperimental = true;
-            if (glewInit() != GLEW_OK) { throw std::runtime_error("failed to initialize GLEW!"); }
+            if (glewInit() != GLEW_OK) { renderEngineLink.log->log("Failed to iniialize GLEW!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
             renderEngineLink.created.glew = true;
             #ifndef NDEBUG
             int flags;
@@ -206,6 +207,7 @@ public:
     }
 
     void handleWindowSizeChange() {
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") {
             vkDeviceWaitIdle(renderEngineLink.device.device);
             // clear recreation deletion queue
@@ -218,15 +220,14 @@ public:
             renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
             imagesInFlight.clear();
             imagesInFlight.resize(renderEngineLink.swapchain.image_count, VK_NULL_HANDLE);
-
         }
+        #endif
     }
 
     void changeAPI(const std::string& API) {
+        renderEngineLink.destroy();
         if (renderEngineLink.api.name == "OpenGL") { glFinish(); }
-        renderEngineLink.~RenderEngineLink();
-        renderEngineLink = RenderEngineLink();
-        renderEngineLink.log->log("Creating render engine...", log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        renderEngineLink = RenderEngineLink{};
         renderEngineLink.api.name = API;
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") {

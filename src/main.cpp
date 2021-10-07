@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <cstring>
 
 template <typename ObjectType> void saveObjectToFile(ObjectType *objectToSave, const std::string& filename) {
     unsigned long objectSize = sizeof(ObjectType);

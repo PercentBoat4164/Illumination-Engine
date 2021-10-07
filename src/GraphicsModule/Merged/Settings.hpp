@@ -44,6 +44,9 @@ public:
     Version applicationVersion{"0.0.0"};
     bool vSync{true};
     int resolution[2] {800, 600};
+    double renderResolutionScale {.5};
+    int renderResolution[2] = {static_cast<int>(resolution[0] * renderResolutionScale), static_cast<int>(resolution[1] * renderResolutionScale)};
     GLFWmonitor *monitor{};
     uint8_t msaaSamples{};
+    unsigned int maxMipLevels{};
 };

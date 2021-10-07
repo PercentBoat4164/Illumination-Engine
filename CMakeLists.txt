@@ -86,7 +86,7 @@ if (Vulkan_FOUND)
     target_include_directories(IlluminationEngine PRIVATE ${CMAKE_SOURCE_DIR}/deps)
     target_link_libraries(IlluminationEngine PUBLIC vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
     add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
-    find_program(GLSLC glslc REQUIRED) # Note: this may require changes for Windows compatibility.
+    find_program(GLSLC glslc REQUIRED)
     foreach (shader ${vulkan_shaders_to_compile})
         get_filename_component(shader_extension ${shader} LAST_EXT)
         if (NOT shader_extension MATCHES ".spv")

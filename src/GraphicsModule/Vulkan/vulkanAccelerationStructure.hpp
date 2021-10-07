@@ -22,27 +22,27 @@ public:
             accelerationStructureGeometry.geometry.triangles.indexData = {createdWith.indexBufferAddress};
             accelerationStructureGeometry.geometry.triangles.transformData = {createdWith.transformationBufferAddress};
         } else {
-            std::vector<VkAccelerationStructureInstanceKHR> accelerationStructureInstance{createdWith.bottomLevelAccelerationStructureDeviceAddresses.size()};
-            for (uint32_t i = 0; i < createdWith.bottomLevelAccelerationStructureDeviceAddresses.size(); ++i) {
+            std::vector<VkAccelerationStructureInstanceKHR> accelerationStructureInstance{createdWith.bottomLevelAccelerationStructureDeviceAddresses.bufferSize()};
+            for (uint32_t i = 0; i < createdWith.bottomLevelAccelerationStructureDeviceAddresses.bufferSize(); ++i) {
                 accelerationStructureInstance[i].transform = *createdWith.transformationMatrix;
                 accelerationStructureInstance[i].mask = 0xFF;
                 accelerationStructureInstance[i].flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
                 accelerationStructureInstance[i].accelerationStructureReference = createdWith.bottomLevelAccelerationStructureDeviceAddresses[i];
             }
             VulkanBuffer::CreateInfo instanceBufferCreateInfo{};
-            instanceBufferCreateInfo.size = sizeof(VkAccelerationStructureInstanceKHR) * createdWith.bottomLevelAccelerationStructureDeviceAddresses.size();
+            instanceBufferCreateInfo.bufferSize = sizeof(VkAccelerationStructureInstanceKHR) * createdWith.bottomLevelAccelerationStructureDeviceAddresses.bufferSize();
             instanceBufferCreateInfo.usage = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
             instanceBufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
             instancesBuffer.create(linkedRenderEngine, &instanceBufferCreateInfo);
-            instancesBuffer.uploadData(accelerationStructureInstance.data(), sizeof(VkAccelerationStructureInstanceKHR) * createdWith.bottomLevelAccelerationStructureDeviceAddresses.size());
+            instancesBuffer.uploadData(accelerationStructureInstance.bufferData(), sizeof(VkAccelerationStructureInstanceKHR) * createdWith.bottomLevelAccelerationStructureDeviceAddresses.bufferSize());
             accelerationStructureGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
             accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
             accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
             accelerationStructureGeometry.geometry.instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
             accelerationStructureGeometry.geometry.instances.arrayOfPointers = VK_FALSE;
-            accelerationStructureGeometry.geometry.instances.data = {instancesBuffer.deviceAddress};
+            accelerationStructureGeometry.geometry.instances.bufferData = {instancesBuffer.deviceAddress};
         }
-        uint32_t count{static_cast<uint32_t>(createdWith.bottomLevelAccelerationStructureDeviceAddresses.size())};
+        uint32_t count{static_cast<uint32_t>(createdWith.bottomLevelAccelerationStructureDeviceAddresses.bufferSize())};
         accelerationStructureBuildGeometryInfo.type = createdWith.type;
         accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
         accelerationStructureBuildGeometryInfo.geometryCount = 1;
@@ -50,17 +50,17 @@ public:
         accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
         VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR};
         linkedRenderEngine->vkGetAccelerationStructureBuildSizesKHR(linkedRenderEngine->device->device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accelerationStructureBuildGeometryInfo, createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR ? &createdWith.primitiveCount : &count, &accelerationStructureBuildSizesInfo);
-        createdWith.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
+        createdWith.bufferSize = accelerationStructureBuildSizesInfo.accelerationStructureSize;
         VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
-        bufferCreateInfo.size = createdWith.size;
+        bufferCreateInfo.bufferSize = createdWith.bufferSize;
         bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create acceleration structure!"); }
-        deletionQueue.emplace_front([&] { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
+        if (vmaCreateBuffer(*linkedRenderEngine->allocation, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create acceleration structure!"); }
+        deletionQueue.emplace_front([&] { vmaDestroyBuffer(*linkedRenderEngine->allocation, buffer, allocation); });
         VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR};
         accelerationStructureCreateInfo.buffer = buffer;
-        accelerationStructureCreateInfo.size = createdWith.size;
+        accelerationStructureCreateInfo.bufferSize = createdWith.bufferSize;
         accelerationStructureCreateInfo.type = createdWith.type;
         linkedRenderEngine->vkCreateAccelerationStructureKHR(linkedRenderEngine->device->device, &accelerationStructureCreateInfo, nullptr, &accelerationStructure);
         deletionQueue.emplace_front([&] { linkedRenderEngine->vkDestroyAccelerationStructureKHR(linkedRenderEngine->device->device, accelerationStructure, nullptr); });
@@ -78,7 +78,7 @@ public:
         accelerationStructureBuildRangeInfo.primitiveCount = createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR ? createdWith.primitiveCount : count;
         std::vector<VkAccelerationStructureBuildRangeInfoKHR *> pAccelerationStructureBuildRangeInfo{&accelerationStructureBuildRangeInfo};
         VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
-        linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
+        linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.bufferData());
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
         scratchBuffer.destroy();
         if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) { instancesBuffer.destroy(); }
@@ -99,7 +99,7 @@ public:
 //        VkAccelerationStructureBuildRangeInfoKHR bottomLevelAccelerationStructureBuildRangeInfo{createdWith->triangleCount};
 //        std::vector<VkAccelerationStructureBuildRangeInfoKHR *> pAccelerationStructureBuildRangeInfo{&bottomLevelAccelerationStructureBuildRangeInfo};
 //        VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
-//        linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
+//        linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.bufferData());
 //        linkedRenderEngine->endSingleTimeCommands(commandBuffer);
 //    }
 };

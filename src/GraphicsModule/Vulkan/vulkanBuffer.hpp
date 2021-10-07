@@ -34,7 +34,7 @@ public:
         //Optional
         void *data{};
 
-        //Required only if data != nullptr
+        //Required only if bufferData != nullptr
         uint32_t sizeOfData{};
     };
 
@@ -62,7 +62,7 @@ public:
         if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
         deletionQueue.emplace_front([&] { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
         if (createdWith.data != nullptr) {
-            if (createdWith.sizeOfData > createdWith.size) { throw std::runtime_error("VulkanBuffer::CreateInfo::sizeOfData must not be greater than VulkanBuffer::CreateInfo::size."); }
+            if (createdWith.sizeOfData > createdWith.size) { throw std::runtime_error("VulkanBuffer::CreateInfo::sizeOfData must not be greater than VulkanBuffer::CreateInfo::bufferSize."); }
             vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
             memcpy(data, createdWith.data, createdWith.sizeOfData);
             vmaUnmapMemory(*linkedRenderEngine->allocator, allocation);
@@ -77,7 +77,7 @@ public:
 
     void uploadData(void *input, uint32_t sizeOfInput) {
         if (!created) { throw std::runtime_error("Calling VulkanBuffer::uploadData() on a buffer for which VulkanBuffer::create() has not been called is illegal."); }
-        if (sizeOfInput > createdWith.size) { throw std::runtime_error("sizeOfInput must not be greater than VulkanBuffer::CreateInfo::size."); }
+        if (sizeOfInput > createdWith.size) { throw std::runtime_error("sizeOfInput must not be greater than VulkanBuffer::CreateInfo::bufferSize."); }
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         memcpy(data, input, sizeOfInput);
         vmaUnmapMemory(*linkedRenderEngine->allocator, allocation);
