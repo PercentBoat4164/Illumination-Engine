@@ -1,6 +1,6 @@
 #pragma once
 
-struct Version {
+struct IeVersion {
 public:
     std::string name{"0.0.0"};
     std::vector<unsigned long> version{0, 0, 0};
@@ -8,7 +8,7 @@ public:
     unsigned long minor{};
     unsigned long patch{};
 
-    explicit Version(const std::string& versionName) {
+    explicit IeVersion(const std::string& versionName) {
         unsigned long nameLength = (name + ' ').find_first_of(' ');
         name = versionName.substr(0, nameLength);
         unsigned long firstBreak = name.find_first_of('.');
@@ -19,7 +19,7 @@ public:
         version = {major, minor, patch};
     }
 
-    explicit Version(const std::vector<unsigned long>& versionNumbers) {
+    explicit IeVersion(const std::vector<unsigned long>& versionNumbers) {
         version = versionNumbers;
         major = versionNumbers[0];
         minor = versionNumbers[1];
@@ -27,7 +27,7 @@ public:
         name = std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
     }
 
-    Version(unsigned long versionMajor, unsigned long versionMinor, unsigned long versionPatch) {
+    IeVersion(unsigned long versionMajor, unsigned long versionMinor, unsigned long versionPatch) {
         major = versionMajor;
         minor = versionMinor;
         patch = versionPatch;
@@ -35,13 +35,13 @@ public:
         version = {major, minor, patch};
     }
 
-    Version() = default;
+    IeVersion() = default;
 };
 
-struct Settings{
+struct IeSettings{
 public:
     std::string applicationName{"Illumination Engine"};
-    Version applicationVersion{"0.0.0"};
+    IeVersion applicationVersion{"0.0.0"};
     bool vSync{true};
     int resolution[2] {800, 600};
     double renderResolutionScale {.5};

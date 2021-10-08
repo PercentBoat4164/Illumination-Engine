@@ -115,7 +115,7 @@ public:
                     VkDescriptorImageInfo storageImageDescriptorInfo{};
                     storageImageDescriptorInfo.imageView = std::get<VulkanImage *>(newData[i].value())->view;
                     storageImageDescriptorInfo.sampler = std::get<VulkanImage *>(newData[i].value())->sampler;
-                    storageImageDescriptorInfo.imageLayout = std::get<VulkanImage *>(newData[i].value())->imageLayout;
+                    storageImageDescriptorInfo.layout = std::get<VulkanImage *>(newData[i].value())->layout;
                     if (storageImageDescriptorInfo.imageView == VK_NULL_HANDLE) { throw std::runtime_error("no image given or given image does not have an associated view!"); }
                     imageDescriptorInfos.push_back(storageImageDescriptorInfo);
                     writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.bufferSize() - 1];
@@ -123,7 +123,7 @@ public:
                     VkDescriptorImageInfo combinedImageSamplerDescriptorInfo{};
                     combinedImageSamplerDescriptorInfo.imageView = std::get<VulkanImage *>(newData[i].value())->view;
                     combinedImageSamplerDescriptorInfo.sampler = std::get<VulkanImage *>(newData[i].value())->sampler;
-                    combinedImageSamplerDescriptorInfo.imageLayout = std::get<VulkanImage *>(newData[i].value())->imageLayout;
+                    combinedImageSamplerDescriptorInfo.layout = std::get<VulkanImage *>(newData[i].value())->layout;
                     if (combinedImageSamplerDescriptorInfo.sampler == VK_NULL_HANDLE) { throw std::runtime_error("no image given or given image does not have an associated sampler!"); }
                     imageDescriptorInfos.push_back(combinedImageSamplerDescriptorInfo);
                     writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.bufferSize() - 1];

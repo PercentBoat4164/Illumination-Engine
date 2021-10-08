@@ -11,22 +11,23 @@
 #endif
 
 #include "LogModule/Log.hpp"
-#include "RenderEngineLink.hpp"
-#include "CommandPool.hpp"
-#include "Buffer.hpp"
-#include "Image.hpp"
+#include "IeRenderEngineLink.hpp"
+#include "IeCommandPool.hpp"
+#include "IeBuffer.hpp"
+#include "IeImage.hpp"
+#include "IeTexture.hpp"
+#include "IeShader.hpp"
 
-
-class RenderEngine {
+class IeRenderEngine {
 public:
-    RenderEngineLink renderEngineLink;
+    IeRenderEngineLink renderEngineLink;
 
     std::vector<VkFence> inFlightFences{};
     std::vector<VkFence> imagesInFlight{};
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
 
-    explicit RenderEngine(const std::string& API, Log *pLog = nullptr) {
+    explicit IeRenderEngine(const std::string& API, Log *pLog = nullptr) {
         renderEngineLink.log = pLog;
         renderEngineLink.log->addModule("Graphics module");
         renderEngineLink.log->log("Creating window", log4cplus::INFO_LOG_LEVEL, "Graphics module");
@@ -53,7 +54,7 @@ public:
     }
 
     void create() {
-        renderEngineLink.log->log("Initializing " + renderEngineLink.api.name + " API", log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        renderEngineLink.log->log("Initializing " + renderEngineLink.api.name + " IeAPI", log4cplus::INFO_LOG_LEVEL, "Graphics module");
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") { glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); }
         #endif
@@ -227,7 +228,7 @@ public:
     void changeAPI(const std::string& API) {
         renderEngineLink.destroy();
         if (renderEngineLink.api.name == "OpenGL") { glFinish(); }
-        renderEngineLink = RenderEngineLink{};
+        renderEngineLink = IeRenderEngineLink{};
         renderEngineLink.api.name = API;
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") {
@@ -252,7 +253,7 @@ public:
         glfwTerminate();
     }
 
-    ~RenderEngine() {
+    ~IeRenderEngine() {
         destroy();
     }
 
@@ -264,9 +265,9 @@ private:
         std::string typeText{};
         std::string severityText{};
         switch (source) {
-            case GL_DEBUG_SOURCE_API:               sourceText = "API"; break;
+            case GL_DEBUG_SOURCE_API:               sourceText = "IeAPI"; break;
             case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     sourceText = "Window System"; break;
-            case GL_DEBUG_SOURCE_SHADER_COMPILER:   sourceText = "Shader Compiler"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:   sourceText = "IeShader Compiler"; break;
             case GL_DEBUG_SOURCE_THIRD_PARTY:       sourceText = "Third Party"; break;
             case GL_DEBUG_SOURCE_APPLICATION:       sourceText = "Application"; break;
             case GL_DEBUG_SOURCE_OTHER:             sourceText = "Other"; break;
@@ -291,13 +292,13 @@ private:
             case GL_DEBUG_SEVERITY_NOTIFICATION:    severityText = "Notification"; break;
             default:                                severityText = "Unknown"; break;
         }
-        auto renderEngineLink = static_cast<RenderEngineLink *>(const_cast<void *>(userParam));
+        auto renderEngineLink = static_cast<IeRenderEngineLink *>(const_cast<void *>(userParam));
         renderEngineLink->log->log("OpenGL Error: " + sourceText + " produced a" + static_cast<std::string>(static_cast<std::string>("aeiouAEIOU").find(typeText[0]) ? "n " : " ") + typeText + " of " + severityText + " severity level which says: " + message, severity == (GL_DEBUG_SEVERITY_HIGH | GL_DEBUG_SEVERITY_MEDIUM) ? log4cplus::DEBUG_LOG_LEVEL : severity == (GL_DEBUG_SEVERITY_LOW) ? log4cplus::WARN_LOG_LEVEL : log4cplus::INFO_LOG_LEVEL, "Graphics Module");
         #endif
     }
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-        auto renderEngine = (RenderEngine *)glfwGetWindowUserPointer(pWindow);
+        auto renderEngine = (IeRenderEngine *)glfwGetWindowUserPointer(pWindow);
         renderEngine->renderEngineLink.settings.resolution[0] = width;
         renderEngine->renderEngineLink.settings.resolution[1] = height;
         renderEngine->handleWindowSizeChange();

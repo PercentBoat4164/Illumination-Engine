@@ -17,10 +17,10 @@ public:
         //Required
         OpenGLImageType format{};
 
-        //Only required if format != OPENGL_TEXTURE_*
+        //Only required if specifications != OPENGL_TEXTURE_*
         int width{}, height{};
 
-        //Only required if format == OPENGL_TEXTURE_*
+        //Only required if specifications == OPENGL_TEXTURE_*
         std::string filename{};
 
         //Optional

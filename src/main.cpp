@@ -1,4 +1,4 @@
-#include "GraphicsModule/Merged/RenderEngine.hpp"
+#include "GraphicsModule/Merged/IeRenderEngine.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -41,6 +41,6 @@ int main(int argc, char **argv) {
     }
     Log log{};
     log.create("Illumination Engine");
-    RenderEngine renderEngine{input, &log};
+    IeRenderEngine renderEngine{input, &log};
     renderEngine.create();
 }

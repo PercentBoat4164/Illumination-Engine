@@ -21,53 +21,53 @@
 
 #include <GLFW/glfw3.h>
 
-#include "Settings.hpp"
+#include "IeSettings.hpp"
 #include "LogModule/Log.hpp"
 
-class RenderEngineLink{
+class IeRenderEngineLink{
 public:
-    class API{
+    class IeAPI{
     public:
         std::string name{"OpenGL"};
-        Version version{};
+        IeVersion version{};
 
-        Version getVersion() {
+        IeVersion getVersion() {
             #ifdef ILLUMINATION_ENGINE_VULKAN
             if (name == "Vulkan") {
                 auto vkEnumerateDeviceInstanceVersion = reinterpret_cast<PFN_vkEnumerateInstanceVersion>(vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
-                if (vkEnumerateDeviceInstanceVersion == nullptr) { version = Version{"1.0.0"}; } else {
+                if (vkEnumerateDeviceInstanceVersion == nullptr) { version = IeVersion{"1.0.0"}; } else {
                     uint32_t instanceVersion;
                     vkEnumerateDeviceInstanceVersion(&instanceVersion);
-                    version = Version{VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion)};
+                    version = IeVersion{VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion)};
                 }
             }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
             if (name == "OpenGL") {
-                if (GLEW_VERSION_1_1) { version = Version{"1.1.0"}; }
-                if (GLEW_VERSION_1_2) { version = Version{"1.2.0"}; }
-                if (GLEW_VERSION_1_2_1) { version = Version{"1.2.1"}; }
-                if (GLEW_VERSION_1_3) { version = Version{"1.3.0"}; }
-                if (GLEW_VERSION_1_4) { version = Version{"1.4.0"}; }
-                if (GLEW_VERSION_1_5) { version = Version{"1.5.0"}; }
-                if (GLEW_VERSION_2_0) { version = Version{"2.0.0"}; }
-                if (GLEW_VERSION_2_1) { version = Version{"2.1.0"}; }
-                if (GLEW_VERSION_3_0) { version = Version{"3.0.0"}; }
-                if (GLEW_VERSION_3_1) { version = Version{"3.1.0"}; }
-                if (GLEW_VERSION_3_2) { version = Version{"3.2.0"}; }
-                if (GLEW_VERSION_3_3) { version = Version{"3.3.0"}; }
-                if (GLEW_VERSION_4_0) { version = Version{"4.0.0"}; }
-                if (GLEW_VERSION_4_1) { version = Version{"4.1.0"}; }
-                if (GLEW_VERSION_4_2) { version = Version{"4.2.0"}; }
-                if (GLEW_VERSION_4_3) { version = Version{"4.3.0"}; }
-                if (GLEW_VERSION_4_4) { version = Version{"4.4.0"}; }
-                if (GLEW_VERSION_4_5) { version = Version{"4.5.0"}; }
-                if (GLEW_VERSION_4_6) { version = Version{"4.6.0"}; }
+                if (GLEW_VERSION_1_1) { version = IeVersion{"1.1.0"}; }
+                if (GLEW_VERSION_1_2) { version = IeVersion{"1.2.0"}; }
+                if (GLEW_VERSION_1_2_1) { version = IeVersion{"1.2.1"}; }
+                if (GLEW_VERSION_1_3) { version = IeVersion{"1.3.0"}; }
+                if (GLEW_VERSION_1_4) { version = IeVersion{"1.4.0"}; }
+                if (GLEW_VERSION_1_5) { version = IeVersion{"1.5.0"}; }
+                if (GLEW_VERSION_2_0) { version = IeVersion{"2.0.0"}; }
+                if (GLEW_VERSION_2_1) { version = IeVersion{"2.1.0"}; }
+                if (GLEW_VERSION_3_0) { version = IeVersion{"3.0.0"}; }
+                if (GLEW_VERSION_3_1) { version = IeVersion{"3.1.0"}; }
+                if (GLEW_VERSION_3_2) { version = IeVersion{"3.2.0"}; }
+                if (GLEW_VERSION_3_3) { version = IeVersion{"3.3.0"}; }
+                if (GLEW_VERSION_4_0) { version = IeVersion{"4.0.0"}; }
+                if (GLEW_VERSION_4_1) { version = IeVersion{"4.1.0"}; }
+                if (GLEW_VERSION_4_2) { version = IeVersion{"4.2.0"}; }
+                if (GLEW_VERSION_4_3) { version = IeVersion{"4.3.0"}; }
+                if (GLEW_VERSION_4_4) { version = IeVersion{"4.4.0"}; }
+                if (GLEW_VERSION_4_5) { version = IeVersion{"4.5.0"}; }
+                if (GLEW_VERSION_4_6) { version = IeVersion{"4.6.0"}; }
                 if (version.name == "0.0.0") {
                     glfwInit();
                     GLFWwindow *temporaryWindow = glfwCreateWindow(1, 1, "Gathering OpenGL Data...", nullptr, nullptr);
                     glfwMakeContextCurrent(temporaryWindow);
-                    version = Version{std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)))};
+                    version = IeVersion{std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)))};
                     glfwDestroyWindow(temporaryWindow);
                     glfwTerminate();
                 }
@@ -77,7 +77,7 @@ public:
         }
     };
 
-    class PhysicalDevice {
+    class IePhysicalDevice {
     public:
         struct APIComponents {
             #ifdef ILLUMINATION_ENGINE_VULKAN
@@ -107,7 +107,7 @@ public:
 
         class Info {
         public:
-            API *api;
+            IeAPI *api;
             #ifdef ILLUMINATION_ENGINE_VULKAN
             VkPhysicalDeviceProperties properties{};
             #endif
@@ -117,7 +117,7 @@ public:
             Info generateInfo() {
             #ifdef ILLUMINATION_ENGINE_VULKAN
                 if (api->name == "Vulkan") {
-                    api->version = Version{VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion), VK_VERSION_PATCH(properties.apiVersion)};
+                    api->version = IeVersion{VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion), VK_VERSION_PATCH(properties.apiVersion)};
                     vendor = std::to_string(properties.vendorID);
                     name = properties.deviceName;
                     name = name.substr(name.find_first_of(' ') + 1, name.length() - name.find_first_of(' ') - 1);
@@ -186,7 +186,7 @@ public:
         bool glew{};
         #endif
 
-        [[nodiscard]] inline bool all(const API& newAPI) const {
+        [[nodiscard]] inline bool all(const IeAPI& newAPI) const {
             #ifdef ILLUMINATION_ENGINE_VULKAN
             if (newAPI.name == "Vulkan") { return glfw & window & renderEngineLink & instance & device & surface & swapchain & allocator; }
             #endif
@@ -220,10 +220,10 @@ public:
         #endif
     }
 
-    API api;
+    IeAPI api;
     Log *log;
-    PhysicalDevice physicalDevice;
-    Settings settings;
+    IePhysicalDevice physicalDevice;
+    IeSettings settings;
     GLFWwindow *window{};
     bool framebufferResized{false};
     Created created{};
@@ -276,7 +276,7 @@ public:
         #endif
     }
 
-    ~RenderEngineLink() {
+    ~IeRenderEngineLink() {
         destroy();
     }
 };

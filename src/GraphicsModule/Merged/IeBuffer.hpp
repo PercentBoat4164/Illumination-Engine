@@ -2,14 +2,14 @@
 
 #include <variant>
 
-class Image;
+class IeImage;
 
 #ifndef ILLUMINATION_ENGINE_VULKAN
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkBuffer);
 #endif
 
 
-class Buffer {
+class IeBuffer {
 public:
     struct CreateInfo {
         //Only required for buffer
@@ -51,11 +51,11 @@ public:
     VkDeviceAddress deviceAddress{};
     VmaAllocation allocation{};
     #endif
-    RenderEngineLink *linkedRenderEngine{};
+    IeRenderEngineLink *linkedRenderEngine{};
     CreateInfo createdWith{};
     bool created{false};
 
-    virtual Buffer create(RenderEngineLink *engineLink, CreateInfo *createInfo) {
+    virtual IeBuffer create(IeRenderEngineLink *engineLink, CreateInfo *createInfo) {
         linkedRenderEngine = engineLink;
         createdWith = *createInfo;
         #ifdef ILLUMINATION_ENGINE_VULKAN
@@ -85,9 +85,9 @@ public:
         return *this;
     }
 
-    virtual Buffer upload(void *data, unsigned int sizeOfData) {
-        if (!created) { linkedRenderEngine->log->log("Called Buffer::upload() on a Buffer that does not exist!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
-        if (sizeOfData > createdWith.bufferSize) { linkedRenderEngine->log->log("Buffer::CreateInfo::sizeOfData must not be greater than Buffer::CreateInfo::bufferSize.", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
+    virtual IeBuffer upload(void *data, unsigned int sizeOfData) {
+        if (!created) { linkedRenderEngine->log->log("Called IeBuffer::upload() on a IeBuffer that does not exist!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
+        if (sizeOfData > createdWith.bufferSize) { linkedRenderEngine->log->log("IeBuffer::CreateInfo::sizeOfData must not be greater than IeBuffer::CreateInfo::bufferSize.", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (linkedRenderEngine->api.name == "Vulkan") {
             vmaMapMemory(linkedRenderEngine->allocator, allocation, &bufferData);
@@ -104,7 +104,7 @@ public:
         return *this;
     }
 
-    virtual void toImage(Image &image, unsigned int width, unsigned int height, VkCommandBuffer commandBuffer);
+    virtual void toImage(IeImage &image, unsigned int width, unsigned int height, VkCommandBuffer commandBuffer);
 
     virtual void destroy() {
         #ifdef ILLUMINATION_ENGINE_VULKAN

@@ -31,7 +31,7 @@ public:
             }
             VulkanBuffer::CreateInfo instanceBufferCreateInfo{};
             instanceBufferCreateInfo.bufferSize = sizeof(VkAccelerationStructureInstanceKHR) * createdWith.bottomLevelAccelerationStructureDeviceAddresses.bufferSize();
-            instanceBufferCreateInfo.usage = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
+            instanceBufferCreateInfo.memoryUsage = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
             instanceBufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
             instancesBuffer.create(linkedRenderEngine, &instanceBufferCreateInfo);
             instancesBuffer.uploadData(accelerationStructureInstance.bufferData(), sizeof(VkAccelerationStructureInstanceKHR) * createdWith.bottomLevelAccelerationStructureDeviceAddresses.bufferSize());
@@ -53,9 +53,9 @@ public:
         createdWith.bufferSize = accelerationStructureBuildSizesInfo.accelerationStructureSize;
         VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
         bufferCreateInfo.bufferSize = createdWith.bufferSize;
-        bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+        bufferCreateInfo.memoryUsage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
         VmaAllocationCreateInfo allocationCreateInfo{};
-        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        allocationCreateInfo.memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         if (vmaCreateBuffer(*linkedRenderEngine->allocation, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create acceleration structure!"); }
         deletionQueue.emplace_front([&] { vmaDestroyBuffer(*linkedRenderEngine->allocation, buffer, allocation); });
         VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR};

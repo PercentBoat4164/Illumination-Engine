@@ -227,9 +227,9 @@ private:
         std::cout << "---------------" << std::endl;
         std::cout << "Debug message (" << id << "): " <<  message << std::endl;
         switch (source) {
-            case GL_DEBUG_SOURCE_API:               std::cout << "Source: API"; break;
+            case GL_DEBUG_SOURCE_API:               std::cout << "Source: IeAPI"; break;
             case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     std::cout << "Source: Window System"; break;
-            case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: Shader Compiler"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: IeShader Compiler"; break;
             case GL_DEBUG_SOURCE_THIRD_PARTY:       std::cout << "Source: Third Party"; break;
             case GL_DEBUG_SOURCE_APPLICATION:       std::cout << "Source: Application"; break;
             case GL_DEBUG_SOURCE_OTHER:             std::cout << "Source: Other"; break;
