@@ -15,6 +15,7 @@
 #include "CommandPool.hpp"
 #include "Buffer.hpp"
 #include "Image.hpp"
+#include "Texture.hpp"
 
 
 class RenderEngine {
