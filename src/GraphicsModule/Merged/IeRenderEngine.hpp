@@ -54,7 +54,7 @@ public:
     }
 
     void create() {
-        renderEngineLink.log->log("Initializing " + renderEngineLink.api.name + " IeAPI", log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        renderEngineLink.log->log("Initializing " + renderEngineLink.api.name + " API", log4cplus::INFO_LOG_LEVEL, "Graphics module");
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") { glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); }
         #endif

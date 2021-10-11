@@ -46,66 +46,124 @@ enum IeImageFilter {
     IE_IMAGE_FILTER_LINEAR_MIPMAP_LINEAR = 0b111
 };
 
-#ifdef ILLUMINATION_ENGINE_VULKAN
-const static std::unordered_multimap<unsigned char, std::pair<VkImageType, int>> ieImageTypes {
-        {IE_IMAGE_TYPE_1D,                      {VK_IMAGE_TYPE_1D,      GL_IMAGE_1D}},
-        {IE_IMAGE_TYPE_1D_ARRAY,                {VK_IMAGE_TYPE_1D,      GL_IMAGE_1D_ARRAY}},
-        {IE_IMAGE_TYPE_2D,                      {VK_IMAGE_TYPE_2D,      GL_IMAGE_2D}},
-        {IE_IMAGE_TYPE_2D_ARRAY,                {VK_IMAGE_TYPE_2D,      GL_IMAGE_2D_ARRAY}},
-        {IE_IMAGE_TYPE_2D_MULTISAMPLE,          {VK_IMAGE_TYPE_2D,      GL_IMAGE_2D_MULTISAMPLE}},
-        {IE_IMAGE_TYPE_2D_MULTISAMPLE_ARRAY,    {VK_IMAGE_TYPE_2D,      GL_IMAGE_2D_MULTISAMPLE_ARRAY}},
-        {IE_IMAGE_TYPE_3D,                      {VK_IMAGE_TYPE_3D,      GL_IMAGE_3D}},
-        {IE_IMAGE_TYPE_CUBE,                    {VK_IMAGE_TYPE_2D,      GL_IMAGE_CUBE}},
-        {IE_IMAGE_TYPE_CUBE_ARRAY,              {VK_IMAGE_TYPE_2D,      GL_IMAGE_CUBE_MAP_ARRAY}},
+enum IeImageFormat {
+    IE_IMAGE_FORMAT_COLORSPACE_BIT = 0b1110000000,
+    IE_IMAGE_FORMAT_CHANNELS_BIT = 0b0001100000,
+    IE_IMAGE_FORMAT_BIT_DEPTH_BIT = 0b0000011111,
+    IE_IMAGE_FORMAT_SRGB_RGB_8BIT = 0b0001001000,
+    IE_IMAGE_FORMAT_SRGB_RGBA_8BIT = 0b0001101000
 };
 
-const static std::unordered_multimap<unsigned char, std::pair<VkFilter, int>> ieImageFilters{
-        {IE_IMAGE_FILTER_NONE,                   {VK_FILTER_NEAREST,    GL_NEAREST}},
-        {IE_IMAGE_FILTER_NEAREST,                {VK_FILTER_NEAREST,    GL_NEAREST}},
-        {IE_IMAGE_FILTER_LINEAR,                 {VK_FILTER_LINEAR,     GL_LINEAR}},
-        {IE_IMAGE_FILTER_NEAREST_MIPMAP_NEAREST, {VK_FILTER_NEAREST,    GL_NEAREST_MIPMAP_NEAREST}},
-        {IE_IMAGE_FILTER_NEAREST_MIPMAP_LINEAR,  {VK_FILTER_LINEAR,     GL_NEAREST_MIPMAP_LINEAR}},
-        {IE_IMAGE_FILTER_LINEAR_MIPMAP_NEAREST,  {VK_FILTER_LINEAR,     GL_LINEAR_MIPMAP_NEAREST}},
-        {IE_IMAGE_FILTER_LINEAR_MIPMAP_LINEAR,   {VK_FILTER_LINEAR,     GL_LINEAR_MIPMAP_LINEAR}},
+enum IeImageUsage {
+    IE_IMAGE_USAGE_COLOR_READ = 0b0000,
+    IE_IMAGE_USAGE_COLOR_WRITE = 0b0001,
+    IE_IMAGE_USAGE_DEPTH_READ = 0b0010,
+    IE_IMAGE_USAGE_DEPTH_WRITE = 0b0011,
+    IE_IMAGE_USAGE_READ = 0b0100,
+    IE_IMAGE_USAGE_WRITE = 0b0101,
+    IE_IMAGE_USAGE_DISPLAY = 0b0110,
+    IE_IMAGE_USAGE_DESTINATION = 0b0111,
+    IE_IMAGE_USAGE_SOURCE = 0b1000,
+    IE_IMAGE_USAGE_UNDEFINED = 0b1001,
+    IE_IMAGE_USAGE_ANY = 0b1010
+};
+
+#ifdef ILLUMINATION_ENGINE_VULKAN
+const static std::unordered_multimap<IeImageType, std::pair<VkImageType, int>> ieImageTypes {
+        {IE_IMAGE_TYPE_1D,                          {VK_IMAGE_TYPE_1D,              GL_IMAGE_1D}},
+        {IE_IMAGE_TYPE_1D_ARRAY,                    {VK_IMAGE_TYPE_1D,              GL_IMAGE_1D_ARRAY}},
+        {IE_IMAGE_TYPE_2D,                          {VK_IMAGE_TYPE_2D,              GL_IMAGE_2D}},
+        {IE_IMAGE_TYPE_2D_ARRAY,                    {VK_IMAGE_TYPE_2D,              GL_IMAGE_2D_ARRAY}},
+        {IE_IMAGE_TYPE_2D_MULTISAMPLE,              {VK_IMAGE_TYPE_2D,              GL_IMAGE_2D_MULTISAMPLE}},
+        {IE_IMAGE_TYPE_2D_MULTISAMPLE_ARRAY,        {VK_IMAGE_TYPE_2D,              GL_IMAGE_2D_MULTISAMPLE_ARRAY}},
+        {IE_IMAGE_TYPE_3D,                          {VK_IMAGE_TYPE_3D,              GL_IMAGE_3D}},
+        {IE_IMAGE_TYPE_CUBE,                        {VK_IMAGE_TYPE_2D,              GL_IMAGE_CUBE}},
+        {IE_IMAGE_TYPE_CUBE_ARRAY,                  {VK_IMAGE_TYPE_2D,              GL_IMAGE_CUBE_MAP_ARRAY}}
+};
+
+const static std::unordered_multimap<IeImageFilter, std::pair<VkFilter, int>> ieImageFilters {
+        {IE_IMAGE_FILTER_NONE,                      {VK_FILTER_NEAREST,             GL_NEAREST}},
+        {IE_IMAGE_FILTER_NEAREST,                   {VK_FILTER_NEAREST,             GL_NEAREST}},
+        {IE_IMAGE_FILTER_LINEAR,                    {VK_FILTER_LINEAR,              GL_LINEAR}},
+        {IE_IMAGE_FILTER_NEAREST_MIPMAP_NEAREST,    {VK_FILTER_NEAREST,             GL_NEAREST_MIPMAP_NEAREST}},
+        {IE_IMAGE_FILTER_NEAREST_MIPMAP_LINEAR,     {VK_FILTER_LINEAR,              GL_NEAREST_MIPMAP_LINEAR}},
+        {IE_IMAGE_FILTER_LINEAR_MIPMAP_NEAREST,     {VK_FILTER_LINEAR,              GL_LINEAR_MIPMAP_NEAREST}},
+        {IE_IMAGE_FILTER_LINEAR_MIPMAP_LINEAR,      {VK_FILTER_LINEAR,              GL_LINEAR_MIPMAP_LINEAR}}
+};
+
+const static std::unordered_multimap<IeImageFormat, std::pair<VkFormat, int>> ieImageFormats{
+        {IE_IMAGE_FORMAT_SRGB_RGB_8BIT,             {VK_FORMAT_R8G8B8_SRGB,         GL_RGB8}},
+        {IE_IMAGE_FORMAT_SRGB_RGBA_8BIT,            {VK_FORMAT_R8G8B8A8_SRGB,       GL_RGBA8}}
+};
+
+const static std::unordered_multimap<IeImageUsage, std::pair<VkImageLayout, int>> ieImageUsages {
+        {IE_IMAGE_USAGE_COLOR_READ,         {VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,              GL_NONE}},
+        {IE_IMAGE_USAGE_COLOR_WRITE,        {VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,              GL_NONE}},
+        {IE_IMAGE_USAGE_DEPTH_READ,         {VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR,           GL_NONE}},
+        {IE_IMAGE_USAGE_DEPTH_WRITE,        {VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR,          GL_NONE}},
+        {IE_IMAGE_USAGE_READ,               {VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL_KHR,                 GL_NONE}},
+        {IE_IMAGE_USAGE_WRITE,              {VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR,                GL_NONE}},
+        {IE_IMAGE_USAGE_DISPLAY,            {VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,                       GL_NONE}},
+        {IE_IMAGE_USAGE_DESTINATION,        {VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,                  GL_NONE}},
+        {IE_IMAGE_USAGE_SOURCE,             {VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,                  GL_NONE}},
+        {IE_IMAGE_USAGE_UNDEFINED,          {VK_IMAGE_LAYOUT_UNDEFINED,                             GL_NONE}},
+        {IE_IMAGE_USAGE_ANY,                {VK_IMAGE_LAYOUT_GENERAL,                               GL_NONE}}
 };
 #else
 #ifdef ILLUMINATION_ENGINE_OPENGL
-const static std::unordered_multimap<unsigned long long, std::pair<int, int>> ieImageTypes {
-        {IE_IMAGE_TYPE_1D,                          {GL_IMAGE_1D,                       GL_IMAGE_1D}},
-        {IE_IMAGE_TYPE_1D_ARRAY,                    {GL_IMAGE_1D_ARRAY,                 GL_IMAGE_1D_ARRAY}},
-        {IE_IMAGE_TYPE_2D,                          {GL_IMAGE_2D,                       GL_IMAGE_2D}},
-        {IE_IMAGE_TYPE_2D_ARRAY,                    {GL_IMAGE_2D_ARRAY,                 GL_IMAGE_2D_ARRAY}},
-        {IE_IMAGE_TYPE_2D_MULTISAMPLE,              {GL_IMAGE_2D_MULTISAMPLE,           GL_IMAGE_2D_MULTISAMPLE}},
-        {IE_IMAGE_TYPE_2D_MULTISAMPLE_ARRAY,        {GL_IMAGE_2D_MULTISAMPLE_ARRAY,     GL_IMAGE_2D_MULTISAMPLE_ARRAY}},
-        {IE_IMAGE_TYPE_3D,                          {GL_IMAGE_3D,                       GL_IMAGE_3D}},
-        {IE_IMAGE_TYPE_CUBE,                        {GL_IMAGE_CUBE,                     GL_IMAGE_CUBE}},
-        {IE_IMAGE_TYPE_CUBE_ARRAY,                  {GL_IMAGE_CUBE_MAP_ARRAY,           GL_IMAGE_CUBE_MAP_ARRAY}},
+const static std::unordered_multimap<IeImageType, std::pair<int, int>> ieImageTypes {
+        {IE_IMAGE_TYPE_1D,                                {GL_IMAGE_1D,                       GL_IMAGE_1D}},
+        {IE_IMAGE_TYPE_1D_ARRAY,                          {GL_IMAGE_1D_ARRAY,                 GL_IMAGE_1D_ARRAY}},
+        {IE_IMAGE_TYPE_2D,                                {GL_IMAGE_2D,                       GL_IMAGE_2D}},
+        {IE_IMAGE_TYPE_2D_ARRAY,                          {GL_IMAGE_2D_ARRAY,                 GL_IMAGE_2D_ARRAY}},
+        {IE_IMAGE_TYPE_2D_MULTISAMPLE,                    {GL_IMAGE_2D_MULTISAMPLE,           GL_IMAGE_2D_MULTISAMPLE}},
+        {IE_IMAGE_TYPE_2D_MULTISAMPLE_ARRAY,              {GL_IMAGE_2D_MULTISAMPLE_ARRAY,     GL_IMAGE_2D_MULTISAMPLE_ARRAY}},
+        {IE_IMAGE_TYPE_3D,                                {GL_IMAGE_3D,                       GL_IMAGE_3D}},
+        {IE_IMAGE_TYPE_CUBE,                              {GL_IMAGE_CUBE,                     GL_IMAGE_CUBE}},
+        {IE_IMAGE_TYPE_CUBE_ARRAY,                        {GL_IMAGE_CUBE_MAP_ARRAY,           GL_IMAGE_CUBE_MAP_ARRAY}},
 };
 
-const static std::unordered_multimap<unsigned char, std::pair<int, int>> ieImageFilters{
-        {IE_IMAGE_FILTER_NONE,                      {GL_NEAREST,                        GL_NEAREST}},
-        {IE_IMAGE_FILTER_NEAREST,                   {GL_NEAREST,                        GL_NEAREST}},
-        {IE_IMAGE_FILTER_LINEAR,                    {GL_LINEAR,                         GL_LINEAR}},
-        {IE_IMAGE_FILTER_NEAREST_MIPMAP_NEAREST,    {GL_NEAREST_MIPMAP_NEAREST,         GL_NEAREST_MIPMAP_NEAREST}},
-        {IE_IMAGE_FILTER_NEAREST_MIPMAP_LINEAR,     {GL_NEAREST_MIPMAP_LINEAR,          GL_NEAREST_MIPMAP_LINEAR}},
-        {IE_IMAGE_FILTER_LINEAR_MIPMAP_NEAREST,     {GL_LINEAR_MIPMAP_NEAREST,          GL_LINEAR_MIPMAP_NEAREST}},
-        {IE_IMAGE_FILTER_LINEAR_MIPMAP_LINEAR,      {GL_LINEAR_MIPMAP_LINEAR,           GL_LINEAR_MIPMAP_LINEAR}},
+const static std::unordered_multimap<IeImageFilter, std::pair<int, int>> ieImageFilters{
+        {IE_IMAGE_FILTER_NONE,                            {GL_NEAREST,                        GL_NEAREST}},
+        {IE_IMAGE_FILTER_NEAREST,                         {GL_NEAREST,                        GL_NEAREST}},
+        {IE_IMAGE_FILTER_LINEAR,                          {GL_LINEAR,                         GL_LINEAR}},
+        {IE_IMAGE_FILTER_NEAREST_MIPMAP_NEAREST,          {GL_NEAREST_MIPMAP_NEAREST,         GL_NEAREST_MIPMAP_NEAREST}},
+        {IE_IMAGE_FILTER_NEAREST_MIPMAP_LINEAR,           {GL_NEAREST_MIPMAP_LINEAR,          GL_NEAREST_MIPMAP_LINEAR}},
+        {IE_IMAGE_FILTER_LINEAR_MIPMAP_NEAREST,           {GL_LINEAR_MIPMAP_NEAREST,          GL_LINEAR_MIPMAP_NEAREST}},
+        {IE_IMAGE_FILTER_LINEAR_MIPMAP_LINEAR,            {GL_LINEAR_MIPMAP_LINEAR,           GL_LINEAR_MIPMAP_LINEAR}},
+};
+
+const static std::unordered_multimap<IeImageFormat, std::pair<VkFormat, int>> ieImageFormats{
+        {IE_IMAGE_FORMAT_R8G8B8_SRGB,                     {GL_RGB8,                           GL_RGB8}},
+        {IE_IMAGE_FORMAT_B8G8R8_SRGB,                     {GL_RGB8,                           GL_RGB8}},
+};
+
+const static std::unordered_multimap<IeImageUsage, std::pair<VkImageLayout , int>> ieImageUsages {
+        {IE_IMAGE_USAGE_COLOR_READ,                       {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_COLOR_WRITE,                      {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_DEPTH_READ,                       {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_DEPTH_WRITE,                      {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_READ,                             {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_WRITE,                            {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_DISPLAY,                          {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_DESTINATION,                      {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_SOURCE,                           {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_UNDEFINED,                        {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_USAGE_ANY,                              {GL_NONE,                           GL_NONE}}
 };
 #endif
 #endif
 
 class IeImage {
 public:
-    struct Properties{
+    struct Properties {
     public:
-        unsigned int mipLevels{}; // Mip mapping levels
-        unsigned int aspect{}; // Vulkan: VkImageAspectFlagsBit,        OpenGL:
-        unsigned int format{}; // Vulkan: VkFormat,                     OpenGL:
-        enum IeImageFilter filter{};
-        enum IeImageType type{};
-        unsigned int memoryUsage{}; // Vulkan: VmaMemoryUsage,          OpenGL:
-        unsigned int usage{}; // Vulkan: VkImageUsageFlags,             OpenGL:
-        unsigned int layout{}; // Vulkan: VkImageLayout,                OpenGL:
+        unsigned int mipLevels{};
+        IeImageFormat format{};
+        IeImageFilter filter{};
+        IeImageType type{};
+        unsigned int memoryUsage{};
+        IeImageUsage usage{};
         unsigned int msaaSamples{};
         unsigned int tiling{};
         unsigned int width{1};
@@ -152,6 +210,7 @@ public:
     std::variant<VkImage, unsigned int> image{};
     Created created{};
     Properties imageProperties{};
+    bool preDesignedImage;
 
     virtual void create(IeRenderEngineLink *engineLink, CreateInfo *createInfo) {
         createdWith = *createInfo;
@@ -159,24 +218,20 @@ public:
         imageProperties.mipLevels = std::min(std::max(static_cast<unsigned int>(std::floor(std::log2(std::max(createdWith.width, createdWith.height)) + 1) * (imageProperties.filter & IE_IMAGE_FILTER_MIPMAP_ENABLED_BIT)), static_cast<unsigned int>(1)), linkedRenderEngine->settings.maxMipLevels);
         createdWith.msaaSamples = std::min(createdWith.msaaSamples, linkedRenderEngine->settings.msaaSamples);
         if (createdWith.specifications.index() == 0) {
-            imageProperties.aspect = std::get<IePreDesignedImage>(createdWith.specifications) == DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+            preDesignedImage = true;
             imageProperties.type = std::get<IePreDesignedImage>(createdWith.specifications) == TEXTURE ? IE_IMAGE_TYPE_2D : createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
-            if (std::get<IePreDesignedImage>(createdWith.specifications) == TEXTURE) {
-                if (!createdWith.width) { imageProperties.width = createdWith.width; }
-                if (!createdWith.height) { imageProperties.height = createdWith.height; }
-            } else {
+            if (std::get<IePreDesignedImage>(createdWith.specifications) != TEXTURE) {
                 imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->swapchain.extent.width;
                 imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->swapchain.extent.height;
             }
         } else if (createdWith.specifications.index() == 1) {
-            imageProperties.aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-            imageProperties.type = std::get<Properties>(createdWith.specifications).type;
-            imageProperties.format = std::get<Properties>(createdWith.specifications).format;
+            preDesignedImage = false;
+            imageProperties = std::get<Properties>(createdWith.specifications);
         }
         #ifdef ILLUMINATION_ENGINE_OPENGL
         if (linkedRenderEngine->api.name == "OpenGL") {
             glGenTextures(1, &std::get<unsigned int>(image));
-            imageProperties.format = createdWith.msaaSamples > 1 ? ieImageTypes.find(IE_IMAGE_TYPE_2D_MULTISAMPLE)->second.second : ieImageTypes.find(IE_IMAGE_TYPE_2D)->second.second;
+            imageProperties.type = createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
             created.image = true;
         }
         #endif
@@ -204,7 +259,7 @@ public:
     virtual void upload() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (linkedRenderEngine->api.name == "Vulkan") {
-            VkImageSubresourceRange subresourceRange{.aspectMask=imageProperties.aspect, .baseMipLevel=0, .levelCount=1, .baseArrayLayer=0, .layerCount=1};
+            VkImageSubresourceRange subresourceRange{.aspectMask=preDesignedImage ? std::get<IePreDesignedImage>(createdWith.specifications) == DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_COLOR_BIT, .baseMipLevel=0, .levelCount=1, .baseArrayLayer=0, .layerCount=1};
             VkImageViewCreateInfo imageViewCreateInfo{.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, .viewType=VK_IMAGE_VIEW_TYPE_2D, .format=static_cast<VkFormat>(imageProperties.format), .subresourceRange=subresourceRange};
             VmaAllocationCreateInfo allocationCreateInfo{.usage=static_cast<VmaMemoryUsage>(imageProperties.memoryUsage)};
             VkExtent3D extent{.width=imageProperties.width, .height=imageProperties.height, .depth=imageProperties.depth};
@@ -214,12 +269,12 @@ public:
             imageViewCreateInfo.image = std::get<VkImage>(image);
             if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { linkedRenderEngine->log->log("Failed to create image view!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
             created.view = true;
-            auto imageLayout = static_cast<VkImageLayout>(imageProperties.layout);
+            IeImageUsage imageLayout = imageProperties.usage;
             if (createdWith.dataSource != nullptr) {
                 transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandPool->commandBuffers[commandBufferIndex]);
                 createdWith.dataSource->toImage(*this, imageProperties.width, imageProperties.height, commandPool->commandBuffers[commandBufferIndex]);
             }
-            if (imageProperties.layout != imageLayout) { transitionLayout(imageProperties.layout, commandPool->commandBuffers[commandBufferIndex]); }
+            if (imageProperties.usage != imageLayout) { transitionLayout(imageProperties.usage, commandPool->commandBuffers[commandBufferIndex]); }
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL

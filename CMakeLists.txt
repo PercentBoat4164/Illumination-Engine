@@ -12,7 +12,6 @@ if (ILLUMINATION_ENGINE_PREFER_PRE_INSTALLED)
     find_package(GLEW) # install with "sudo apt install libglew-dev"
     find_package(glfw3) # install with "sudo apt install libglfw3-dev"
     find_package(glm) # install with "sudo apt install libglm-dev"
-    find_package(assimp) # install with "sudo apt install assimp"
 endif ()
 #Illumination Engine options
 add_compile_definitions(ILLUMINATION_ENGINE_LOG)
@@ -25,7 +24,7 @@ set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-if (((NOT EXISTS ${CMAKE_SOURCE_DIR}/deps) OR ${CMAKE_SOURCE_DIR}/deps.tar.xz IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/deps) AND CMAKE_BUILD_TYPE STREQUAL Debug)
+if (((NOT EXISTS ${CMAKE_SOURCE_DIR}/deps) OR ${CMAKE_SOURCE_DIR}/deps.tar.xz IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/deps) AND CMAKE_BUILD_TYPE STREQUAL Release)
     if (EXISTS ${CMAKE_SOURCE_DIR}/deps)
         file(RENAME ${CMAKE_SOURCE_DIR}/deps ${CMAKE_SOURCE_DIR}/dep)
     endif()
