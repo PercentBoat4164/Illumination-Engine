@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 
+
 //returns the distance between two lines in 3d space
 float distLineLine(glm::vec3 pos1, glm::vec3 v1, glm::vec3 pos2, glm::vec3 v2) {
     glm::vec3 as1,as2,n,d;
