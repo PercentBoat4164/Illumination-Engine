@@ -3,23 +3,23 @@
 struct IeVersion {
 public:
     std::string name{"0.0.0"};
-    std::vector<unsigned long> version{0, 0, 0};
-    unsigned long major{};
-    unsigned long minor{};
-    unsigned long patch{};
+    std::vector<uint64_t> version{0, 0, 0};
+    uint64_t major{};
+    uint64_t minor{};
+    uint64_t patch{};
 
     explicit IeVersion(const std::string& versionName) {
-        unsigned long nameLength = (name + ' ').find_first_of(' ');
+        uint64_t nameLength = (name + ' ').find_first_of(' ');
         name = versionName.substr(0, nameLength);
-        unsigned long firstBreak = name.find_first_of('.');
-        unsigned long secondBreak = name.substr(firstBreak + 1, nameLength - firstBreak).find_first_of('.') + firstBreak + 1;
+        uint64_t firstBreak = name.find_first_of('.');
+        uint64_t secondBreak = name.substr(firstBreak + 1, nameLength - firstBreak).find_first_of('.') + firstBreak + 1;
         major = std::stoul(name.substr(0, firstBreak));
         minor = std::stoul(name.substr(firstBreak + 1, secondBreak - firstBreak));
         patch = std::stoul(name.substr(secondBreak + 1, nameLength - secondBreak));
         version = {major, minor, patch};
     }
 
-    explicit IeVersion(const std::vector<unsigned long>& versionNumbers) {
+    explicit IeVersion(const std::vector<uint64_t>& versionNumbers) {
         version = versionNumbers;
         major = versionNumbers[0];
         minor = versionNumbers[1];
@@ -27,7 +27,7 @@ public:
         name = std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
     }
 
-    IeVersion(unsigned long versionMajor, unsigned long versionMinor, unsigned long versionPatch) {
+    IeVersion(uint64_t versionMajor, uint64_t versionMinor, uint64_t versionPatch) {
         major = versionMajor;
         minor = versionMinor;
         patch = versionPatch;
@@ -43,10 +43,10 @@ public:
     std::string applicationName{"Illumination Engine"};
     IeVersion applicationVersion{"0.0.0"};
     bool vSync{true};
-    int resolution[2] {800, 600};
+    int32_t resolution[2] {800, 600};
     double renderResolutionScale {.5};
-    int renderResolution[2] = {static_cast<int>(resolution[0] * renderResolutionScale), static_cast<int>(resolution[1] * renderResolutionScale)};
+    int32_t renderResolution[2] = {static_cast<int32_t>(resolution[0] * renderResolutionScale), static_cast<int32_t>(resolution[1] * renderResolutionScale)};
     GLFWmonitor *monitor{};
     uint8_t msaaSamples{};
-    unsigned int maxMipLevels{};
+    uint32_t maxMipLevels{};
 };

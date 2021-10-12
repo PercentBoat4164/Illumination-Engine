@@ -17,6 +17,7 @@
 #include "IeImage.hpp"
 #include "IeTexture.hpp"
 #include "IeShader.hpp"
+#include "IeFramebuffer.hpp"
 
 class IeRenderEngine {
 public:
@@ -72,9 +73,9 @@ public:
         renderEngineLink.window = glfwCreateWindow(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1], (renderEngineLink.settings.applicationName + " v" + renderEngineLink.settings.applicationVersion.name).c_str(), renderEngineLink.settings.monitor, nullptr);
         renderEngineLink.created.window = true;
         glfwMakeContextCurrent(renderEngineLink.window);
-        int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
-        GLFWimage icons[sizeof(sizes) / sizeof(int)];
-        for (unsigned long i = 0; i < sizeof(sizes) / sizeof(int); ++i) {
+        int32_t width, height, channels, sizes[] = {256, 128, 64, 32, 16};
+        GLFWimage icons[sizeof(sizes) / sizeof(int32_t)];
+        for (uint64_t i = 0; i < sizeof(sizes) / sizeof(int32_t); ++i) {
             std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
             if (!pixels) { renderEngineLink.log->log("Failed to prepare texture image from file: " + filename, log4cplus::WARN_LOG_LEVEL, "Graphics module"); }
@@ -188,7 +189,7 @@ public:
             if (glewInit() != GLEW_OK) { renderEngineLink.log->log("Failed to iniialize GLEW!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
             renderEngineLink.created.glew = true;
             #ifndef NDEBUG
-            int flags;
+            int32_t flags;
             glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
             if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
                 glEnable(GL_DEBUG_OUTPUT);
@@ -258,7 +259,7 @@ public:
     }
 
 private:
-    static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
+    static void APIENTRY glDebugOutput(GLenum source, GLenum type, uint32_t id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
         #ifdef ILLUMINATION_ENGINE_OPENGL
         if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
         std::string sourceText{};
@@ -297,7 +298,7 @@ private:
         #endif
     }
 
-    static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
+    static void framebufferResizeCallback(GLFWwindow *pWindow, int32_t width, int32_t height) {
         auto renderEngine = (IeRenderEngine *)glfwGetWindowUserPointer(pWindow);
         renderEngine->renderEngineLink.settings.resolution[0] = width;
         renderEngine->renderEngineLink.settings.resolution[1] = height;

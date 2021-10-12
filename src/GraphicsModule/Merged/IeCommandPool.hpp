@@ -37,7 +37,7 @@ public:
         #endif
     }
 
-    void addCommandBuffers(unsigned int commandBufferCount) {
+    void addCommandBuffers(uint32_t commandBufferCount) {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         /**@todo: Test this function to see if it can be called twice in a row safely.*/
         commandBuffers.resize(commandBufferCount + commandBuffers.size());
@@ -47,37 +47,37 @@ public:
         #endif
     };
 
-    void resetCommandBuffer(const std::vector<unsigned int> &resetIndices) {
-        for (unsigned int i : resetIndices) { this->resetCommandBuffer(i); }
+    void resetCommandBuffer(const std::vector<uint32_t> &resetIndices) {
+        for (uint32_t i : resetIndices) { this->resetCommandBuffer(i); }
     }
 
-    void resetCommandBuffer(unsigned int resetIndex = 0) {
+    void resetCommandBuffer(uint32_t resetIndex = 0) {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         VkCommandBufferResetFlags commandBufferResetFlags{};
         vkResetCommandBuffer(commandBuffers[resetIndex], commandBufferResetFlags);
         #endif
     }
 
-    void recordCommandBuffer(const std::vector<unsigned int> &recordIndices) {
-        for (unsigned int i : recordIndices) { this->recordCommandBuffer(i); }
+    void recordCommandBuffer(const std::vector<uint32_t> &recordIndices) {
+        for (uint32_t i : recordIndices) { this->recordCommandBuffer(i); }
     }
 
-    void recordCommandBuffer(unsigned int recordIndex = 0) {
+    void recordCommandBuffer(uint32_t recordIndex = 0) {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         VkCommandBufferBeginInfo commandBufferBeginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
         if (vkBeginCommandBuffer(commandBuffers[recordIndex], &commandBufferBeginInfo) != VK_SUCCESS) {  }
         #endif
     }
 
-    void freeCommandBuffer(const std::vector<unsigned int>& freeIndices) {
+    void freeCommandBuffer(const std::vector<uint32_t>& freeIndices) {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         std::vector<VkCommandBuffer> commandBuffersToFree{freeIndices.size()};
-        for (unsigned int i = 0; i < freeIndices.size(); ++i) { commandBuffersToFree[i] = commandBuffers[freeIndices[i]]; }
+        for (uint32_t i = 0; i < freeIndices.size(); ++i) { commandBuffersToFree[i] = commandBuffers[freeIndices[i]]; }
         vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, static_cast<uint32_t>(commandBuffersToFree.size()), commandBuffersToFree.data());
         #endif
     }
 
-    void freeCommandBuffer(unsigned int freeIndex) {
+    void freeCommandBuffer(uint32_t freeIndex) {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, 1, &commandBuffers[freeIndex]);
         #endif
