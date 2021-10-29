@@ -13,9 +13,9 @@ VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkFormat)
 #endif
 
 enum IePreDesignedImage {
-    DEPTH = 0x00000000,
-    COLOR = 0x00000001,
-    TEXTURE = 0x00000002
+    IE_PRE_DESIGNED_DEPTH_IMAGE = 0x00000000,
+    IE_PRE_DESIGNED_COLOR_IMAGE = 0x00000001,
+    IE_PRE_DESIGNED_TEXTURE_IMAGE = 0x00000002
 };
 
 enum IeImageType {
@@ -199,11 +199,11 @@ public:
         //Required
         std::variant<IePreDesignedImage, Properties> properties{};
 
-        //Only required if properties != TEXTURE
+        //Only required if properties != IE_PRE_DESIGNED_TEXTURE_IMAGE
         uint32_t width{}, height{};
         uint8_t msaaSamples{1};
 
-        //Only required if properties == TEXTURE
+        //Only required if properties == IE_PRE_DESIGNED_TEXTURE_IMAGE
         std::string filename{};
 
         //Optional
@@ -242,7 +242,7 @@ public:
         createdWith.msaaSamples = std::min(createdWith.msaaSamples, linkedRenderEngine->settings.msaaSamples);
         if (createdWith.properties.index() == 0) {
             preDesignedImage = true;
-            if (std::get<IePreDesignedImage>(createdWith.properties) == COLOR) {
+            if (std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_COLOR_IMAGE) {
                 imageProperties.type = createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
                 imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->swapchain.extent.width;
                 imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->swapchain.extent.height;
@@ -250,7 +250,7 @@ public:
                 imageProperties.format = IE_IMAGE_FORMAT_SRGB_RGBA_8BIT;
                 imageProperties.msaaSamples = createdWith.msaaSamples;
                 imageProperties.memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-            } if (std::get<IePreDesignedImage>(createdWith.properties) == DEPTH) {
+            } if (std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_DEPTH_IMAGE) {
                 imageProperties.type = createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
                 imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->swapchain.extent.width;
                 imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->swapchain.extent.height;
@@ -258,7 +258,7 @@ public:
                 imageProperties.format = IE_IMAGE_FORMAT_UINT_SFLOAT_32BIT;
                 imageProperties.msaaSamples = createdWith.msaaSamples;
                 imageProperties.memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-            } if (std::get<IePreDesignedImage>(createdWith.properties) == TEXTURE) {
+            } if (std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_TEXTURE_IMAGE) {
                 imageProperties.type = IE_IMAGE_TYPE_2D;
                 imageProperties.usage = IE_IMAGE_USAGE_COLOR_READ;
                 imageProperties.format = IE_IMAGE_FORMAT_SRGB_RGBA_8BIT;
@@ -301,7 +301,7 @@ public:
     virtual void upload() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (linkedRenderEngine->api.name == "Vulkan") {
-            VkImageSubresourceRange subresourceRange{.aspectMask=preDesignedImage ? std::get<IePreDesignedImage>(createdWith.properties) == DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_COLOR_BIT, .baseMipLevel=0, .levelCount=1, .baseArrayLayer=0, .layerCount=1};
+            VkImageSubresourceRange subresourceRange{.aspectMask=preDesignedImage ? std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_DEPTH_IMAGE ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_COLOR_BIT, .baseMipLevel=0, .levelCount=1, .baseArrayLayer=0, .layerCount=1};
             VkImageViewCreateInfo imageViewCreateInfo{.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, .viewType=VK_IMAGE_VIEW_TYPE_2D, .format=static_cast<VkFormat>(imageProperties.format), .subresourceRange=subresourceRange};
             VmaAllocationCreateInfo allocationCreateInfo{.usage=static_cast<VmaMemoryUsage>(imageProperties.memoryUsage)};
             VkExtent3D extent{.width=imageProperties.width, .height=imageProperties.height, .depth=imageProperties.depth};
