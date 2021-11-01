@@ -12,13 +12,21 @@ vec3 color = vec3(0xe2, 0x58, 0x22) / 255;
 //SAMPLE COUNT
 const int samples = 1;
 
+layout(binding = 0) uniform CameraData {
+    mat4 viewModelMatrix;
+    mat4 modelMatrix;
+    mat4 projectionMatrix;
+    mat4 normalMatrix;
+    vec3 position;
+    float time;
+} cameraData;
+
 layout(binding = 1) uniform sampler2D diffuse;
 layout(binding = 2) uniform accelerationStructureEXT topLevelAccelerationStructure;
 
-layout(location = 1) in vec2 fragTexCoord;
-layout(location = 2) in vec3 fragmentPositionInWorldSpace;
-layout(location = 3) in float time;
-
+layout(location = 0) in vec2 fragmentTextureCoordinates;
+layout(location = 1) in vec3 interpolatedNormal;
+layout(location = 2) in vec3 fragmentPosition;
 
 layout(location = 0) out vec4 outColor;
 
@@ -59,19 +67,19 @@ vec4 aces(vec4 x) {
 }
 
 void main() {
-    float fbmResultAtThisTime = fbm(time);
-    float fbmResultAtDifferentTime = fbm(time + 100000);
+    float fbmResultAtThisTime = fbm(cameraData.time);
+    float fbmResultAtDifferentTime = fbm(cameraData.time + 100000);
     float brightness = 40 * fbmResultAtThisTime;
     color *= vec3(max(fbmResultAtDifferentTime * 2, 1.0), 1, 1);
     outColor = vec4(0);
-    float distanceFromFragmentToLight = distance(fragmentPositionInWorldSpace, vec3(0, 0, 2));
+    float distanceFromFragmentToLight = distance(fragmentPosition, vec3(0, 0, 2));
     float lightIntensityAfterAttenuation = 1 / ( 1 + distanceFromFragmentToLight + distanceFromFragmentToLight * distanceFromFragmentToLight) * brightness;
     rayQueryEXT rayQuery;
     for (int i = 0; i < samples; ++i) {
-        vec3 randomPointOnUnitSphere = normalize(vec3(gold_noise(gl_FragCoord.xy, time + 1 + i), gold_noise(gl_FragCoord.xy, time + 2 + i), gold_noise(gl_FragCoord.xy, time + 3 + i)));
-        rayQueryInitializeEXT(rayQuery, topLevelAccelerationStructure, gl_RayFlagsTerminateOnFirstHitEXT, 0xFF, fragmentPositionInWorldSpace, 0.001, -normalize(fragmentPositionInWorldSpace - (position + randomPointOnUnitSphere * radius)), distanceFromFragmentToLight);
+        vec3 randomPointOnUnitSphere = normalize(vec3(gold_noise(gl_FragCoord.xy, cameraData.time + 1 + i), gold_noise(gl_FragCoord.xy, cameraData.time + 2 + i), gold_noise(gl_FragCoord.xy, cameraData.time + 3 + i)));
+        rayQueryInitializeEXT(rayQuery, topLevelAccelerationStructure, gl_RayFlagsTerminateOnFirstHitEXT, 0xFF, fragmentPosition, 0.001, -normalize(fragmentPosition - (position + randomPointOnUnitSphere * radius)), distanceFromFragmentToLight);
         while (rayQueryProceedEXT(rayQuery)) { }
-        if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionTriangleEXT) { outColor += texture(diffuse, fragTexCoord) * vec4(color, 0) * lightIntensityAfterAttenuation; }
+        if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionTriangleEXT) { outColor += texture(diffuse, fragmentTextureCoordinates) * vec4(color, 0) * lightIntensityAfterAttenuation; }
     }
     outColor /= samples;
     outColor = aces(outColor);

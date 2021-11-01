@@ -65,6 +65,9 @@ static void openglWindowFocusCallback(GLFWwindow *pWindow, int focused) {
 #endif
 
 int main(int argc, char **argv) {
+    /*
+     * Any code for testing the entire engine with all its modular parts goes here.
+     */
     std::string selection;
     std::string input;
     if (argc > 1) { input = *argv[1]; }

@@ -1,0 +1,3 @@
+add_subdirectory(Rasterize)
+add_custom_target(IEGraphicsModuleOpenGLShaders)
+add_dependencies(IEGraphicsModuleOpenGLShaders IEGraphicsModuleOpenGLShadersRasterizing)

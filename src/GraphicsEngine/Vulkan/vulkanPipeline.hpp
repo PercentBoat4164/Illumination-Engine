@@ -55,7 +55,7 @@ public:
         vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
         vertexInputStateCreateInfo.pVertexBindingDescriptions = &bindingDescription;
         vertexInputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-        VkPipelineInputAssemblyStateCreateInfo  inputAssemblyStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};
+        VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};
         inputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
         VkViewport viewport{};

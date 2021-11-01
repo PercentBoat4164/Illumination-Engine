@@ -49,7 +49,7 @@ public:
         }
     };
 
-    std::vector<const char *> shaderNames{"res/Shaders/ThisLocationGetsSwitchedWithRayTracingAndRasterization/vertexShader.vert", "res/Shaders/ThisLocationGetsSwitchedWithRayTracingAndRasterization/fragmentShader.frag"};
+    std::vector<const char *> shaderNames{"shaders/Vulkan/*/vertexShader.vert", "shaders/Vulkan/*/fragmentShader.frag"};
     const char *modelName{};
 
     explicit VulkanRenderable(VulkanGraphicsEngineLink *engineLink, const char *filePath) {
@@ -88,15 +88,20 @@ public:
 
     void update(const VulkanCamera &camera, float time) {
         glm::quat quaternion = glm::quat(glm::radians(rotation));
-        glm::mat4 matrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
-        uniformBufferObject = {matrix, camera.view, camera.proj, time};
-        modelBuffer.uploadData(&uniformBufferObject, sizeof(VulkanUniformBufferObject));
+        glm::mat4 modelMatrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
+        uniformBufferObject.viewModelMatrix = camera.viewMatrix;
+        uniformBufferObject.modelMatrix = modelMatrix;
+        uniformBufferObject.projectionMatrix = camera.projectionMatrix;
+        uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
+        uniformBufferObject.position = camera.position;
+        uniformBufferObject.time = time;
+        modelBuffer.uploadData(&uniformBufferObject, sizeof(uniformBufferObject));
         if (linkedRenderEngine->settings->rayTracing) {
             for (VulkanMesh &mesh : meshes) {
                 mesh.transformationMatrix = {
-                        uniformBufferObject.model[0][0], uniformBufferObject.model[0][1], uniformBufferObject.model[0][2], uniformBufferObject.model[3][0],
-                        uniformBufferObject.model[1][0], uniformBufferObject.model[1][1], uniformBufferObject.model[1][2], uniformBufferObject.model[3][1],
-                        uniformBufferObject.model[2][0], uniformBufferObject.model[2][1], uniformBufferObject.model[2][2], uniformBufferObject.model[3][2]
+                        modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2], modelMatrix[3][0],
+                        modelMatrix[1][0], modelMatrix[1][1], modelMatrix[1][2], modelMatrix[3][1],
+                        modelMatrix[2][0], modelMatrix[2][1], modelMatrix[2][2], modelMatrix[3][2]
                 };
                 mesh.transformationBuffer.uploadData(&mesh.transformationMatrix, sizeof(mesh.transformationMatrix));
                 mesh.bottomLevelAccelerationStructure.destroy();
