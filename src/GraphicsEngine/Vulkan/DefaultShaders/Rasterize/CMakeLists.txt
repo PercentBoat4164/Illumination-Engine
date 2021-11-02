@@ -2,8 +2,8 @@ add_custom_target(IEGraphicsModuleVulkanShadersRasterizing)
 set(IEDefaultVulkanRasterizingShaders
         ${CMAKE_CURRENT_SOURCE_DIR}/fragmentShader.frag
         ${CMAKE_CURRENT_SOURCE_DIR}/vertexShader.vert)
-find_program(GLSLC glslc)
-if (GLSLC_FOUND)
+find_program(GLSLC glslc glslc.exe)
+if (GLSLC)
     file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/shaders/Vulkan/Rasterizing)
     foreach (shader ${IEDefaultVulkanRasterizingShaders})
         if (CMAKE_BUILD_TYPE STREQUAL Release)

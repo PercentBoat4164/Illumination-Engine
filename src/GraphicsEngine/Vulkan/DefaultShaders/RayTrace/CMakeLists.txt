@@ -2,8 +2,8 @@ add_custom_target(IEGraphicsModuleVulkanShadersRayTracing)
 set(IEDefaultVulkanRayTracingShaders
         ${CMAKE_CURRENT_SOURCE_DIR}/fragmentShader.frag
         ${CMAKE_CURRENT_SOURCE_DIR}/vertexShader.vert)
-find_program(GLSLC glslc)
-if (GLSLC_FOUND)
+find_program(GLSLC glslc glslc.exe)
+if (GLSLC)
     file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/shaders/Vulkan/RayTracing)
     foreach (shader ${IEDefaultVulkanRayTracingShaders})
         if (CMAKE_BUILD_TYPE STREQUAL Release)
