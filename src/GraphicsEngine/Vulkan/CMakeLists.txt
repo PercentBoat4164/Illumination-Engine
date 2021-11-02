@@ -1,7 +1,7 @@
 function (addVulkan target)
     find_package(Vulkan)
     if (Vulkan_FOUND)
-        execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/VulkanFOUND)
+        file(TOUCH ${CMAKE_BINARY_DIR}/VulkanFOUND)
         add_subdirectory(${CMAKE_SOURCE_DIR}/deps/vk-bootstrap ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${target}/vk-boostrap)
         target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/deps)
         target_link_libraries(${target} PUBLIC vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
