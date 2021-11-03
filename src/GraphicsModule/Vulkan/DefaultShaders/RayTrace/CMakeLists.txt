@@ -1,0 +1,18 @@
+add_custom_target(IEGraphicsModuleVulkanShadersRayTracing)
+set(IEDefaultVulkanRayTracingShaders
+        ${CMAKE_CURRENT_SOURCE_DIR}/fragmentShader.frag
+        ${CMAKE_CURRENT_SOURCE_DIR}/vertexShader.vert)
+find_program(GLSLC glslc glslc.exe)
+if (GLSLC)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/shaders/Vulkan/RayTracing)
+    foreach (shader ${IEDefaultVulkanRayTracingShaders})
+        if (CMAKE_BUILD_TYPE STREQUAL Release)
+            add_custom_command(OUTPUT "${shader}.spv" COMMAND ${GLSLC} --target-env=vulkan1.2 ${shader} -o "${shader}.spv" DEPENDS ${shader} COMMENT "Compiling ${shader} in Release mode.")
+        else ()
+            add_custom_command(OUTPUT "${shader}.spv" COMMAND ${GLSLC} --target-env=vulkan1.2 ${shader} -o "${shader}.spv" -g DEPENDS ${shader} COMMENT "Compiling ${shader} in Debug mode.")
+        endif ()
+        target_sources(IEGraphicsModuleVulkanShadersRayTracing PRIVATE "${shader}.spv")
+        add_custom_command(TARGET IEGraphicsModuleVulkanShadersRayTracing COMMAND ${CMAKE_COMMAND} -E copy "${shader}.spv" ${CMAKE_BINARY_DIR}/bin/shaders/Vulkan/RayTracing DEPENDS "${shader}.spv")
+        add_custom_command(TARGET IEGraphicsModuleVulkanShadersRayTracing COMMAND ${CMAKE_COMMAND} -E copy "${shader}" ${CMAKE_BINARY_DIR}/bin/shaders/Vulkan/RayTracing DEPENDS "${shader}")
+    endforeach ()
+endif ()

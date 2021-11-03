@@ -28,6 +28,9 @@ template <typename ObjectType> ObjectType loadObjectFromFile(ObjectType *objectT
 }
 
 int main(int argc, char **argv) {
+    /*
+     * Any code for testing the entire engine with all its modular parts goes here.
+     */
     std::string selection;
     std::string input;
     if (argc > 1) {

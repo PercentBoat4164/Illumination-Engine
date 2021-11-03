@@ -134,10 +134,10 @@ public:
             if (renderable->render) {
                 renderable->update();
                 glUseProgram(renderable->program.ID);
-                renderable->program.setValue("projection", camera.proj);
+                renderable->program.setValue("projectionMatrix", camera.proj);
                 renderable->program.setValue("normalMatrix", glm::mat3(glm::transpose(glm::inverse(renderable->model))));
-                renderable->program.setValue("viewModel", camera.view * renderable->model);
-                renderable->program.setValue("model", renderable->model);
+                renderable->program.setValue("viewModelMatrix", camera.view * renderable->model);
+                renderable->program.setValue("modelMatrix", renderable->model);
                 renderable->program.setValue("diffuseTexture", 0);
                 renderable->program.setValue("emissionTexture", 1);
                 renderable->program.setValue("heightTexture", 2);
@@ -211,6 +211,7 @@ public:
     double frameTime{};
     double previousTime{};
     int frameNumber{};
+    bool captureInput{};
 
     void destroy() {
         for (OpenGLRenderable *renderable : renderables) {

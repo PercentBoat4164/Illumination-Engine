@@ -6,5 +6,5 @@ The Graphics Module is one of the modules that is designed to attach to the Illu
 - [x] Vulkan implementation
 - [x] OpenGL implementation
 - [ ] Merged implementation
-- [ ] Add basic shading
+- [x] Add basic shading
 - [ ] Cleanup

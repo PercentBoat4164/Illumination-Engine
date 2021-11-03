@@ -7,6 +7,8 @@
 #define ILLUMINATION_ENGINE_PI 3.141592653589793238462643383279
 #endif
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

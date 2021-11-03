@@ -7,6 +7,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/detail/type_quat.hpp>
 
@@ -38,7 +40,7 @@ public:
         unsigned int triangleCount{};
     };
 
-    std::vector<const char *> shaderFilenames{"res/Shaders/OpenGLShaders/vertexShader.vert", "res/Shaders/OpenGLShaders/fragmentShader.frag"};
+    std::vector<const char *> shaderFilenames{"shaders/OpenGL/Rasterizing/vertexShader.vert", "shaders/OpenGL/Rasterizing/fragmentShader.frag"};
     std::vector<OpenGLTexture> textures{1};
     std::vector<OpenGLMesh> meshes{};
     std::vector<OpenGLShader> shaders{};
@@ -95,9 +97,9 @@ public:
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(OpenGLMesh::OpenGLVertex), (void *)offsetof(OpenGLMesh::OpenGLVertex, position));
             glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(OpenGLMesh::OpenGLVertex), (void *)offsetof(OpenGLMesh::OpenGLVertex, textureCoordinates));
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(OpenGLMesh::OpenGLVertex), (void *)offsetof(OpenGLMesh::OpenGLVertex, textureCoordinates));
             glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(OpenGLMesh::OpenGLVertex), (void *)offsetof(OpenGLMesh::OpenGLVertex, normal));
+            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(OpenGLMesh::OpenGLVertex), (void *)offsetof(OpenGLMesh::OpenGLVertex, normal));
         }
         for (OpenGLTexture &texture : textures) { texture.upload(); }
         shaders.resize(shaderFilenames.size());

@@ -33,9 +33,16 @@ public:
     void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
-        std::ifstream precompiledFile(createdWith.filename);
-        compiled = precompiledFile.good();
-        compile();
+        std::string replaceWith = linkedRenderEngine->settings->rayTracing ? "RayTracing" : "Rasterizing";
+        size_t pos = createdWith.filename.find('*');
+        while( pos != std::string::npos) {
+            createdWith.filename.replace(pos, 1, replaceWith);
+            pos = createdWith.filename.find('*', pos + replaceWith.size());
+        }
+        replaceWith.~basic_string();
+        data.clear();
+        compile(createdWith.filename);
+        compiled = true;
         std::string compiledFileName = createdWith.filename + ".spv";
         std::ifstream compiledFile(compiledFileName, std::ios::ate | std::ios::binary);
         if (!compiledFile.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName); }
@@ -51,16 +58,11 @@ public:
         deletionQueue.emplace_front([&] { vkDestroyShaderModule(linkedRenderEngine->device->device, module, nullptr); });
     }
 
-    void compile() {
-        std::string filenamePrefix = createdWith.filename.substr(0, createdWith.filename.substr(0, createdWith.filename.find_last_of('/')).find_last_of('/'));
-        std::string filenameSuffix = createdWith.filename.substr(createdWith.filename.find_last_of('/'), createdWith.filename.length() - createdWith.filename.find_last_of('/'));
-        if (linkedRenderEngine->settings->rayTracing) { createdWith.filename = filenamePrefix + "/VulkanRayTracingShaders" + filenameSuffix; } else { createdWith.filename = filenamePrefix + "/VulkanRasterizationShaders" + filenameSuffix; }
-        std::ifstream rawFile(createdWith.filename, std::ios::ate | std::ios::binary);
-        if (!rawFile.is_open()) { throw std::runtime_error("failed to open file: " + std::string(createdWith.filename)); }
+    static void compile(const std::string& input, std::string output = "") {
+        std::ifstream rawFile(input, std::ios::ate | std::ios::binary);
+        if (!rawFile.is_open()) { throw std::runtime_error("failed to open file: " + input); }
         rawFile.close();
-        data.clear();
-        std::string compiledFileName = createdWith.filename + ".spv";
-        if (system((GLSLC + createdWith.filename + " -o " + compiledFileName + " --target-env=vulkan1.2").c_str()) != 0) { if (compiled) { std::cout << "Could not compile shaders...using pre-compiled shaders instead." << std::endl; } else { throw std::runtime_error("failed to compile shaders: " + createdWith.filename); } }
-        compiled = true;
+        if (output.empty()) { output = input + ".spv"; }
+        if (system((GLSLC + input + " -o " + output + " --target-env=vulkan1.2").c_str()) != 0) { throw std::runtime_error("failed to compile shaders: " + input); }
     }
 };
