@@ -4,6 +4,7 @@
 
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
+#include <GL/glew.h>
 #endif
 
 #include <GLFW/glfw3.h>
@@ -17,6 +18,8 @@
 #include <climits>
 #include <unistd.h>
 #endif
+
+#include <string>
 
 class VulkanSettings {
 public:

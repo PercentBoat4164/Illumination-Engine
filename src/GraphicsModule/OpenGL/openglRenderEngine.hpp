@@ -106,9 +106,16 @@ public:
         for (OpenGLRenderable *renderable : renderables) { renderable->reprepare(); }
     }
 
-    static void loadRenderable(OpenGLRenderable *renderableToLoad) {
+    static void loadRenderableThread(OpenGLRenderable *renderableToLoad) {
         renderableToLoad->create();
         renderableToLoad->prepare();
+    }
+
+    void loadRenderable(OpenGLRenderable *renderableToLoad) {
+        renderableToLoad->create();
+        renderableToLoad->prepare();
+        renderableToLoad->upload();
+        renderables.push_back(renderableToLoad);
     }
 
     void loadRenderables(const std::vector<const char *>& filePaths, std::vector<OpenGLRenderable> *theseRenderables) {
@@ -116,7 +123,7 @@ public:
         std::vector<std::thread> threads{filePaths.size()};
         for (unsigned int i = 0; i < filePaths.size(); ++i) {
             (*theseRenderables)[i] = OpenGLRenderable(&renderEngineLink, filePaths[i]);
-            threads[i] = std::thread(loadRenderable, &(*theseRenderables)[i]);
+            threads[i] = std::thread(loadRenderableThread, &(*theseRenderables)[i]);
         }
         for (unsigned int i = 0; i < filePaths.size(); ++i) {
             threads[i].join();
@@ -126,7 +133,7 @@ public:
     }
 
     bool update() {
-        if (glfwWindowShouldClose(window)) { return true; }
+        if (glfwWindowShouldClose(window)) { return false; }
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         camera.update();
@@ -171,7 +178,7 @@ public:
         frameTime = currentTime - previousTime;
         previousTime = currentTime;
         ++frameNumber;
-        return false;
+        return true;
     }
 
     void updateSettings() {
@@ -228,9 +235,9 @@ private:
         std::cout << "---------------" << std::endl;
         std::cout << "Debug message (" << id << "): " <<  message << std::endl;
         switch (source) {
-            case GL_DEBUG_SOURCE_API:               std::cout << "Source: IeAPI"; break;
+            case GL_DEBUG_SOURCE_API:               std::cout << "Source: API"; break;
             case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     std::cout << "Source: Window System"; break;
-            case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: IeShader Compiler"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: Shader Compiler"; break;
             case GL_DEBUG_SOURCE_THIRD_PARTY:       std::cout << "Source: Third Party"; break;
             case GL_DEBUG_SOURCE_APPLICATION:       std::cout << "Source: Application"; break;
             case GL_DEBUG_SOURCE_OTHER:             std::cout << "Source: Other"; break;

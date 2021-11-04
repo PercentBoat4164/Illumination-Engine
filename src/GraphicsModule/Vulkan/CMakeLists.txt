@@ -1,14 +1,15 @@
 function (addVulkan target)
     find_package(Vulkan)
-    if (Vulkan_FOUND)
-        file(TOUCH ${CMAKE_BINARY_DIR}/VulkanFOUND)
-        add_subdirectory(${CMAKE_SOURCE_DIR}/deps/vk-bootstrap ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${target}/vk-boostrap)
-        target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/deps)
-        target_link_libraries(${target} PUBLIC vk-bootstrap ${VK_BOOTSTRAP_LIBRARIES} Vulkan::Vulkan)
+    if ((NOT EXISTS ${CMAKE_BINARY_DIR}/VulkanFOUND) AND Vulkan_FOUND)
+        add_subdirectory(${CMAKE_SOURCE_DIR}/deps/vk-bootstrap ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/vk-boostrap)
     endif ()
+    target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/deps ${CMAKE_SOURCE_DIR}/deps/vk-bootstrap/src)
+    target_link_libraries(${target} PUBLIC vk-bootstrap Vulkan::Vulkan)
+    add_dependencies(${target} vk-bootstrap Vulkan::Vulkan)
+    add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
+    file(TOUCH ${CMAKE_BINARY_DIR}/VulkanFOUND)
 endfunction ()
 
-add_compile_definitions(ILLUMINATION_ENGINE_VULKAN)
 set(IlluminationEngineSourceGraphicsModuleVulkanSourceFiles
         vulkanAccelerationStructure.hpp
         vulkanBuffer.hpp
@@ -28,7 +29,12 @@ set(IlluminationEngineSourceGraphicsModuleVulkanSourceFiles
         vulkanUniformBufferObject.hpp
         vulkanVertex.hpp
         IEGMVulkanMain.cpp)
-add_library(IEGraphicsModuleVulkan ${IlluminationEngineSourceGraphicsModuleVulkanSourceFiles})
+add_executable(IEGraphicsModuleVulkan ${IlluminationEngineSourceGraphicsModuleVulkanSourceFiles})
 set_target_properties(IEGraphicsModuleVulkan PROPERTIES LINKER_LANGUAGE CXX)
 add_subdirectory(DefaultShaders)
 add_dependencies(IEGraphicsModuleVulkan IEGraphicsModuleVulkanShaders)
+addAssImp(IEGraphicsModuleVulkan)
+addGLEW(IEGraphicsModuleVulkan)
+addGLM(IEGraphicsModuleVulkan)
+addVulkan(IEGraphicsModuleVulkan)
+addGLFW(IEGraphicsModuleVulkan)

@@ -15,6 +15,8 @@
 #include <unistd.h>
 #endif
 
+#include <string>
+
 class OpenGLSettings {
 public:
     bool rayTracing{false};

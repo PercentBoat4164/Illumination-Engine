@@ -28,7 +28,7 @@ public:
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
 
-    explicit IeRenderEngine(const std::string& API, Log *pLog = nullptr) {
+    explicit IeRenderEngine(const std::string& API, Log *pLog) {
         renderEngineLink.log = pLog;
         renderEngineLink.log->addModule("Graphics module");
         renderEngineLink.log->log("Creating window", log4cplus::INFO_LOG_LEVEL, "Graphics module");

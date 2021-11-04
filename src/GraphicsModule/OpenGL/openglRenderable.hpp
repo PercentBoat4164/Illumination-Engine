@@ -55,6 +55,8 @@ public:
     bool loaded{false};
     bool uploaded{false};
 
+    OpenGLRenderable() = default;
+
     explicit OpenGLRenderable(OpenGLGraphicsEngineLink *engineLink, const char *filePath) {
         linkedRenderEngine = engineLink;
         path = filePath;

@@ -4,6 +4,12 @@
 #include <sstream>
 #include <deque>
 #include <functional>
+#include <iostream>
+
+#ifndef GLEW_IMPLEMENTATION
+#define GLEW_IMPLEMENTATION
+#include <GL/glew.h>
+#endif
 
 class OpenGLShader {
 public:

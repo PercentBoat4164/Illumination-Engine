@@ -32,9 +32,9 @@ public:
         VkCommandBufferAllocateInfo commandBufferAllocateInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
         commandBufferAllocateInfo.commandPool = commandPool;
         commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.bufferSize());
-        if (vkAllocateCommandBuffers(linkedRenderEngine->device->device, &commandBufferAllocateInfo, commandBuffers.bufferData()) != VK_SUCCESS) { throw std::runtime_error("failed to allocate command buffers!"); }
-        commandBufferDeletionQueue.emplace_front([&] { vkFreeCommandBuffers(linkedRenderEngine->device->device, commandPool, static_cast<uint32_t>(commandBuffers.bufferSize()), commandBuffers.bufferData()); });
+        commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+        if (vkAllocateCommandBuffers(linkedRenderEngine->device->device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) { throw std::runtime_error("failed to allocate command buffers!"); }
+        commandBufferDeletionQueue.emplace_front([&] { vkFreeCommandBuffers(linkedRenderEngine->device->device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data()); });
     }
 
     [[maybe_unused]] void resetCommandBuffer(const std::vector<int> &resetIndices) {

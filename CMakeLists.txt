@@ -26,4 +26,10 @@ else ()
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 endif ()
 
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+    add_compile_options("-g")
+else ()
+    add_compile_options("-O3")
+endif ()
+
 add_subdirectory(src)

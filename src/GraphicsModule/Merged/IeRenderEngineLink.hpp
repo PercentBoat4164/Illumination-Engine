@@ -6,6 +6,7 @@
 #ifdef ILLUMINATION_ENGINE_VULKAN
 #include <vulkan/vulkan.h>
 #include <VkBootstrap.h>
+
 #ifndef VMA_IMPLEMENTATION
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>

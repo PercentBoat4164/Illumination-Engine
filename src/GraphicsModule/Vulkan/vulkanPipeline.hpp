@@ -35,11 +35,11 @@ public:
         deletionQueue.emplace_front([&] { vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr); });
         //prepare shaders
         std::vector<VkPipelineShaderStageCreateInfo> shaders{};
-        for (unsigned int i = 0; i < createdWith.shaders.bufferSize(); i++) {
+        for (unsigned int i = 0; i < createdWith.shaders.size(); i++) {
             VkShaderModule shaderModule;
             VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
-            shaderModuleCreateInfo.codeSize = createdWith.shaders[i].bufferData.bufferSize();
-            shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(createdWith.shaders[i].bufferData.bufferData());
+            shaderModuleCreateInfo.codeSize = createdWith.shaders[i].data.size();
+            shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(createdWith.shaders[i].data.data());
             if (vkCreateShaderModule(linkedRenderEngine->device->device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
             VkPipelineShaderStageCreateInfo shaderStageInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
             shaderStageInfo.module = shaderModule;
