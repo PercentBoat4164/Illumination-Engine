@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+/*
+ * Any code for testing the merged graphics engine goes here.
+ */
 int main(int argc, char **argv) {
     std::string selection;
     std::string input;

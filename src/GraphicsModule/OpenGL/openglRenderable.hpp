@@ -7,8 +7,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/detail/type_quat.hpp>
 

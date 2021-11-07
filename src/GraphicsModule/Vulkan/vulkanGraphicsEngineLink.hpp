@@ -4,7 +4,8 @@
 
 #include <VkBootstrap.h>
 
-#ifndef VMA_IMPLEMENTATION
+#ifndef VMA_INCLUDED
+#define VMA_INCLUDED
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 #endif
