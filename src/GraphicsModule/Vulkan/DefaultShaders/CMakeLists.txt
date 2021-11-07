@@ -1,0 +1,5 @@
+add_subdirectory(Rasterize)
+add_subdirectory(RayTrace)
+add_custom_target(IEGraphicsModuleVulkanShaders)
+add_dependencies(IEGraphicsModuleVulkanShaders IEGraphicsModuleVulkanShadersRayTracing)
+add_dependencies(IEGraphicsModuleVulkanShaders IEGraphicsModuleVulkanShadersRasterizing)
