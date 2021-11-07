@@ -8,6 +8,8 @@
 #include "GraphicsEngine/OpenGL/openglRenderEngine.hpp"
 #endif
 
+#include "MotionEngine/Paths/CircularPath.hpp"
+
 #ifdef ILLUMINATION_ENGINE_VULKAN
 static void vulkanCursorCallback(GLFWwindow *pWindow, double xOffset, double yOffset) {
     auto pRenderEngine = static_cast<VulkanRenderEngine *>(glfwGetWindowUserPointer(pWindow));
@@ -82,21 +84,30 @@ int main(int argc, char **argv) {
             VulkanRenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
             VulkanRenderable quad{&renderEngine.renderEngineLink, "res/Models/Quad/quad.obj"};
             VulkanRenderable rock{&renderEngine.renderEngineLink, "res/Models/Rock/rock.obj"};
-            VulkanRenderable statue{&renderEngine.renderEngineLink, "res/Models/AncientStatue/ancientStatue.obj"};
             VulkanRenderable ball{&renderEngine.renderEngineLink, "res/Models/Sphere/sphere.obj"};
-            VulkanRenderable backpack{&renderEngine.renderEngineLink, "res/Models/Backpack/Survival_BackPack_2.fbx"};
             renderEngine.loadRenderable(&cube);
             renderEngine.loadRenderable(&quad);
             renderEngine.loadRenderable(&rock);
-            renderEngine.loadRenderable(&statue);
             renderEngine.loadRenderable(&ball);
-            renderEngine.loadRenderable(&backpack);
             double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
             bool captureInput{};
             double tempTime;
             glfwSetWindowFocusCallback(renderEngine.window, vulkanWindowFocusCallback);
+
+            CircularPath cubePath;
+            cubePath.center = glm::vec3(0, 0, 2);
+            cubePath.radius = 10;
+            cubePath.radiansPerSecond = PI / 2;
+            cubePath.position = &cube.position;
+
+            CircularPath ballPath;
+            ballPath.center = glm::vec3(0, 5, 2);
+            ballPath.radius = 4;
+            ballPath.radiansPerSecond = 2 * PI;
+            ballPath.position = &ball.position;
+
             while (renderEngine.update()) {
                 int cursorMode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
                 glfwPollEvents();
@@ -171,10 +182,8 @@ int main(int argc, char **argv) {
                     }
                     lastKey = glfwGetTime();
                 }
-                cube.position = {10 * cos(0.5f * glfwGetTime()), 10 * sin(0.5f * glfwGetTime()), 1};
-                ball.position = {10 * -cos(0.5f * glfwGetTime()), 10 * -sin(0.5f * glfwGetTime()), 1};
-                backpack.position = {0, 7, 0};
-                statue.position = {7, 0, 0};
+                cubePath.step(glfwGetTime());
+                ballPath.step(glfwGetTime());
                 rock.position = {-7, 0, 0};
                 quad.scale = {100, 100, 100};
                 quad.rotation = {90, 0, 0};
@@ -197,7 +206,7 @@ int main(int argc, char **argv) {
             OpenGLRenderEngine renderEngine{};
             renderEngine.camera.position = {0, 0, 2};
             std::vector<OpenGLRenderable> renderables{6, OpenGLRenderable{nullptr, nullptr}};
-            renderEngine.loadRenderables({"res/Models/Cube/cube.obj", "res/Models/Quad/quad.obj", "res/Models/Rock/rock.obj", "res/Models/AncientStatue/ancientStatue.obj", "res/Models/Sphere/sphere.obj", "res/Models/Backpack/Survival_BackPack_2.fbx"}, &renderables);
+            renderEngine.loadRenderables({"res/Models/Cube/cube.obj", "res/Models/Quad/quad.obj", "res/Models/Rock/rock.obj", "res/Models/Sphere/sphere.obj"}, &renderables);
             double lastKey{0};
             double lastCursorPosX{0};
             double lastCursorPosY{0};
