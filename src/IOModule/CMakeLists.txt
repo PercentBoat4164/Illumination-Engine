@@ -1,0 +1,7 @@
+add_executable(IEIOModule IOModuleMain.cpp)
+target_include_directories(IEIOModule PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
+add_dependencies(IEIOModule IEGraphicsModuleOpenGL)
+addAssImp(IEIOModule)
+addGLEW(IEIOModule)
+addGLM(IEIOModule)
+addGLFW(IEIOModule)

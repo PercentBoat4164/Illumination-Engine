@@ -15,28 +15,25 @@
 #include <array>
 #include <string>
 
-/*
- * The DescriptiveName class is designed as a class to test our syntax requirements.
+/**
+ * @brief A class to test our syntax requirements.
  */
 class DescriptiveName {
     // public fields first
     // keep fields in the lowest scope possible
 public:
-    Log logger{};
-    int publicField{}; // add inline comments describing the fields
+    Log logger{}; // add inline comments describing the fields
+    int publicField{}; // publicField description
     std::vector<int> publicVector{0, 0, 3, 0, 4, 2, 1}; // publicVector description
 
-    /*
-     * No description necessary for the default constructor.
-     */
     DescriptiveName() = default; // NOT: DescriptiveName() {};
 
-    /*
-     * Basic constructor description.
-     * Use descriptive names.
-     * Prefer arguments to be passed as pointers.
+    /**
+     * @brief Basic constructor description. Use descriptive names. Prefer arguments to be passed as pointers.
+     * @param descriptiveParameterName={35, 987}
+     * @return DescriptiveName
      */
-    explicit DescriptiveName(const std::vector<int> &descriptiveParameterName) {
+    explicit DescriptiveName(const std::vector<int> &descriptiveParameterName={35, 987}) {
         int descriptiveThing = publicField + 8; // description of the purpose of any new variables created
         publicVector.reserve(descriptiveParameterName.size() + 1);
         publicVector.push_back(descriptiveThing);
