@@ -1,0 +1,6 @@
+add_executable(IEInputModule InputModuleMain.cpp)
+target_include_directories(IEInputModule PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
+add_dependencies(IEInputModule IEGraphicsModuleOpenGL)
+addAssImp(IEInputModule)
+addGLEW(IEInputModule)
+addGLFW(IEInputModule)

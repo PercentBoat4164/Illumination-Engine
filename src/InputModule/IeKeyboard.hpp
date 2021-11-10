@@ -58,11 +58,10 @@ struct IeKeyPressDescription {
      */
     std::string str(const std::string& keyCombination="") {
         if (keyCombination.empty()) {
-            const char* keyName = glfwGetKeyName(key, scancode);
             string = std::string(modifiers & GLFW_MOD_CONTROL ? "Ctrl+" : "") + std::string(modifiers & GLFW_MOD_ALT ? "Alt+" : "") +
                      std::string(modifiers & GLFW_MOD_SHIFT ? "Shift+" : "") + std::string(modifiers & GLFW_MOD_SUPER ? "Super+" : "") +
-                     std::string(keyName == nullptr ? "Unknown" : keyName) + std::string(action == 0 ? " Released" : "") +
-                     std::string(action == 1 ? " Pressed" : "") + std::string(action == 2 ? " Repeat" : "");
+                     std::to_string(key) + std::string(action == GLFW_RELEASE ? " Released" : "") + std::string(action == GLFW_PRESS ? " Pressed" : "") +
+                     std::string(action == GLFW_REPEAT ? " Repeat" : "");
             return string;
         } else {
             if (keyCombination.find("Ctrl+") != -1) {
@@ -78,15 +77,17 @@ struct IeKeyPressDescription {
                 modifiers |= GLFW_MOD_SUPER;
             }
             if (keyCombination.find(" Released") != -1) {
-                action = 0;
+                action = GLFW_RELEASE;
             }
             if (keyCombination.find(" Pressed") != -1) {
-                action = 1;
+                action = GLFW_PRESS;
             }
             if (keyCombination.find(" Repeat") != -1) {
-                action = 2;
+                action = GLFW_REPEAT;
             }
-            key = std::stoi(keyCombination.substr(keyCombination.find_last_of('+'), keyCombination.find_last_of(' ') - 1));
+            if (keyCombination.find("+") != -1) {
+                key = std::stoi(keyCombination.substr(keyCombination.find_last_of('+'), keyCombination.find_last_of(' ') - 1));
+            }
             scancode = glfwGetKeyScancode(key);
             return "";
         }
@@ -172,8 +173,8 @@ public:
  * @param modifiers
  */
 void static dualActionKeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers) {
-    auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // an IeKeyboard object that is connected to the window
-    keyboard->queue.emplace_back(key, scancode, action > 0 ? 1 : 0, modifiers);
+    auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard connected to the window
+    keyboard->queue.emplace_back(key, scancode, action > GLFW_RELEASE ? GLFW_PRESS : GLFW_RELEASE, modifiers);
     #ifndef NDEBUG
     printf("Key: %i, ScanCode: %i, Action: %i, Mods: %i, KeyName: %s\n", key, scancode, action, modifiers, glfwGetKeyName(key, scancode));
     #endif
@@ -188,8 +189,8 @@ void static dualActionKeyCallback(GLFWwindow* window, int key, int scancode, int
  * @param modifiers
  */
 void static triActionKeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers) {
-    auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // an IeKeyboard object that is connected to the window
-    keyboard->queue.emplace_back(key, action, modifiers);
+    auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard connected to the window
+    keyboard->queue.emplace_back(key, scancode, action, modifiers);
     #ifndef NDEBUG
     printf("Key: %i, ScanCode: %i, Action: %i, Mods: %i, KeyName: %s\n", key, scancode, action, modifiers, glfwGetKeyName(key, scancode));
     #endif

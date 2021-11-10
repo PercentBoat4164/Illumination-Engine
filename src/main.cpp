@@ -1,5 +1,5 @@
 #include "GraphicsModule/Vulkan/vulkanRenderEngine.hpp"
-#include "IOModule/IeKeyboard.hpp"
+#include "InputModule/IeKeyboard.hpp"
 
 /**
  * @brief A key callback function. Moves the camera forward.
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     renderEngine.loadRenderable(&cube);
     IeKeyboard keyboard{renderEngine.window};
     keyboard.attachment = &renderEngine;
-    keyboard.editActions(IeKeyPressDescription("Ctrl+" + std::to_string(GLFW_KEY_W) + " Pressed"), moveCameraForward);
+    keyboard.editActions(IeKeyPressDescription(GLFW_KEY_W), moveCameraForward);
     keyboard.editActions(IeKeyPressDescription(GLFW_KEY_A), moveCameraLeft);
     keyboard.editActions(IeKeyPressDescription(GLFW_KEY_S), moveCameraBackward);
     keyboard.editActions(IeKeyPressDescription(GLFW_KEY_D), moveCameraRight);
