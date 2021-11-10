@@ -1,7 +1,16 @@
-# Input Module
-The Input Module is responsible for collecting and handling inputs from the keyboard and mouse. It will collect these inputs in a queue that must get handled by the user.
+# Illumination Engine
+Illumination Engine is a game engine written in C++ that uses Vulkan for speed and to take advantage of newer hardware, and OpenGL for portability.
 
 ### Requirements for Completion
-- [x] Keyboard handling
-- [ ] Mouse handling
-- [ ] Cleanup
+- [ ] GUI
+- [ ] File structure management
+- [ ] Building, linking, and compiling games
+- [ ] Scripting language support
+
+### Required modules
+- [ ] Graphics
+- [ ] Physics
+- [ ] Sound
+- [ ] Input
+- [ ] Scripting
+- [ ] Asset
