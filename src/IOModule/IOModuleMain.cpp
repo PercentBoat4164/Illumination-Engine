@@ -4,11 +4,19 @@
 
 
 /**
- * @brief Is responsible for handling a "w" key press.
- *
- * @return double 3
+ * @brief Is responsible for handling a "x" key press.
  */
-static void handleWKey() {
+void handleXKey(GLFWwindow* window) {
+    std::cout << "Chicken!" << std::endl;
+    std::flush(std::cout);
+}
+
+/**
+ * @brief Is responsible for handling a "w" key press. Demonstrates the capabilities and flexibility of this system.
+ */
+void handleWKey(GLFWwindow* window) {
+    auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard at controlling the window
+    keyboard->editActions(IeKeyPressDescription(GLFW_KEY_W), handleXKey);
     std::cout << "Wow-zah!" << std::endl;
     std::flush(std::cout);
 }
@@ -21,9 +29,8 @@ int main(int argc, char **argv) {
     glfwInit();
     GLFWwindow* window = glfwCreateWindow(800, 600, "", nullptr, nullptr);
     IeKeyboard keyboard{window};
-    IeKeyPressDescription keyPressDescription{GLFW_KEY_W, 1, 0};
-    std::cout << keyPressDescription.str().c_str() << std::endl;
-    keyboard.editActions(keyPressDescription, handleWKey);
+    keyboard.editActions(IeKeyPressDescription(GLFW_KEY_X), handleXKey);
+    keyboard.editActions(IeKeyPressDescription(GLFW_KEY_W), handleWKey);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         keyboard.handleQueue();

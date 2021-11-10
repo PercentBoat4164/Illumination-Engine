@@ -62,6 +62,18 @@ function (addGLEW target)
     file(TOUCH ${CMAKE_BINARY_DIR}/GLEWFOUND)
 endfunction ()
 
+function (addLog4cplus target)
+    if ((NOT EXISTS ${CMAKE_BINARY_DIR}/Log4cplusFOUND) AND EXISTS ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/deps/log4cplus)
+        add_subdirectory(${ILLUMINATION_ENGINE_BASE_DIRECTORY}/deps/log4cplus ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/log4cplus)
+    endif ()
+    target_link_libraries(${target} PUBLIC log4cplus)
+    file(TOUCH ${CMAKE_BINARY_DIR}/Log4cplusFOUND)
+    add_compile_definitions(ILLUMINATION_ENGINE_LOG)
+    if (NOT CMAKE_BUILD_TYPE STREQUAL Debug)
+        add_compile_definitions(LOG4CPLUS_DISABLE_DEBUG)
+    endif ()
+endfunction ()
+
 cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 project(IlluminationEngine)
 
