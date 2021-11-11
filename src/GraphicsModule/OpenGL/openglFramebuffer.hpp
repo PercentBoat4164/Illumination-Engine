@@ -37,7 +37,7 @@ public:
             deletionQueue.emplace_front([&] { depthImage.destroy(); });
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthImage.ID, 0);
         }
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) { throw std::runtime_error("framebuffer is incomplete!"); }
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) { throw std::runtime_error("framebuffers is incomplete!"); }
     }
 
     void clear() const {

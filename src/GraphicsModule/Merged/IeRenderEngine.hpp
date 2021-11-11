@@ -225,15 +225,29 @@ public:
             vkDeviceWaitIdle(renderEngineLink.device.device);
             // clear recreation deletion queue
             vkb::SwapchainBuilder swapchainBuilder{ renderEngineLink.device };
-            vkb::detail::Result<vkb::Swapchain> swapchainBuilderResults = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).build();
-            if (!swapchainBuilderResults) { renderEngineLink.log->log("failed to create swapchain.", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            vkb::detail::Result<vkb::Swapchain> swapchainBuilderResults = swapchainBuilder
+                    .set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
+                    .set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).build();
+            if (!swapchainBuilderResults) {
+                renderEngineLink.log->log("failed to create swapchain.", log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
+            }
             destroy_swapchain(renderEngineLink.swapchain);
             renderEngineLink.swapchain = swapchainBuilderResults.value();
             renderEngineLink.created.swapchain = true;
             renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
             imagesInFlight.clear();
             imagesInFlight.resize(renderEngineLink.swapchain.image_count, VK_NULL_HANDLE);
-            IeRenderPass::CreateInfo renderPassCreateInfo{.msaaSamples = renderEngineLink.settings.msaaSamples};
+            // Generate Framebuffer data.
+            std::vector<IeFramebuffer::CreateInfo> framebufferCreateInfos{renderEngineLink.swapchain.image_count};
+            for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
+                framebufferCreateInfos.push_back({.aspects=IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR,
+                                                   .msaaSamples=renderEngineLink.settings.msaaSamples,
+                                                   .swapchainImageView=renderEngineLink.swapchainImageViews[i],
+                                                   .format=IE_IMAGE_FORMAT_SRGB_RGBA_8BIT,
+                                                   .subpass=1
+                });
+            }
+            IeRenderPass::CreateInfo renderPassCreateInfo{.attachments=framebufferCreateInfos};
             renderPass.create(&renderEngineLink, &renderPassCreateInfo);
         }
         #endif

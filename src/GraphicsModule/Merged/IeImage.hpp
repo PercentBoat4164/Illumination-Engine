@@ -191,7 +191,7 @@ public:
         uint16_t depth{1};
     };
 
-    /**@todo: Add a way to override the abstraction layers for more low-level handling of image creation.
+    /**@todo Add a way to override the abstraction layers for more low-level handling of image creation.
      *      Do this by adding another type to the properties variant. One for OpenGL and one for Vulkan that will handle all of the
      *      API-specific stuff for their respective APIs.*/
     struct CreateInfo {
@@ -324,10 +324,10 @@ public:
             glBindTexture(imageProperties.type, std::get<uint32_t>(image));
             glTexParameteri(imageProperties.type, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(imageProperties.type, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(imageProperties.type, GL_TEXTURE_MIN_FILTER, ieImageFilters.find(imageProperties.filter)->second.second);
-            glTexParameteri(imageProperties.type, GL_TEXTURE_MAG_FILTER, ieImageFilters.find(imageProperties.filter)->second.second);
-            glTexImage2D(imageProperties.type, 0, GL_RGB, createdWith.width, createdWith.height, 0, GL_RGB, GL_UNSIGNED_BYTE, createdWith.data.c_str());
-            glTexImage2D(imageProperties.type, 0, GL_DEPTH24_STENCIL8, createdWith.width, createdWith.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, createdWith.data.c_str());
+            glTexParameteri(imageProperties.type, GL_TEXTURE_MIN_FILTER, static_cast<int>(ieImageFilters.find(imageProperties.filter)->second.second));
+            glTexParameteri(imageProperties.type, GL_TEXTURE_MAG_FILTER, static_cast<int>(ieImageFilters.find(imageProperties.filter)->second.second));
+            glTexImage2D(imageProperties.type, 0, GL_RGB, static_cast<int>(createdWith.width), static_cast<int>(createdWith.height), 0, GL_RGB, GL_UNSIGNED_BYTE, createdWith.data.c_str());
+            glTexImage2D(imageProperties.type, 0, GL_DEPTH24_STENCIL8, static_cast<int>(createdWith.width), static_cast<int>(createdWith.height), 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, createdWith.data.c_str());
             if (imageProperties.filter & IE_IMAGE_FILTER_MIPMAP_ENABLED_BIT) { glGenerateMipmap(imageProperties.type); }
         }
         #endif
