@@ -16,7 +16,7 @@ void handleXKey(GLFWwindow* window) {
  */
 void handleWKey(GLFWwindow* window) {
     auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard controlling the window
-    keyboard->editActions(IeKeyPressDescription(GLFW_KEY_W), handleXKey);
+    keyboard->editActions(IeKeyPressDescription(GLFW_KEY_W), handleXKey, false);
     std::cout << "Wow-zah!" << std::endl;
     std::flush(std::cout);
 }
@@ -29,9 +29,8 @@ int main(int argc, char **argv) {
     glfwInit();
     GLFWwindow* window = glfwCreateWindow(800, 600, "", nullptr, nullptr);
     IeKeyboard keyboard{window};
-//    keyboard.setEnqueueMethod(IeKeyboard::dualActionKeyCallback);
-    keyboard.editActions(IeKeyPressDescription(GLFW_KEY_X), handleXKey);
-    keyboard.editActions(IeKeyPressDescription(GLFW_KEY_W), handleWKey);
+    keyboard.editActions(IeKeyPressDescription(GLFW_KEY_X), handleXKey, false);
+    keyboard.editActions(IeKeyPressDescription(GLFW_KEY_W), handleWKey, false);
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         keyboard.handleQueue();

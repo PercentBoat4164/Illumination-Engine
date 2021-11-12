@@ -4,7 +4,7 @@ class VulkanAccelerationStructure : public VulkanBuffer {
 public:
     VkAccelerationStructureKHR accelerationStructure{};
 
-    void create (VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) override {
+    void create(VulkanGraphicsEngineLink *renderEngineLink, CreateInfo *createInfo) override {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
         VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR};
@@ -56,7 +56,9 @@ public:
         bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create acceleration structure!"); }
+        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create acceleration structure!");
+        }
         deletionQueue.emplace_front([&] { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
         VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR};
         accelerationStructureCreateInfo.buffer = buffer;
@@ -81,7 +83,9 @@ public:
         linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
         linkedRenderEngine->endSingleTimeCommands(commandBuffer);
         scratchBuffer.destroy();
-        if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) { instancesBuffer.destroy(); }
+        if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) {
+            instancesBuffer.destroy();
+        }
         created = true;
     }
 

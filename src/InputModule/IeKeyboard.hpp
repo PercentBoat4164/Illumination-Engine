@@ -16,81 +16,34 @@
  * @brief A class that stores the data related to a key press action.
  */
 struct IeKeyPressDescription {
-    int key;
-    int action;
-    int modifiers;
-    int scancode;
-    double time{};
-    std::string string;
+    uint16_t key;
+    uint8_t action;
+    uint8_t modifiers;
+    uint16_t scancode;
 
     /**
-     * @brief Constructs a KeyPressDescription from a key combination string.
-     * @param keyCombination
-     * @returns IeKeyPressDescription
-     */
-    explicit IeKeyPressDescription(const std::string& keyCombination) {
-        modifiers = 0;
-        scancode = 0;
-        action = 0;
-        key = 0;
-        str(keyCombination);
-    }
-
-    /**
-     * @brief Constructs a KeyPressDescription from a key, action and modifiers
+     * @brief Constructs a KeyPressDescription from a key, action and modifiers.
      * @param initialKey
-     * @param initialAction=GLFW_PRESS
+     * @param initialAction
      * @param initialModifiers=0
      * @returns IeKeyPressDescription
      */
-    explicit IeKeyPressDescription(int initialKey, int initialScancode=0, int initialAction=GLFW_PRESS, int initialModifiers=0) {
+    IeKeyPressDescription(int initialKey, int initialAction, int initialModifiers=0) {
         key = initialKey;
-        scancode = initialScancode == 0 ? glfwGetKeyScancode(key) : initialScancode;
+        scancode = glfwGetKeyScancode(key);
         action = initialAction;
         modifiers = initialModifiers;
-        str();
     }
 
     /**
-     * @brief Builds a key combination string from the KeyPressDescription or vice versa.
-     * @param keyCombination=""
-     * @return Returns an empty string if keyCombination is not empty and a key combination string if keyCombination is empty.
+     * Constructs a KeyPressDescription from a key. Sets action to pressed with no modifiers.
+     * @param initialKey
      */
-    std::string str(const std::string& keyCombination="") {
-        if (keyCombination.empty()) {
-            string = std::string(modifiers & GLFW_MOD_CONTROL ? "Ctrl+" : "") + std::string(modifiers & GLFW_MOD_ALT ? "Alt+" : "") +
-                     std::string(modifiers & GLFW_MOD_SHIFT ? "Shift+" : "") + std::string(modifiers & GLFW_MOD_SUPER ? "Super+" : "") +
-                     std::to_string(key) + std::string(action == GLFW_RELEASE ? " Released" : "") + std::string(action == GLFW_PRESS ? " Pressed" : "") +
-                     std::string(action == GLFW_REPEAT ? " Repeat" : "");
-            return string;
-        } else {
-            if (keyCombination.find("Ctrl+") != -1) {
-                modifiers |= GLFW_MOD_CONTROL;
-            }
-            if (keyCombination.find("Alt+") != -1) {
-                modifiers |= GLFW_MOD_ALT;
-            }
-            if (keyCombination.find("Shift+") != -1) {
-                modifiers |= GLFW_MOD_SHIFT;
-            }
-            if (keyCombination.find("Super+") != -1) {
-                modifiers |= GLFW_MOD_SUPER;
-            }
-            if (keyCombination.find(" Released") != -1) {
-                action = GLFW_RELEASE;
-            }
-            if (keyCombination.find(" Pressed") != -1) {
-                action = GLFW_PRESS;
-            }
-            if (keyCombination.find(" Repeat") != -1) {
-                action = GLFW_REPEAT;
-            }
-            if (keyCombination.find("+") != -1) {
-                key = std::stoi(keyCombination.substr(keyCombination.find_last_of('+'), keyCombination.find_last_of(' ') - 1));
-            }
-            scancode = glfwGetKeyScancode(key);
-            return "";
-        }
+    explicit IeKeyPressDescription(int initialKey) {
+        key = initialKey;
+        scancode = glfwGetKeyScancode(key);
+        action = GLFW_PRESS;
+        modifiers = 0;
     }
 
     /**
@@ -131,14 +84,14 @@ public:
         window = initialWindow;
         attachment = initialAttachment;
         glfwSetWindowUserPointer(window, this);
-        glfwSetKeyCallback(window, triActionKeyCallback);
+        glfwSetKeyCallback(window, keyCallback);
     }
 
     /**
      * @brief Sets the queue method. Pass one of the two pre-created key event handler functions.
      * @param function
      */
-    void setEnqueueMethod(GLFWkeyfun function=triActionKeyCallback) {
+    void setEnqueueMethod(GLFWkeyfun function=keyCallback) {
         glfwSetKeyCallback(window, function);
     }
 
@@ -147,11 +100,14 @@ public:
      */
     void handleQueue() {
         for (const IeKeyPressDescription& i : queue) {
-            if (actionsOptions.count(i) != 0) {
-                actionsOptions[i](window);
+            auto element = actionsOptions.find(i);
+            if (element != actionsOptions.end()) { // for each element that has a correlating action
+                element->second.first(window);
+                if (!element->second.second | (i.action == GLFW_RELEASE)) { // remove elements labeled to not repeat or release
+                    queue.erase(std::find(queue.begin(), queue.end(), i));
+                }
             }
         }
-        queue.clear();
     }
 
     /**
@@ -159,45 +115,106 @@ public:
      * @param keyPressDescription
      * @param action
      */
-    void editActions(const IeKeyPressDescription& keyPressDescription, const std::function<void(GLFWwindow*)>& action) {
+    void editActions(const IeKeyPressDescription& keyPressDescription, const std::pair<std::function<void(GLFWwindow*)>, bool>& action) {
         actionsOptions.erase(keyPressDescription);
         actionsOptions.insert({keyPressDescription, action});
     }
 
-/**
- * @brief Default key event handler function. Enqueues the key as pressed or released.
- * @param window
- * @param key
- * @param scancode
- * @param action
- * @param modifiers
- */
-void static dualActionKeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers) {
-    auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard connected to the window
-    keyboard->queue.emplace_back(key, scancode, action > GLFW_RELEASE ? GLFW_PRESS : GLFW_RELEASE, modifiers);
-    #ifndef NDEBUG
-    printf("Key: %i, ScanCode: %i, Action: %i, Mods: %i, KeyName: %s\n", key, scancode, action, modifiers, glfwGetKeyName(key, scancode));
-    #endif
-}
+    /**
+     * @brief Adds or changes key press to function correlation.
+     * @param key
+     * @param action
+     */
+    void editActions(uint16_t key, const std::pair<std::function<void(GLFWwindow*)>, bool>& action) {
+        IeKeyPressDescription keyPressDescription{key};
+        actionsOptions.erase(keyPressDescription);
+        actionsOptions.insert({keyPressDescription, action});
+    }
 
-/**
- * @brief Default key event handler function. Enqueues the action it receives
- * @param window
- * @param key
- * @param scancode
- * @param action
- * @param modifiers
- */
-void static triActionKeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers) {
-    auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard connected to the window
-    keyboard->queue.emplace_back(key, scancode, action, modifiers);
-    #ifndef NDEBUG
-    printf("Key: %i, ScanCode: %i, Action: %i, Mods: %i, KeyName: %s\n", key, scancode, action, modifiers, glfwGetKeyName(key, scancode));
-    #endif
-}
+    /**
+     * @brief Adds or changes key press to function correlation.
+     * @param key
+     * @param keyAction
+     * @param modifiers
+     * @param action
+     */
+    void editActions(uint16_t key, uint16_t keyAction, uint16_t modifiers, const std::pair<std::function<void(GLFWwindow*)>, bool>& action) {
+        IeKeyPressDescription keyPressDescription{key, keyAction, modifiers};
+        actionsOptions.erase(keyPressDescription);
+        actionsOptions.insert({keyPressDescription, action});
+    }
+
+    /**
+     * @brief Adds or changes a key press to function correlation.
+     * @param keyPressDescription
+     * @param action
+     * @param repeat
+     */
+    void editActions(const IeKeyPressDescription& keyPressDescription, const std::function<void(GLFWwindow*)>& action, bool repeat=true) {
+        actionsOptions.erase(keyPressDescription);
+        actionsOptions.insert({keyPressDescription, {action, repeat}});
+    }
+
+    /**
+     * @brief Adds or changes key press to function correlation.
+     * @param key
+     * @param action
+     * @param repeat
+     */
+    void editActions(uint16_t key, const std::function<void(GLFWwindow*)>& action, bool repeat=true) {
+        IeKeyPressDescription keyPressDescription{key};
+        actionsOptions.erase(keyPressDescription);
+        actionsOptions.insert({keyPressDescription, {action, repeat}});
+    }
+
+    /**
+     * @brief Adds or changes key press to function correlation.
+     * @param key
+     * @param keyAction
+     * @param modifiers
+     * @param action
+     * @param repeat
+     */
+    void editActions(uint16_t key, uint16_t keyAction, uint16_t modifiers, const std::function<void(GLFWwindow*)>& action, bool repeat=true) {
+        IeKeyPressDescription keyPressDescription{key, keyAction, modifiers};
+        actionsOptions.erase(keyPressDescription);
+        actionsOptions.insert({keyPressDescription, {action, repeat}});
+    }
+
+    /**
+     * @brief Clears the event queue.
+     */
+    void clearQueue() {
+        queue.clear();
+    }
+
+    /**
+     * @brief Default key event handler function. Enqueues the key as pressed or released. Does not handle repeats.
+     * @param window
+     * @param key
+     * @param scancode
+     * @param action
+     * @param modifiers
+     */
+    void static keyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers) {
+        if (action == GLFW_REPEAT) {
+            return;
+        }
+        auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard connected to the window
+        IeKeyPressDescription thisKeyPress{key, action};
+        IeKeyPressDescription oppositeKeyPress{key, thisKeyPress.action == GLFW_PRESS ? GLFW_RELEASE : GLFW_PRESS};
+        auto oppositeKeyPressIterator = std::find(keyboard->queue.begin(), keyboard->queue.end(), oppositeKeyPress);
+        if (oppositeKeyPressIterator != keyboard->queue.end()) {
+            keyboard->queue.erase(oppositeKeyPressIterator);
+        }
+        keyboard->queue.push_back(thisKeyPress);
+        #ifndef NDEBUG
+        printf("Key: %i, ScanCode: %i, Action: %i, Mods: %i, KeyName: %s\n", key, scancode, action, modifiers, glfwGetKeyName(key, scancode));
+        #endif
+    }
 
 private:
     GLFWwindow* window; // window this keyboard manages
     std::vector<IeKeyPressDescription> queue{}; // queue of key presses
-    std::unordered_map<IeKeyPressDescription, std::function<void(GLFWwindow*)>> actionsOptions{}; // hash table of key press description to function
+    std::unordered_map<IeKeyPressDescription, std::pair<std::function<void(GLFWwindow*)>, bool>> actionsOptions{}; // hash table of key press description to function
 };
