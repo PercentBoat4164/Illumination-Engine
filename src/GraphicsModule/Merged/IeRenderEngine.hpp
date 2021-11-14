@@ -240,11 +240,12 @@ public:
             // Generate Framebuffer data.
             std::vector<IeFramebuffer::CreateInfo> framebufferCreateInfos{renderEngineLink.swapchain.image_count};
             for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
-                framebufferCreateInfos.push_back({.aspects=IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR,
-                                                   .msaaSamples=renderEngineLink.settings.msaaSamples,
-                                                   .swapchainImageView=renderEngineLink.swapchainImageViews[i],
-                                                   .format=IE_IMAGE_FORMAT_SRGB_RGBA_8BIT,
-                                                   .subpass=1
+                framebufferCreateInfos.push_back({
+                        .aspects=IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR,
+                        .msaaSamples=renderEngineLink.settings.msaaSamples,
+                        .swapchainImageView=renderEngineLink.swapchainImageViews[i],
+                        .format=IE_IMAGE_FORMAT_SRGB_RGBA_8BIT,
+                        .subpass=1
                 });
             }
             IeRenderPass::CreateInfo renderPassCreateInfo{.attachments=framebufferCreateInfos};

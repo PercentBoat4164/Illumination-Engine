@@ -39,7 +39,6 @@ public:
 
     void addCommandBuffers(uint32_t commandBufferCount) {
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        /**@todo: Test this function to see if it can be called twice in a row safely.*/
         commandBuffers.resize(commandBufferCount + commandBuffers.size());
         VkCommandBufferAllocateInfo commandBufferAllocateInfo{.sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, .commandPool=commandPool, .level=VK_COMMAND_BUFFER_LEVEL_PRIMARY, .commandBufferCount=static_cast<uint32_t>(commandBuffers.size())};
         if (vkAllocateCommandBuffers(linkedRenderEngine->device.device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) { linkedRenderEngine->log->log("failed to allocate CommandBuffers!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }

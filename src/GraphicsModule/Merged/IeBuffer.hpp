@@ -65,6 +65,10 @@ public:
             VmaAllocationCreateInfo allocationCreateInfo{.usage=createdWith.allocationUsage};
             if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &std::get<VkBuffer>(buffer), &allocation, nullptr) != VK_SUCCESS) { linkedRenderEngine->log->log("failed to create buffer!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
             created = true;
+            if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+                VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{.sType=VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer=std::get<VkBuffer>(buffer)};
+                deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
+            }
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
@@ -74,15 +78,6 @@ public:
         }
         #endif
         if (createdWith.data != nullptr) { upload(createdWith.data, createdWith.sizeOfData); }
-        /**@todo: Test the following in the Vulkan section above.*/
-        #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (linkedRenderEngine->api.name == "Vulkan") {
-            if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
-                VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{.sType=VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer=std::get<VkBuffer>(buffer)};
-                deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
-            }
-        }
-        #endif
         return *this;
     }
 
@@ -105,7 +100,7 @@ public:
         return *this;
     }
 
-    virtual void toImage(IeImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer);
+    virtual IeImage toImage(IeImage* image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer);
 
     virtual void destroy() {
         #ifdef ILLUMINATION_ENGINE_VULKAN

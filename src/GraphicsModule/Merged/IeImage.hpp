@@ -7,10 +7,7 @@
 
 #include "IeBuffer.hpp"
 
-#ifndef ILLUMINATION_ENGINE_VULKAN
-VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkImage)
-VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkFormat)
-#endif
+#include <error.h>
 
 enum IePreDesignedImage {
     IE_PRE_DESIGNED_DEPTH_IMAGE = 0x00000000,
@@ -314,7 +311,7 @@ public:
             IeImageUsage imageLayout = imageProperties.usage;
             if (createdWith.dataSource != nullptr) {
                 transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandPool->commandBuffers[commandBufferIndex]);
-                createdWith.dataSource->toImage(*this, imageProperties.width, imageProperties.height, commandPool->commandBuffers[commandBufferIndex]);
+                createdWith.dataSource->toImage(this, imageProperties.width, imageProperties.height, commandPool->commandBuffers[commandBufferIndex]);
             }
             if (imageProperties.usage != imageLayout) { transitionLayout(imageProperties.usage, commandPool->commandBuffers[commandBufferIndex]); }
         }
@@ -348,8 +345,18 @@ public:
     }
 };
 
-void IeBuffer::toImage(IeImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer) {
-    if (!created) { linkedRenderEngine->log->log("Called IeBuffer::toImage() on a IeBuffer that does not exist!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
-    /**@todo: Properly handle an uncreated IeBuffer. i.e. Make one.*/
-    /**@todo: Finish making this function.*/
+IeImage IeBuffer::toImage(IeImage* image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer) {
+    if (!created) {
+        linkedRenderEngine->log->log("Called IeBuffer::toImage() on a IeBuffer that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+    }
+    if (image == nullptr) {
+        linkedRenderEngine->log->log("Called IeBuffer::toImage() with an IeImage that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+    }
+    if (!image->created.image) {
+        linkedRenderEngine->log->log("Called IeBuffer::toImage() with an IeImage that has not been created!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+    }
+    /**@todo Properly handle an uncreated IeImage. i.e. Make one.*/
+
+    /**@todo Finish making this function.*/
+    return *image;
 }
