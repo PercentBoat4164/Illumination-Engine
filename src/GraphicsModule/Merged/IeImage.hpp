@@ -52,18 +52,18 @@ enum IeImageFormat {
     IE_IMAGE_FORMAT_UINT_SFLOAT_32BIT = 0b0010010000
 };
 
-enum IeImageUsage {
-    IE_IMAGE_USAGE_COLOR_READ = 0b0000,
-    IE_IMAGE_USAGE_COLOR_WRITE = 0b0001,
-    IE_IMAGE_USAGE_DEPTH_READ = 0b0010,
-    IE_IMAGE_USAGE_DEPTH_WRITE = 0b0011,
-    IE_IMAGE_USAGE_READ = 0b0100,
-    IE_IMAGE_USAGE_WRITE = 0b0101,
-    IE_IMAGE_USAGE_DISPLAY = 0b0110,
-    IE_IMAGE_USAGE_DESTINATION = 0b0111,
-    IE_IMAGE_USAGE_SOURCE = 0b1000,
-    IE_IMAGE_USAGE_UNDEFINED = 0b1001,
-    IE_IMAGE_USAGE_ANY = 0b1010
+enum IeImageLayout {
+    IE_IMAGE_LAYOUT_COLOR_READ = 0b0000,
+    IE_IMAGE_LAYOUT_COLOR_WRITE = 0b0001,
+    IE_IMAGE_LAYOUT_DEPTH_READ = 0b0010,
+    IE_IMAGE_LAYOUT_DEPTH_WRITE = 0b0011,
+    IE_IMAGE_LAYOUT_READ = 0b0100,
+    IE_IMAGE_LAYOUT_WRITE = 0b0101,
+    IE_IMAGE_LAYOUT_DISPLAY = 0b0110,
+    IE_IMAGE_LAYOUT_DESTINATION = 0b0111,
+    IE_IMAGE_LAYOUT_SOURCE = 0b1000,
+    IE_IMAGE_LAYOUT_UNDEFINED = 0b1001,
+    IE_IMAGE_LAYOUT_ANY = 0b1010
 };
 
 enum IeImageTiling {
@@ -105,18 +105,18 @@ const static std::unordered_multimap<IeImageFormat, std::pair<VkFormat, uint32_t
         {IE_IMAGE_FORMAT_UINT_SFLOAT_32BIT,         {VK_FORMAT_D32_SFLOAT_S8_UINT,  GL_FLOAT_32_UNSIGNED_INT_24_8_REV}}
 };
 
-const static std::unordered_multimap<IeImageUsage, std::pair<VkImageLayout, uint32_t>> ieImageUsages {
-        {IE_IMAGE_USAGE_COLOR_READ,         {VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,              GL_NONE}},
-        {IE_IMAGE_USAGE_COLOR_WRITE,        {VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,              GL_NONE}},
-        {IE_IMAGE_USAGE_DEPTH_READ,         {VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR,           GL_NONE}},
-        {IE_IMAGE_USAGE_DEPTH_WRITE,        {VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR,          GL_NONE}},
-        {IE_IMAGE_USAGE_READ,               {VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL_KHR,                 GL_NONE}},
-        {IE_IMAGE_USAGE_WRITE,              {VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR,                GL_NONE}},
-        {IE_IMAGE_USAGE_DISPLAY,            {VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,                       GL_NONE}},
-        {IE_IMAGE_USAGE_DESTINATION,        {VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,                  GL_NONE}},
-        {IE_IMAGE_USAGE_SOURCE,             {VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,                  GL_NONE}},
-        {IE_IMAGE_USAGE_UNDEFINED,          {VK_IMAGE_LAYOUT_UNDEFINED,                             GL_NONE}},
-        {IE_IMAGE_USAGE_ANY,                {VK_IMAGE_LAYOUT_GENERAL,                               GL_NONE}}
+const static std::unordered_multimap<IeImageLayout, std::pair<VkImageLayout, uint32_t>> ieImageLayouts {
+        {IE_IMAGE_LAYOUT_COLOR_READ,  {VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,     GL_NONE}},
+        {IE_IMAGE_LAYOUT_COLOR_WRITE, {VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,     GL_NONE}},
+        {IE_IMAGE_LAYOUT_DEPTH_READ,  {VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR,  GL_NONE}},
+        {IE_IMAGE_LAYOUT_DEPTH_WRITE, {VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR, GL_NONE}},
+        {IE_IMAGE_LAYOUT_READ,        {VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL_KHR,        GL_NONE}},
+        {IE_IMAGE_LAYOUT_WRITE,       {VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR,       GL_NONE}},
+        {IE_IMAGE_LAYOUT_DISPLAY,     {VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,              GL_NONE}},
+        {IE_IMAGE_LAYOUT_DESTINATION, {VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,         GL_NONE}},
+        {IE_IMAGE_LAYOUT_SOURCE,      {VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,         GL_NONE}},
+        {IE_IMAGE_LAYOUT_UNDEFINED,   {VK_IMAGE_LAYOUT_UNDEFINED,                    GL_NONE}},
+        {IE_IMAGE_LAYOUT_ANY,         {VK_IMAGE_LAYOUT_GENERAL,                      GL_NONE}}
 };
 
 const static std::unordered_multimap<IeImageTiling, std::pair<VkSamplerAddressMode, uint32_t>> ieImageTilings{
@@ -155,18 +155,18 @@ const static std::unordered_multimap<IeImageFormat, std::pair<uint32_t, uint32_t
         {IE_IMAGE_FORMAT_UINT_SFLOAT_32BIT,                 {GL_FLOAT_32_UNSIGNED_INT_24_8_REV, GL_FLOAT_32_UNSIGNED_INT_24_8_REV}}
 };
 
-const static std::unordered_multimap<IeImageUsage, std::pair<uint32_t , uint32_t>> ieImageUsages {
-        {IE_IMAGE_USAGE_COLOR_READ,                         {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_COLOR_WRITE,                        {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_DEPTH_READ,                         {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_DEPTH_WRITE,                        {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_READ,                               {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_WRITE,                              {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_DISPLAY,                            {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_DESTINATION,                        {GL_NONE,                           GL_NONE}},
+const static std::unordered_multimap<IeImageLayout, std::pair<uint32_t , uint32_t>> ieImageLayouts {
+        {IE_IMAGE_LAYOUT_COLOR_READ,                         {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_LAYOUT_COLOR_WRITE,                        {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_LAYOUT_DEPTH_READ,                         {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_LAYOUT_DEPTH_WRITE,                        {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_LAYOUT_READ,                               {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_LAYOUT_WRITE,                              {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_LAYOUT_DISPLAY,                            {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_LAYOUT_DESTINATION,                        {GL_NONE,                           GL_NONE}},
         {IE_IMAGE_USAGE_SOURCE,                             {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_UNDEFINED,                          {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_ANY,                                {GL_NONE,                           GL_NONE}}
+        {IE_IMAGE_LAYOUT_UNDEFINED,                          {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_LAYOUT_ANY,                                {GL_NONE,                           GL_NONE}}
 };
 #endif
 #endif
@@ -178,7 +178,7 @@ public:
         IeImageType type{IE_IMAGE_TYPE_2D};
         IeImageFilter filter{IE_IMAGE_FILTER_NONE};
         IeImageFormat format{IE_IMAGE_FORMAT_SRGB_RGBA_8BIT};
-        IeImageUsage usage{IE_IMAGE_USAGE_ANY};
+        IeImageLayout layout{IE_IMAGE_LAYOUT_ANY};
         IeImageTiling tiling{IE_IMAGE_TILING_REPEAT};
         uint32_t memoryUsage{VMA_MEMORY_USAGE_CPU_TO_GPU};
         uint8_t mipLevels{1};
@@ -194,7 +194,7 @@ public:
         std::variant<IePreDesignedImage, Properties> properties{};
 
         //Only required if properties != IE_PRE_DESIGNED_TEXTURE_IMAGE
-        uint16_t width{}, height{};
+        uint16_t width{}, height{}, depth{};
         uint8_t msaaSamples{1};
 
         //Only required if properties == IE_PRE_DESIGNED_TEXTURE_IMAGE
@@ -226,7 +226,7 @@ public:
     std::variant<VkImage, uint32_t> image{};
     Created created{};
     Properties imageProperties{};
-    bool preDesignedImage;
+    bool preDesignedImage{};
 
 
     virtual void create(IeRenderEngineLink *engineLink, CreateInfo *createInfo) {
@@ -240,7 +240,7 @@ public:
                 imageProperties.type = createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
                 imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->swapchain.extent.width;
                 imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->swapchain.extent.height;
-                imageProperties.usage = IE_IMAGE_USAGE_COLOR_WRITE;
+                imageProperties.layout = IE_IMAGE_LAYOUT_COLOR_WRITE;
                 imageProperties.format = IE_IMAGE_FORMAT_SRGB_RGBA_8BIT;
                 imageProperties.msaaSamples = createdWith.msaaSamples;
                 imageProperties.memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -248,13 +248,13 @@ public:
                 imageProperties.type = createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
                 imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->swapchain.extent.width;
                 imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->swapchain.extent.height;
-                imageProperties.usage = IE_IMAGE_USAGE_DEPTH_WRITE;
+                imageProperties.layout = IE_IMAGE_LAYOUT_DEPTH_WRITE;
                 imageProperties.format = IE_IMAGE_FORMAT_UINT_SFLOAT_32BIT;
                 imageProperties.msaaSamples = createdWith.msaaSamples;
                 imageProperties.memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
             } if (std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_TEXTURE_IMAGE) {
                 imageProperties.type = IE_IMAGE_TYPE_2D;
-                imageProperties.usage = IE_IMAGE_USAGE_COLOR_READ;
+                imageProperties.layout = IE_IMAGE_LAYOUT_COLOR_READ;
                 imageProperties.format = IE_IMAGE_FORMAT_SRGB_RGBA_8BIT;
                 imageProperties.memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
                 imageProperties.msaaSamples = 0;
@@ -271,11 +271,64 @@ public:
             created.image = true;
         }
         #endif
-        //@todo Add optional call to transitionLayout();.
+        if (imageProperties.layout != IE_IMAGE_LAYOUT_UNDEFINED) {
+
+        }
     }
 
     virtual void transitionLayout(VkImageLayout newLayout, VkCommandBuffer commandBuffer) {
-
+        VkImageLayout imageLayout = ieImageLayouts.find(std::get<Properties>(createdWith.properties).layout)->second.first;
+        if (imageLayout == newLayout) { return; }
+        VkImageMemoryBarrier imageMemoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+        imageMemoryBarrier.oldLayout = imageLayout;
+        imageMemoryBarrier.newLayout = newLayout;
+        imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        imageMemoryBarrier.image = std::get<VkImage>(image);
+        imageMemoryBarrier.subresourceRange.aspectMask = newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.levelCount = std::get<Properties>(createdWith.properties).mipLevels;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+        imageMemoryBarrier.subresourceRange.layerCount = 1;
+        VkPipelineStageFlags sourceStage;
+        VkPipelineStageFlags destinationStage;
+        if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = 0;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        } else if (imageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        } else if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL | newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = 0;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        } else if (imageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        } else if (imageLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        } else if (imageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        } else if (imageLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            imageMemoryBarrier.srcAccessMask = 0;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        } else { throw std::runtime_error("Unknown transition parameters!"); }
+        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+        createdWith.properties;
     }
 
     virtual void unload() {
@@ -300,18 +353,18 @@ public:
             VkImageViewCreateInfo imageViewCreateInfo{.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, .viewType=VK_IMAGE_VIEW_TYPE_2D, .format=static_cast<VkFormat>(imageProperties.format), .subresourceRange=subresourceRange};
             VmaAllocationCreateInfo allocationCreateInfo{.usage=static_cast<VmaMemoryUsage>(imageProperties.memoryUsage)};
             VkExtent3D extent{.width=imageProperties.width, .height=imageProperties.height, .depth=imageProperties.depth};
-            VkImageCreateInfo imageCreateInfo{.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, .imageType=static_cast<VkImageType>(imageProperties.type), .format=static_cast<VkFormat>(imageProperties.format), .extent=extent, .mipLevels=imageProperties.mipLevels, .arrayLayers=1, .samples=static_cast<VkSampleCountFlagBits>(imageProperties.msaaSamples), .tiling=static_cast<VkImageTiling>(imageProperties.tiling), .usage=imageProperties.usage, .sharingMode=VK_SHARING_MODE_EXCLUSIVE, .initialLayout=VK_IMAGE_LAYOUT_UNDEFINED};
+            VkImageCreateInfo imageCreateInfo{.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, .imageType=static_cast<VkImageType>(imageProperties.type), .format=static_cast<VkFormat>(imageProperties.format), .extent=extent, .mipLevels=imageProperties.mipLevels, .arrayLayers=1, .samples=static_cast<VkSampleCountFlagBits>(imageProperties.msaaSamples), .tiling=static_cast<VkImageTiling>(imageProperties.tiling), .usage=imageProperties.layout, .sharingMode=VK_SHARING_MODE_EXCLUSIVE, .initialLayout=VK_IMAGE_LAYOUT_UNDEFINED};
             if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &std::get<VkImage>(image), &allocation, nullptr) != VK_SUCCESS) { linkedRenderEngine->log->log("Failed to create image!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
             created.image = true;
             imageViewCreateInfo.image = std::get<VkImage>(image);
             if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { linkedRenderEngine->log->log("Failed to create image view!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
             created.view = true;
-            IeImageUsage imageLayout = imageProperties.usage;
+            IeImageLayout imageLayout = imageProperties.layout;
             if (createdWith.dataSource != nullptr) {
                 transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandPool->commandBuffers[commandBufferIndex]);
                 createdWith.dataSource->toImage(this, imageProperties.width, imageProperties.height, commandPool->commandBuffers[commandBufferIndex]);
             }
-            if (imageProperties.usage != imageLayout) { transitionLayout(static_cast<VkImageLayout>(imageProperties.usage), commandPool->commandBuffers[commandBufferIndex]); }
+            if (imageProperties.layout != imageLayout) { transitionLayout(static_cast<VkImageLayout>(imageProperties.layout), commandPool->commandBuffers[commandBufferIndex]); }
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
@@ -322,7 +375,7 @@ public:
             glTexParameteri(imageProperties.type, GL_TEXTURE_MIN_FILTER, static_cast<int>(ieImageFilters.find(imageProperties.filter)->second.second));
             glTexParameteri(imageProperties.type, GL_TEXTURE_MAG_FILTER, static_cast<int>(ieImageFilters.find(imageProperties.filter)->second.second));
             glTexImage2D(imageProperties.type, 0, static_cast<int>(ieImageFormats.find(imageProperties.format)->second.second), static_cast<int>(createdWith.width), static_cast<int>(createdWith.height), 0, ieImageFormats.find(imageProperties.format)->second.second, GL_UNSIGNED_BYTE, createdWith.data.c_str());
-            glTexImage2D(imageProperties.type, 0, GL_DEPTH24_STENCIL8, static_cast<int>(createdWith.width), static_cast<int>(createdWith.height), 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, createdWith.data.c_str());
+            glTexImage2D(imageProperties.type, 0, GL_DEPTH24_STENCIL8, createdWith.width, createdWith.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, createdWith.data.c_str());
             if (imageProperties.filter & IE_IMAGE_FILTER_MIPMAP_ENABLED_BIT) {
                 glGenerateMipmap(imageProperties.type);
             }
@@ -332,10 +385,20 @@ public:
     }
 
     virtual void toBuffer(const IeBuffer* buffer, VkCommandBuffer commandBuffer) {
-
+        VkBufferImageCopy region{};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+        region.imageSubresource.aspectMask = std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_DEPTH_IMAGE ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+        region.imageOffset = {0, 0, 0};
+        region.imageExtent = {createdWith.width, createdWith.height, createdWith.depth};
+        vkCmdCopyImageToBuffer(commandBuffer, std::get<VkImage>(image), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, std::get<VkBuffer>(buffer->buffer), 1, &region);
     }
 
-    virtual void destroy() {
+    void destroy() {
         unload();
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (created.image) { vmaDestroyImage(linkedRenderEngine->allocator, std::get<VkImage>(image), allocation); }
@@ -344,6 +407,10 @@ public:
         if (created.image) { glDeleteTextures(1, &std::get<uint32_t>(image)); }
         #endif
         created.image = false;
+    }
+
+    ~IeImage() {
+        destroy();
     }
 };
 
@@ -358,7 +425,7 @@ void IeBuffer::toImage(IeImage* image, uint16_t width, uint16_t height, VkComman
         linkedRenderEngine->log->log("Called IeBuffer::toImage() with an IeImage that has not been created!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
         IeImage::CreateInfo imageCreateInfo{
                 .properties=IeImage::Properties {
-                        .usage=IE_IMAGE_USAGE_DESTINATION,
+                        .layout=IE_IMAGE_LAYOUT_DESTINATION,
                         .width=width,
                         .height=height,
                 },
@@ -371,13 +438,13 @@ void IeBuffer::toImage(IeImage* image, uint16_t width, uint16_t height, VkComman
     else {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (linkedRenderEngine->api.name == "Vulkan") {
-            auto oldLayout = static_cast<VkImageLayout>(image->imageProperties.usage);
+            auto oldLayout = static_cast<VkImageLayout>(image->imageProperties.layout);
             VkBufferImageCopy region{};
             region.imageSubresource.aspectMask = oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || oldLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
             region.imageSubresource.layerCount = 1;
             region.imageExtent = {width, height, 1};
             image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
-            vkCmdCopyBufferToImage(commandBuffer, std::get<VkBuffer>(buffer), std::get<VkImage>(image->image), static_cast<VkImageLayout>(image->imageProperties.usage), 1, &region);
+            vkCmdCopyBufferToImage(commandBuffer, std::get<VkBuffer>(buffer), std::get<VkImage>(image->image), static_cast<VkImageLayout>(image->imageProperties.layout), 1, &region);
             image->transitionLayout(oldLayout, commandBuffer);
         }
         #endif

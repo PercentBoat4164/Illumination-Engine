@@ -112,12 +112,16 @@ public:
 
     virtual void toImage(IeImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer);
 
-    virtual void destroy() {
+    void destroy() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (linkedRenderEngine->api.name == "Vulkan") { if (created) { vmaDestroyBuffer(linkedRenderEngine->allocator, std::get<VkBuffer>(buffer), allocation); } }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
         if (linkedRenderEngine->api.name == "OpenGL") { if (created) { glDeleteBuffers(1, &std::get<uint32_t>(buffer)); } }
         #endif
+    }
+
+    ~IeBuffer() {
+        destroy();
     }
 };

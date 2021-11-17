@@ -5,14 +5,7 @@
 #include "IeImage.hpp"
 #include "IeRenderEngineLink.hpp"
 #include "IeRenderPass.hpp"
-
-enum IeFramebufferAspect {
-    IE_FRAMEBUFFER_ASPECT_DEPTH_BIT = 0b01,
-    IE_FRAMEBUFFER_ASPECT_COLOR_BIT = 0b10,
-    IE_FRAMEBUFFER_ASPECT_COLOR_ONLY = IE_FRAMEBUFFER_ASPECT_COLOR_BIT,
-    IE_FRAMEBUFFER_ASPECT_DEPTH_ONLY = IE_FRAMEBUFFER_ASPECT_DEPTH_BIT,
-    IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR = 0b11
-};
+#include "IeFramebufferAttachment.hpp"
 
 enum IeFramebufferAttachmentFormat {
     IE_FRAMEBUFFER_DEPTH_ATTACHMENT_FORMAT = VK_FORMAT_D32_SFLOAT_S8_UINT
@@ -35,7 +28,7 @@ public:
         IeImageFormat format;
         IeFramebuffer* dependentOn;
         IeFramebuffer* requiredBy;
-        uint8_t subpass{0};
+        uint32_t subpass{0};
         uint32_t colorImageCount{1};
     };
 
@@ -47,8 +40,9 @@ public:
 
     CreateInfo createdWith{};
     Created created{};
-    IeImage color{};
-    IeImage depth{};
+    IeFramebufferAttachment depth{};
+    std::vector<IeFramebufferAttachment> colorAttachments{};
+    std::vector<IeFramebufferAttachment> resolveAttachments{};
     std::vector<VkFramebuffer> framebuffers{};
     std::vector<VkClearValue> clearValues{3};
     IeRenderEngineLink *linkedRenderEngine{};

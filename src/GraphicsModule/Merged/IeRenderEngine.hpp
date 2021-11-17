@@ -198,7 +198,7 @@ public:
             glfwSwapInterval(1);
             #endif
             glewExperimental = true;
-            if (glewInit() != GLEW_OK) { renderEngineLink.log->log("Failed to iniialize GLEW!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
+            if (glewInit() != GLEW_OK) { renderEngineLink.log->log("Failed to initialize GLEW!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
             renderEngineLink.created.glew = true;
             #ifndef NDEBUG
             int32_t flags;
@@ -249,7 +249,7 @@ public:
                         .subpass=1
                 };
             }
-            IeRenderPass::CreateInfo renderPassCreateInfo{.attachments=framebufferCreateInfos};
+            IeRenderPass::CreateInfo renderPassCreateInfo{.framebufferCreateInfos=framebufferCreateInfos};
             renderPass.create(&renderEngineLink, &renderPassCreateInfo);
             framebuffers.resize(framebufferCreateInfos.size());
             for (uint32_t i = 0; i < framebuffers.size(); ++i) {
@@ -266,8 +266,10 @@ public:
     }
 
     void changeAPI(const std::string& API) {
+        if (renderEngineLink.api.name == "OpenGL") {
+            glFinish();
+        }
         renderEngineLink.destroy();
-        if (renderEngineLink.api.name == "OpenGL") { glFinish(); }
         renderEngineLink = IeRenderEngineLink{};
         renderEngineLink.api.name = API;
         #ifdef ILLUMINATION_ENGINE_VULKAN
@@ -289,8 +291,9 @@ public:
     }
 
     void destroy() {
-        renderEngineLink.destroy();
+        glFinish();
         glfwTerminate();
+        renderEngineLink.destroy();
     }
 
     ~IeRenderEngine() {
