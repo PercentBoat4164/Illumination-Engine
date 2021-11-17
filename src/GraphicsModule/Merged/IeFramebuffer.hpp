@@ -19,9 +19,9 @@ enum IeFramebufferAttachmentFormat {
 };
 
 struct IeRenderPassAttachmentDescription {
-    VkAttachmentDescription depth;
-    std::vector<VkAttachmentDescription> color;
-    std::vector<VkAttachmentDescription> resolve;
+    VkAttachmentDescription depth{};
+    std::vector<VkAttachmentDescription> color{};
+    std::vector<VkAttachmentDescription> resolve{};
 };
 
 class IeRenderPass;
@@ -59,7 +59,7 @@ public:
 
     }
 
-    void linkToRenderPass() {
+    void linkToRenderPass(IeRenderPass* renderPass) {
 
     }
 

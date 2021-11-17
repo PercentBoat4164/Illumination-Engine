@@ -28,6 +28,7 @@ public:
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     IeRenderPass renderPass{};
+    std::vector<IeFramebuffer> framebuffers{};
 
     explicit IeRenderEngine(const std::string& API, Log *pLog) {
         renderEngineLink.log = pLog;
@@ -239,17 +240,27 @@ public:
             imagesInFlight.resize(renderEngineLink.swapchain.image_count, VK_NULL_HANDLE);
             // Generate Framebuffer data.
             std::vector<IeFramebuffer::CreateInfo> framebufferCreateInfos{renderEngineLink.swapchain.image_count};
-            for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
-                framebufferCreateInfos.push_back({
+            for (uint32_t i = 0; i < framebufferCreateInfos.size(); ++i) {
+                framebufferCreateInfos[i] = {
                         .aspects=IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR,
                         .msaaSamples=renderEngineLink.settings.msaaSamples,
                         .swapchainImageView=renderEngineLink.swapchainImageViews[i],
                         .format=IE_IMAGE_FORMAT_SRGB_RGBA_8BIT,
                         .subpass=1
-                });
+                };
             }
             IeRenderPass::CreateInfo renderPassCreateInfo{.attachments=framebufferCreateInfos};
             renderPass.create(&renderEngineLink, &renderPassCreateInfo);
+            framebuffers.resize(framebufferCreateInfos.size());
+            for (uint32_t i = 0; i < framebuffers.size(); ++i) {
+                framebuffers[i].create(&renderEngineLink, &framebufferCreateInfos[i]);
+                framebuffers[i].linkToRenderPass(&renderPass);
+            }
+        }
+        #endif
+        #ifdef ILLUMINATION_ENGINE_OPENGL
+        if (renderEngineLink.api.name == "OpenGL") {
+
         }
         #endif
     }

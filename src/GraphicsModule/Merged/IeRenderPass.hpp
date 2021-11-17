@@ -20,56 +20,61 @@ public:
     void create(IeRenderEngineLink *engineLink, CreateInfo *createInfo) {
         linkedRenderEngine = engineLink;
         createdWith = *createInfo;
-        std::sort(createdWith.attachments.begin(), createdWith.attachments.end(),
-                  [&](IeFramebuffer::CreateInfo first, IeFramebuffer::CreateInfo second) { return first.subpass > second.subpass; });
-        attachmentDescriptions.clear();
+        uint8_t subpassCount = std::max_element(createdWith.attachments.begin(), createdWith.attachments.end(), findSubpassCount)->subpass;
         attachmentDescriptions.reserve(createdWith.attachments.size());
-        for (IeFramebuffer::CreateInfo attachment : createdWith.attachments) { // @todo Eliminate need to sort.
+        for (IeFramebuffer::CreateInfo attachment : createdWith.attachments) {
             attachmentDescriptions.push_back(IeFramebuffer::generateAttachmentDescriptions(linkedRenderEngine, &attachment));
         }
-        subpasses.clear();
-        subpasses.reserve(createdWith.attachments[createdWith.attachments.size() - 1].subpass + 1);
-        VkAttachmentReference depthAttachmentReference;
-        std::vector<VkAttachmentReference> colorAttachmentReferences;
-        std::vector<VkAttachmentReference> resolveAttachmentReferences;
-        for (uint32_t i = 0; i < subpasses.capacity(); ++i) {
-            for (uint32_t j = 0; j < attachmentDescriptions.size(); ++j) {
-                if (createdWith.attachments[j].subpass == i) {
-                    depthAttachmentReference = {
-                            .attachment=j * 3 + 0,
-                            .layout=attachmentDescriptions[j].depth.finalLayout // @todo Fix dpeth not being initialized.
-                    };
-                    if (!attachmentDescriptions[j].color.empty()) {
-                        colorAttachmentReferences = {};
-                        colorAttachmentReferences.reserve(attachmentDescriptions[j].color.size());
-
-                        resolveAttachmentReferences = {};
-                        resolveAttachmentReferences.reserve(attachmentDescriptions[j].resolve.size());
-                    }
-                    for (uint32_t k = 0; k < attachmentDescriptions[j].color.size(); ++k) {
-                        colorAttachmentReferences.push_back({
-                                .attachment=j * 3 + 1,
-                                .layout=attachmentDescriptions[j].color[k].finalLayout
-                        });
-                        resolveAttachmentReferences.push_back({
-                                .attachment=j * 3 + 2,
-                                .layout=attachmentDescriptions[j].resolve[k].finalLayout
-                        });
-                    }
+        std::vector<SubpassData> subpassesData{subpassCount};
+        uint32_t attachmentCount{};
+        subpasses.resize(subpassCount);
+        for (uint32_t i = 0; i < attachmentDescriptions.size(); ++i) {
+            SubpassData subpassData{
+                .depth={
+                        .attachment=attachmentCount++,
+                        .layout=attachmentDescriptions[i].depth.finalLayout
+                }
+            }; // Initialization of subpass data with values that work for the depth if it exists
+            for (uint32_t j = 0; j < attachmentDescriptions[i].color.size(); ++j) {
+                subpassData.color.push_back({
+                        .attachment=attachmentCount++,
+                        .layout=attachmentDescriptions[i].color[j].finalLayout
+                });
+                if (!attachmentDescriptions[i].resolve.empty()) {
+                    subpassData.resolve.push_back({
+                          .attachment=attachmentCount++,
+                          .layout=attachmentDescriptions[i].resolve[j].finalLayout
+                    });
                 }
             }
-            subpasses.push_back(VkSubpassDescription{
-                    .pipelineBindPoint=VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    .colorAttachmentCount=1,
-                    .pColorAttachments=nullptr
-            });
+            subpasses[createdWith.attachments[i].subpass - 1] = {
+                .pipelineBindPoint=VK_PIPELINE_BIND_POINT_GRAPHICS,
+                .colorAttachmentCount=static_cast<uint32_t>(subpassData.color.size()),
+                .pColorAttachments=subpassData.color.data(),
+                .pResolveAttachments=subpassData.resolve.data(),
+                .pDepthStencilAttachment=&subpassData.depth
+            };
         }
-//        VkRenderPassCreateInfo renderPassCreateInfo{};
-//        if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) {
-//            linkedRenderEngine->log->log("Failed to create render pass!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module");
-//        }
+        VkRenderPassCreateInfo renderPassCreateInfo{
+            .sType=VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+            .subpassCount=static_cast<uint32_t>(subpasses.size()),
+            .pSubpasses=subpasses.data(),
+        };
+        if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) {
+            linkedRenderEngine->log->log("Failed to create render pass!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+        }
     }
 
 private:
     std::vector<IeRenderPassAttachmentDescription> attachmentDescriptions;
+
+    struct SubpassData {
+        VkAttachmentReference depth{};
+        std::vector<VkAttachmentReference> color{};
+        std::vector<VkAttachmentReference> resolve{};
+    };
+
+    static bool findSubpassCount(IeFramebuffer::CreateInfo first, IeFramebuffer::CreateInfo second) {
+        return first.subpass > second.subpass;
+    }
 };

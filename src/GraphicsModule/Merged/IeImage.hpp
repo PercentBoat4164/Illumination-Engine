@@ -175,12 +175,12 @@ class IeImage {
 public:
     struct Properties {
     public:
-        IeImageType type{};
-        IeImageFilter filter{};
-        IeImageFormat format{};
-        IeImageUsage usage{};
-        IeImageTiling tiling{};
-        uint32_t memoryUsage{};
+        IeImageType type{IE_IMAGE_TYPE_2D};
+        IeImageFilter filter{IE_IMAGE_FILTER_NONE};
+        IeImageFormat format{IE_IMAGE_FORMAT_SRGB_RGBA_8BIT};
+        IeImageUsage usage{IE_IMAGE_USAGE_ANY};
+        IeImageTiling tiling{IE_IMAGE_TILING_REPEAT};
+        uint32_t memoryUsage{VMA_MEMORY_USAGE_CPU_TO_GPU};
         uint8_t mipLevels{1};
         uint8_t msaaSamples{1};
         uint16_t width{1};
@@ -188,16 +188,13 @@ public:
         uint16_t depth{1};
     };
 
-    /**@todo Add a way to override the abstraction layers for more low-level handling of image creation.
-     *      Do this by adding another type to the properties variant. One for OpenGL and one for Vulkan that will handle all of the
-     *      API-specific stuff for their respective APIs.*/
     struct CreateInfo {
     public:
         //Required
         std::variant<IePreDesignedImage, Properties> properties{};
 
         //Only required if properties != IE_PRE_DESIGNED_TEXTURE_IMAGE
-        uint32_t width{}, height{};
+        uint16_t width{}, height{};
         uint8_t msaaSamples{1};
 
         //Only required if properties == IE_PRE_DESIGNED_TEXTURE_IMAGE
@@ -274,9 +271,10 @@ public:
             created.image = true;
         }
         #endif
+        //@todo Add optional call to transitionLayout();.
     }
 
-    virtual void transitionLayout(uint32_t newLayout, VkCommandBuffer commandBuffer) {
+    virtual void transitionLayout(VkImageLayout newLayout, VkCommandBuffer commandBuffer) {
 
     }
 
@@ -313,25 +311,29 @@ public:
                 transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandPool->commandBuffers[commandBufferIndex]);
                 createdWith.dataSource->toImage(this, imageProperties.width, imageProperties.height, commandPool->commandBuffers[commandBufferIndex]);
             }
-            if (imageProperties.usage != imageLayout) { transitionLayout(imageProperties.usage, commandPool->commandBuffers[commandBufferIndex]); }
+            if (imageProperties.usage != imageLayout) { transitionLayout(static_cast<VkImageLayout>(imageProperties.usage), commandPool->commandBuffers[commandBufferIndex]); }
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
         if (linkedRenderEngine->api.name == "OpenGL") {
             glBindTexture(imageProperties.type, std::get<uint32_t>(image));
-            glTexParameteri(imageProperties.type, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(imageProperties.type, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(imageProperties.type, GL_TEXTURE_WRAP_S, static_cast<int>(ieImageTilings.find(imageProperties.tiling)->second.second));
+            glTexParameteri(imageProperties.type, GL_TEXTURE_WRAP_T, static_cast<int>(ieImageTilings.find(imageProperties.tiling)->second.second));
             glTexParameteri(imageProperties.type, GL_TEXTURE_MIN_FILTER, static_cast<int>(ieImageFilters.find(imageProperties.filter)->second.second));
             glTexParameteri(imageProperties.type, GL_TEXTURE_MAG_FILTER, static_cast<int>(ieImageFilters.find(imageProperties.filter)->second.second));
-            glTexImage2D(imageProperties.type, 0, GL_RGB, static_cast<int>(createdWith.width), static_cast<int>(createdWith.height), 0, GL_RGB, GL_UNSIGNED_BYTE, createdWith.data.c_str());
+            glTexImage2D(imageProperties.type, 0, static_cast<int>(ieImageFormats.find(imageProperties.format)->second.second), static_cast<int>(createdWith.width), static_cast<int>(createdWith.height), 0, ieImageFormats.find(imageProperties.format)->second.second, GL_UNSIGNED_BYTE, createdWith.data.c_str());
             glTexImage2D(imageProperties.type, 0, GL_DEPTH24_STENCIL8, static_cast<int>(createdWith.width), static_cast<int>(createdWith.height), 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, createdWith.data.c_str());
-            if (imageProperties.filter & IE_IMAGE_FILTER_MIPMAP_ENABLED_BIT) { glGenerateMipmap(imageProperties.type); }
+            if (imageProperties.filter & IE_IMAGE_FILTER_MIPMAP_ENABLED_BIT) {
+                glGenerateMipmap(imageProperties.type);
+            }
         }
         #endif
         created.loaded = true;
     }
 
-    virtual void toBuffer(const IeBuffer &buffer, VkCommandBuffer commandBuffer) {}
+    virtual void toBuffer(const IeBuffer* buffer, VkCommandBuffer commandBuffer) {
+
+    }
 
     virtual void destroy() {
         unload();
@@ -345,7 +347,7 @@ public:
     }
 };
 
-IeImage IeBuffer::toImage(IeImage* image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer) {
+void IeBuffer::toImage(IeImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer) {
     if (!created) {
         linkedRenderEngine->log->log("Called IeBuffer::toImage() on a IeBuffer that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
     }
@@ -354,9 +356,30 @@ IeImage IeBuffer::toImage(IeImage* image, uint32_t width, uint32_t height, VkCom
     }
     if (!image->created.image) {
         linkedRenderEngine->log->log("Called IeBuffer::toImage() with an IeImage that has not been created!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+        IeImage::CreateInfo imageCreateInfo{
+                .properties=IeImage::Properties {
+                        .usage=IE_IMAGE_USAGE_DESTINATION,
+                        .width=width,
+                        .height=height,
+                },
+                .width=width,
+                .height=height,
+                .dataSource=this,
+        };
+        image->create(linkedRenderEngine, &imageCreateInfo);
     }
-    /**@todo Properly handle an uncreated IeImage. i.e. Make one.*/
-
-    /**@todo Finish making this function.*/
-    return *image;
+    else {
+        #ifdef ILLUMINATION_ENGINE_VULKAN
+        if (linkedRenderEngine->api.name == "Vulkan") {
+            auto oldLayout = static_cast<VkImageLayout>(image->imageProperties.usage);
+            VkBufferImageCopy region{};
+            region.imageSubresource.aspectMask = oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || oldLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+            region.imageSubresource.layerCount = 1;
+            region.imageExtent = {width, height, 1};
+            image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
+            vkCmdCopyBufferToImage(commandBuffer, std::get<VkBuffer>(buffer), std::get<VkImage>(image->image), static_cast<VkImageLayout>(image->imageProperties.usage), 1, &region);
+            image->transitionLayout(oldLayout, commandBuffer);
+        }
+        #endif
+    }
 }
