@@ -100,7 +100,17 @@ public:
         return *this;
     }
 
-    virtual IeImage toImage(IeImage* image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer);
+    virtual void update(void *data, uint32_t sizeOfData, uint32_t startingPosition, VkCommandBuffer commandBuffer) {
+        if (!created) {
+            linkedRenderEngine->log->log("Attempted to update a buffer that has not been created!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+        }
+        if (data == nullptr) {
+            linkedRenderEngine->log->log("Attempted to update a buffer with data as nullptr!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+        }
+        vkCmdUpdateBuffer(commandBuffer, std::get<VkBuffer>(buffer), startingPosition, sizeOfData, data);
+    }
+
+    virtual void toImage(IeImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer);
 
     virtual void destroy() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
