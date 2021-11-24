@@ -225,7 +225,7 @@ public:
         if (renderEngineLink.api.name == "Vulkan") {
             vkDeviceWaitIdle(renderEngineLink.device.device);
             // clear recreation deletion queue
-            vkb::SwapchainBuilder swapchainBuilder{ renderEngineLink.device };
+            vkb::SwapchainBuilder swapchainBuilder{renderEngineLink.device};
             vkb::detail::Result<vkb::Swapchain> swapchainBuilderResults = swapchainBuilder
                     .set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
                     .set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).build();

@@ -48,4 +48,5 @@ public:
     double horizontalFOV{tanh(tan(fov*(ILLUMINATION_ENGINE_PI/360)) * 1 / aspectRatio) * (360 / ILLUMINATION_ENGINE_PI)};
     glm::mat4 view{glm::lookAt(position, position + front, up)};
     glm::mat4 proj{};
+    float speed{1};
 };

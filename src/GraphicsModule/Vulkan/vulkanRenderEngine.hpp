@@ -22,13 +22,12 @@
 #include "vulkanTexture.hpp"
 #include "vulkanFramebuffer.hpp"
 
+#include <vulkan/vulkan.h>
 #include <VkBootstrap.h>
-
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
 #include <GL/glew.h>
 #endif
-
 #include <GLFW/glfw3.h>
 
 #include <deque>

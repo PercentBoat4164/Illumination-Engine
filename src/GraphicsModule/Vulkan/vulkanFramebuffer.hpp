@@ -22,7 +22,7 @@ public:
         linkedRenderEngine = engineLink;
         if (createdWith.swapchainImageView == VK_NULL_HANDLE) { throw std::runtime_error("VulkanFramebuffer::CreateInfo::swapchainImageView cannot be VK_NULL_HANDLE!"); }
         if (createdWith.renderPass.renderPass == VK_NULL_HANDLE) { throw std::runtime_error("VulkanFramebuffer::CreateInfo::renderPass::renderPass cannot be VK_NULL_HANDLE!"); }
-        clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         clearValues[2].color = clearValues[0].color;
         VulkanImage::CreateInfo framebufferImageCreateInfo{linkedRenderEngine->swapchain->image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
@@ -41,7 +41,7 @@ public:
         depthImage.upload();
         deletionQueue.emplace_front([&] { depthImage.destroy(); });
         std::vector<VkImageView> framebufferAttachments{linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? createdWith.swapchainImageView : colorImage.view, depthImage.view, createdWith.swapchainImageView};
-        VkFramebufferCreateInfo framebufferCreateInfo{.sType=VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+        VkFramebufferCreateInfo framebufferCreateInfo{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
         framebufferCreateInfo.renderPass = createdWith.renderPass.renderPass;
         framebufferCreateInfo.attachmentCount = linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3;
         framebufferCreateInfo.pAttachments = framebufferAttachments.data();
@@ -62,7 +62,7 @@ private:
 };
 
 VkRenderPassBeginInfo VulkanRenderPass::beginRenderPass(const VulkanFramebuffer &framebuffer) {
-    VkRenderPassBeginInfo renderPassBeginInfo{.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+    VkRenderPassBeginInfo renderPassBeginInfo{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
     renderPassBeginInfo.renderArea.offset = {0, 0};
     renderPassBeginInfo.renderArea.extent = linkedRenderEngine->swapchain->extent;
     renderPassBeginInfo.clearValueCount = linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3;

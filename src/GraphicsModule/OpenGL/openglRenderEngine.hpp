@@ -215,8 +215,8 @@ public:
         glScissor(0, 0, (GLsizei)settings.resolution[0], (GLsizei)settings.resolution[1]);
     }
 
-    double frameTime{};
-    double previousTime{};
+    float frameTime{};
+    float previousTime{};
     int frameNumber{};
     bool captureInput{};
 
