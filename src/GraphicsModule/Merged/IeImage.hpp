@@ -332,18 +332,22 @@ public:
     }
 
     virtual void unload() {
-        if (created.loaded) { stbi_image_free((void *) createdWith.data.c_str()); }
-        created.loaded = false;
-        #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (linkedRenderEngine->api.name == "Vulkan") {
-            linkedRenderEngine->log->log("Freed image bufferData for image at " + std::to_string(reinterpret_cast<uint64_t>(&std::get<VkImage>(image))), log4cplus::INFO_LOG_LEVEL, "Graphics Module");
-            if (created.view) { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr); }
-            if (created.image) { vmaDestroyImage(linkedRenderEngine->allocator, std::get<VkImage>(image), allocation); }
+        if (created.loaded) {
+            stbi_image_free(const_cast<char *>(createdWith.data.c_str())); //*@todo Use a different casting method here.
+            #ifdef ILLUMINATION_ENGINE_VULKAN
+            if (linkedRenderEngine->api.name == "Vulkan") {
+                linkedRenderEngine->log->log("Freed image bufferData for image at " + std::to_string(reinterpret_cast<uint64_t>(&std::get<VkImage>(image))), log4cplus::INFO_LOG_LEVEL, "Graphics Module");
+                if (created.view) { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr); }
+                if (created.image) { vmaDestroyImage(linkedRenderEngine->allocator, std::get<VkImage>(image), allocation); }
+            }
+            #endif
+            #ifdef ILLUMINATION_ENGINE_OPENGL
+            if (linkedRenderEngine->api.name == "OpenGL") {
+                linkedRenderEngine->log->log("Freed image bufferData for image " + std::to_string(std::get<uint32_t>(image)), log4cplus::INFO_LOG_LEVEL, "Graphics Module");
+            }
+            #endif
         }
-        #endif
-        #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (linkedRenderEngine->api.name == "OpenGL") { linkedRenderEngine->log->log("Freed image bufferData for image " + std::to_string(std::get<uint32_t>(image)), log4cplus::INFO_LOG_LEVEL, "Graphics Module"); }
-        #endif
+        created.loaded = false;
     }
 
     virtual void upload() {
@@ -415,7 +419,7 @@ public:
 };
 
 void IeBuffer::toImage(IeImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer) {
-    if (!created) {
+    if (!created.buffer) {
         linkedRenderEngine->log->log("Called IeBuffer::toImage() on a IeBuffer that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
     }
     if (image == nullptr) {

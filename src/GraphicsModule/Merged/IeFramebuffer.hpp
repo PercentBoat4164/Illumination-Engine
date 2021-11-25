@@ -33,8 +33,6 @@ public:
     };
 
     struct Created {
-        bool colorImage{};
-        bool depthImage{};
         bool framebuffer{};
     };
 
@@ -114,5 +112,17 @@ public:
             };
         }
         return renderPassAttachmentDescription;
+    }
+
+    void destroy() {
+        if (created.framebuffer) {
+            for (VkFramebuffer framebuffer : framebuffers) {
+                vkDestroyFramebuffer(linkedRenderEngine->device.device, framebuffer, nullptr);
+            }
+        }
+    }
+
+    ~IeFramebuffer() {
+        destroy();
     }
 };

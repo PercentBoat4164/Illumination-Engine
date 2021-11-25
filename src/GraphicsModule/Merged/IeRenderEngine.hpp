@@ -293,7 +293,6 @@ public:
     void destroy() {
         glFinish();
         glfwTerminate();
-        renderEngineLink.destroy();
     }
 
     ~IeRenderEngine() {

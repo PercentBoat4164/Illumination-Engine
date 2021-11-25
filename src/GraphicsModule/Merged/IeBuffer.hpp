@@ -46,6 +46,10 @@ public:
         uint32_t sizeOfData{};
     };
 
+    struct Created {
+        bool buffer{};
+    };
+
     void *bufferData{};
     std::variant<VkBuffer, uint32_t> buffer{};
     #ifdef ILLUMINATION_ENGINE_VULKAN
@@ -54,7 +58,7 @@ public:
     #endif
     IeRenderEngineLink *linkedRenderEngine{};
     CreateInfo createdWith{};
-    bool created{false};
+    Created created{};
 
     virtual IeBuffer create(IeRenderEngineLink *engineLink, CreateInfo *createInfo) {
         linkedRenderEngine = engineLink;
@@ -64,7 +68,7 @@ public:
             VkBufferCreateInfo bufferCreateInfo{.sType=VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, .size=createdWith.bufferSize, .usage=createdWith.usage};
             VmaAllocationCreateInfo allocationCreateInfo{.usage=createdWith.allocationUsage};
             if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &std::get<VkBuffer>(buffer), &allocation, nullptr) != VK_SUCCESS) { linkedRenderEngine->log->log("failed to create buffer!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
-            created = true;
+            created.buffer = true;
             if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
                 VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{.sType=VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer=std::get<VkBuffer>(buffer)};
                 deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
@@ -74,7 +78,7 @@ public:
         #ifdef ILLUMINATION_ENGINE_OPENGL
         if (linkedRenderEngine->api.name == "OpenGL") {
             glGenBuffers(1, &std::get<uint32_t>(buffer));
-            created = true;
+            created.buffer = true;
         }
         #endif
         if (createdWith.data != nullptr) { upload(createdWith.data, createdWith.sizeOfData); }
@@ -82,7 +86,7 @@ public:
     }
 
     virtual IeBuffer upload(void *data, uint32_t sizeOfData) {
-        if (!created) { linkedRenderEngine->log->log("Called IeBuffer::upload() on a IeBuffer that does not exist!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
+        if (!created.buffer) { linkedRenderEngine->log->log("Called IeBuffer::upload() on a IeBuffer that does not exist!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
         if (sizeOfData > createdWith.bufferSize) { linkedRenderEngine->log->log("IeBuffer::CreateInfo::sizeOfData must not be greater than IeBuffer::CreateInfo::bufferSize.", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (linkedRenderEngine->api.name == "Vulkan") {
@@ -101,7 +105,7 @@ public:
     }
 
     virtual void update(void *data, uint32_t sizeOfData, uint32_t startingPosition, VkCommandBuffer commandBuffer) {
-        if (!created) {
+        if (!created.buffer) {
             linkedRenderEngine->log->log("Attempted to update a buffer that has not been created!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
         }
         if (data == nullptr) {
@@ -114,10 +118,10 @@ public:
 
     void destroy() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (linkedRenderEngine->api.name == "Vulkan") { if (created) { vmaDestroyBuffer(linkedRenderEngine->allocator, std::get<VkBuffer>(buffer), allocation); } }
+        if (linkedRenderEngine->api.name == "Vulkan") { if (created.buffer) { vmaDestroyBuffer(linkedRenderEngine->allocator, std::get<VkBuffer>(buffer), allocation); } }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (linkedRenderEngine->api.name == "OpenGL") { if (created) { glDeleteBuffers(1, &std::get<uint32_t>(buffer)); } }
+        if (linkedRenderEngine->api.name == "OpenGL") { if (created.buffer) { glDeleteBuffers(1, &std::get<uint32_t>(buffer)); } }
         #endif
     }
 
