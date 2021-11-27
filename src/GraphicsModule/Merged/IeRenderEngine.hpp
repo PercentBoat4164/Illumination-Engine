@@ -220,6 +220,7 @@ public:
         handleWindowSizeChange();
     }
 
+    //*@todo Update VMA and VkBootstrap on next opportunity as these libraries may be causing the unreliable program execution.
     void handleWindowSizeChange() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") {
@@ -236,8 +237,6 @@ public:
             renderEngineLink.swapchain = swapchainBuilderResults.value();
             renderEngineLink.created.swapchain = true;
             renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
-            imagesInFlight.clear();
-            imagesInFlight.resize(renderEngineLink.swapchain.image_count, VK_NULL_HANDLE);
             // Generate Framebuffer data.
             std::vector<IeFramebuffer::CreateInfo> framebufferCreateInfos{renderEngineLink.swapchain.image_count};
             for (uint32_t i = 0; i < framebufferCreateInfos.size(); ++i) {
@@ -290,7 +289,11 @@ public:
         create();
     }
 
-    void destroy() {
+    void closeWindow() const {
+        glfwSetWindowShouldClose(renderEngineLink.window, 1);
+    }
+
+    static void destroy() {
         glFinish();
         glfwTerminate();
     }

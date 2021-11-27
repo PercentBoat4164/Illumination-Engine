@@ -28,4 +28,6 @@ int main(int argc, char **argv) {
     log.log("Choosing " + input + " API", log4cplus::INFO_LOG_LEVEL, "IEGMMergedMain");
     IeRenderEngine renderEngine{input, &log};
     renderEngine.create();
+    renderEngine.closeWindow();
+    glfwPollEvents();
 }

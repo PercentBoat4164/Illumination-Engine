@@ -74,7 +74,7 @@ public:
                     createInfo->colorImageCount,
                     VkAttachmentDescription{
                             .format=format->second.first,
-                            .samples=static_cast<VkSampleCountFlagBits>(createInfo->msaaSamples),
+                            .samples=VK_SAMPLE_COUNT_1_BIT,//static_cast<VkSampleCountFlagBits>(createInfo->msaaSamples),
                             .loadOp=createInfo->dependentOn ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR,
                             .storeOp=createInfo->requiredBy ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
                             .stencilLoadOp=createInfo->dependentOn ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -102,7 +102,7 @@ public:
         if (createInfo->aspects & IE_FRAMEBUFFER_ASPECT_DEPTH_BIT) {
             renderPassAttachmentDescription.depth = VkAttachmentDescription{
                     .format=static_cast<VkFormat>(IE_FRAMEBUFFER_DEPTH_ATTACHMENT_FORMAT),
-                    .samples=static_cast<VkSampleCountFlagBits>(createInfo->msaaSamples),
+                    .samples=VK_SAMPLE_COUNT_1_BIT,//static_cast<VkSampleCountFlagBits>(createInfo->msaaSamples),
                     .loadOp=createInfo->dependentOn ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR,
                     .storeOp=createInfo->requiredBy ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
                     .stencilLoadOp=createInfo->dependentOn ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR,
