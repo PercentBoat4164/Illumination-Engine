@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['accelerationstructuremanager_380',['AccelerationStructureManager',['../class_acceleration_structure_manager.html',1,'']]],
-  ['asset_381',['Asset',['../class_asset.html',1,'']]]
+  ['createinfo_338',['CreateInfo',['../struct_open_g_l_framebuffer_1_1_create_info.html',1,'OpenGLFramebuffer::CreateInfo'],['../struct_open_g_l_image_1_1_create_info.html',1,'OpenGLImage::CreateInfo'],['../struct_open_g_l_program_1_1_create_info.html',1,'OpenGLProgram::CreateInfo'],['../struct_open_g_l_shader_1_1_create_info.html',1,'OpenGLShader::CreateInfo'],['../struct_vulkan_buffer_1_1_create_info.html',1,'VulkanBuffer::CreateInfo'],['../struct_vulkan_descriptor_set_1_1_create_info.html',1,'VulkanDescriptorSet::CreateInfo'],['../struct_vulkan_framebuffer_1_1_create_info.html',1,'VulkanFramebuffer::CreateInfo'],['../struct_vulkan_image_1_1_create_info.html',1,'VulkanImage::CreateInfo'],['../struct_vulkan_pipeline_1_1_create_info.html',1,'VulkanPipeline::CreateInfo'],['../struct_vulkan_shader_1_1_create_info.html',1,'VulkanShader::CreateInfo']]]
 ];

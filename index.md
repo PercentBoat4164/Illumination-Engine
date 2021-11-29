@@ -13,15 +13,17 @@ We hope to add macOS compatibility to the game engine in the coming months.
 
 For the best experience using this graphics engine, please make sure that your graphics drivers are up-to-date.
 
-To get started, you will need a few packages.
+To begin using this engine, you will need a few packages.
 
 Here is a list of a few packages that you will need to download:
 
 ### Linux:
 
-  Required: cmake, c++-9, libglu1-mesa-dev, mesa-common-dev, libxrandr-dev, libxinerama-dev, libxcursor-dev, libxi-dev
+  Required: cmake, c++-11, libglu1-mesa-dev, mesa-common-dev, libxrandr-dev, libxinerama-dev, libxcursor-dev, libxi-dev
 
-    sudo apt install cmake c++-9 libglu1-mesa-dev mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+    sudo apt install cmake libglu1-mesa-dev mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+    
+    sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt update; sudo apt install -y g++-11
   
   Recommended: libglew-dev, libglfw3-dev, libglm-dev
 

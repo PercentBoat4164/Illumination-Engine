@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Illumination Engine: CrystalEngine/src/main.cpp File Reference</title>
+<title>Illumination Engine: Illumination-Engine/src/main.cpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -29,7 +29,7 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
-  <td id="projectlogo"><img alt="Logo" src="CrystalEngineLogoResized"/></td>
+  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineSignResized.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Illumination Engine
    &#160;<span id="projectnumber">0.1</span>
@@ -100,20 +100,83 @@ $(document).ready(function(){initNavTree('main_8cpp.html',''); initResizable(); 
 <div class="title">main.cpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;iostream&gt;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="opengl_render_engine_8hpp_source.html">GraphicsModule/OpenGL/openglRenderEngine.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_ie_keyboard_8hpp_source.html">InputModule/IeKeyboard.hpp</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for main.cpp:</div>
 <div class="dyncontent">
-<div class="center"><img src="main_8cpp__incl.png" border="0" usemap="#a_crystal_engine_2src_2main_8cpp" alt=""/></div>
-<map name="a_crystal_engine_2src_2main_8cpp" id="a_crystal_engine_2src_2main_8cpp">
-<area shape="rect" title=" " alt="" coords="5,5,204,32"/>
-<area shape="rect" title=" " alt="" coords="65,80,145,107"/>
+<div class="center"><img src="main_8cpp__incl.png" border="0" usemap="#a_illumination-_engine_2src_2main_8cpp" alt=""/></div>
+<map name="a_illumination-_engine_2src_2main_8cpp" id="a_illumination-_engine_2src_2main_8cpp">
+<area shape="rect" title=" " alt="" coords="651,5,800,47"/>
+<area shape="rect" href="opengl_render_engine_8hpp.html" title=" " alt="" coords="758,95,946,136"/>
+<area shape="rect" href="_ie_keyboard_8hpp.html" title=" " alt="" coords="657,348,865,375"/>
+<area shape="rect" href="opengl_settings_8hpp.html" title=" " alt="" coords="433,348,580,375"/>
+<area shape="rect" title=" " alt="" coords="867,423,952,449"/>
+<area shape="rect" title=" " alt="" coords="569,423,681,449"/>
+<area shape="rect" title=" " alt="" coords="779,423,842,449"/>
+<area shape="rect" title=" " alt="" coords="5,423,61,449"/>
+<area shape="rect" title=" " alt="" coords="297,423,356,449"/>
+<area shape="rect" href="opengl_camera_8hpp.html" title=" " alt="" coords="251,184,397,211"/>
+<area shape="rect" href="opengl_graphics_engine_link_8hpp.html" title=" " alt="" coords="542,266,765,293"/>
+<area shape="rect" href="opengl_renderable_8hpp.html" title=" " alt="" coords="1791,184,1959,211"/>
+<area shape="rect" title=" " alt="" coords="1378,423,1451,449"/>
+<area shape="rect" title=" " alt="" coords="2053,423,2155,449"/>
+<area shape="rect" href="opengl_framebuffer_8hpp.html" title=" " alt="" coords="991,184,1166,211"/>
+<area shape="rect" title=" " alt="" coords="1241,184,1305,211"/>
+<area shape="rect" title=" " alt="" coords="380,423,447,449"/>
+<area shape="rect" title=" " alt="" coords="471,423,545,449"/>
+<area shape="rect" title=" " alt="" coords="364,266,468,293"/>
+<area shape="rect" title=" " alt="" coords="122,266,339,293"/>
+<area shape="rect" href="opengl_program_8hpp.html" title=" " alt="" coords="1292,266,1441,293"/>
+<area shape="rect" href="opengl_texture_8hpp.html" title=" " alt="" coords="1981,266,2123,293"/>
+<area shape="rect" title=" " alt="" coords="1465,266,1623,293"/>
+<area shape="rect" title=" " alt="" coords="1647,266,1769,293"/>
+<area shape="rect" title=" " alt="" coords="1793,266,1956,293"/>
+<area shape="rect" title=" " alt="" coords="2148,259,2295,300"/>
+<area shape="rect" title=" " alt="" coords="2319,266,2505,293"/>
+<area shape="rect" title=" " alt="" coords="2529,266,2599,293"/>
+<area shape="rect" title=" " alt="" coords="2623,266,2747,293"/>
+<area shape="rect" href="opengl_shader_8hpp.html" title=" " alt="" coords="1143,348,1281,375"/>
+<area shape="rect" title=" " alt="" coords="1175,423,1249,449"/>
+<area shape="rect" title=" " alt="" coords="1087,423,1150,449"/>
+<area shape="rect" title=" " alt="" coords="977,423,1063,449"/>
+<area shape="rect" title=" " alt="" coords="1273,423,1353,449"/>
+<area shape="rect" href="opengl_image_8hpp.html" title=" " alt="" coords="1931,348,2066,375"/>
+<area shape="rect" title=" " alt="" coords="709,423,755,449"/>
 </map>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top"><a class="el" href="cmake-build-release_2_c_make_cache_8txt.html#a79a3d8790b2588b09777910863574e09">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (<a class="el" href="cmake-build-release_2_c_make_cache_8txt.html#a79a3d8790b2588b09777910863574e09">int</a> argc, <a class="el" href="cmake-build-release_2_c_make_cache_8txt.html#afe71f11dacb15682cdc012f7208e6e09">char</a> **argv)</td></tr>
+<tr class="memitem:aa1c142a1f40e8fc7d0b605b0031d2031"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#aa1c142a1f40e8fc7d0b605b0031d2031">moveCameraForward</a> (GLFWwindow *window)</td></tr>
+<tr class="memdesc:aa1c142a1f40e8fc7d0b605b0031d2031"><td class="mdescLeft">&#160;</td><td class="mdescRight">A key callback function. Moves the camera forward.  <a href="main_8cpp.html#aa1c142a1f40e8fc7d0b605b0031d2031">More...</a><br /></td></tr>
+<tr class="separator:aa1c142a1f40e8fc7d0b605b0031d2031"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a054981b4225975b8786f5fca982ce2f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#a054981b4225975b8786f5fca982ce2f8">moveCameraBackward</a> (GLFWwindow *window)</td></tr>
+<tr class="memdesc:a054981b4225975b8786f5fca982ce2f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">A key callback function. Moves the camera backward.  <a href="main_8cpp.html#a054981b4225975b8786f5fca982ce2f8">More...</a><br /></td></tr>
+<tr class="separator:a054981b4225975b8786f5fca982ce2f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a585490b605cb3344c92b73dcf18ac18d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#a585490b605cb3344c92b73dcf18ac18d">moveCameraRight</a> (GLFWwindow *window)</td></tr>
+<tr class="memdesc:a585490b605cb3344c92b73dcf18ac18d"><td class="mdescLeft">&#160;</td><td class="mdescRight">A key callback function. Moves the camera right.  <a href="main_8cpp.html#a585490b605cb3344c92b73dcf18ac18d">More...</a><br /></td></tr>
+<tr class="separator:a585490b605cb3344c92b73dcf18ac18d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d2c88101023c8999eaa0bd808888d34"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#a0d2c88101023c8999eaa0bd808888d34">moveCameraLeft</a> (GLFWwindow *window)</td></tr>
+<tr class="memdesc:a0d2c88101023c8999eaa0bd808888d34"><td class="mdescLeft">&#160;</td><td class="mdescRight">A key callback function. Moves the camera left.  <a href="main_8cpp.html#a0d2c88101023c8999eaa0bd808888d34">More...</a><br /></td></tr>
+<tr class="separator:a0d2c88101023c8999eaa0bd808888d34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ef43e9eecfcbffbbf6a7cf0aeb96202"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#a6ef43e9eecfcbffbbf6a7cf0aeb96202">moveCameraUp</a> (GLFWwindow *window)</td></tr>
+<tr class="memdesc:a6ef43e9eecfcbffbbf6a7cf0aeb96202"><td class="mdescLeft">&#160;</td><td class="mdescRight">A key callback function. Moves the camera up.  <a href="main_8cpp.html#a6ef43e9eecfcbffbbf6a7cf0aeb96202">More...</a><br /></td></tr>
+<tr class="separator:a6ef43e9eecfcbffbbf6a7cf0aeb96202"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa889e6ce8929c9627d90fa33cca6e25"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#aaa889e6ce8929c9627d90fa33cca6e25">moveCameraDown</a> (GLFWwindow *window)</td></tr>
+<tr class="memdesc:aaa889e6ce8929c9627d90fa33cca6e25"><td class="mdescLeft">&#160;</td><td class="mdescRight">A key callback function. Moves the camera down.  <a href="main_8cpp.html#aaa889e6ce8929c9627d90fa33cca6e25">More...</a><br /></td></tr>
+<tr class="separator:aaa889e6ce8929c9627d90fa33cca6e25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a754460f291adc65a314d1c11a95b735d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#a754460f291adc65a314d1c11a95b735d">moveSlower</a> (GLFWwindow *window)</td></tr>
+<tr class="memdesc:a754460f291adc65a314d1c11a95b735d"><td class="mdescLeft">&#160;</td><td class="mdescRight">A key callback function. Moves the camera slower.  <a href="main_8cpp.html#a754460f291adc65a314d1c11a95b735d">More...</a><br /></td></tr>
+<tr class="separator:a754460f291adc65a314d1c11a95b735d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75a44310afe2b699b9cd3b5ad3d1d34e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#a75a44310afe2b699b9cd3b5ad3d1d34e">moveFaster</a> (GLFWwindow *window)</td></tr>
+<tr class="memdesc:a75a44310afe2b699b9cd3b5ad3d1d34e"><td class="mdescLeft">&#160;</td><td class="mdescRight">A key callback function. Moves the camera faster.  <a href="main_8cpp.html#a75a44310afe2b699b9cd3b5ad3d1d34e">More...</a><br /></td></tr>
+<tr class="separator:a75a44310afe2b699b9cd3b5ad3d1d34e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2c4fb34f9943931d0325d8ef43a087a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#ae2c4fb34f9943931d0325d8ef43a087a">resetAll</a> (GLFWwindow *window)</td></tr>
+<tr class="memdesc:ae2c4fb34f9943931d0325d8ef43a087a"><td class="mdescLeft">&#160;</td><td class="mdescRight">A key callback function. Resets the camera position and keyboard queue.  <a href="main_8cpp.html#ae2c4fb34f9943931d0325d8ef43a087a">More...</a><br /></td></tr>
+<tr class="separator:ae2c4fb34f9943931d0325d8ef43a087a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
+<tr class="memdesc:a3c04138a5bfe5d72780bb7e82a18e627"><td class="mdescLeft">&#160;</td><td class="mdescRight">Code for testing the entire engine with all its modular parts goes here.  <a href="main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">More...</a><br /></td></tr>
 <tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
@@ -124,15 +187,15 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="cmake-build-release_2_c_make_cache_8txt.html#a79a3d8790b2588b09777910863574e09">int</a> main </td>
+          <td class="memname">int main </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="cmake-build-release_2_c_make_cache_8txt.html#a79a3d8790b2588b09777910863574e09">int</a>&#160;</td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>argc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="cmake-build-release_2_c_make_cache_8txt.html#afe71f11dacb15682cdc012f7208e6e09">char</a> **&#160;</td>
+          <td class="paramtype">char **&#160;</td>
           <td class="paramname"><em>argv</em>&#160;</td>
         </tr>
         <tr>
@@ -143,6 +206,242 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Code for testing the entire engine with all its modular parts goes here. </p>
+
+</div>
+</div>
+<a id="a054981b4225975b8786f5fca982ce2f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a054981b4225975b8786f5fca982ce2f8">&#9670;&nbsp;</a></span>moveCameraBackward()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void moveCameraBackward </td>
+          <td>(</td>
+          <td class="paramtype">GLFWwindow *&#160;</td>
+          <td class="paramname"><em>window</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A key callback function. Moves the camera backward. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">window</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aaa889e6ce8929c9627d90fa33cca6e25"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa889e6ce8929c9627d90fa33cca6e25">&#9670;&nbsp;</a></span>moveCameraDown()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void moveCameraDown </td>
+          <td>(</td>
+          <td class="paramtype">GLFWwindow *&#160;</td>
+          <td class="paramname"><em>window</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A key callback function. Moves the camera down. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">window</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aa1c142a1f40e8fc7d0b605b0031d2031"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1c142a1f40e8fc7d0b605b0031d2031">&#9670;&nbsp;</a></span>moveCameraForward()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void moveCameraForward </td>
+          <td>(</td>
+          <td class="paramtype">GLFWwindow *&#160;</td>
+          <td class="paramname"><em>window</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A key callback function. Moves the camera forward. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">window</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a0d2c88101023c8999eaa0bd808888d34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d2c88101023c8999eaa0bd808888d34">&#9670;&nbsp;</a></span>moveCameraLeft()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void moveCameraLeft </td>
+          <td>(</td>
+          <td class="paramtype">GLFWwindow *&#160;</td>
+          <td class="paramname"><em>window</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A key callback function. Moves the camera left. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">window</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a585490b605cb3344c92b73dcf18ac18d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a585490b605cb3344c92b73dcf18ac18d">&#9670;&nbsp;</a></span>moveCameraRight()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void moveCameraRight </td>
+          <td>(</td>
+          <td class="paramtype">GLFWwindow *&#160;</td>
+          <td class="paramname"><em>window</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A key callback function. Moves the camera right. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">window</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a6ef43e9eecfcbffbbf6a7cf0aeb96202"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6ef43e9eecfcbffbbf6a7cf0aeb96202">&#9670;&nbsp;</a></span>moveCameraUp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void moveCameraUp </td>
+          <td>(</td>
+          <td class="paramtype">GLFWwindow *&#160;</td>
+          <td class="paramname"><em>window</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A key callback function. Moves the camera up. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">window</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a75a44310afe2b699b9cd3b5ad3d1d34e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75a44310afe2b699b9cd3b5ad3d1d34e">&#9670;&nbsp;</a></span>moveFaster()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void moveFaster </td>
+          <td>(</td>
+          <td class="paramtype">GLFWwindow *&#160;</td>
+          <td class="paramname"><em>window</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A key callback function. Moves the camera faster. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">window</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a754460f291adc65a314d1c11a95b735d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a754460f291adc65a314d1c11a95b735d">&#9670;&nbsp;</a></span>moveSlower()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void moveSlower </td>
+          <td>(</td>
+          <td class="paramtype">GLFWwindow *&#160;</td>
+          <td class="paramname"><em>window</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A key callback function. Moves the camera slower. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">window</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae2c4fb34f9943931d0325d8ef43a087a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2c4fb34f9943931d0325d8ef43a087a">&#9670;&nbsp;</a></span>resetAll()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resetAll </td>
+          <td>(</td>
+          <td class="paramtype">GLFWwindow *&#160;</td>
+          <td class="paramname"><em>window</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A key callback function. Resets the camera position and keyboard queue. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">window</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 </div><!-- contents -->
@@ -150,7 +449,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_5bd9452402568eac987e0646c0fbec79.html">CrystalEngine</a></li><li class="navelem"><a class="el" href="dir_548cff3d9e25f351a973f07c279e1c7d.html">src</a></li><li class="navelem"><a class="el" href="main_8cpp.html">main.cpp</a></li>
+    <li class="navelem"><a class="el" href="dir_37b0beee3b5d192db6cf0b2a48cd97aa.html">Illumination-Engine</a></li><li class="navelem"><a class="el" href="dir_11522b5b7e5fd02e7f7980ad4667a586.html">src</a></li><li class="navelem"><a class="el" href="main_8cpp.html">main.cpp</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.2 </li>
   </ul>
 </div>

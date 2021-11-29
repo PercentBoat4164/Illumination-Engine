@@ -1,5 +1,5 @@
-<map id="CrystalEngine/src/GraphicsEngine/Vulkan/vulkanRenderEngine.hpp" name="CrystalEngine/src/GraphicsEngine/Vulkan/vulkanRenderEngine.hpp">
-<area shape="rect" id="node1" title=" " alt="" coords="130,5,411,47"/>
-<area shape="rect" id="node2" href="$vulkan_render_engine_rasterizer_8hpp.html" title=" " alt="" coords="5,95,259,151"/>
-<area shape="rect" id="node3" href="$vulkan_render_engine_ray_tracer_8hpp.html" title=" " alt="" coords="283,95,536,151"/>
+<map id="Illumination&#45;Engine/src/GraphicsModule/Vulkan/vulkanRenderEngine.hpp" name="Illumination&#45;Engine/src/GraphicsModule/Vulkan/vulkanRenderEngine.hpp">
+<area shape="rect" id="node1" title=" " alt="" coords="104,5,341,61"/>
+<area shape="rect" id="node2" href="$_i_e_graphics_module_main_8cpp.html" title=" " alt="" coords="5,109,208,165"/>
+<area shape="rect" id="node3" href="$_i_e_g_m_vulkan_main_8cpp.html" title=" " alt="" coords="232,109,445,165"/>
 </map>

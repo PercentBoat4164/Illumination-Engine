@@ -1,5 +1,0 @@
-<map id="RigidBody" name="RigidBody">
-<area shape="rect" id="node1" title=" " alt="" coords="11,80,99,107"/>
-<area shape="rect" id="node3" href="$class_sphere_body.html" title=" " alt="" coords="5,155,105,181"/>
-<area shape="rect" id="node2" href="$class_particle.html" title=" " alt="" coords="20,5,91,32"/>
-</map>

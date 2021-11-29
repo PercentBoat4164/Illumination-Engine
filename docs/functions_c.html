@@ -29,7 +29,7 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
-  <td id="projectlogo"><img alt="Logo" src="CrystalEngineLogoResized"/></td>
+  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineSignResized.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Illumination Engine
    &#160;<span id="projectnumber">0.1</span>
@@ -97,55 +97,94 @@ $(document).ready(function(){initNavTree('functions_c.html',''); initResizable()
 <div class="textblock">Here is a list of all class members with links to the classes they belong to:</div>
 
 <h3><a id="index_c"></a>- c -</h3><ul>
-<li>Camera()
-: <a class="el" href="class_camera.html#a0fd8e6703aefe57bb0366f88f0f8a478">Camera</a>
-</li>
 <li>camera
-: <a class="el" href="class_vulkan_render_engine.html#a1f67791e3a9ab0b9b73f7956079dbb22">VulkanRenderEngine</a>
+: <a class="el" href="class_open_g_l_render_engine.html#a26ddbe4d9e2c1962792e93c85c9f7957">OpenGLRenderEngine</a>
+, <a class="el" href="class_vulkan_render_engine.html#a039773d03b34d8acb8b2a1472c0672a4">VulkanRenderEngine</a>
 </li>
-<li>checkCollision()
-: <a class="el" href="class_world.html#aa3dfe4f4d97dc169ab9ea2de9579b750">World</a>
+<li>captureInput
+: <a class="el" href="class_open_g_l_render_engine.html#ad99a6b6cf40291b53b68dacb3417101a">OpenGLRenderEngine</a>
+, <a class="el" href="class_vulkan_render_engine.html#a8b3969052c020c4dc13418214b0fcce2">VulkanRenderEngine</a>
 </li>
-<li>cleanUp()
-: <a class="el" href="class_vulkan_render_engine.html#aeab14d27e38f97cb8d13e75c863106ad">VulkanRenderEngine</a>
+<li>cleanLogFiles()
+: <a class="el" href="class_log.html#affc44b7d417749c90ba3671800d7674a">Log</a>
+</li>
+<li>clear()
+: <a class="el" href="class_open_g_l_framebuffer.html#ad698096c01f1bb9bd6eda9334aa2867f">OpenGLFramebuffer</a>
+</li>
+<li>clearQueue()
+: <a class="el" href="class_ie_keyboard.html#ae2e209d032084b6ca6011e139e790c08">IeKeyboard</a>
 </li>
 <li>clearValues
-: <a class="el" href="class_render_pass_manager.html#afddf6cd52b2d453f714799cc16f5b093">RenderPassManager</a>
+: <a class="el" href="class_vulkan_framebuffer.html#ab28f1fc1c24de8d795cfc82360deb51b">VulkanFramebuffer</a>
 </li>
 <li>color
-: <a class="el" href="struct_vertex.html#a1b0993d04d8fa271065e9cec1cf1685e">Vertex</a>
+: <a class="el" href="struct_vulkan_vertex.html#af8aa5557c3aa02678354666fa28d8ddb">VulkanVertex</a>
 </li>
-<li>commandBufferManager
-: <a class="el" href="class_vulkan_render_engine.html#af6ce70b616013e933750c98d7a6ea38c">VulkanRenderEngine</a>
+<li>colorImage
+: <a class="el" href="class_open_g_l_framebuffer.html#af1ad5edd64156b089fefd89c2c289ca4">OpenGLFramebuffer</a>
+, <a class="el" href="class_vulkan_framebuffer.html#a55f898d4253adec4939c637fbcb5f711">VulkanFramebuffer</a>
 </li>
 <li>commandBuffers
-: <a class="el" href="class_command_buffer_manager.html#ad4d8d0178ffc7af915c91fbd2486f8f6">CommandBufferManager</a>
+: <a class="el" href="class_vulkan_command_buffer.html#af9e43b2239b25989cb77c054353c9695">VulkanCommandBuffer</a>
 </li>
 <li>commandPool
-: <a class="el" href="class_command_buffer_manager.html#a67e721869298c6f368d313a7457b1045">CommandBufferManager</a>
+: <a class="el" href="class_vulkan_command_buffer.html#aae686246f876224529b1eb1b33d7a55a">VulkanCommandBuffer</a>
 , <a class="el" href="class_vulkan_graphics_engine_link.html#a4ceb5658e7b351283f04e81b03500d73">VulkanGraphicsEngineLink</a>
 </li>
+<li>compile()
+: <a class="el" href="class_open_g_l_shader.html#ac1822d2b0abd897ea31fff069a695944">OpenGLShader</a>
+, <a class="el" href="class_vulkan_shader.html#afb727336322de452f7ffe625cd2c2856">VulkanShader</a>
+</li>
+<li>compiled
+: <a class="el" href="class_open_g_l_shader.html#ab18c4445ef82495372bdf5cdbd3e0694">OpenGLShader</a>
+, <a class="el" href="class_vulkan_shader.html#a99274e3a6921ad0a20584383973825ed">VulkanShader</a>
+</li>
+<li>computeQueue
+: <a class="el" href="class_vulkan_graphics_engine_link.html#a60222b2147e74d407f32ce272042004c">VulkanGraphicsEngineLink</a>
+</li>
 <li>create()
-: <a class="el" href="class_acceleration_structure_manager.html#af1cd8b3fd300fb7b1ffda2ce52a7b3d5">AccelerationStructureManager</a>
-, <a class="el" href="class_buffer_manager.html#aa5d45ea925e91e40ad3d98b577c6b972">BufferManager</a>
-, <a class="el" href="class_descriptor_set_manager.html#a4f104c320addc155f86f11df9e174904">DescriptorSetManager</a>
-, <a class="el" href="class_image_manager.html#ae6a3b634b6e8396f8092035dd1d7f841">ImageManager</a>
-, <a class="el" href="class_shader_binding_table_manager.html#acc019942d9b1ecfa6e1eb5c4671b7622">ShaderBindingTableManager</a>
+: <a class="el" href="class_log.html#ad85318f68542e9003d860457e064e99c">Log</a>
+, <a class="el" href="class_open_g_l_camera.html#a480a7c17a2665673adfca1dd7ef2c5ae">OpenGLCamera</a>
+, <a class="el" href="class_open_g_l_framebuffer.html#a765cfe7558a173d2c5a3aa7178aaf129">OpenGLFramebuffer</a>
+, <a class="el" href="class_open_g_l_image.html#a519e8e4244c97108bedae8d365f5be10">OpenGLImage</a>
+, <a class="el" href="class_open_g_l_program.html#aaf3438c963b5a7c42cb9eb5957d6dc47">OpenGLProgram</a>
+, <a class="el" href="class_open_g_l_renderable.html#a61085636ada613bda36f64b938f205c3">OpenGLRenderable</a>
+, <a class="el" href="class_open_g_l_shader.html#a59a9c02d17756089262195fe3380f29a">OpenGLShader</a>
+, <a class="el" href="class_open_g_l_texture.html#a7b4fdc87edd83729c152afee950ee7ce">OpenGLTexture</a>
+, <a class="el" href="class_vulkan_acceleration_structure.html#acd28f36f4464d8a575d023578f5aff60">VulkanAccelerationStructure</a>
+, <a class="el" href="class_vulkan_buffer.html#a7166237a15cb4b10aecbe6c2c8a92046">VulkanBuffer</a>
+, <a class="el" href="class_vulkan_camera.html#a34076dc35abd78f7a264cb7d224eeb92">VulkanCamera</a>
+, <a class="el" href="class_vulkan_command_buffer.html#ab6e85da8de6f6c582dc32717be1960d8">VulkanCommandBuffer</a>
+, <a class="el" href="class_vulkan_descriptor_set.html#a129fb04679e3cb48e07215480ab70972">VulkanDescriptorSet</a>
+, <a class="el" href="class_vulkan_framebuffer.html#ade13b6eae19ea8c94cb88d692fc6b251">VulkanFramebuffer</a>
+, <a class="el" href="class_vulkan_image.html#a61207c00a982f23b768e91b2348be5c1">VulkanImage</a>
+, <a class="el" href="class_vulkan_pipeline.html#aae7e1aac2d404ffda12a21ef95a6f3a7">VulkanPipeline</a>
+, <a class="el" href="class_vulkan_render_pass.html#acec52da8e54f4a5de750fbaa165dfe47">VulkanRenderPass</a>
+, <a class="el" href="class_vulkan_shader.html#aeb2064a22447f421b354a185ddb222ba">VulkanShader</a>
+, <a class="el" href="class_vulkan_texture.html#ad44d973d67657c9d007028fc2c426032">VulkanTexture</a>
 </li>
 <li>createCommandBuffers()
-: <a class="el" href="class_command_buffer_manager.html#a0a21a8f82825bf5db8d1c2e136f62950">CommandBufferManager</a>
+: <a class="el" href="class_vulkan_command_buffer.html#aeb3e87e3b0aac62749d4bcc4f2f442b8">VulkanCommandBuffer</a>
 </li>
-<li>createDescriptorSet()
-: <a class="el" href="class_rasterization_pipeline_manager.html#aaec7f634e1994d5b5aa9df8f72b8849d">RasterizationPipelineManager</a>
+<li>created
+: <a class="el" href="class_open_g_l_texture.html#a7b1a4ad547191cd5cc9f0073b712d77d">OpenGLTexture</a>
+, <a class="el" href="class_vulkan_buffer.html#a447e95617ef2a0f15d79895fff9d86c4">VulkanBuffer</a>
+, <a class="el" href="class_vulkan_renderable.html#a33f1074de5260c7fe167d0b16e7fac8b">VulkanRenderable</a>
 </li>
-<li>createFramebuffers()
-: <a class="el" href="class_render_pass_manager.html#a1da77a54cf6c61d12bad4b0c2226ff7e">RenderPassManager</a>
+<li>createdWith
+: <a class="el" href="class_open_g_l_framebuffer.html#a52c3ed23a9ba46f3b96eba57fe5202e7">OpenGLFramebuffer</a>
+, <a class="el" href="class_open_g_l_image.html#aae20ae372bb0eeda105153b21870a4a9">OpenGLImage</a>
+, <a class="el" href="class_open_g_l_program.html#a6c33751add893865d89973e28a5c96d2">OpenGLProgram</a>
+, <a class="el" href="class_open_g_l_shader.html#a51bd7657e8a5b02b40b1c5993dbcf109">OpenGLShader</a>
+, <a class="el" href="class_vulkan_buffer.html#a533b64279c25e44d8e594cd4d622912c">VulkanBuffer</a>
+, <a class="el" href="class_vulkan_descriptor_set.html#a1f2a6ab90940e112ae459d2ab4116e2b">VulkanDescriptorSet</a>
+, <a class="el" href="class_vulkan_framebuffer.html#a8c384b2e8d081567551bd8758f67f07a">VulkanFramebuffer</a>
+, <a class="el" href="class_vulkan_image.html#a685335e57745f1cfd2a17b57a2154834">VulkanImage</a>
+, <a class="el" href="class_vulkan_pipeline.html#a7cc4f76814a758e3f5956c0956f829b9">VulkanPipeline</a>
+, <a class="el" href="class_vulkan_shader.html#a980ffb1b4f9c3725866308ce0ef6c606">VulkanShader</a>
 </li>
 <li>createSwapchain()
 : <a class="el" href="class_vulkan_render_engine.html#a1e5335ba47d352cc91c284b4dc4c78c0">VulkanRenderEngine</a>
-</li>
-<li>currentFrame
-: <a class="el" href="class_vulkan_render_engine_rasterizer.html#ac40d91c9df7e9ff7532eacf5b1d7bfdb">VulkanRenderEngineRasterizer</a>
 </li>
 </ul>
 </div><!-- contents -->

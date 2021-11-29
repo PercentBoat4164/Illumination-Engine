@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['tobuffer_491',['toBuffer',['../class_image_manager.html#a5850f0209fd72045fc577d747a2b4d4c',1,'ImageManager']]],
-  ['toimage_492',['toImage',['../class_buffer_manager.html#ab701f827d6c270a1cf1c2e0f6572d2c3',1,'BufferManager']]],
-  ['transition_493',['transition',['../class_image_manager.html#a3f5c17c1685933891797986b353731a8',1,'ImageManager']]]
+  ['prepare_460',['prepare',['../class_open_g_l_renderable.html#acfe94aa64952dd033be5484f367550c0',1,'OpenGLRenderable::prepare()'],['../class_open_g_l_texture.html#aa5521a04ea9284cd66280dd7b2c8f11f',1,'OpenGLTexture::prepare()']]]
 ];

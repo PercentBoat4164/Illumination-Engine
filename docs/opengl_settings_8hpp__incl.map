@@ -1,10 +1,10 @@
-<map id="CrystalEngine/src/GraphicsEngine/OpenGL/openglSettings.hpp" name="CrystalEngine/src/GraphicsEngine/OpenGL/openglSettings.hpp">
-<area shape="rect" id="node1" title=" " alt="" coords="327,5,577,47"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,95,176,121"/>
-<area shape="rect" id="node3" title=" " alt="" coords="200,95,312,121"/>
-<area shape="rect" id="node4" title=" " alt="" coords="337,95,399,121"/>
-<area shape="rect" id="node5" title=" " alt="" coords="424,95,480,121"/>
-<area shape="rect" id="node6" title=" " alt="" coords="504,95,595,121"/>
-<area shape="rect" id="node7" title=" " alt="" coords="619,95,685,121"/>
-<area shape="rect" id="node8" title=" " alt="" coords="709,95,784,121"/>
+<map id="Illumination&#45;Engine/src/GraphicsModule/OpenGL/openglSettings.hpp" name="Illumination&#45;Engine/src/GraphicsModule/OpenGL/openglSettings.hpp">
+<area shape="rect" id="node1" title=" " alt="" coords="263,5,470,61"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,109,91,136"/>
+<area shape="rect" id="node3" title=" " alt="" coords="115,109,227,136"/>
+<area shape="rect" id="node4" title=" " alt="" coords="251,109,314,136"/>
+<area shape="rect" id="node5" title=" " alt="" coords="339,109,395,136"/>
+<area shape="rect" id="node6" title=" " alt="" coords="419,109,485,136"/>
+<area shape="rect" id="node7" title=" " alt="" coords="509,109,584,136"/>
+<area shape="rect" id="node8" title=" " alt="" coords="608,109,667,136"/>
 </map>

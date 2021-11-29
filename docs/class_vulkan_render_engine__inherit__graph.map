@@ -1,5 +1,0 @@
-<map id="VulkanRenderEngine" name="VulkanRenderEngine">
-<area shape="rect" id="node1" title=" " alt="" coords="161,5,318,32"/>
-<area shape="rect" id="node2" href="$class_vulkan_render_engine_rasterizer.html" title=" " alt="" coords="5,80,228,107"/>
-<area shape="rect" id="node3" href="$class_vulkan_render_engine_ray_tracer.html" title=" " alt="" coords="252,80,475,107"/>
-</map>

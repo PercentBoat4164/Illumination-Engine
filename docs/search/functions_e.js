@@ -1,6 +1,11 @@
 var searchData=
 [
-  ['update_494',['update',['../class_vulkan_render_engine_rasterizer.html#a5ee02c9dd11171928622613f248172fc',1,'VulkanRenderEngineRasterizer::update()'],['../class_asset.html#a38de4d719dc055d8b58964284b2b3b3b',1,'Asset::update()'],['../class_vulkan_render_engine.html#ac6dc21be0a7cc99bad846b0c4639fe87',1,'VulkanRenderEngine::update()'],['../class_vulkan_render_engine_ray_tracer.html#a051f05e7e97566252df6d073bd4dc4ff',1,'VulkanRenderEngineRayTracer::update()'],['../class_camera.html#ac69cb920d2b43a6adf5208dff2dbfcd9',1,'Camera::update()'],['../class_open_g_l_render_engine.html#a21343726764d4695598a1dff296c9d52',1,'OpenGLRenderEngine::update()']]],
-  ['updatesettings_495',['updateSettings',['../class_vulkan_render_engine.html#a9782416123fa200fed1bd339488a5134',1,'VulkanRenderEngine']]],
-  ['uploadasset_496',['uploadAsset',['../class_vulkan_render_engine.html#a53a60dd8599a3b9f61a2b974dbbd714a',1,'VulkanRenderEngine']]]
+  ['rebuild_461',['rebuild',['../class_vulkan_acceleration_structure.html#abe84a81a38334614d7b9c6043826c9fd',1,'VulkanAccelerationStructure::rebuild()'],['../class_open_g_l_framebuffer.html#a198875f1254b7f006ac25c9e39f7d105',1,'OpenGLFramebuffer::rebuild()']]],
+  ['recordcommandbuffer_462',['recordCommandBuffer',['../class_vulkan_command_buffer.html#af1d6a188f6bbee5615216aca858db1b4',1,'VulkanCommandBuffer::recordCommandBuffer(const std::vector&lt; int &gt; &amp;recordIndices)'],['../class_vulkan_command_buffer.html#a3ea114d788f30c0640d34bff70d401df',1,'VulkanCommandBuffer::recordCommandBuffer(int recordIndex=0)']]],
+  ['reloadrenderable_463',['reloadRenderable',['../class_vulkan_renderable.html#ae3d4fe547e76d9865c57b48e69414fc9',1,'VulkanRenderable']]],
+  ['reloadrenderables_464',['reloadRenderables',['../class_vulkan_render_engine.html#ae6ecc235cb79cc847d63dbc2984c1d6f',1,'VulkanRenderEngine::reloadRenderables()'],['../class_open_g_l_render_engine.html#a0b07c7146ed759534a78d44fe14defcc',1,'OpenGLRenderEngine::reloadRenderables()']]],
+  ['reprepare_465',['reprepare',['../class_open_g_l_renderable.html#ab77b8825995e5a8aa46164d072059483',1,'OpenGLRenderable']]],
+  ['resetall_466',['resetAll',['../main_8cpp.html#ae2c4fb34f9943931d0325d8ef43a087a',1,'main.cpp']]],
+  ['resetcommandbuffer_467',['resetCommandBuffer',['../class_vulkan_command_buffer.html#a4ea58a83c9ad4246e2e85c1abb685cce',1,'VulkanCommandBuffer::resetCommandBuffer(const std::vector&lt; int &gt; &amp;resetIndices)'],['../class_vulkan_command_buffer.html#a4ad8561873934335953f2c590e07c142',1,'VulkanCommandBuffer::resetCommandBuffer(int resetIndex=0)']]],
+  ['reupload_468',['reupload',['../class_open_g_l_renderable.html#ae0f459b8b76dc5495c31a1ea321b7ff7',1,'OpenGLRenderable']]]
 ];

@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['buffer_747',['BUFFER',['../rasterization_pipeline_manager_8hpp.html#a3a2a8f2961a85c1623cd71b87631b024a57ea20be5a2dd38faaadc99ae400ac35',1,'rasterizationPipelineManager.hpp']]]
+  ['opengl_5fcolor_667',['OPENGL_COLOR',['../opengl_image_8hpp.html#ab72c0959097456284a1f2fca822b9580afd28ad21cae6bae12e91dfa8578b9603',1,'openglImage.hpp']]],
+  ['opengl_5fdepth_668',['OPENGL_DEPTH',['../opengl_image_8hpp.html#ab72c0959097456284a1f2fca822b9580a351eb4db47753a5d0a2e687e966c0e0b',1,'openglImage.hpp']]],
+  ['opengl_5ftexture_669',['OPENGL_TEXTURE',['../opengl_image_8hpp.html#ab72c0959097456284a1f2fca822b9580ae133f9f5c6975d338b9be16b6d50cdfd',1,'openglImage.hpp']]]
 ];
