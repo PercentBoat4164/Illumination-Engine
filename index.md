@@ -31,17 +31,15 @@ Here is a list of a few packages that you will need to download:
   
   If you plan to compile the Vulkan Render Engine, you will need to install the Vulkan software development kit. To accomplish this task, install the Vulkan software development kit using the following list of commands:
     
-    wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.176-focal.list https://packages.lunarg.com/vulkan/1.2.176/lunarg-vulkan-1.2.176-focal.list;sudo apt update;sudo apt install vulkan-sdk
+    wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.198-focal.list https://packages.lunarg.com/vulkan/1.2.198/lunarg-vulkan-1.2.198-focal.list;sudo apt update;sudo apt install vulkan-sdk
     
    (Copy and paste the commands into your terminal)
 
-Those are the packages that Linux users will need to download to use the render engine.
+Those are the packages that Linux users will need to download to compile Illumination Engine.
 
 ### Windows:
 
-Required: [cmake](https://cmake.org/download/)
-
-(More to come...)
+Required: [cmake](https://cmake.org/download/), [Vulkan](https://vulkan.lunarg.com/sdk/home)
 
 ## Build
 
