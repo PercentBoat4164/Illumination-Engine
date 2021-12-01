@@ -1,11 +1,11 @@
 #pragma once
 
-#include "IeRenderEngineLink.hpp"
+#include "IERenderEngineLink.hpp"
 #include "LogModule/Log.hpp"
 
 #include "VkBootstrap.h"
 
-class IeCommandPool {
+class IECommandPool {
 public:
     struct CreateInfo {
     public:
@@ -26,13 +26,13 @@ public:
     VkCommandPool commandPool{};
     std::vector<VkCommandBuffer> commandBuffers{};
     #endif
-    IeRenderEngineLink *linkedRenderEngine{};
+    IERenderEngineLink *linkedRenderEngine{};
 
-    void create(IeRenderEngineLink *engineLink, CreateInfo *createInfo) {
+    void create(IERenderEngineLink *engineLink, CreateInfo *createInfo) {
         linkedRenderEngine = engineLink;
         #ifdef ILLUMINATION_ENGINE_VULKAN
         VkCommandPoolCreateInfo commandPoolCreateInfo{.sType=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, .flags=createInfo->flags, .queueFamilyIndex=linkedRenderEngine->device.get_queue_index(createInfo->commandQueue).value()};
-        if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) { linkedRenderEngine->log->log("failed to create IeCommandPool!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
+        if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) { linkedRenderEngine->log->log("failed to create IECommandPool!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
         created.commandPool = true;
         #endif
     }
@@ -89,7 +89,7 @@ public:
         #endif
     }
 
-    ~IeCommandPool() {
+    ~IECommandPool() {
         destroy();
     }
 };

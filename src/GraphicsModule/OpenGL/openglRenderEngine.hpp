@@ -145,13 +145,13 @@ public:
                 renderable->program.setValue("normalMatrix", glm::mat3(glm::transpose(glm::inverse(renderable->model))));
                 renderable->program.setValue("viewModelMatrix", camera.view * renderable->model);
                 renderable->program.setValue("modelMatrix", renderable->model);
-                renderable->program.setValue("diffuseTexture", 0);
-                renderable->program.setValue("emissionTexture", 1);
-                renderable->program.setValue("heightTexture", 2);
-                renderable->program.setValue("metallicTexture", 3);
-                renderable->program.setValue("normalTexture", 4);
-                renderable->program.setValue("roughnessTexture", 5);
-                renderable->program.setValue("specularTexture", 6);
+                renderable->program.setValue("diffuseTextureIndex", 0);
+                renderable->program.setValue("emissionTextureIndex", 1);
+                renderable->program.setValue("heightTextureIndex", 2);
+                renderable->program.setValue("metallicTextureIndex", 3);
+                renderable->program.setValue("normalTextureIndex", 4);
+                renderable->program.setValue("roughnessTextureIndex", 5);
+                renderable->program.setValue("specularTextureIndex", 6);
                 renderable->program.setValue("cameraPosition", camera.position);
                 for (const OpenGLRenderable::OpenGLMesh& mesh : renderable->meshes) {
                     glActiveTexture(GL_TEXTURE0);

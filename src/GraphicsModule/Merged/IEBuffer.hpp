@@ -2,15 +2,15 @@
 
 #include <variant>
 
-class IeImage;
+class IEImage;
 
 #ifndef ILLUMINATION_ENGINE_VULKAN
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkBuffer);
 #endif
 
-/**@todo: Implement something similar to what was done for the IeImage class for selection of properties.*/
+/**@todo: Implement something similar to what was done for the IEImage class for selection of properties.*/
 
-class IeBuffer {
+class IEBuffer {
 public:
     struct CreateInfo {
         //Only required for buffer
@@ -56,11 +56,11 @@ public:
     VkDeviceAddress deviceAddress{};
     VmaAllocation allocation{};
     #endif
-    IeRenderEngineLink *linkedRenderEngine{};
+    IERenderEngineLink *linkedRenderEngine{};
     CreateInfo createdWith{};
     Created created{};
 
-    virtual IeBuffer create(IeRenderEngineLink *engineLink, CreateInfo *createInfo) {
+    virtual IEBuffer create(IERenderEngineLink *engineLink, CreateInfo *createInfo) {
         linkedRenderEngine = engineLink;
         createdWith = *createInfo;
         #ifdef ILLUMINATION_ENGINE_VULKAN
@@ -85,9 +85,9 @@ public:
         return *this;
     }
 
-    virtual IeBuffer upload(void *data, uint32_t sizeOfData) {
-        if (!created.buffer) { linkedRenderEngine->log->log("Called IeBuffer::upload() on a IeBuffer that does not exist!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
-        if (sizeOfData > createdWith.bufferSize) { linkedRenderEngine->log->log("IeBuffer::CreateInfo::sizeOfData must not be greater than IeBuffer::CreateInfo::bufferSize.", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
+    virtual IEBuffer upload(void *data, uint32_t sizeOfData) {
+        if (!created.buffer) { linkedRenderEngine->log->log("Called IEBuffer::upload() on a IEBuffer that does not exist!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
+        if (sizeOfData > createdWith.bufferSize) { linkedRenderEngine->log->log("IEBuffer::CreateInfo::sizeOfData must not be greater than IEBuffer::CreateInfo::bufferSize.", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (linkedRenderEngine->api.name == "Vulkan") {
             vmaMapMemory(linkedRenderEngine->allocator, allocation, &bufferData);
@@ -109,12 +109,12 @@ public:
             linkedRenderEngine->log->log("Attempted to update a buffer that has not been created!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
         }
         if (data == nullptr) {
-            linkedRenderEngine->log->log("Attempted to update a buffer with data as nullptr!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+            linkedRenderEngine->log->log("Attempted to update a buffer with contentsString as nullptr!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
         }
         vkCmdUpdateBuffer(commandBuffer, std::get<VkBuffer>(buffer), startingPosition, sizeOfData, data);
     }
 
-    virtual void toImage(IeImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer);
+    virtual void toImage(IEImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer);
 
     void destroy() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
@@ -125,7 +125,7 @@ public:
         #endif
     }
 
-    ~IeBuffer() {
+    ~IEBuffer() {
         destroy();
     }
 };

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "IeImage.hpp"
+#include "IEImage.hpp"
 
-class IeTexture : public IeImage {
-    void create(IeRenderEngineLink *engineLink, CreateInfo * createInfo) override {
+class IETexture : public IEImage {
+    void create(IERenderEngineLink *engineLink, CreateInfo * createInfo) override {
         createdWith = *createInfo;
         linkedRenderEngine = engineLink;
         imageProperties.mipLevels = std::min(std::max(static_cast<uint32_t>(std::floor(std::log2(std::max(createdWith.width, createdWith.height)) + 1) * (imageProperties.filter & IE_IMAGE_FILTER_MIPMAP_ENABLED_BIT)), static_cast<uint32_t>(1)), linkedRenderEngine->settings.maxMipLevels);

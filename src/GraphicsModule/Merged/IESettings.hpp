@@ -38,7 +38,7 @@ public:
     IeVersion() = default;
 };
 
-struct IeSettings{
+struct IESettings{
 public:
     std::string applicationName{"Illumination Engine"};
     IeVersion applicationVersion{"0.0.0"};

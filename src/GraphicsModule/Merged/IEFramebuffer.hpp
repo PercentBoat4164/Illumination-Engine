@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include "IeImage.hpp"
-#include "IeRenderEngineLink.hpp"
-#include "IeRenderPass.hpp"
-#include "IeFramebufferAttachment.hpp"
+#include "IEImage.hpp"
+#include "IERenderEngineLink.hpp"
+#include "IERenderPass.hpp"
+#include "IEFramebufferAttachment.hpp"
 
 enum IeFramebufferAttachmentFormat {
     IE_FRAMEBUFFER_DEPTH_ATTACHMENT_FORMAT = VK_FORMAT_D32_SFLOAT_S8_UINT
@@ -17,17 +17,17 @@ struct IeRenderPassAttachmentDescription {
     std::vector<VkAttachmentDescription> resolve{};
 };
 
-class IeRenderPass;
+class IERenderPass;
 
-class IeFramebuffer {
+class IEFramebuffer {
 public:
     struct CreateInfo {
         IeFramebufferAspect aspects{IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR};
         uint8_t msaaSamples{1};
         VkImageView swapchainImageView;
         IeImageFormat format;
-        IeFramebuffer* dependentOn;
-        IeFramebuffer* requiredBy;
+        IEFramebuffer* dependentOn;
+        IEFramebuffer* requiredBy;
         uint32_t subpass{0};
         uint32_t colorImageCount{1};
     };
@@ -38,29 +38,29 @@ public:
 
     CreateInfo createdWith{};
     Created created{};
-    IeFramebufferAttachment depth{};
-    std::vector<IeFramebufferAttachment> colorAttachments{};
-    std::vector<IeFramebufferAttachment> resolveAttachments{};
+    IEFramebufferAttachment depth{};
+    std::vector<IEFramebufferAttachment> colorAttachments{};
+    std::vector<IEFramebufferAttachment> resolveAttachments{};
     std::vector<VkFramebuffer> framebuffers{};
     std::vector<VkClearValue> clearValues{3};
-    IeRenderEngineLink *linkedRenderEngine{};
+    IERenderEngineLink *linkedRenderEngine{};
 
 
 
-    void create(IeRenderEngineLink *engineLink, IeFramebuffer::CreateInfo *createInfo) {
+    void create(IERenderEngineLink *engineLink, IEFramebuffer::CreateInfo *createInfo) {
 
     }
 
-    void linkToRenderPass(IeRenderPass* renderPass) {
+    void linkToRenderPass(IERenderPass* renderPass) {
 
     }
 
     /**
-     * @brief Generates the necessary data to link this framebuffers to a renderpass.
+     * @brief Generates the necessary contentsString to link this framebuffers to a renderpass.
      * @param createInfo
      */
-    static IeRenderPassAttachmentDescription generateAttachmentDescriptions(IeRenderEngineLink* linkedRenderEngine, IeFramebuffer::CreateInfo* createInfo) {
-        IeRenderPassAttachmentDescription renderPassAttachmentDescription{}; // prepare result data
+    static IeRenderPassAttachmentDescription generateAttachmentDescriptions(IERenderEngineLink* linkedRenderEngine, IEFramebuffer::CreateInfo* createInfo) {
+        IeRenderPassAttachmentDescription renderPassAttachmentDescription{}; // prepare result contentsString
         if (createInfo->aspects & IE_FRAMEBUFFER_ASPECT_COLOR_BIT) {
             if (createInfo->colorImageCount == 0) {
                 linkedRenderEngine->log->log("Color bit set, but requested 0 color images. Creating one color image anyway.", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
@@ -74,6 +74,7 @@ public:
                     createInfo->colorImageCount,
                     VkAttachmentDescription{
                             .format=format->second.first,
+                            /**@todo Fix this so that it is not always one.*/
                             .samples=VK_SAMPLE_COUNT_1_BIT,//static_cast<VkSampleCountFlagBits>(createInfo->msaaSamples),
                             .loadOp=createInfo->dependentOn ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR,
                             .storeOp=createInfo->requiredBy ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
@@ -102,6 +103,7 @@ public:
         if (createInfo->aspects & IE_FRAMEBUFFER_ASPECT_DEPTH_BIT) {
             renderPassAttachmentDescription.depth = VkAttachmentDescription{
                     .format=static_cast<VkFormat>(IE_FRAMEBUFFER_DEPTH_ATTACHMENT_FORMAT),
+                    /**@todo Fix this so that it is not always one.*/
                     .samples=VK_SAMPLE_COUNT_1_BIT,//static_cast<VkSampleCountFlagBits>(createInfo->msaaSamples),
                     .loadOp=createInfo->dependentOn ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR,
                     .storeOp=createInfo->requiredBy ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
@@ -122,7 +124,7 @@ public:
         }
     }
 
-    ~IeFramebuffer() {
+    ~IEFramebuffer() {
         destroy();
     }
 };

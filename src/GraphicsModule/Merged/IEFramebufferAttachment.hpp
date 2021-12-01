@@ -1,4 +1,4 @@
-#include "IeImage.hpp"
+#include "IEImage.hpp"
 
 enum IeFramebufferAspect {
     IE_FRAMEBUFFER_ASPECT_DEPTH_BIT = 0b01,
@@ -15,14 +15,14 @@ const static std::unordered_multimap<IeFramebufferAspect, std::pair<VkImageAspec
         {IE_FRAMEBUFFER_ASPECT_COLOR_ONLY,              {VK_IMAGE_ASPECT_COLOR_BIT,              GL_COLOR}},
 };
 
-class IeFramebufferAttachment : public IeImage{
+class IEFramebufferAttachment : public IEImage{
 public:
     struct CreateInfo {
         uint32_t colorImageCount{};
         IeImageFormat format{};
         uint8_t msaaSamples{};
-        IeFramebufferAttachment* dependentOn{};
-        IeFramebufferAttachment* requiredBy{};
+        IEFramebufferAttachment* dependentOn{};
+        IEFramebufferAttachment* requiredBy{};
     };
 
     CreateInfo createdWith{};

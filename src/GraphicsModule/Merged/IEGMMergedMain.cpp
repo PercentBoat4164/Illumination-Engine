@@ -1,4 +1,4 @@
-#include "IeRenderEngine.hpp"
+#include "IERenderEngine.hpp"
 
 #include <iostream>
 
@@ -26,8 +26,9 @@ int main(int argc, char **argv) {
     log.create("IE");
     log.addModule("IEGMMergedMain");
     log.log("Choosing " + input + " API", log4cplus::INFO_LOG_LEVEL, "IEGMMergedMain");
-    IeRenderEngine renderEngine{input, &log};
+    IERenderEngine renderEngine{input, &log};
     renderEngine.create();
-    renderEngine.closeWindow();
-    glfwPollEvents();
+    while (renderEngine.update()) {
+        glfwPollEvents();
+    }
 }

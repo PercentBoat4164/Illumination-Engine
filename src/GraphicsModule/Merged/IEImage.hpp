@@ -5,7 +5,7 @@
 #include <stb_image.h>
 #endif
 
-#include "IeBuffer.hpp"
+#include "IEBuffer.hpp"
 
 #include <error.h>
 
@@ -171,7 +171,7 @@ const static std::unordered_multimap<IeImageLayout, std::pair<uint32_t , uint32_
 #endif
 #endif
 
-class IeImage {
+class IEImage {
 public:
     struct Properties {
     public:
@@ -204,7 +204,7 @@ public:
         std::string data{};
 
         //Optional - Only has an effect when using the Vulkan API.
-        IeBuffer *dataSource{};
+        IEBuffer *dataSource{};
     };
 
     struct Created {
@@ -220,16 +220,16 @@ public:
     VmaAllocation allocation{};
     #endif
     CreateInfo createdWith{};
-    IeCommandPool *commandPool{};
+    IECommandPool *commandPool{};
     uint32_t commandBufferIndex{};
-    IeRenderEngineLink *linkedRenderEngine{};
+    IERenderEngineLink *linkedRenderEngine{};
     std::variant<VkImage, uint32_t> image{};
     Created created{};
     Properties imageProperties{};
     bool preDesignedImage{};
 
 
-    virtual void create(IeRenderEngineLink *engineLink, CreateInfo *createInfo) {
+    virtual void create(IERenderEngineLink *engineLink, CreateInfo *createInfo) {
         createdWith = *createInfo;
         linkedRenderEngine = engineLink;
         imageProperties.mipLevels = std::min(std::max(static_cast<uint32_t>(std::floor(std::log2(std::max(createdWith.width, createdWith.height)) + 1) * (imageProperties.filter & IE_IMAGE_FILTER_MIPMAP_ENABLED_BIT)), static_cast<uint32_t>(1)), linkedRenderEngine->settings.maxMipLevels);
@@ -388,7 +388,7 @@ public:
         created.loaded = true;
     }
 
-    virtual void toBuffer(const IeBuffer* buffer, VkCommandBuffer commandBuffer) {
+    virtual void toBuffer(const IEBuffer* buffer, VkCommandBuffer commandBuffer) {
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
@@ -413,22 +413,22 @@ public:
         created.image = false;
     }
 
-    ~IeImage() {
+    ~IEImage() {
         destroy();
     }
 };
 
-void IeBuffer::toImage(IeImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer) {
+void IEBuffer::toImage(IEImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer) {
     if (!created.buffer) {
-        linkedRenderEngine->log->log("Called IeBuffer::toImage() on a IeBuffer that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+        linkedRenderEngine->log->log("Called IEBuffer::toImage() on a IEBuffer that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
     }
     if (image == nullptr) {
-        linkedRenderEngine->log->log("Called IeBuffer::toImage() with an IeImage that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+        linkedRenderEngine->log->log("Called IEBuffer::toImage() with an IEImage that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
     }
     if (!image->created.image) {
-        linkedRenderEngine->log->log("Called IeBuffer::toImage() with an IeImage that has not been created!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
-        IeImage::CreateInfo imageCreateInfo{
-                .properties=IeImage::Properties {
+        linkedRenderEngine->log->log("Called IEBuffer::toImage() with an IEImage that has not been created!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+        IEImage::CreateInfo imageCreateInfo{
+                .properties=IEImage::Properties {
                         .layout=IE_IMAGE_LAYOUT_DESTINATION,
                         .width=width,
                         .height=height,

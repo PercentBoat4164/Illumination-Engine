@@ -1,22 +1,22 @@
 #pragma once
 
-#include "IeRenderEngineLink.hpp"
-#include "IeFramebuffer.hpp"
+#include "IERenderEngineLink.hpp"
+#include "IEFramebuffer.hpp"
 
 #include <vector>
 
-class IeRenderPass {
+class IERenderPass {
 public:
     struct CreateInfo {
     public:
-        std::vector<IeFramebuffer::CreateInfo> framebufferCreateInfos{};
+        std::vector<IEFramebuffer::CreateInfo> framebufferCreateInfos{};
     };
 
     VkRenderPass renderPass{};
     CreateInfo createdWith{};
-    IeRenderEngineLink *linkedRenderEngine{};
+    IERenderEngineLink *linkedRenderEngine{};
 
-    void create(IeRenderEngineLink* engineLink, CreateInfo* createInfo) {
+    void create(IERenderEngineLink* engineLink, CreateInfo* createInfo) {
         linkedRenderEngine = engineLink;
         createdWith = *createInfo;
         uint32_t framebufferCount = createdWith.framebufferCreateInfos.size();
@@ -31,7 +31,8 @@ public:
         std::vector<VkAttachmentReference*> resolveAttachmentReferences{};
         uint32_t attachmentCount{};
         for (uint32_t i = 0; i < framebufferCount; ++i) {
-            framebufferAttachmentDescription = IeFramebuffer::generateAttachmentDescriptions(linkedRenderEngine, &createdWith.framebufferCreateInfos[i]);
+            /**@todo: Create and use the framebuffer attachment class.*/
+            framebufferAttachmentDescription = IEFramebuffer::generateAttachmentDescriptions(linkedRenderEngine, &createdWith.framebufferCreateInfos[i]);
             depthAttachmentReferences.push_back(&attachmentReferences[attachmentCount]);
             attachmentReferences[attachmentCount] = {
                     .attachment=attachmentCount++,
@@ -76,7 +77,7 @@ public:
         vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr);
     }
 
-    ~IeRenderPass() {
+    ~IERenderPass() {
         destroy();
     }
 
@@ -98,7 +99,7 @@ private:
         }
     };
 
-    static bool attachmentSubpassIsGreater(IeFramebuffer::CreateInfo first, IeFramebuffer::CreateInfo second) {
+    static bool attachmentSubpassIsGreater(IEFramebuffer::CreateInfo first, IEFramebuffer::CreateInfo second) {
         return first.subpass > second.subpass;
     }
 };

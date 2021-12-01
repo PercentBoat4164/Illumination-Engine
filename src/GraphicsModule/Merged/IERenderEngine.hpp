@@ -1,13 +1,14 @@
 #pragma once
 
 #include "LogModule/Log.hpp"
-#include "IeRenderEngineLink.hpp"
-#include "IeCommandPool.hpp"
-#include "IeBuffer.hpp"
-#include "IeImage.hpp"
-#include "IeTexture.hpp"
-#include "IeShader.hpp"
-#include "IeRenderPass.hpp"
+#include "IERenderEngineLink.hpp"
+#include "IECommandPool.hpp"
+#include "IEBuffer.hpp"
+#include "IEImage.hpp"
+#include "IETexture.hpp"
+#include "IEShader.hpp"
+#include "IERenderPass.hpp"
+#include "IERenderable.hpp"
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -19,23 +20,25 @@
 #include <VkBootstrap.h>
 #endif
 
-class IeRenderEngine {
+class IERenderEngine {
 public:
-    IeRenderEngineLink renderEngineLink;
+    IERenderEngineLink renderEngineLink;
 
     std::vector<VkFence> inFlightFences{};
     std::vector<VkFence> imagesInFlight{};
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
-    IeRenderPass renderPass{};
-    std::vector<IeFramebuffer> framebuffers{};
+    IERenderPass renderPass{};
+    std::vector<IEFramebuffer> framebuffers{};
+    std::vector<IEImage> textures{};
 
-    explicit IeRenderEngine(const std::string& API, Log *pLog) {
+    explicit IERenderEngine(const std::string& API, Log *pLog) {
         renderEngineLink.log = pLog;
         renderEngineLink.log->addModule("Graphics module");
         renderEngineLink.log->log("Creating window", log4cplus::INFO_LOG_LEVEL, "Graphics module");
         renderEngineLink.api.name = API;
         renderEngineLink.log = pLog;
+        renderEngineLink.textures = &textures;
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") {
             renderEngineLink.api.getVersion();
@@ -220,6 +223,10 @@ public:
         handleWindowSizeChange();
     }
 
+    bool update() const {
+        return !glfwWindowShouldClose(renderEngineLink.window);
+    }
+
     //*@todo Update VMA and VkBootstrap on next opportunity as these libraries may be causing the unreliable program execution.
     void handleWindowSizeChange() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
@@ -237,8 +244,8 @@ public:
             renderEngineLink.swapchain = swapchainBuilderResults.value();
             renderEngineLink.created.swapchain = true;
             renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
-            // Generate Framebuffer data.
-            std::vector<IeFramebuffer::CreateInfo> framebufferCreateInfos{renderEngineLink.swapchain.image_count};
+            // Generate Framebuffer contentsString.
+            std::vector<IEFramebuffer::CreateInfo> framebufferCreateInfos{renderEngineLink.swapchain.image_count};
             for (uint32_t i = 0; i < framebufferCreateInfos.size(); ++i) {
                 framebufferCreateInfos[i] = {
                         .aspects=IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR,
@@ -248,7 +255,7 @@ public:
                         .subpass=1
                 };
             }
-            IeRenderPass::CreateInfo renderPassCreateInfo{.framebufferCreateInfos=framebufferCreateInfos};
+            IERenderPass::CreateInfo renderPassCreateInfo{.framebufferCreateInfos=framebufferCreateInfos};
             renderPass.create(&renderEngineLink, &renderPassCreateInfo);
             framebuffers.resize(framebufferCreateInfos.size());
             for (uint32_t i = 0; i < framebuffers.size(); ++i) {
@@ -269,7 +276,7 @@ public:
             glFinish();
         }
         renderEngineLink.destroy();
-        renderEngineLink = IeRenderEngineLink{};
+        renderEngineLink = IERenderEngineLink{};
         renderEngineLink.api.name = API;
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink.api.name == "Vulkan") {
@@ -298,7 +305,7 @@ public:
         glfwTerminate();
     }
 
-    ~IeRenderEngine() {
+    ~IERenderEngine() {
         destroy();
     }
 
@@ -312,7 +319,7 @@ private:
         switch (source) {
             case GL_DEBUG_SOURCE_API:               sourceText = "IeAPI"; break;
             case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     sourceText = "Window System"; break;
-            case GL_DEBUG_SOURCE_SHADER_COMPILER:   sourceText = "IeShader Compiler"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:   sourceText = "IEShader Compiler"; break;
             case GL_DEBUG_SOURCE_THIRD_PARTY:       sourceText = "Third Party"; break;
             case GL_DEBUG_SOURCE_APPLICATION:       sourceText = "Application"; break;
             case GL_DEBUG_SOURCE_OTHER:             sourceText = "Other"; break;
@@ -337,13 +344,13 @@ private:
             case GL_DEBUG_SEVERITY_NOTIFICATION:    severityText = "Notification"; break;
             default:                                severityText = "Unknown"; break;
         }
-        auto renderEngineLink = static_cast<IeRenderEngineLink *>(const_cast<void *>(userParam));
+        auto renderEngineLink = static_cast<IERenderEngineLink *>(const_cast<void *>(userParam));
         renderEngineLink->log->log("OpenGL Error: " + sourceText + " produced a" + static_cast<std::string>(static_cast<std::string>("aeiouAEIOU").find(typeText[0]) ? "n " : " ") + typeText + " of " + severityText + " severity level which says: " + message, severity == (GL_DEBUG_SEVERITY_HIGH | GL_DEBUG_SEVERITY_MEDIUM) ? log4cplus::DEBUG_LOG_LEVEL : severity == (GL_DEBUG_SEVERITY_LOW) ? log4cplus::WARN_LOG_LEVEL : log4cplus::INFO_LOG_LEVEL, "Graphics Module");
         #endif
     }
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int32_t width, int32_t height) {
-        auto renderEngine = (IeRenderEngine *)glfwGetWindowUserPointer(pWindow);
+        auto renderEngine = (IERenderEngine *)glfwGetWindowUserPointer(pWindow);
         renderEngine->renderEngineLink.settings.resolution[0] = width;
         renderEngine->renderEngineLink.settings.resolution[1] = height;
         renderEngine->handleWindowSizeChange();

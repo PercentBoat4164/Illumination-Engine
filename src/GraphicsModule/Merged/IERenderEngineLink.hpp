@@ -23,10 +23,12 @@
 
 #include <GLFW/glfw3.h>
 
-#include "IeSettings.hpp"
+#include "IESettings.hpp"
 #include "LogModule/Log.hpp"
 
-class IeRenderEngineLink{
+class IEImage;
+
+class IERenderEngineLink{
 public:
     class IeAPI{
     public:
@@ -225,10 +227,11 @@ public:
     IeAPI api;
     Log *log;
     IePhysicalDevice physicalDevice;
-    IeSettings settings;
+    IESettings settings;
     GLFWwindow *window{};
     bool framebufferResized{false};
     Created created{};
+    std::vector<IEImage>* textures{};
     #ifdef ILLUMINATION_ENGINE_VULKAN
     vkb::Device device{};
     vkb::Instance instance{};
@@ -278,7 +281,7 @@ public:
         #endif
     }
 
-    ~IeRenderEngineLink() {
+    ~IERenderEngineLink() {
         destroy();
     }
 };

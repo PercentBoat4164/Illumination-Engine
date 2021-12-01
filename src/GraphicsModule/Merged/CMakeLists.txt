@@ -1,19 +1,19 @@
 set(IEGraphicsModuleMergedSourceFiles
-        IeBuffer.hpp
-        IeCamera.hpp
-        IeCommandPool.hpp
-        IeDescriptorSet.hpp
-        IeFramebuffer.hpp
-        IeImage.hpp
-        IePipeline.hpp
-        IeRenderEngine.hpp
-        IeRenderable.hpp
-        IeRenderEngineLink.hpp
-        IeRenderPass.hpp
-        IeSettings.hpp
-        IeShader.hpp
-        IeTexture.hpp
-        IEGMMergedMain.cpp IeFramebufferAttachment.hpp)
+        IEBuffer.hpp
+        IECamera.hpp
+        IECommandPool.hpp
+        IEDescriptorSet.hpp
+        IEFramebuffer.hpp
+        IEImage.hpp
+        IEPipeline.hpp
+        IERenderEngine.hpp
+        IERenderable.hpp
+        IERenderEngineLink.hpp
+        IERenderPass.hpp
+        IESettings.hpp
+        IEShader.hpp
+        IETexture.hpp
+        IEGMMergedMain.cpp IEFramebufferAttachment.hpp)
 add_executable(IEGraphicsModuleMerged ${IEGraphicsModuleMergedSourceFiles})
 set_target_properties(IEGraphicsModuleMerged PROPERTIES LINKER_LANGUAGE CXX)
 add_dependencies(IEGraphicsModuleMerged IELogModule)

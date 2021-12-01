@@ -52,7 +52,7 @@ public:
     std::vector<const char *> shaderNames{"shaders/Vulkan/*/vertexShader.vert", "shaders/Vulkan/*/fragmentShader.frag"};
     const char *modelName{};
 
-    explicit VulkanRenderable(VulkanGraphicsEngineLink *engineLink, const char *filePath) {
+    VulkanRenderable(VulkanGraphicsEngineLink *engineLink, const char *filePath) {
         linkedRenderEngine = engineLink;
         modelName = filePath;
         int channels{};
