@@ -95,7 +95,6 @@ public:
         uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
         uniformBufferObject.position = camera.position;
         uniformBufferObject.time = time;
-        modelBuffer.uploadData(&uniformBufferObject, sizeof(uniformBufferObject));
         if (linkedRenderEngine->settings->rayTracing) {
             for (VulkanMesh &mesh : meshes) {
                 mesh.transformationMatrix = {
@@ -115,6 +114,7 @@ public:
                 mesh.bottomLevelAccelerationStructure.create(linkedRenderEngine, &renderableBottomLevelAccelerationStructureCreateInfo);
             }
         }
+        modelBuffer.uploadData(&uniformBufferObject, sizeof(uniformBufferObject));
     }
 
     std::deque<std::function<void(VulkanRenderable *renderable)>> deletionQueue{};
