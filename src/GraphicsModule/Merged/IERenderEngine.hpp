@@ -20,6 +20,14 @@
 #include <VkBootstrap.h>
 #endif
 
+#ifdef ILLUMINATION_ENGINE_OPENGL
+#ifndef GLEW_IMPLEMENTATION
+#define GLEW_IMPLEMENTATION
+#include <GL/glew.h>
+#endif
+#endif
+#include "GLFW/glfw3.h"
+
 class IERenderEngine {
 public:
     IERenderEngineLink renderEngineLink;
@@ -40,7 +48,7 @@ public:
         renderEngineLink.log = pLog;
         renderEngineLink.textures = &textures;
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == "Vulkan") {
+        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             renderEngineLink.api.getVersion();
             vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
             vkb::InstanceBuilder builder;
@@ -51,7 +59,7 @@ public:
             #endif
             vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
             if (!instanceBuilder) {
-                renderEngineLink.log->log("failed to create Vulkan instance: " + instanceBuilder.error().message() + "\n", log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
+                renderEngineLink.log->log("failed to create Vulkan instance: " + instanceBuilder.error().message() + "\n", log4cplus::ERROR_LOG_LEVEL, "Graphics module");
             }
             renderEngineLink.instance = instanceBuilder.value();
             renderEngineLink.created.instance = true;
@@ -64,10 +72,10 @@ public:
     void create() {
         renderEngineLink.log->log("Initializing " + renderEngineLink.api.name + " API", log4cplus::INFO_LOG_LEVEL, "Graphics module");
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == "Vulkan") { glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); }
+        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) { glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (renderEngineLink.api.name == "OpenGL") {
+        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             #ifdef __APPLE__
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
             #endif
@@ -101,7 +109,7 @@ public:
         glfwSetWindowUserPointer(renderEngineLink.window, this);
         glfwSetFramebufferSizeCallback(renderEngineLink.window, framebufferResizeCallback);
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == "Vulkan") {
+        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             if (glfwCreateWindowSurface(renderEngineLink.instance.instance, renderEngineLink.window, nullptr, &renderEngineLink.surface) != VK_SUCCESS) {
                 renderEngineLink.log->log("failed to create window surface", log4cplus::ERROR_LOG_LEVEL, "Graphics module");
             }
@@ -193,7 +201,7 @@ public:
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (renderEngineLink.api.name == "OpenGL") {
+        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             glewInit();
             #if defined(_WIN32)
             glfwSwapInterval(settings.vSync ? 1 : 0);
@@ -230,7 +238,7 @@ public:
     //*@todo Update VMA and VkBootstrap on next opportunity as these libraries may be causing the unreliable program execution.
     void handleWindowSizeChange() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == "Vulkan") {
+        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             vkDeviceWaitIdle(renderEngineLink.device.device);
             // clear recreation deletion queue
             vkb::SwapchainBuilder swapchainBuilder{renderEngineLink.device};
@@ -265,31 +273,37 @@ public:
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (renderEngineLink.api.name == "OpenGL") {
+        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 
         }
         #endif
     }
 
     void changeAPI(const std::string& API) {
-        if (renderEngineLink.api.name == "OpenGL") {
+        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             glFinish();
         }
         renderEngineLink.destroy();
         renderEngineLink = IERenderEngineLink{};
         renderEngineLink.api.name = API;
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == "Vulkan") {
+        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             renderEngineLink.api.getVersion();
             vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
             vkb::InstanceBuilder builder;
             builder.set_app_name(renderEngineLink.settings.applicationName.c_str()).set_app_version(renderEngineLink.settings.applicationVersion.major, renderEngineLink.settings.applicationVersion.minor, renderEngineLink.settings.applicationVersion.patch).require_api_version(1, 1, 0);
             #ifndef NDEBUG
-            if (systemInfo->validation_layers_available) { builder.request_validation_layers(); }
-            if (systemInfo->debug_utils_available) { builder.use_default_debug_messenger(); }
+            if (systemInfo->validation_layers_available) {
+                builder.request_validation_layers();
+            }
+            if (systemInfo->debug_utils_available) {
+                builder.use_default_debug_messenger();
+            }
             #endif
             vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
-            if (!instanceBuilder) { renderEngineLink.log->log(instanceBuilder.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            if (!instanceBuilder) {
+                renderEngineLink.log->log(instanceBuilder.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
+            }
             renderEngineLink.instance = instanceBuilder.value();
         }
         #endif

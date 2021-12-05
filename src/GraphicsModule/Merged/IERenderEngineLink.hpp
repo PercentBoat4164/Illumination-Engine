@@ -1,9 +1,10 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include "IESettings.hpp"
+#include "LogModule/Log.hpp"
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
+
 #include <vulkan/vulkan.h>
 #include <VkBootstrap.h>
 
@@ -12,6 +13,7 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 #endif
+
 #endif
 
 #ifdef ILLUMINATION_ENGINE_OPENGL
@@ -23,8 +25,11 @@
 
 #include <GLFW/glfw3.h>
 
-#include "IESettings.hpp"
-#include "LogModule/Log.hpp"
+#include <string>
+#include <vector>
+
+#define IE_RENDER_ENGINE_API_NAME_VULKAN "Vulkan"
+#define IE_RENDER_ENGINE_API_NAME_OPENGL "OpenGL"
 
 class IEImage;
 
@@ -32,48 +37,55 @@ class IERenderEngineLink{
 public:
     class IeAPI{
     public:
-        std::string name{"OpenGL"};
-        IeVersion version;
+        std::string name{IE_RENDER_ENGINE_API_NAME_OPENGL};
+        IEVersion version;
 
-        IeVersion getVersion() {
+        IEVersion getVersion() {
             #ifdef ILLUMINATION_ENGINE_VULKAN
-            if (name == "Vulkan") {
+            if (name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
                 auto vkEnumerateDeviceInstanceVersion = reinterpret_cast<PFN_vkEnumerateInstanceVersion>(vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
-                if (vkEnumerateDeviceInstanceVersion == nullptr) { version = IeVersion{"1.0.0"}; } else {
+                if (vkEnumerateDeviceInstanceVersion == nullptr) { version = IEVersion{"1.0.0"}; } else {
                     uint32_t instanceVersion;
                     vkEnumerateDeviceInstanceVersion(&instanceVersion);
-                    version = IeVersion{VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion)};
+                    version = IEVersion{VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion)};
+                    version.number = instanceVersion;
                 }
             }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
-            if (name == "OpenGL") {
-                if (GLEW_VERSION_1_1) { version = IeVersion{"1.1.0"}; }
-                if (GLEW_VERSION_1_2) { version = IeVersion{"1.2.0"}; }
-                if (GLEW_VERSION_1_2_1) { version = IeVersion{"1.2.1"}; }
-                if (GLEW_VERSION_1_3) { version = IeVersion{"1.3.0"}; }
-                if (GLEW_VERSION_1_4) { version = IeVersion{"1.4.0"}; }
-                if (GLEW_VERSION_1_5) { version = IeVersion{"1.5.0"}; }
-                if (GLEW_VERSION_2_0) { version = IeVersion{"2.0.0"}; }
-                if (GLEW_VERSION_2_1) { version = IeVersion{"2.1.0"}; }
-                if (GLEW_VERSION_3_0) { version = IeVersion{"3.0.0"}; }
-                if (GLEW_VERSION_3_1) { version = IeVersion{"3.1.0"}; }
-                if (GLEW_VERSION_3_2) { version = IeVersion{"3.2.0"}; }
-                if (GLEW_VERSION_3_3) { version = IeVersion{"3.3.0"}; }
-                if (GLEW_VERSION_4_0) { version = IeVersion{"4.0.0"}; }
-                if (GLEW_VERSION_4_1) { version = IeVersion{"4.1.0"}; }
-                if (GLEW_VERSION_4_2) { version = IeVersion{"4.2.0"}; }
-                if (GLEW_VERSION_4_3) { version = IeVersion{"4.3.0"}; }
-                if (GLEW_VERSION_4_4) { version = IeVersion{"4.4.0"}; }
-                if (GLEW_VERSION_4_5) { version = IeVersion{"4.5.0"}; }
-                if (GLEW_VERSION_4_6) { version = IeVersion{"4.6.0"}; }
+            if (name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+                if (GLEW_VERSION_1_1) { version = IEVersion{"1.1.0"}; }
+                if (GLEW_VERSION_1_2) { version = IEVersion{"1.2.0"}; }
+                if (GLEW_VERSION_1_2_1) { version = IEVersion{"1.2.1"}; }
+                if (GLEW_VERSION_1_3) { version = IEVersion{"1.3.0"}; }
+                if (GLEW_VERSION_1_4) { version = IEVersion{"1.4.0"}; }
+                if (GLEW_VERSION_1_5) { version = IEVersion{"1.5.0"}; }
+                if (GLEW_VERSION_2_0) { version = IEVersion{"2.0.0"}; }
+                if (GLEW_VERSION_2_1) { version = IEVersion{"2.1.0"}; }
+                if (GLEW_VERSION_3_0) { version = IEVersion{"3.0.0"}; }
+                if (GLEW_VERSION_3_1) { version = IEVersion{"3.1.0"}; }
+                if (GLEW_VERSION_3_2) { version = IEVersion{"3.2.0"}; }
+                if (GLEW_VERSION_3_3) { version = IEVersion{"3.3.0"}; }
+                if (GLEW_VERSION_4_0) { version = IEVersion{"4.0.0"}; }
+                if (GLEW_VERSION_4_1) { version = IEVersion{"4.1.0"}; }
+                if (GLEW_VERSION_4_2) { version = IEVersion{"4.2.0"}; }
+                if (GLEW_VERSION_4_3) { version = IEVersion{"4.3.0"}; }
+                if (GLEW_VERSION_4_4) { version = IEVersion{"4.4.0"}; }
+                if (GLEW_VERSION_4_5) { version = IEVersion{"4.5.0"}; }
+                if (GLEW_VERSION_4_6) { version = IEVersion{"4.6.0"}; }
                 if (version.name == "0.0.0") {
                     glfwInit();
                     GLFWwindow *temporaryWindow = glfwCreateWindow(1, 1, "Gathering OpenGL Data...", nullptr, nullptr);
                     glfwMakeContextCurrent(temporaryWindow);
-                    version = IeVersion{std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)))};
+                    version = IEVersion{std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)))};
                     glfwDestroyWindow(temporaryWindow);
                     glfwTerminate();
+                }
+                for (char character : version.name) {
+                    if (character != '.') {
+                        version.number *= 10;
+                        version.number += std::stoi(std::string{character});
+                    }
                 }
             }
             #endif
@@ -120,15 +132,15 @@ public:
 
             Info generateInfo() {
             #ifdef ILLUMINATION_ENGINE_VULKAN
-                if (api->name == "Vulkan") {
-                    api->version = IeVersion{VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion), VK_VERSION_PATCH(properties.apiVersion)};
+                if (api->name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+                    api->version = IEVersion{VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion), VK_VERSION_PATCH(properties.apiVersion)};
                     vendor = std::to_string(properties.vendorID);
                     name = properties.deviceName;
                     name = name.substr(name.find_first_of(' ') + 1, name.length() - name.find_first_of(' ') - 1);
                 }
                 #endif
                 #ifdef ILLUMINATION_ENGINE_OPENGL
-                if (api->name == "OpenGL") {
+                if (api->name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
                     vendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
                     name = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
                     name = name.substr(name.find_first_of(' ') + 1, name.find_first_of('/') - name.find_first_of(' ') - 1);
@@ -192,10 +204,10 @@ public:
 
         [[nodiscard]] inline bool all(const IeAPI& newAPI) const {
             #ifdef ILLUMINATION_ENGINE_VULKAN
-            if (newAPI.name == "Vulkan") { return glfw & window & renderEngineLink & instance & device & surface & swapchain & allocator; }
+            if (newAPI.name == IE_RENDER_ENGINE_API_NAME_VULKAN) { return glfw & window & renderEngineLink & instance & device & surface & swapchain & allocator; }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
-            if (newAPI.name == "OpenGL") { return glfw & window & renderEngineLink & glew; }
+            if (newAPI.name == IE_RENDER_ENGINE_API_NAME_OPENGL) { return glfw & window & renderEngineLink & glew; }
             #endif
             return true;
         }
@@ -203,8 +215,9 @@ public:
 
     void create() {
         physicalDevice.info.api = &api;
+        api.getVersion();
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (api.name == "Vulkan") {
+        if (api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(vkGetDeviceProcAddr(device.device, "vkGetBufferDeviceAddressKHR"));
             vkCmdBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkCmdBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device.device, "vkCmdBuildAccelerationStructuresKHR"));
             vkCreateAccelerationStructureKHR = reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(vkGetDeviceProcAddr(device.device, "vkCreateAccelerationStructureKHR"));
@@ -250,7 +263,7 @@ public:
 
     void destroy() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (api.name == "Vulkan") {
+        if (api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             if (created.swapchain) {
                 swapchain.destroy_image_views(swapchainImageViews);
                 vkb::destroy_swapchain(swapchain);
@@ -275,7 +288,7 @@ public:
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (api.name == "OpenGL") {
+        if (api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             glFinish();
         }
         #endif
