@@ -13,7 +13,7 @@ set(IEGraphicsModuleMergedSourceFiles
         IESettings.hpp
         IEShader.hpp
         IETexture.hpp
-        IEGMMergedMain.cpp IEFramebufferAttachment.hpp)
+        IEGMMergedMain.cpp IEFramebufferAttachment.hpp IEVertex.hpp IEMesh.hpp IEVersion.hpp)
 add_executable(IEGraphicsModuleMerged ${IEGraphicsModuleMergedSourceFiles})
 set_target_properties(IEGraphicsModuleMerged PROPERTIES LINKER_LANGUAGE CXX)
 add_dependencies(IEGraphicsModuleMerged IELogModule)

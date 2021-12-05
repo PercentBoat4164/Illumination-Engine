@@ -265,7 +265,7 @@ public:
             imageProperties = std::get<Properties>(createdWith.properties);
         }
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (linkedRenderEngine->api.name == "OpenGL") {
+        if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             glGenTextures(1, &std::get<uint32_t>(image));
             imageProperties.type = createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
             created.image = true;
@@ -335,14 +335,14 @@ public:
         if (created.loaded) {
             stbi_image_free(const_cast<char *>(createdWith.data.c_str())); //*@todo Use a different casting method here.
             #ifdef ILLUMINATION_ENGINE_VULKAN
-            if (linkedRenderEngine->api.name == "Vulkan") {
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
                 linkedRenderEngine->log->log("Freed image bufferData for image at " + std::to_string(reinterpret_cast<uint64_t>(&std::get<VkImage>(image))), log4cplus::INFO_LOG_LEVEL, "Graphics Module");
                 if (created.view) { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr); }
                 if (created.image) { vmaDestroyImage(linkedRenderEngine->allocator, std::get<VkImage>(image), allocation); }
             }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
-            if (linkedRenderEngine->api.name == "OpenGL") {
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
                 linkedRenderEngine->log->log("Freed image bufferData for image " + std::to_string(std::get<uint32_t>(image)), log4cplus::INFO_LOG_LEVEL, "Graphics Module");
             }
             #endif
@@ -352,7 +352,7 @@ public:
 
     virtual void upload() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (linkedRenderEngine->api.name == "Vulkan") {
+        if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             VkImageSubresourceRange subresourceRange{.aspectMask=preDesignedImage ? std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_DEPTH_IMAGE ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_COLOR_BIT, .baseMipLevel=0, .levelCount=1, .baseArrayLayer=0, .layerCount=1};
             VkImageViewCreateInfo imageViewCreateInfo{.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, .viewType=VK_IMAGE_VIEW_TYPE_2D, .format=static_cast<VkFormat>(imageProperties.format), .subresourceRange=subresourceRange};
             VmaAllocationCreateInfo allocationCreateInfo{.usage=static_cast<VmaMemoryUsage>(imageProperties.memoryUsage)};
@@ -372,7 +372,7 @@ public:
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (linkedRenderEngine->api.name == "OpenGL") {
+        if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             glBindTexture(imageProperties.type, std::get<uint32_t>(image));
             glTexParameteri(imageProperties.type, GL_TEXTURE_WRAP_S, static_cast<int>(ieImageTilings.find(imageProperties.tiling)->second.second));
             glTexParameteri(imageProperties.type, GL_TEXTURE_WRAP_T, static_cast<int>(ieImageTilings.find(imageProperties.tiling)->second.second));
@@ -441,7 +441,7 @@ void IEBuffer::toImage(IEImage* image, uint16_t width, uint16_t height, VkComman
     }
     else {
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (linkedRenderEngine->api.name == "Vulkan") {
+        if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             auto oldLayout = static_cast<VkImageLayout>(image->imageProperties.layout);
             VkBufferImageCopy region{};
             region.imageSubresource.aspectMask = oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || oldLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
