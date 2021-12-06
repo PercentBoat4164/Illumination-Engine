@@ -1,13 +1,11 @@
-#include "Log.hpp"
-
+#include "IELogger.hpp"
 
 /*
  * Any code for testing the log module goes here.
  */
 int main(int argc, char **argv) {
-    Log log;
-    log.create("TestLog");
-    log.addModule("LogModule");
-    log.log("TESTING>>>> It works if you can read this.", log4cplus::INFO_LOG_LEVEL, "LogModule");
-    log.cleanLogFiles();
+    IELogger logger{"IEGM"};
+    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_TRACE, "This line tests the static function call.");
+    logger.logAll(ILLUMINATION_ENGINE_LOG_LEVEL_0, "This line tests the static function call from an object.");
+    logger(spdlog::level::trace, "This line tests the operator overload.");
 }

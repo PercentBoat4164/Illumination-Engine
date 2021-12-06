@@ -1,6 +1,6 @@
 set(IELogModuleSourceFiles
-        Log.hpp
+        IELogger.hpp
         IELogModuleMain.cpp)
 add_executable(IELogModule ${IELogModuleSourceFiles})
 set_target_properties(IELogModule PROPERTIES LINKER_LANGUAGE CXX)
-addLog4cplus(IELogModule)
+addSpdlog(IELogModule)

@@ -9,7 +9,7 @@ target_include_directories(IlluminationEngine PUBLIC ${ILLUMINATION_ENGINE_BASE_
 addAssImp(IlluminationEngine)
 addGLEW(IlluminationEngine)
 addGLM(IlluminationEngine)
-addLog4cplus(IlluminationEngine)
+addSpdlog(IlluminationEngine)
 addVulkan(IlluminationEngine)
 addGLFW(IlluminationEngine)
 file(REMOVE ${CMAKE_BINARY_DIR}/VulkanFOUND)
