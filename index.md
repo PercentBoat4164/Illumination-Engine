@@ -48,8 +48,6 @@ import the CMake projects. Make sure that the configuration is set to build the 
 your c++ compiler location is set, and your GCC 11 compatible compiler must be set. Finally, click the run button, and CLion should compile and run
 the project.
 
-#### - VSCode
-
 ### Terminal Instructions
 
 #### - Linux
