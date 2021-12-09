@@ -1,4 +1,6 @@
+#ifdef ILLUMINATION_ENGINE_VULKAN
 #include "vulkanRenderEngine.hpp"
+#endif
 
 #include <iostream>
 
@@ -6,6 +8,7 @@
  * Any code for testing Vulkan goes here.
  */
 int main(int argc, char **argv) {
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     bool force{false};
     if (argc > 1) {
         if (*(argv[1]) == 'f') {
@@ -29,4 +32,5 @@ int main(int argc, char **argv) {
         glfwPollEvents();
     }
     renderEngine.destroy();
+    #endif
 }
