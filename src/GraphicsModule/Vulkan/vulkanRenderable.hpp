@@ -135,10 +135,10 @@ public:
 
 private:
     void processNode(aiNode *node, const aiScene *scene, const std::string& directory) {
-        for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
+        for (uint32_t i = 0; i < node->mNumMeshes; ++i) {
             VulkanMesh temporaryMesh{};
             temporaryMesh.vertices.reserve(scene->mMeshes[node->mMeshes[i]]->mNumVertices);
-            for (unsigned int j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumVertices; ++j) {
+            for (uint32_t j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumVertices; ++j) {
                 VulkanVertex temporaryVertex{};
                 temporaryVertex.position.x = scene->mMeshes[node->mMeshes[i]]->mVertices[j].x;
                 temporaryVertex.position.y = scene->mMeshes[node->mMeshes[i]]->mVertices[j].y;
@@ -152,10 +152,14 @@ private:
                 }
                 temporaryMesh.vertices.push_back(temporaryVertex);
             }
-            temporaryMesh.indices.reserve(static_cast<std::vector<unsigned int>::size_type>(scene->mMeshes[node->mMeshes[i]]->mNumFaces) * 3);
-            for (; temporaryMesh.triangleCount < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++temporaryMesh.triangleCount) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mIndices[k]); } }
+            temporaryMesh.indices.reserve(static_cast<std::vector<uint32_t>::size_type>(scene->mMeshes[node->mMeshes[i]]->mNumFaces) * 3);
+            for (; temporaryMesh.triangleCount < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++temporaryMesh.triangleCount) {
+                for (uint32_t k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mNumIndices; ++k) {
+                    temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mIndices[k]);
+                }
+            }
             if (scene->mMeshes[node->mMeshes[i]]->mMaterialIndex >= 0) {
-                std::vector<std::pair<unsigned int *, aiTextureType>> textureTypes{
+                std::vector<std::pair<uint32_t*, aiTextureType>> textureTypes{
                     {&temporaryMesh.diffuseTexture, aiTextureType_DIFFUSE},
                     {&temporaryMesh.emissionTexture, aiTextureType_EMISSIVE},
                     {&temporaryMesh.heightTexture, aiTextureType_HEIGHT},
@@ -164,7 +168,7 @@ private:
                     {&temporaryMesh.roughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS},
                     {&temporaryMesh.specularTexture, aiTextureType_SPECULAR}
                 };
-                for (std::pair<unsigned int *, aiTextureType> textureType : textureTypes) {
+                for (std::pair<uint32_t*, aiTextureType> textureType : textureTypes) {
                     if (scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) > 0) {
                         textures.reserve(scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) + textures.size());
                         VulkanTexture temporaryTexture{};

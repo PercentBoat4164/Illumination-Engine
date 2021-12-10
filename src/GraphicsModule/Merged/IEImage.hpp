@@ -413,7 +413,7 @@ public:
         created.image = false;
     }
 
-    ~IEImage() {
+    virtual ~IEImage() {
         destroy();
     }
 };

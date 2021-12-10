@@ -1,3 +1,5 @@
+#pragma once
+
 #include "IEBuffer.hpp"
 #include "IERenderEngineLink.hpp"
 #include "IEVertex.hpp"
@@ -8,10 +10,10 @@
 
 #include <vector>
 
-class IeMesh {
+class IEMesh {
 public:
-    std::vector<uint32_t> indicies{};
-    std::vector<IeVertex> vertices{};
+    std::vector<uint32_t> indices{};
+    std::vector<IEVertex> vertices{};
     uint32_t diffuseTextureIndex{};
     uint32_t emissionTextureIndex{};
     uint32_t heightTextureIndex{};
@@ -29,7 +31,7 @@ public:
         indexBuffer.destroy();
     }
 
-    IeMesh load(const std::string& file) {
+    IEMesh load(const std::string& file) {
         Assimp::Importer importer{};
         const aiScene *scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -39,7 +41,7 @@ public:
         return *this;
     }
 
-    IeMesh threadedLoad(const std::string& file) {
+    IEMesh threadedLoad(const std::string& file) {
         Assimp::Importer importer{};
         const aiScene *scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {

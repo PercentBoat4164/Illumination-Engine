@@ -18,15 +18,13 @@
 
 //Possible valid shader extensions - language
 #define IE_RENDER_ENGINE_SHADER_EXTENSION_VERTEX "vert"
-#define IE_RENDER_ENGINE_SHADER_EXTENSION_FRAGMENT "frag"
 #define IE_RENDER_ENGINE_SHADER_EXTENSION_TESSELLATION_CONTROL "tesc"
 #define IE_RENDER_ENGINE_SHADER_EXTENSION_TESSELLATION_EVALUATION "tese"
 #define IE_RENDER_ENGINE_SHADER_EXTENSION_GEOMETRY "geom"
+#define IE_RENDER_ENGINE_SHADER_EXTENSION_FRAGMENT "frag"
 #define IE_RENDER_ENGINE_SHADER_EXTENSION_COMPUTE "comp"
 #define IE_RENDER_ENGINE_SHADER_EXTENSION_RAY_GENERATION "rgen"
 
-
-extern std::vector<uint32_t> load_spirv_file();
 
 class IEShader {
 public:
@@ -38,11 +36,19 @@ public:
     struct Created {
         bool compiled{};
         bool module{};
+
+        bool all() const {
+            return compiled & module;
+        }
     };
 
     CreateInfo createdWith{};
     Created created{};
+    uint32_t shaderType{};
     IERenderEngineLink* linkedRenderEngine{};
+    std::vector<uint32_t> data{};
+    VkShaderModule shaderModule{};
+    EShLanguage language{};
 
     IEShader() = default;
 
@@ -76,7 +82,6 @@ public:
 
     void compile() {
         std::vector<std::string> extensions = getExtensions(createdWith.filename);
-        EShLanguage language;
         glslang::EShSource source = glslang::EShSourceGlsl;
         for (const std::string& extension : extensions) {
             language = extension == IE_RENDER_ENGINE_SHADER_EXTENSION_VERTEX ? EShLangVertex : language;
@@ -123,10 +128,40 @@ public:
         shader.parse(&builtInResource, 1, false, messages);
     }
 
-    void destroy() {
+    void destroy() const {
+        if (created.module) {
+            vkDestroyShaderModule(linkedRenderEngine->device.device, shaderModule, nullptr);
+        }
     }
 
     ~IEShader() {
         destroy();
+    }
+
+private:
+    void create() {
+        std::vector<std::string> extensions = getExtensions(createdWith.filename);
+        if (std::count(extensions.begin(), extensions.end(), IE_RENDER_ENGINE_SHADER_EXTENSION_VERTEX) > 0) { shaderType = linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN ? VK_SHADER_STAGE_VERTEX_BIT : GL_VERTEX_SHADER; }
+        else if (std::count(extensions.begin(), extensions.end(), IE_RENDER_ENGINE_SHADER_EXTENSION_FRAGMENT) > 0) { shaderType = linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN ? VK_SHADER_STAGE_FRAGMENT_BIT : GL_FRAGMENT_SHADER; }
+        #ifdef ILLUMINATION_ENGINE_VULKAN
+        if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+            createdWith.filename += ".spv";
+            std::ifstream shaderFile{createdWith.filename, std::ios::ate | std::ios::binary};
+            uint32_t fileSize = shaderFile.tellg();
+            data.resize(fileSize);
+            shaderFile.seekg(0);
+            shaderFile.read(reinterpret_cast<char *>(data.data()), fileSize);
+            shaderFile.close();
+            VkShaderModuleCreateInfo shaderModuleCreateInfo{
+                    .sType=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+                    .codeSize=fileSize,
+                    .pCode=data.data(),
+            };
+            if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+                linkedRenderEngine->log->log("Failed to create shader module from shader: " + createdWith.filename + ".", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+            }
+            created.module = true;
+        }
+        #endif
     }
 };

@@ -3,6 +3,7 @@
 #include "IEImage.hpp"
 
 class IETexture : public IEImage {
+public:
     void create(IERenderEngineLink *engineLink, CreateInfo * createInfo) override {
         createdWith = *createInfo;
         linkedRenderEngine = engineLink;

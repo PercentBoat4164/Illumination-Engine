@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef ILLUMINATION_ENGINE_VULKAN
 #include <vulkan/vulkan.hpp>
 #endif
@@ -6,7 +8,8 @@
 
 #include <array>
 
-class IeVertex {
+class IEVertex {
+public:
     glm::vec3 position{};
     glm::vec2 textureCoordinates{};
     glm::vec3 normal{};
@@ -15,7 +18,7 @@ class IeVertex {
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
         bindingDescription.binding = 0;
-        bindingDescription.stride = sizeof(IeVertex);
+        bindingDescription.stride = sizeof(IEVertex);
         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
         return bindingDescription;
     }
@@ -25,15 +28,15 @@ class IeVertex {
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(IeVertex, position);
+        attributeDescriptions[0].offset = offsetof(IEVertex, position);
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 2;
         attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(IeVertex, textureCoordinates);
+        attributeDescriptions[1].offset = offsetof(IEVertex, textureCoordinates);
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 3;
         attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(IeVertex, normal);
+        attributeDescriptions[2].offset = offsetof(IEVertex, normal);
         return attributeDescriptions;
     }
     #endif
