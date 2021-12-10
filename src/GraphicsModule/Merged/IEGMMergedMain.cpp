@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
         input = IE_RENDER_ENGINE_API_NAME_OPENGL;
         std::cout << "Forcing OpenGL because Vulkan is not supported" << std::endl;
     }
-    Log log{};
+    IELog log{};
     log.create("IE");
     log.addModule("IEGMMergedMain");
     log.log("Choosing " + input + " API", log4cplus::INFO_LOG_LEVEL, "IEGMMergedMain");

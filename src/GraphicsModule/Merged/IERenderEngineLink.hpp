@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IESettings.hpp"
-#include "LogModule/Log.hpp"
+#include "Core/LogModule/IELog.hpp"
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
 
@@ -238,7 +238,7 @@ public:
     }
 
     IeAPI api;
-    Log *log;
+    IELog *log;
     IePhysicalDevice physicalDevice;
     IESettings settings;
     GLFWwindow *window{};

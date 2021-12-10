@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IERenderEngineLink.hpp"
-#include "LogModule/Log.hpp"
+#include "Core/LogModule/IELog.hpp"
 
 #include "VkBootstrap.h"
 

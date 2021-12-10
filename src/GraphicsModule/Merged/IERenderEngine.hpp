@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LogModule/Log.hpp"
+#include "Core/LogModule/IELog.hpp"
 #include "IERenderEngineLink.hpp"
 #include "IECommandPool.hpp"
 #include "IEBuffer.hpp"
@@ -40,7 +40,7 @@ public:
     std::vector<IEFramebuffer> framebuffers{};
     std::vector<IEImage> textures{};
 
-    explicit IERenderEngine(const std::string& API, Log *pLog) {
+    explicit IERenderEngine(const std::string& API, IELog *pLog) {
         renderEngineLink.log = pLog;
         renderEngineLink.log->addModule("Graphics module");
         renderEngineLink.log->log("Creating window", log4cplus::INFO_LOG_LEVEL, "Graphics module");

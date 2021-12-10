@@ -7,6 +7,8 @@
  * @brief Is responsible for handling a "x" key press.
  */
 void handleXKey(GLFWwindow* window) {
+    auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard controlling the window
+    keyboard->editActions(IeKeyPressDescription(GLFW_KEY_W), handleXKey);
     std::cout << "Chicken!" << std::endl;
     std::flush(std::cout);
 }
@@ -20,7 +22,6 @@ void handleWKey(GLFWwindow* window) {
     std::cout << "Wow-zah!" << std::endl;
     std::flush(std::cout);
 }
-
 
 /**
  * @brief Code for testing the InputModule will go here.
