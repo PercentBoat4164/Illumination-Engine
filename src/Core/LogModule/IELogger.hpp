@@ -44,7 +44,7 @@ public:
     };
 
     /**
-     * @brief Create a loggers that is named <name> and logs to "logs/<file>.log".
+     * @brief Create a logger that is named <name> and logs to "logs/[file].log".
      * @param name
      * @param file
      */
@@ -53,7 +53,7 @@ public:
         spdlog::set_default_logger(loggers[0]);
     };
 
-    void logAll(spdlog::level::level_enum level, const std::string& message, const std::string& name="") {
+    void logToAll(spdlog::level::level_enum level, const std::string& message, const std::string& name= "") {
         for (const std::shared_ptr<spdlog::logger>& logger : loggers) {
             if (name.empty() || logger->name() == name) {
                 logger->log(level, message);
@@ -74,7 +74,7 @@ public:
     }
 
     void operator()(spdlog::level::level_enum level, const std::string& message) {
-        logAll(level, message);
+        logToAll(level, message);
     }
 
     std::shared_ptr<spdlog::logger> operator[](uint32_t index) {
