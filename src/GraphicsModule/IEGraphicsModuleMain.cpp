@@ -1,10 +1,6 @@
-#ifndef VMA_INCLUDED
-#define VMA_INCLUDED
-#define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.h>
-#endif
-
+#ifdef ILLUMINATION_ENGINE_VULKAN
 #include "Vulkan/vulkanRenderEngine.hpp"
+#endif
 #include "OpenGL/openglRenderEngine.hpp"
 
 /*
@@ -19,6 +15,7 @@ int main(int argc, char **argv) {
         glfwPollEvents();
     }
     oRenderEngine.destroy();
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     VulkanRenderEngine vRenderEngine{};
     VulkanRenderable vCube{&vRenderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
     vRenderEngine.loadRenderable(&vCube);
@@ -27,4 +24,5 @@ int main(int argc, char **argv) {
         glfwPollEvents();
     }
     vRenderEngine.destroy();
+    #endif
 }
