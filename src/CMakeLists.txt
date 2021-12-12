@@ -1,5 +1,5 @@
 add_executable(IlluminationEngine main.cpp)
-add_subdirectory(LogModule)
+add_subdirectory(Core)
 add_subdirectory(InputModule)
 add_subdirectory(GraphicsModule)
 add_dependencies(IlluminationEngine IELogModule)
