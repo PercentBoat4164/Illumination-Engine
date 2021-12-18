@@ -20,6 +20,7 @@ public:
     std::vector<IEShader*> shaders{};
     std::vector<IEMesh> meshes{};
     Assimp::Importer importer{};
+    bool render{true};
 
     void create(IERenderEngineLink* engineLink, const std::string& file = "") {
         linkedRenderEngine = engineLink;

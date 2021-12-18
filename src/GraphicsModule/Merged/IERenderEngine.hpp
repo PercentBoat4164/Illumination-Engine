@@ -9,6 +9,7 @@
 #include "IEShader.hpp"
 #include "IERenderPass.hpp"
 #include "IERenderable.hpp"
+#include "IEPipeline.hpp"
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -40,6 +41,10 @@ public:
     std::vector<IEFramebuffer> framebuffers{};
     std::vector<IETexture> textures{};
     std::vector<IERenderable *> renderables{};
+    IECommandPool renderCommandPool{};
+    IEPipeline defaultPipeline{};
+    IEDescriptorSet defaultDescriptorSet{};
+    std::vector<IEShader> defaultShaders{};
 
     IERenderEngine(const std::string& API, IELog *pLog, IERenderEngineLink* engineLink) {
         renderEngineLink = engineLink;
@@ -232,12 +237,31 @@ public:
         renderEngineLink->log->log(renderEngineLink->api.name + ' ' + renderEngineLink->api.version.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
         renderEngineLink->log->log(renderEngineLink->physicalDevice.info.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
         handleWindowSizeChange();
+        IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
+            .poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}},
+            .shaderStages={static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)},
+            .data={std::nullopt}
+        };
+        defaultDescriptorSet.create(renderEngineLink, &descriptorSetCreateInfo);
+        IEPipeline::CreateInfo pipelineCreateInfo{
+            .shaders=defaultShaders,
+            .descriptorSet=&defaultDescriptorSet,
+            .renderPass=&renderPass
+        };
+        defaultPipeline.create(renderEngineLink, &pipelineCreateInfo);
     }
 
-    bool update() const {
+    bool update() {
         return !glfwWindowShouldClose(renderEngineLink->window);
+        uint32_t imageIndex{};
         for (IERenderable *renderable : renderables) {
-
+            if (renderable->render) {
+                vkCmdBindVertexBuffers(renderCommandPool[imageIndex], 0, 1, &std::get<VkBuffer>(renderable->meshes[0].vertexBuffer.buffer), nullptr);
+                vkCmdBindIndexBuffer(renderCommandPool[imageIndex], std::get<VkBuffer>(renderable->meshes[0].indexBuffer.buffer), 0, VK_INDEX_TYPE_UINT32);
+                vkCmdBindPipeline(renderCommandPool[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, defaultPipeline.pipeline);
+                vkCmdBindDescriptorSets(renderCommandPool[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, defaultPipeline.pipelineLayout, 0, 1, &defaultDescriptorSet.descriptorSet, 0, nullptr);
+                vkCmdDrawIndexed(renderCommandPool[imageIndex], renderable->meshes[0].indices.size(), 1, 0, 0, 0);
+            }
         }
     }
 

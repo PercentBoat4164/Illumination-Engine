@@ -17,6 +17,7 @@ set(IEGraphicsModuleMergedSourceFiles
 add_executable(IEGraphicsModuleMerged ${IEGraphicsModuleMergedSourceFiles})
 set_target_properties(IEGraphicsModuleMerged PROPERTIES LINKER_LANGUAGE CXX)
 add_subdirectory(DefaultShaders)
+add_dependencies(IEGraphicsModuleMerged IEGraphicsModuleMergedShaders)
 add_dependencies(IEGraphicsModuleMerged IELogModule)
 addAssImp(IEGraphicsModuleMerged)
 addGLEW(IEGraphicsModuleMerged)

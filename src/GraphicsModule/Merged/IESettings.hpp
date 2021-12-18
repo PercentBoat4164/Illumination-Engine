@@ -25,4 +25,5 @@ public:
     GLFWmonitor *monitor{};
     uint8_t msaaSamples{};
     uint32_t maxMipLevels{};
+    bool rayTracing{};
 };

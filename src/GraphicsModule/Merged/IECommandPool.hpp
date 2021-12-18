@@ -82,6 +82,10 @@ public:
         #endif
     }
 
+    VkCommandBuffer operator[](uint32_t index) {
+        return commandBuffers[index];
+    }
+
     void destroy() const {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (created.commandBuffers) { vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, commandBuffers.size(), commandBuffers.data()); }

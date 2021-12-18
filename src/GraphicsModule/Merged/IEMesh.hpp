@@ -3,6 +3,7 @@
 #include "IEBuffer.hpp"
 #include "IERenderEngineLink.hpp"
 #include "IEVertex.hpp"
+#include "IEPipeline.hpp"
 
 #include "assimp/postprocess.h"
 #include "assimp/Importer.hpp"
@@ -25,10 +26,12 @@ public:
     IEBuffer vertexBuffer{};
     IEBuffer indexBuffer{};
     IERenderEngineLink* linkedRenderEngine{};
+    IEPipeline pipeline{};
 
     void destroy() {
         vertexBuffer.destroy();
         indexBuffer.destroy();
+        pipeline.destroy();
     }
 
     IEMesh load(const std::string& file) {
