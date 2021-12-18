@@ -40,14 +40,4 @@ public:
         std::string directory = std::string(file).substr(0, std::string(file).find_last_of('/'));
         return *this;
     }
-
-    IEMesh threadedLoad(const std::string& file) {
-        Assimp::Importer importer{};
-        const aiScene *scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-            linkedRenderEngine->log->log("Failed to generate scene from file: " + file + ".", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
-        }
-        std::string directory = std::string(file).substr(0, std::string(file).find_last_of('/'));
-        return *this;
-    }
 };

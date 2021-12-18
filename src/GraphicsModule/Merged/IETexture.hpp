@@ -21,4 +21,8 @@ public:
             imageProperties = std::get<Properties>(createdWith.properties);
         }
     }
+
+    ~IETexture() override {
+        destroy();
+    }
 };

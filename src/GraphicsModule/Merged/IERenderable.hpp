@@ -19,27 +19,16 @@ public:
     std::vector<IETexture> textures{};
     std::vector<IEShader*> shaders{};
     std::vector<IEMesh> meshes{};
-
-    explicit IERenderable(const std::string& file) {
-        filePath = file;
-    }
+    Assimp::Importer importer{};
 
     void create(IERenderEngineLink* engineLink, const std::string& file = "") {
         linkedRenderEngine = engineLink;
-        if (!file.empty()) {
-            filePath = file;
+        const aiScene *scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+            linkedRenderEngine->log->log("Failed to generate scene from file: " + file + ".", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
         }
-        std::ifstream fileObject{filePath, std::ios::in};
-        std::stringstream contents{};
-        contents << fileObject.rdbuf();
-        fileObject.close();
-        std::string contentsString{};
-        contentsString = contents.str();
-        while(!contentsString.empty()) {
-            std::size_t pointer{contentsString.find_first_of('\n')};
-            data.push_back(contentsString.substr(0, pointer));
-            contentsString = contentsString.substr(pointer, contentsString.size() - pointer);
-        }
+        std::string directory = std::string(file).substr(0, std::string(file).find_last_of('/'));
+        processNode(scene->mRootNode, scene, directory);
     }
 
     void setShader(IEShader& shader) {

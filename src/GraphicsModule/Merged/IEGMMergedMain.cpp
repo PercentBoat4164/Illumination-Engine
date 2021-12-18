@@ -26,9 +26,11 @@ int main(int argc, char **argv) {
     log.create("IE");
     log.addModule("IEGMMergedMain");
     log.log("Choosing " + input + " API", log4cplus::INFO_LOG_LEVEL, "IEGMMergedMain");
-    IERenderEngine renderEngine{input, &log};
+    IERenderEngineLink renderEngineLink{};
+    IERenderEngine renderEngine{input, &log, &renderEngineLink};
     renderEngine.create();
-    IERenderable cube{""};
+    IERenderable cube{};
+    cube.create(&renderEngineLink, "res/Models/Cube/cube.obj");
     while (renderEngine.update()) {
         glfwPollEvents();
     }

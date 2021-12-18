@@ -30,7 +30,7 @@
 
 class IERenderEngine {
 public:
-    IERenderEngineLink renderEngineLink;
+    IERenderEngineLink* renderEngineLink{};
 
     std::vector<VkFence> inFlightFences{};
     std::vector<VkFence> imagesInFlight{};
@@ -38,44 +38,47 @@ public:
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     IERenderPass renderPass{};
     std::vector<IEFramebuffer> framebuffers{};
-    std::vector<IEImage> textures{};
+    std::vector<IETexture> textures{};
+    std::vector<IERenderable *> renderables{};
 
-    explicit IERenderEngine(const std::string& API, IELog *pLog) {
-        renderEngineLink.log = pLog;
-        renderEngineLink.log->addModule("Graphics module");
-        renderEngineLink.log->log("Creating window", log4cplus::INFO_LOG_LEVEL, "Graphics module");
-        renderEngineLink.api.name = API;
-        renderEngineLink.log = pLog;
-        renderEngineLink.textures = &textures;
+    IERenderEngine(const std::string& API, IELog *pLog, IERenderEngineLink* engineLink) {
+        renderEngineLink = engineLink;
+        renderEngineLink->log = pLog;
+        renderEngineLink->log->addModule("Graphics module");
+        renderEngineLink->log->log("Creating window", log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        renderEngineLink->api.name = API;
+        renderEngineLink->log = pLog;
+        renderEngineLink->textures = &textures;
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-            renderEngineLink.api.getVersion();
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+            renderEngineLink->api.getVersion();
             vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
             vkb::InstanceBuilder builder;
-            builder.set_app_name(renderEngineLink.settings.applicationName.c_str()).set_app_version(renderEngineLink.settings.applicationVersion.major, renderEngineLink.settings.applicationVersion.minor, renderEngineLink.settings.applicationVersion.patch).require_api_version(1, 1, 0);
+            builder.set_engine_name("Illumination Engine");
+            builder.set_app_name(renderEngineLink->settings.applicationName.c_str()).set_app_version(renderEngineLink->settings.applicationVersion.major, renderEngineLink->settings.applicationVersion.minor, renderEngineLink->settings.applicationVersion.patch).require_api_version(1, 1, 0);
             #ifndef NDEBUG
             if (systemInfo->validation_layers_available) { builder.request_validation_layers(); }
             if (systemInfo->debug_utils_available) { builder.use_default_debug_messenger(); }
             #endif
             vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
             if (!instanceBuilder) {
-                renderEngineLink.log->log("failed to create Vulkan instance: " + instanceBuilder.error().message() + "\n", log4cplus::ERROR_LOG_LEVEL, "Graphics module");
+                renderEngineLink->log->log("failed to create Vulkan instance: " + instanceBuilder.error().message() + "\n", log4cplus::ERROR_LOG_LEVEL, "Graphics module");
             }
-            renderEngineLink.instance = instanceBuilder.value();
-            renderEngineLink.created.instance = true;
+            renderEngineLink->instance = instanceBuilder.value();
+            renderEngineLink->created.instance = true;
         }
         #endif
-        if (!glfwInit()) { renderEngineLink.log->log("GLFW failed to initialize", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
-        renderEngineLink.created.glfw = true;
+        if (!glfwInit()) { renderEngineLink->log->log("GLFW failed to initialize", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+        renderEngineLink->created.glfw = true;
     }
 
     void create() {
-        renderEngineLink.log->log("Initializing " + renderEngineLink.api.name + " API", log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        renderEngineLink->log->log("Initializing " + renderEngineLink->api.name + " API", log4cplus::INFO_LOG_LEVEL, "Graphics module");
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) { glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); }
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) { glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             #ifdef __APPLE__
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
             #endif
@@ -85,49 +88,49 @@ public:
         }
         #endif
         glfwMakeContextCurrent(nullptr);
-        renderEngineLink.window = glfwCreateWindow(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1], (renderEngineLink.settings.applicationName + " v" + renderEngineLink.settings.applicationVersion.name).c_str(), renderEngineLink.settings.monitor, nullptr);
-        renderEngineLink.created.window = true;
-        glfwMakeContextCurrent(renderEngineLink.window);
+        renderEngineLink->window = glfwCreateWindow(renderEngineLink->settings.resolution[0], renderEngineLink->settings.resolution[1], (renderEngineLink->settings.applicationName + " v" + renderEngineLink->settings.applicationVersion.name).c_str(), renderEngineLink->settings.monitor, nullptr);
+        renderEngineLink->created.window = true;
+        glfwMakeContextCurrent(renderEngineLink->window);
         int32_t width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes) / sizeof(int32_t)];
         for (uint64_t i = 0; i < sizeof(sizes) / sizeof(int32_t); ++i) {
             std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
             if (!pixels) {
-                renderEngineLink.log->log("Failed to prepare texture image from file: " + filename, log4cplus::WARN_LOG_LEVEL, "Graphics module");
+                renderEngineLink->log->log("Failed to prepare texture image from file: " + filename, log4cplus::WARN_LOG_LEVEL, "Graphics module");
             }
             icons[i].pixels = pixels;
             icons[i].height = height;
             icons[i].width = width;
         }
-        glfwSetWindowIcon(renderEngineLink.window, sizeof(icons) / sizeof(GLFWimage), icons);
+        glfwSetWindowIcon(renderEngineLink->window, sizeof(icons) / sizeof(GLFWimage), icons);
         for (GLFWimage icon: icons) {
             stbi_image_free(icon.pixels);
         }
-        glfwSetWindowSizeLimits(renderEngineLink.window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-        glfwSetWindowAttrib(renderEngineLink.window, GLFW_AUTO_ICONIFY, 0);
-        glfwSetWindowUserPointer(renderEngineLink.window, this);
-        glfwSetFramebufferSizeCallback(renderEngineLink.window, framebufferResizeCallback);
+        glfwSetWindowSizeLimits(renderEngineLink->window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+        glfwSetWindowAttrib(renderEngineLink->window, GLFW_AUTO_ICONIFY, 0);
+        glfwSetWindowUserPointer(renderEngineLink->window, this);
+        glfwSetFramebufferSizeCallback(renderEngineLink->window, framebufferResizeCallback);
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-            if (glfwCreateWindowSurface(renderEngineLink.instance.instance, renderEngineLink.window, nullptr, &renderEngineLink.surface) != VK_SUCCESS) {
-                renderEngineLink.log->log("failed to create window surface", log4cplus::ERROR_LOG_LEVEL, "Graphics module");
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+            if (glfwCreateWindowSurface(renderEngineLink->instance.instance, renderEngineLink->window, nullptr, &renderEngineLink->surface) != VK_SUCCESS) {
+                renderEngineLink->log->log("failed to create window surface", log4cplus::ERROR_LOG_LEVEL, "Graphics module");
             }
-            renderEngineLink.created.surface = true;
-            vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
-            vkb::detail::Result<vkb::PhysicalDevice> temporaryPhysicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
+            renderEngineLink->created.surface = true;
+            vkb::PhysicalDeviceSelector selector{renderEngineLink->instance};
+            vkb::detail::Result<vkb::PhysicalDevice> temporaryPhysicalDeviceBuilder = selector.set_surface(renderEngineLink->surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
             if (!temporaryPhysicalDeviceBuilder) {
-                renderEngineLink.log->log("Physical device creation: " + temporaryPhysicalDeviceBuilder.error().message(), log4cplus::ERROR_LOG_LEVEL, "Graphics module");
+                renderEngineLink->log->log("Physical device creation: " + temporaryPhysicalDeviceBuilder.error().message(), log4cplus::ERROR_LOG_LEVEL, "Graphics module");
             }
             vkb::DeviceBuilder temporaryLogicalDeviceBuilder{temporaryPhysicalDeviceBuilder.value()};
             vkb::detail::Result<vkb::Device> temporaryLogicalDevice = temporaryLogicalDeviceBuilder.build();
-            if (!temporaryLogicalDevice) { renderEngineLink.log->log("Logical device creation: " + temporaryLogicalDevice.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
-            renderEngineLink.device = temporaryLogicalDevice.value();
-            renderEngineLink.created.device = true;
-            renderEngineLink.create();
-            renderEngineLink.created.renderEngineLink = true;
-            vkb::destroy_device(renderEngineLink.device);
-            renderEngineLink.created.device = false;
+            if (!temporaryLogicalDevice) { renderEngineLink->log->log("Logical device creation: " + temporaryLogicalDevice.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            renderEngineLink->device = temporaryLogicalDevice.value();
+            renderEngineLink->created.device = true;
+            renderEngineLink->create();
+            renderEngineLink->created.renderEngineLink = true;
+            vkb::destroy_device(renderEngineLink->device);
+            renderEngineLink->created.device = false;
             //EXTENSION SELECTION
             //-------------------
             std::vector<const char *> rayTracingExtensions{
@@ -145,12 +148,12 @@ public:
             //DEVICE FEATURE SELECTION
             //------------------------
             std::vector<VkBool32 *> anisotropicFilteringFeatures{
-                    reinterpret_cast<VkBool32 *>(&renderEngineLink.physicalDevice.enabledAPIComponents.anisotropicFiltering),
-                    &renderEngineLink.physicalDevice.enabledAPIComponents.features.samplerAnisotropy
+                    reinterpret_cast<VkBool32 *>(&renderEngineLink->physicalDevice.enabledAPIComponents.anisotropicFiltering),
+                    &renderEngineLink->physicalDevice.enabledAPIComponents.features.samplerAnisotropy
             };
             std::vector<VkBool32 *> msaaSmoothingFeatures{
-                    reinterpret_cast<VkBool32 *>(&renderEngineLink.physicalDevice.enabledAPIComponents.msaaSmoothing),
-                    &renderEngineLink.physicalDevice.enabledAPIComponents.features.sampleRateShading
+                    reinterpret_cast<VkBool32 *>(&renderEngineLink->physicalDevice.enabledAPIComponents.msaaSmoothing),
+                    &renderEngineLink->physicalDevice.enabledAPIComponents.features.sampleRateShading
             };
             std::vector<std::vector<VkBool32 *>> deviceFeatureGroups{
                     anisotropicFilteringFeatures,
@@ -159,49 +162,49 @@ public:
             //EXTENSION FEATURE SELECTION
             //---------------------------
             std::vector<VkBool32 *> rayTracingFeatures{
-                    (VkBool32*)&renderEngineLink.physicalDevice.enabledAPIComponents.rayTracing,
-                    &renderEngineLink.physicalDevice.enabledAPIComponents.bufferDeviceAddressFeatures.bufferDeviceAddress,
-                    &renderEngineLink.physicalDevice.enabledAPIComponents.accelerationStructureFeatures.accelerationStructure,
-                    &renderEngineLink.physicalDevice.enabledAPIComponents.rayQueryFeatures.rayQuery,
-                    &renderEngineLink.physicalDevice.enabledAPIComponents.rayTracingPipelineFeatures.rayTracingPipeline
+                    (VkBool32*)&renderEngineLink->physicalDevice.enabledAPIComponents.rayTracing,
+                    &renderEngineLink->physicalDevice.enabledAPIComponents.bufferDeviceAddressFeatures.bufferDeviceAddress,
+                    &renderEngineLink->physicalDevice.enabledAPIComponents.accelerationStructureFeatures.accelerationStructure,
+                    &renderEngineLink->physicalDevice.enabledAPIComponents.rayQueryFeatures.rayQuery,
+                    &renderEngineLink->physicalDevice.enabledAPIComponents.rayTracingPipelineFeatures.rayTracingPipeline
             };
             std::vector<std::vector<VkBool32 *>> extensionFeatureGroups{
                     rayTracingFeatures
             };
             //===========================
             for (const std::vector<VkBool32 *> &deviceFeatureGroup : deviceFeatureGroups) {
-                if (renderEngineLink.physicalDevice.testFeature(std::vector<VkBool32 *>(deviceFeatureGroup.begin() + 1, deviceFeatureGroup.end()))[0]) {
+                if (renderEngineLink->physicalDevice.testFeature(std::vector<VkBool32 *>(deviceFeatureGroup.begin() + 1, deviceFeatureGroup.end()))[0]) {
                     *deviceFeatureGroup[0] = VK_TRUE;
-                    *(deviceFeatureGroup[0] - (VkBool32 *)&renderEngineLink.physicalDevice.enabledAPIComponents + (VkBool32 *)&renderEngineLink.physicalDevice.supportedAPIComponents) = VK_TRUE;
-                    renderEngineLink.physicalDevice.enableFeature(deviceFeatureGroup);
+                    *(deviceFeatureGroup[0] - (VkBool32 *)&renderEngineLink->physicalDevice.enabledAPIComponents + (VkBool32 *)&renderEngineLink->physicalDevice.supportedAPIComponents) = VK_TRUE;
+                    renderEngineLink->physicalDevice.enableFeature(deviceFeatureGroup);
                 }
             }
             for (const std::vector<VkBool32 *> &extensionFeatureGroup : extensionFeatureGroups) {
-                if (renderEngineLink.physicalDevice.testFeature(std::vector<VkBool32 *>(extensionFeatureGroup.begin() + 1, extensionFeatureGroup.end()))[0]) {
+                if (renderEngineLink->physicalDevice.testFeature(std::vector<VkBool32 *>(extensionFeatureGroup.begin() + 1, extensionFeatureGroup.end()))[0]) {
                     *extensionFeatureGroup[0] = VK_TRUE;
-                    *(extensionFeatureGroup[0] - (VkBool32 *)&renderEngineLink.physicalDevice.enabledAPIComponents + (VkBool32 *)&renderEngineLink.physicalDevice.supportedAPIComponents) = VK_TRUE;
-                    renderEngineLink.physicalDevice.enableFeature(extensionFeatureGroup);
+                    *(extensionFeatureGroup[0] - (VkBool32 *)&renderEngineLink->physicalDevice.enabledAPIComponents + (VkBool32 *)&renderEngineLink->physicalDevice.supportedAPIComponents) = VK_TRUE;
+                    renderEngineLink->physicalDevice.enableFeature(extensionFeatureGroup);
                 }
             }
             if (!extensionGroups.empty()) { selector.add_desired_extensions(*extensionGroups.data()); }
-            vkb::detail::Result<vkb::PhysicalDevice> finalPhysicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).set_required_features(renderEngineLink.physicalDevice.enabledAPIComponents.features).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
+            vkb::detail::Result<vkb::PhysicalDevice> finalPhysicalDeviceBuilder = selector.set_surface(renderEngineLink->surface).set_required_features(renderEngineLink->physicalDevice.enabledAPIComponents.features).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
             vkb::DeviceBuilder finalLogicalDeviceBuilder{finalPhysicalDeviceBuilder.value()};
-            finalLogicalDeviceBuilder.add_pNext(renderEngineLink.physicalDevice.enabledAPIComponents.pNextHighestFeature);
+            finalLogicalDeviceBuilder.add_pNext(renderEngineLink->physicalDevice.enabledAPIComponents.pNextHighestFeature);
             vkb::detail::Result<vkb::Device> finalLogicalDevice = finalLogicalDeviceBuilder.build();
-            if (!finalLogicalDevice) { renderEngineLink.log->log("failed to create final device after initial device was successfully created", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
-            renderEngineLink.device = finalLogicalDevice.value();
-            renderEngineLink.created.device = true;
+            if (!finalLogicalDevice) { renderEngineLink->log->log("failed to create final device after initial device was successfully created", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            renderEngineLink->device = finalLogicalDevice.value();
+            renderEngineLink->created.device = true;
             VmaAllocatorCreateInfo allocatorInfo{};
-            allocatorInfo.physicalDevice = renderEngineLink.device.physical_device.physical_device;
-            allocatorInfo.device = renderEngineLink.device.device;
-            allocatorInfo.instance = renderEngineLink.instance.instance;
-            allocatorInfo.flags = renderEngineLink.physicalDevice.enabledAPIComponents.rayTracing ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0;
-            vmaCreateAllocator(&allocatorInfo, &renderEngineLink.allocator);
-            renderEngineLink.created.allocator = true;
+            allocatorInfo.physicalDevice = renderEngineLink->device.physical_device.physical_device;
+            allocatorInfo.device = renderEngineLink->device.device;
+            allocatorInfo.instance = renderEngineLink->instance.instance;
+            allocatorInfo.flags = renderEngineLink->physicalDevice.enabledAPIComponents.rayTracing ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0;
+            vmaCreateAllocator(&allocatorInfo, &renderEngineLink->allocator);
+            renderEngineLink->created.allocator = true;
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             glewInit();
             #if defined(_WIN32)
             glfwSwapInterval(settings.vSync ? 1 : 0);
@@ -209,8 +212,8 @@ public:
             glfwSwapInterval(1);
             #endif
             glewExperimental = true;
-            if (glewInit() != GLEW_OK) { renderEngineLink.log->log("Failed to initialize GLEW!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
-            renderEngineLink.created.glew = true;
+            if (glewInit() != GLEW_OK) { renderEngineLink->log->log("Failed to initialize GLEW!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
+            renderEngineLink->created.glew = true;
             #ifndef NDEBUG
             int32_t flags;
             glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -223,75 +226,77 @@ public:
             #endif
         }
         #endif
-        renderEngineLink.create();
-        renderEngineLink.api.getVersion();
-        renderEngineLink.physicalDevice.info.generateInfo();
-        renderEngineLink.log->log(renderEngineLink.api.name + ' ' + renderEngineLink.api.version.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
-        renderEngineLink.log->log(renderEngineLink.physicalDevice.info.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        renderEngineLink->create();
+        renderEngineLink->api.getVersion();
+        renderEngineLink->physicalDevice.info.generateInfo();
+        renderEngineLink->log->log(renderEngineLink->api.name + ' ' + renderEngineLink->api.version.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        renderEngineLink->log->log(renderEngineLink->physicalDevice.info.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
         handleWindowSizeChange();
     }
 
     bool update() const {
-        return !glfwWindowShouldClose(renderEngineLink.window);
+        return !glfwWindowShouldClose(renderEngineLink->window);
+        for (IERenderable *renderable : renderables) {
+
+        }
     }
 
     //*@todo Update VMA and VkBootstrap on next opportunity as these libraries may be causing the unreliable program execution.
     void handleWindowSizeChange() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-            vkDeviceWaitIdle(renderEngineLink.device.device);
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+            vkDeviceWaitIdle(renderEngineLink->device.device);
             // clear recreation deletion queue
-            vkb::SwapchainBuilder swapchainBuilder{renderEngineLink.device};
+            vkb::SwapchainBuilder swapchainBuilder{renderEngineLink->device};
             vkb::detail::Result<vkb::Swapchain> swapchainBuilderResults = swapchainBuilder
-                    .set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
-                    .set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).build();
+                    .set_desired_present_mode(renderEngineLink->settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
+                    .set_desired_extent(renderEngineLink->settings.resolution[0], renderEngineLink->settings.resolution[1]).build();
             if (!swapchainBuilderResults) {
-                renderEngineLink.log->log("failed to create swapchain.", log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
+                renderEngineLink->log->log("failed to create swapchain.", log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
             }
-            destroy_swapchain(renderEngineLink.swapchain);
-            renderEngineLink.swapchain = swapchainBuilderResults.value();
-            renderEngineLink.created.swapchain = true;
-            renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
+            destroy_swapchain(renderEngineLink->swapchain);
+            renderEngineLink->swapchain = swapchainBuilderResults.value();
+            renderEngineLink->created.swapchain = true;
+            renderEngineLink->swapchainImageViews = renderEngineLink->swapchain.get_image_views().value();
             // Generate Framebuffer contentsString.
-            std::vector<IEFramebuffer::CreateInfo> framebufferCreateInfos{renderEngineLink.swapchain.image_count};
+            std::vector<IEFramebuffer::CreateInfo> framebufferCreateInfos{renderEngineLink->swapchain.image_count};
             for (uint32_t i = 0; i < framebufferCreateInfos.size(); ++i) {
                 framebufferCreateInfos[i] = {
                         .aspects=IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR,
-                        .msaaSamples=renderEngineLink.settings.msaaSamples,
-                        .swapchainImageView=renderEngineLink.swapchainImageViews[i],
+                        .msaaSamples=renderEngineLink->settings.msaaSamples,
+                        .swapchainImageView=renderEngineLink->swapchainImageViews[i],
                         .format=IE_IMAGE_FORMAT_SRGB_RGBA_8BIT,
                         .subpass=1
                 };
             }
             IERenderPass::CreateInfo renderPassCreateInfo{.framebufferCreateInfos=framebufferCreateInfos};
-            renderPass.create(&renderEngineLink, &renderPassCreateInfo);
+            renderPass.create(renderEngineLink, &renderPassCreateInfo);
             framebuffers.resize(framebufferCreateInfos.size());
             for (uint32_t i = 0; i < framebuffers.size(); ++i) {
-                framebuffers[i].create(&renderEngineLink, &framebufferCreateInfos[i]);
+                framebuffers[i].create(renderEngineLink, &framebufferCreateInfos[i]);
                 framebuffers[i].linkToRenderPass(&renderPass);
             }
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 
         }
         #endif
     }
 
     void changeAPI(const std::string& API) {
-        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             glFinish();
         }
-        renderEngineLink.destroy();
-        renderEngineLink = IERenderEngineLink{};
-        renderEngineLink.api.name = API;
+        renderEngineLink->destroy();
+        renderEngineLink->api.name = API;
         #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-            renderEngineLink.api.getVersion();
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+            renderEngineLink->api.getVersion();
             vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
             vkb::InstanceBuilder builder;
-            builder.set_app_name(renderEngineLink.settings.applicationName.c_str()).set_app_version(renderEngineLink.settings.applicationVersion.major, renderEngineLink.settings.applicationVersion.minor, renderEngineLink.settings.applicationVersion.patch).require_api_version(1, 1, 0);
+            builder.set_app_name(renderEngineLink->settings.applicationName.c_str()).set_app_version(renderEngineLink->settings.applicationVersion.major, renderEngineLink->settings.applicationVersion.minor, renderEngineLink->settings.applicationVersion.patch).require_api_version(1, 1, 0);
             #ifndef NDEBUG
             if (systemInfo->validation_layers_available) {
                 builder.request_validation_layers();
@@ -302,16 +307,16 @@ public:
             #endif
             vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
             if (!instanceBuilder) {
-                renderEngineLink.log->log(instanceBuilder.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
+                renderEngineLink->log->log(instanceBuilder.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
             }
-            renderEngineLink.instance = instanceBuilder.value();
+            renderEngineLink->instance = instanceBuilder.value();
         }
         #endif
         create();
     }
 
     void closeWindow() const {
-        glfwSetWindowShouldClose(renderEngineLink.window, 1);
+        glfwSetWindowShouldClose(renderEngineLink->window, 1);
     }
 
     static void destroy() {
@@ -365,8 +370,8 @@ private:
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int32_t width, int32_t height) {
         auto renderEngine = (IERenderEngine *)glfwGetWindowUserPointer(pWindow);
-        renderEngine->renderEngineLink.settings.resolution[0] = width;
-        renderEngine->renderEngineLink.settings.resolution[1] = height;
+        renderEngine->renderEngineLink->settings.resolution[0] = width;
+        renderEngine->renderEngineLink->settings.resolution[1] = height;
         renderEngine->handleWindowSizeChange();
     }
 };

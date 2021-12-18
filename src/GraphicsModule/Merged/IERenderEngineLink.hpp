@@ -31,7 +31,7 @@
 #define IE_RENDER_ENGINE_API_NAME_VULKAN "Vulkan"
 #define IE_RENDER_ENGINE_API_NAME_OPENGL "OpenGL"
 
-class IEImage;
+class IETexture;
 
 class IERenderEngineLink{
 public:
@@ -244,7 +244,7 @@ public:
     GLFWwindow *window{};
     bool framebufferResized{false};
     Created created{};
-    std::vector<IEImage>* textures{};
+    std::vector<IETexture>* textures{};
     #ifdef ILLUMINATION_ENGINE_VULKAN
     vkb::Device device{};
     vkb::Instance instance{};
@@ -274,7 +274,7 @@ public:
                 created.allocator = false;
             }
             if (created.surface) {
-                vkDestroySurfaceKHR(instance.instance, surface, nullptr);
+                vkb::destroy_surface(instance.instance, surface);
                 created.surface = false;
             }
             if (created.device) {
@@ -282,7 +282,7 @@ public:
                 created.device = false;
             }
             if (created.instance) {
-                destroy_instance(instance);
+                vkb::destroy_instance(instance);
                 created.instance = false;
             }
         }

@@ -117,12 +117,14 @@ public:
     virtual void toImage(IEImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer);
 
     void destroy() {
-        #ifdef ILLUMINATION_ENGINE_VULKAN
-        if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) { if (created.buffer) { vmaDestroyBuffer(linkedRenderEngine->allocator, std::get<VkBuffer>(buffer), allocation); } }
-        #endif
-        #ifdef ILLUMINATION_ENGINE_OPENGL
-        if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) { if (created.buffer) { glDeleteBuffers(1, &std::get<uint32_t>(buffer)); } }
-        #endif
+        if (created.buffer) {
+            #ifdef ILLUMINATION_ENGINE_VULKAN
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) { if (created.buffer) { vmaDestroyBuffer(linkedRenderEngine->allocator, std::get<VkBuffer>(buffer), allocation); }}
+            #endif
+            #ifdef ILLUMINATION_ENGINE_OPENGL
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) { if (created.buffer) { glDeleteBuffers(1, &std::get<uint32_t>(buffer)); }}
+            #endif
+        }
     }
 
     ~IEBuffer() {
