@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../Core/Path.hpp"
+#include "../Core/Route.hpp"
 #define PI 3.141592f
 
 //a class that moves objects in a circle
-class CircularPath: public Path {
+class CircularRoute: public Route {
 public:
     glm::vec3 center{glm::vec3(0,0,0)}; //the center of the circle
     float radius{15.0f}; //the radius of the circle

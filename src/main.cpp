@@ -8,7 +8,8 @@
 #include "GraphicsEngine/OpenGL/openglRenderEngine.hpp"
 #endif
 
-#include "MotionEngine/Paths/CircularPath.hpp"
+#include "MotionEngine/RouteTypes/KinematicsRoute.hpp"
+#include "MotionEngine/KinematicsBody.hpp"
 
 #ifdef ILLUMINATION_ENGINE_VULKAN
 static void vulkanCursorCallback(GLFWwindow *pWindow, double xOffset, double yOffset) {
@@ -96,18 +97,10 @@ int main(int argc, char **argv) {
             double tempTime;
             glfwSetWindowFocusCallback(renderEngine.window, vulkanWindowFocusCallback);
 
-            CircularPath cubePath;
-            cubePath.center = glm::vec3(0, 0, 2);
-            cubePath.radius = 10;
-            cubePath.radiansPerSecond = PI / 2;
-            cubePath.position = &cube.position;
-
-            CircularPath ballPath;
-            ballPath.center = glm::vec3(0, 5, 2);
-            ballPath.radius = 4;
-            ballPath.radiansPerSecond = 2 * PI;
-            ballPath.position = &ball.position;
-
+            KinematicsBody cubeBody(1, glm::vec3(0, 0, 0), glm::quat(1, 0, 0, 0), glm::vec3(0, 0, 0));
+            KinematicsRoute cubeRoute;
+            cubeRoute.setBody(&cubeBody);
+            float lastTime = glfwGetTime();
             while (renderEngine.update()) {
                 int cursorMode{glfwGetInputMode(renderEngine.window, GLFW_CURSOR)};
                 glfwPollEvents();
@@ -182,8 +175,8 @@ int main(int argc, char **argv) {
                     }
                     lastKey = glfwGetTime();
                 }
-                cubePath.step(glfwGetTime());
-                ballPath.step(glfwGetTime());
+                cubeRoute.step(glfwGetTime() - lastTime);
+                lastTime = glfwGetTime();
                 rock.position = {-7, 0, 0};
                 quad.scale = {100, 100, 100};
                 quad.rotation = {90, 0, 0};
