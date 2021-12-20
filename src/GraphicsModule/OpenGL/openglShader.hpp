@@ -33,11 +33,11 @@ public:
             std::string filenameString{createdWith.filename};
             std::string extension = filenameString.substr(filenameString.find_last_of('.') + 1, 4);
             if (extension == "vert") { createdWith.shaderType = GL_VERTEX_SHADER; }
-            else if (extension == "tesc") { createdWith.shaderType = GL_TESS_CONTROL_SHADER; }
-            else if (extension == "tese") { createdWith.shaderType = GL_TESS_EVALUATION_SHADER; }
-            else if (extension == "geom") { createdWith.shaderType = GL_GEOMETRY_SHADER; }
-            else if (extension == "frag") { createdWith.shaderType = GL_FRAGMENT_SHADER; }
-            else if (extension == "comp") { createdWith.shaderType = GL_COMPUTE_SHADER; }
+            if (extension == "tesc") { createdWith.shaderType = GL_TESS_CONTROL_SHADER; }
+            if (extension == "tese") { createdWith.shaderType = GL_TESS_EVALUATION_SHADER; }
+            if (extension == "geom") { createdWith.shaderType = GL_GEOMETRY_SHADER; }
+            if (extension == "frag") { createdWith.shaderType = GL_FRAGMENT_SHADER; }
+            if (extension == "comp") { createdWith.shaderType = GL_COMPUTE_SHADER; }
         }
         std::ifstream file(createdWith.filename, std::ios::in);
         if (!file.is_open()) { throw std::runtime_error("failed to prepare shader: " + static_cast<std::string>(createdWith.filename)); }
@@ -60,8 +60,8 @@ public:
         if (!compiledThisTime) {
             glGetShaderiv(ID, GL_INFO_LOG_LENGTH, &infoLogLength);
             std::vector<char> errorMessage(infoLogLength + 1);
-            glGetShaderInfoLog(ID, infoLogLength, &infoLogLength, errorMessage.data());
-            printf("%s\n", errorMessage.data());
+            glGetShaderInfoLog(ID, infoLogLength, &infoLogLength, &errorMessage[0]);
+            printf("%s\n", &errorMessage[0]);
             if (compiled) {
                 std::cout << "Could not compile shaders...using pre-compiled shaders instead." << std::endl;
                 data = oldData;

@@ -52,7 +52,7 @@ public:
     std::vector<const char *> shaderNames{"shaders/Vulkan/*/vertexShader.vert", "shaders/Vulkan/*/fragmentShader.frag"};
     const char *modelName{};
 
-    VulkanRenderable(VulkanGraphicsEngineLink *engineLink, const char *filePath) {
+    explicit VulkanRenderable(VulkanGraphicsEngineLink *engineLink, const char *filePath) {
         linkedRenderEngine = engineLink;
         modelName = filePath;
         int channels{};
@@ -68,7 +68,7 @@ public:
         textures[0].create(linkedRenderEngine, &textureCreateInfo);
         Assimp::Importer importer{};
         const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to prepare scene from file: " + std::string(filePath)); }
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath)); }
         std::string directory = std::string(filePath).substr(0, std::string(filePath).find_last_of('/'));
         meshes.reserve(scene->mNumMeshes);
         processNode(scene->mRootNode, scene, directory);
@@ -95,6 +95,7 @@ public:
         uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
         uniformBufferObject.position = camera.position;
         uniformBufferObject.time = time;
+        modelBuffer.uploadData(&uniformBufferObject, sizeof(uniformBufferObject));
         if (linkedRenderEngine->settings->rayTracing) {
             for (VulkanMesh &mesh : meshes) {
                 mesh.transformationMatrix = {
@@ -114,7 +115,6 @@ public:
                 mesh.bottomLevelAccelerationStructure.create(linkedRenderEngine, &renderableBottomLevelAccelerationStructureCreateInfo);
             }
         }
-        modelBuffer.uploadData(&uniformBufferObject, sizeof(uniformBufferObject));
     }
 
     std::deque<std::function<void(VulkanRenderable *renderable)>> deletionQueue{};
@@ -135,10 +135,10 @@ public:
 
 private:
     void processNode(aiNode *node, const aiScene *scene, const std::string& directory) {
-        for (uint32_t i = 0; i < node->mNumMeshes; ++i) {
+        for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
             VulkanMesh temporaryMesh{};
             temporaryMesh.vertices.reserve(scene->mMeshes[node->mMeshes[i]]->mNumVertices);
-            for (uint32_t j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumVertices; ++j) {
+            for (unsigned int j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumVertices; ++j) {
                 VulkanVertex temporaryVertex{};
                 temporaryVertex.position.x = scene->mMeshes[node->mMeshes[i]]->mVertices[j].x;
                 temporaryVertex.position.y = scene->mMeshes[node->mMeshes[i]]->mVertices[j].y;
@@ -152,14 +152,10 @@ private:
                 }
                 temporaryMesh.vertices.push_back(temporaryVertex);
             }
-            temporaryMesh.indices.reserve(static_cast<std::vector<uint32_t>::size_type>(scene->mMeshes[node->mMeshes[i]]->mNumFaces) * 3);
-            for (; temporaryMesh.triangleCount < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++temporaryMesh.triangleCount) {
-                for (uint32_t k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mNumIndices; ++k) {
-                    temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mIndices[k]);
-                }
-            }
+            temporaryMesh.indices.reserve(static_cast<std::vector<unsigned int>::size_type>(scene->mMeshes[node->mMeshes[i]]->mNumFaces) * 3);
+            for (; temporaryMesh.triangleCount < scene->mMeshes[node->mMeshes[i]]->mNumFaces; ++temporaryMesh.triangleCount) { for (unsigned int k = 0; k < scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mNumIndices; ++k) { temporaryMesh.indices.push_back(scene->mMeshes[node->mMeshes[i]]->mFaces[temporaryMesh.triangleCount].mIndices[k]); } }
             if (scene->mMeshes[node->mMeshes[i]]->mMaterialIndex >= 0) {
-                std::vector<std::pair<uint32_t*, aiTextureType>> textureTypes{
+                std::vector<std::pair<unsigned int *, aiTextureType>> textureTypes{
                     {&temporaryMesh.diffuseTexture, aiTextureType_DIFFUSE},
                     {&temporaryMesh.emissionTexture, aiTextureType_EMISSIVE},
                     {&temporaryMesh.heightTexture, aiTextureType_HEIGHT},
@@ -168,7 +164,7 @@ private:
                     {&temporaryMesh.roughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS},
                     {&temporaryMesh.specularTexture, aiTextureType_SPECULAR}
                 };
-                for (std::pair<uint32_t*, aiTextureType> textureType : textureTypes) {
+                for (std::pair<unsigned int *, aiTextureType> textureType : textureTypes) {
                     if (scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) > 0) {
                         textures.reserve(scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) + textures.size());
                         VulkanTexture temporaryTexture{};

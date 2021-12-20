@@ -13,7 +13,7 @@
 #include <string>
 
 /**
- * @brief A class that stores the contentsString related to a key press action.
+ * @brief A class that stores the data related to a key press action.
  */
 struct IeKeyPressDescription {
     uint16_t key;
