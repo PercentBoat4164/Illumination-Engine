@@ -11,6 +11,7 @@
 #include <cstring>
 #include <vector>
 #include <utility>
+#include <fstream>
 
 //Possible valid shader extensions - source
 #define IE_RENDER_ENGINE_SHADER_EXTENSION_GLSL "glsl"
@@ -158,7 +159,7 @@ private:
                     .pCode=data.data(),
             };
             if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-                linkedRenderEngine->log->log("Failed to create shader module from shader: " + createdWith.filename + ".", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create shader module from shader file: " + createdWith.filename);
             }
             created.module = true;
         }

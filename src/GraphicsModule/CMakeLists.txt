@@ -1,6 +1,8 @@
+add_subdirectory(Merged)
 add_subdirectory(OpenGL)
 add_subdirectory(Vulkan)
 add_executable(IEGraphicsModule IEGraphicsModuleMain.cpp)
+add_dependencies(IEGraphicsModule IEGraphicsModuleMerged)
 add_dependencies(IEGraphicsModule IEGraphicsModuleOpenGL)
 add_dependencies(IEGraphicsModule IEGraphicsModuleVulkan)
 add_dependencies(IEGraphicsModule IELogModule)

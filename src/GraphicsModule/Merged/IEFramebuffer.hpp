@@ -63,7 +63,7 @@ public:
         IeRenderPassAttachmentDescription renderPassAttachmentDescription{}; // prepare result contentsString
         if (createInfo->aspects & IE_FRAMEBUFFER_ASPECT_COLOR_BIT) {
             if (createInfo->colorImageCount == 0) {
-                linkedRenderEngine->log->log("Color bit set, but requested 0 color images. Creating one color image anyway.", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Color bit set, but no color images requested! Creating a one color image.");
             }
             createInfo->colorImageCount = std::max(1u, createInfo->colorImageCount);
             auto format = ieImageFormats.find(createInfo->format);

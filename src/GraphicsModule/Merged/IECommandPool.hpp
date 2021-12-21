@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IERenderEngineLink.hpp"
-#include "Core/LogModule/IELog.hpp"
+#include "Core/LogModule/IELogger.hpp"
 
 #include "VkBootstrap.h"
 
@@ -32,7 +32,9 @@ public:
         linkedRenderEngine = engineLink;
         #ifdef ILLUMINATION_ENGINE_VULKAN
         VkCommandPoolCreateInfo commandPoolCreateInfo{.sType=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, .flags=createInfo->flags, .queueFamilyIndex=linkedRenderEngine->device.get_queue_index(createInfo->commandQueue).value()};
-        if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) { linkedRenderEngine->log->log("failed to create IECommandPool!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
+        if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create command pool!");
+        }
         created.commandPool = true;
         #endif
     }
@@ -41,7 +43,9 @@ public:
         #ifdef ILLUMINATION_ENGINE_VULKAN
         commandBuffers.resize(commandBufferCount + commandBuffers.size());
         VkCommandBufferAllocateInfo commandBufferAllocateInfo{.sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, .commandPool=commandPool, .level=VK_COMMAND_BUFFER_LEVEL_PRIMARY, .commandBufferCount=static_cast<uint32_t>(commandBuffers.size())};
-        if (vkAllocateCommandBuffers(linkedRenderEngine->device.device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) { linkedRenderEngine->log->log("failed to allocate CommandBuffers!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
+        if (vkAllocateCommandBuffers(linkedRenderEngine->device.device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to allocate command buffers!");
+        }
         created.commandBuffers = true;
         #endif
     };

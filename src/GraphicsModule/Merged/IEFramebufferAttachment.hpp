@@ -35,11 +35,11 @@ public:
             return;
         }
         if (aspect & IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR) {
-            linkedRenderEngine->log->log("Attempted to create attachment with depth and color aspects. A single attachment cannot have both depth and color!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to create attachment with depth and color aspects! Only one aspect is allowed.");
         }
         if (aspect & IE_FRAMEBUFFER_ASPECT_DEPTH_BIT) {
             if (createdWith.colorImageCount == 0) {
-                linkedRenderEngine->log->log("Color bit set, but requested 0 color images. Creating one color image anyway.", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Color bit set, but no color images requested! Creating a one color image.");
             }
             createdWith.colorImageCount = std::max(1u, createdWith.colorImageCount);
             auto format = ieImageFormats.find(createdWith.format);

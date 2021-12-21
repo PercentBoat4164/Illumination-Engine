@@ -336,14 +336,14 @@ public:
             stbi_image_free(const_cast<char *>(createdWith.data.c_str())); //*@todo Use a different casting method here.
             #ifdef ILLUMINATION_ENGINE_VULKAN
             if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-                linkedRenderEngine->log->log("Freed image bufferData for image at " + std::to_string(reinterpret_cast<uint64_t>(&std::get<VkImage>(image))), log4cplus::INFO_LOG_LEVEL, "Graphics Module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Freed data of image " + std::to_string(reinterpret_cast<uint64_t>(&std::get<VkImage>(image))));
                 if (created.view) { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr); }
                 if (created.image) { vmaDestroyImage(linkedRenderEngine->allocator, std::get<VkImage>(image), allocation); }
             }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
             if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-                linkedRenderEngine->log->log("Freed image bufferData for image " + std::to_string(std::get<uint32_t>(image)), log4cplus::INFO_LOG_LEVEL, "Graphics Module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Freed data of image " + std::to_string(std::get<uint32_t>(image)));
             }
             #endif
         }
@@ -358,10 +358,14 @@ public:
             VmaAllocationCreateInfo allocationCreateInfo{.usage=static_cast<VmaMemoryUsage>(imageProperties.memoryUsage)};
             VkExtent3D extent{.width=imageProperties.width, .height=imageProperties.height, .depth=imageProperties.depth};
             VkImageCreateInfo imageCreateInfo{.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, .imageType=static_cast<VkImageType>(imageProperties.type), .format=static_cast<VkFormat>(imageProperties.format), .extent=extent, .mipLevels=imageProperties.mipLevels, .arrayLayers=1, .samples=static_cast<VkSampleCountFlagBits>(imageProperties.msaaSamples), .tiling=static_cast<VkImageTiling>(imageProperties.tiling), .usage=imageProperties.layout, .sharingMode=VK_SHARING_MODE_EXCLUSIVE, .initialLayout=VK_IMAGE_LAYOUT_UNDEFINED};
-            if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &std::get<VkImage>(image), &allocation, nullptr) != VK_SUCCESS) { linkedRenderEngine->log->log("Failed to create image!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
+            if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &std::get<VkImage>(image), &allocation, nullptr) != VK_SUCCESS) {
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to create image!");
+            }
             created.image = true;
             imageViewCreateInfo.image = std::get<VkImage>(image);
-            if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { linkedRenderEngine->log->log("Failed to create image view!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
+            if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) {
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to create image view!");
+            }
             created.view = true;
             IeImageLayout imageLayout = imageProperties.layout;
             if (createdWith.dataSource != nullptr) {
@@ -420,13 +424,15 @@ public:
 
 void IEBuffer::toImage(IEImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer) {
     if (!created.buffer) {
-        linkedRenderEngine->log->log("Called IEBuffer::toImage() on a IEBuffer that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted conversion of non-existent buffer to image!");
+        return;
     }
     if (image == nullptr) {
-        linkedRenderEngine->log->log("Called IEBuffer::toImage() with an IEImage that does not exist!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted conversion of buffer to non-existent image!");
+        return;
     }
     if (!image->created.image) {
-        linkedRenderEngine->log->log("Called IEBuffer::toImage() with an IEImage that has not been created!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Creating image for conversion. Image may not have expected properties.");
         IEImage::CreateInfo imageCreateInfo{
                 .properties=IEImage::Properties {
                         .layout=IE_IMAGE_LAYOUT_DESTINATION,

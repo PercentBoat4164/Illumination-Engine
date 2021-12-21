@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/LogModule/IELog.hpp"
+#include "Core/LogModule/IELogger.hpp"
 #include "IERenderEngineLink.hpp"
 #include "IECommandPool.hpp"
 #include "IEBuffer.hpp"
@@ -29,6 +29,11 @@
 #endif
 #include "GLFW/glfw3.h"
 
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#endif
+
 class IERenderEngine {
 public:
     IERenderEngineLink* renderEngineLink{};
@@ -46,13 +51,10 @@ public:
     IEDescriptorSet defaultDescriptorSet{};
     std::vector<IEShader> defaultShaders{};
 
-    IERenderEngine(const std::string& API, IELog *pLog, IERenderEngineLink* engineLink) {
+    IERenderEngine(const std::string& API, IERenderEngineLink* engineLink) {
         renderEngineLink = engineLink;
-        renderEngineLink->log = pLog;
-        renderEngineLink->log->addModule("Graphics module");
-        renderEngineLink->log->log("Creating window", log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Creating window");
         renderEngineLink->api.name = API;
-        renderEngineLink->log = pLog;
         renderEngineLink->textures = &textures;
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
@@ -67,18 +69,20 @@ public:
             #endif
             vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
             if (!instanceBuilder) {
-                renderEngineLink->log->log("failed to create Vulkan instance: " + instanceBuilder.error().message() + "\n", log4cplus::ERROR_LOG_LEVEL, "Graphics module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "failed to create Vulkan instance: " + instanceBuilder.error().message() + "\n");
             }
             renderEngineLink->instance = instanceBuilder.value();
             renderEngineLink->created.instance = true;
         }
         #endif
-        if (!glfwInit()) { renderEngineLink->log->log("GLFW failed to initialize", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+        if (!glfwInit()) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "GLFW failed to initialize");
+        }
         renderEngineLink->created.glfw = true;
     }
 
     void create() {
-        renderEngineLink->log->log("Initializing " + renderEngineLink->api.name + " API", log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Initializing " + renderEngineLink->api.name + " API");
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) { glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); }
         #endif
@@ -102,7 +106,7 @@ public:
             std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
             stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
             if (!pixels) {
-                renderEngineLink->log->log("Failed to prepare texture image from file: " + filename, log4cplus::WARN_LOG_LEVEL, "Graphics module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to prepare logo from file: " + filename);
             }
             icons[i].pixels = pixels;
             icons[i].height = height;
@@ -119,17 +123,19 @@ public:
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             if (glfwCreateWindowSurface(renderEngineLink->instance.instance, renderEngineLink->window, nullptr, &renderEngineLink->surface) != VK_SUCCESS) {
-                renderEngineLink->log->log("failed to create window surface", log4cplus::ERROR_LOG_LEVEL, "Graphics module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create window surface!");
             }
             renderEngineLink->created.surface = true;
             vkb::PhysicalDeviceSelector selector{renderEngineLink->instance};
             vkb::detail::Result<vkb::PhysicalDevice> temporaryPhysicalDeviceBuilder = selector.set_surface(renderEngineLink->surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
             if (!temporaryPhysicalDeviceBuilder) {
-                renderEngineLink->log->log("Physical device creation: " + temporaryPhysicalDeviceBuilder.error().message(), log4cplus::ERROR_LOG_LEVEL, "Graphics module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Physical device creation: " + temporaryPhysicalDeviceBuilder.error().message());
             }
             vkb::DeviceBuilder temporaryLogicalDeviceBuilder{temporaryPhysicalDeviceBuilder.value()};
             vkb::detail::Result<vkb::Device> temporaryLogicalDevice = temporaryLogicalDeviceBuilder.build();
-            if (!temporaryLogicalDevice) { renderEngineLink->log->log("Logical device creation: " + temporaryLogicalDevice.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            if (!temporaryLogicalDevice) {
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Logical device creation: " + temporaryLogicalDevice.error().message());
+            }
             renderEngineLink->device = temporaryLogicalDevice.value();
             renderEngineLink->created.device = true;
             renderEngineLink->create();
@@ -196,7 +202,9 @@ public:
             vkb::DeviceBuilder finalLogicalDeviceBuilder{finalPhysicalDeviceBuilder.value()};
             finalLogicalDeviceBuilder.add_pNext(renderEngineLink->physicalDevice.enabledAPIComponents.pNextHighestFeature);
             vkb::detail::Result<vkb::Device> finalLogicalDevice = finalLogicalDeviceBuilder.build();
-            if (!finalLogicalDevice) { renderEngineLink->log->log("failed to create final device after initial device was successfully created", log4cplus::DEBUG_LOG_LEVEL, "Graphics module"); }
+            if (!finalLogicalDevice) {
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create final device after initial device was successfully created");
+            }
             renderEngineLink->device = finalLogicalDevice.value();
             renderEngineLink->created.device = true;
             VmaAllocatorCreateInfo allocatorInfo{};
@@ -217,7 +225,9 @@ public:
             glfwSwapInterval(1);
             #endif
             glewExperimental = true;
-            if (glewInit() != GLEW_OK) { renderEngineLink->log->log("Failed to initialize GLEW!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
+            if (glewInit() != GLEW_OK) {
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to initialize GLEW!");
+            }
             renderEngineLink->created.glew = true;
             #ifndef NDEBUG
             int32_t flags;
@@ -234,8 +244,7 @@ public:
         renderEngineLink->create();
         renderEngineLink->api.getVersion();
         renderEngineLink->physicalDevice.info.generateInfo();
-        renderEngineLink->log->log(renderEngineLink->api.name + ' ' + renderEngineLink->api.version.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
-        renderEngineLink->log->log(renderEngineLink->physicalDevice.info.name, log4cplus::INFO_LOG_LEVEL, "Graphics module");
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink->api.name + ' ' + renderEngineLink->api.version.name + "\n" + renderEngineLink->physicalDevice.info.name);
         handleWindowSizeChange();
         IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
             .poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}},
@@ -276,7 +285,7 @@ public:
                     .set_desired_present_mode(renderEngineLink->settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
                     .set_desired_extent(renderEngineLink->settings.resolution[0], renderEngineLink->settings.resolution[1]).build();
             if (!swapchainBuilderResults) {
-                renderEngineLink->log->log("failed to create swapchain.", log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create swapchain!");
             }
             destroy_swapchain(renderEngineLink->swapchain);
             renderEngineLink->swapchain = swapchainBuilderResults.value();
@@ -331,7 +340,7 @@ public:
             #endif
             vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
             if (!instanceBuilder) {
-                renderEngineLink->log->log(instanceBuilder.error().message(), log4cplus::DEBUG_LOG_LEVEL, "Graphics module");
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, instanceBuilder.error().message());
             }
             renderEngineLink->instance = instanceBuilder.value();
         }
@@ -388,7 +397,7 @@ private:
             default:                                severityText = "Unknown"; break;
         }
         auto renderEngineLink = static_cast<IERenderEngineLink *>(const_cast<void *>(userParam));
-        renderEngineLink->log->log("OpenGL Error: " + sourceText + " produced a" + static_cast<std::string>(static_cast<std::string>("aeiouAEIOU").find(typeText[0]) ? "n " : " ") + typeText + " of " + severityText + " severity level which says: " + message, severity == (GL_DEBUG_SEVERITY_HIGH | GL_DEBUG_SEVERITY_MEDIUM) ? log4cplus::DEBUG_LOG_LEVEL : severity == (GL_DEBUG_SEVERITY_LOW) ? log4cplus::WARN_LOG_LEVEL : log4cplus::INFO_LOG_LEVEL, "Graphics Module");
+        IELogger::logDefault(severity == (GL_DEBUG_SEVERITY_HIGH | GL_DEBUG_SEVERITY_MEDIUM) ? ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG : severity == (GL_DEBUG_SEVERITY_LOW) ? ILLUMINATION_ENGINE_LOG_LEVEL_WARN : ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "OpenGL Error: " + sourceText + " produced a" + static_cast<std::string>(static_cast<std::string>("aeiouAEIOU").find(typeText[0]) ? "n " : " ") + typeText + " of " + severityText + " severity level which says: " + message);
         #endif
     }
 

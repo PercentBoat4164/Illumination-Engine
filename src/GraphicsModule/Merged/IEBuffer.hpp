@@ -67,7 +67,9 @@ public:
         if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             VkBufferCreateInfo bufferCreateInfo{.sType=VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, .size=createdWith.bufferSize, .usage=createdWith.usage};
             VmaAllocationCreateInfo allocationCreateInfo{.usage=createdWith.allocationUsage};
-            if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &std::get<VkBuffer>(buffer), &allocation, nullptr) != VK_SUCCESS) { linkedRenderEngine->log->log("failed to create buffer!", log4cplus::DEBUG_LOG_LEVEL, "Graphics Module"); }
+            if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &std::get<VkBuffer>(buffer), &allocation, nullptr) != VK_SUCCESS) {
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create buffer!");
+            }
             created.buffer = true;
             if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
                 VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{.sType=VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer=std::get<VkBuffer>(buffer)};
@@ -86,8 +88,14 @@ public:
     }
 
     virtual IEBuffer upload(void *data, uint32_t sizeOfData) {
-        if (!created.buffer) { linkedRenderEngine->log->log("Called IEBuffer::upload() on a IEBuffer that does not exist!", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
-        if (sizeOfData > createdWith.bufferSize) { linkedRenderEngine->log->log("IEBuffer::CreateInfo::sizeOfData must not be greater than IEBuffer::CreateInfo::bufferSize.", log4cplus::WARN_LOG_LEVEL, "Graphics Module"); }
+        if (!created.buffer) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to upload to a buffer that does not exist!");
+            return IEBuffer{};
+        }
+        if (sizeOfData > createdWith.bufferSize) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "sizeOfData must not be greater than bufferSize");
+            return IEBuffer{};
+        }
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             vmaMapMemory(linkedRenderEngine->allocator, allocation, &bufferData);
@@ -106,10 +114,12 @@ public:
 
     virtual void update(void *data, uint32_t sizeOfData, uint32_t startingPosition, VkCommandBuffer commandBuffer) {
         if (!created.buffer) {
-            linkedRenderEngine->log->log("Attempted to update a buffer that has not been created!", log4cplus::ERROR_LOG_LEVEL, "Graphics Module");
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update a buffer that does not exist!");
+            return;
         }
         if (data == nullptr) {
-            linkedRenderEngine->log->log("Attempted to update a buffer with contentsString as nullptr!", log4cplus::WARN_LOG_LEVEL, "Graphics Module");
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to update an existing buffer with no data!");
+            return;
         }
         vkCmdUpdateBuffer(commandBuffer, std::get<VkBuffer>(buffer), startingPosition, sizeOfData, data);
     }
@@ -119,10 +129,18 @@ public:
     void destroy() {
         if (created.buffer) {
             #ifdef ILLUMINATION_ENGINE_VULKAN
-            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) { if (created.buffer) { vmaDestroyBuffer(linkedRenderEngine->allocator, std::get<VkBuffer>(buffer), allocation); }}
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+                if (created.buffer) {
+                    vmaDestroyBuffer(linkedRenderEngine->allocator, std::get<VkBuffer>(buffer), allocation);
+                }
+            }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
-            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) { if (created.buffer) { glDeleteBuffers(1, &std::get<uint32_t>(buffer)); }}
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+                if (created.buffer) {
+                    glDeleteBuffers(1, &std::get<uint32_t>(buffer));
+                }
+            }
             #endif
         }
     }
