@@ -10,6 +10,7 @@
 #include "IERenderPass.hpp"
 #include "IERenderable.hpp"
 #include "IEPipeline.hpp"
+#include "IEGPUData.hpp"
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -243,21 +244,9 @@ public:
         #endif
         renderEngineLink->create();
         renderEngineLink->api.getVersion();
-        renderEngineLink->physicalDevice.info.generateInfo();
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink->api.name + ' ' + renderEngineLink->api.version.name + "\n" + renderEngineLink->physicalDevice.info.name);
+        renderEngineLink->physicalDevice.info.generate();
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink->api.name + ' ' + renderEngineLink->api.version.name + " running on " + renderEngineLink->physicalDevice.info.name);
         handleWindowSizeChange();
-        IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
-            .poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}},
-            .shaderStages={static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)},
-            .data={std::nullopt}
-        };
-        defaultDescriptorSet.create(renderEngineLink, &descriptorSetCreateInfo);
-        IEPipeline::CreateInfo pipelineCreateInfo{
-            .shaders=defaultShaders,
-            .descriptorSet=&defaultDescriptorSet,
-            .renderPass=&renderPass
-        };
-        defaultPipeline.create(renderEngineLink, &pipelineCreateInfo);
     }
 
     bool update() {
@@ -274,7 +263,28 @@ public:
         }
     }
 
-    //*@todo Update VMA and VkBootstrap on next opportunity as these libraries may be causing the unreliable program execution.
+    void loadRenderable(IERenderable* renderable) {
+        IEBuffer::CreateInfo bufferCreateInfo{
+            .bufferSize=sizeof(IEGPUData::IEModelBuffer),
+            .usage=VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
+        };
+        renderable->modelBuffer.create(renderEngineLink, &bufferCreateInfo);
+        IEGPUData::IEModelBuffer modelBufferData{};
+        renderable->modelBuffer.upload(&modelBufferData, sizeof(glm::mat4));
+        IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
+                .poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}},
+                .shaderStages={static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)},
+                .data={&renderable->modelBuffer}
+        };
+        renderable->descriptorSet.create(renderEngineLink, &descriptorSetCreateInfo);
+        IEPipeline::CreateInfo pipelineCreateInfo{
+                .shaders=defaultShaders,
+                .descriptorSet=&defaultDescriptorSet,
+                .renderPass=&renderPass
+        };
+    }
+
     void handleWindowSizeChange() {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {

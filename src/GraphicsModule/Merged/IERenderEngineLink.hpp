@@ -130,7 +130,7 @@ public:
             std::string vendor{}; // physical device vendor
             std::string name{}; // physical device name
 
-            Info generateInfo() {
+            Info generate() {
             #ifdef ILLUMINATION_ENGINE_VULKAN
                 if (api->name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
                     api->version = IEVersion{VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion), VK_VERSION_PATCH(properties.apiVersion)};

@@ -84,15 +84,29 @@ void create(IERenderEngineLink *renderEngineLink, CreateInfo *createInfo) {
     update(data, bindings);
 }
 
+/**@todo Add support for the nullDescriptor feature.*/
 void update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> newData, std::vector<int> bindings = {}) {
-    if (bindings.empty()) { assert(newData.size() == createdWith.data.size()); } else { assert(bindings.size() == newData.size()); }
+    if (newData.empty()) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to upload no data!");
+        return;
+    }
+    if (bindings.empty() && (newData.size() != createdWith.data.size())) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to upload new data with different size from old data without specifying binding indices!");
+        return;
+    }
+    else if (bindings.size() != newData.size()) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to upload new data without specifying a binding for each one!");
+        return;
+    }
     std::vector<VkWriteDescriptorSetAccelerationStructureKHR> writeDescriptorSetAccelerationStructures{};
     writeDescriptorSetAccelerationStructures.reserve(createdWith.poolSizes.size());
     std::vector<VkDescriptorImageInfo> imageDescriptorInfos{};
     imageDescriptorInfos.reserve(createdWith.poolSizes.size());
     std::vector<VkDescriptorBufferInfo> bufferDescriptorInfos{};
     bufferDescriptorInfos.reserve(createdWith.poolSizes.size());
-    if (bindings.empty()) { bindings.resize(newData.size(), 0); }
+    if (bindings.empty()) {
+        bindings.resize(newData.size(), 0);
+    }
     std::vector<VkWriteDescriptorSet> descriptorWrites{};
     descriptorWrites.resize(bindings.size());
     for (unsigned long i = 0; i < bindings.size(); ++i) {
@@ -113,7 +127,9 @@ void update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IE
                 storageImageDescriptorInfo.imageView = std::get<IEImage *>(newData[i].value())->view;
 //                storageImageDescriptorInfo.sampler = std::get<IEImage *>(newData[i].value())->sampler;
 //                storageImageDescriptorInfo.imageLayout = std::get<IEImage *>(newData[i].value())->imageLayout;
-                if (storageImageDescriptorInfo.imageView == VK_NULL_HANDLE) { throw std::runtime_error("no image given or given image does not have an associated view!"); }
+                if (storageImageDescriptorInfo.imageView == VK_NULL_HANDLE) {
+                    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update descriptor set with an image without a view!");
+                }
                 imageDescriptorInfos.push_back(storageImageDescriptorInfo);
                 writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
@@ -121,7 +137,9 @@ void update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IE
                 combinedImageSamplerDescriptorInfo.imageView = std::get<IEImage *>(newData[i].value())->view;
 //                combinedImageSamplerDescriptorInfo.sampler = std::get<IEImage *>(newData[i].value())->sampler;
 //                combinedImageSamplerDescriptorInfo.imageLayout = std::get<IEImage *>(newData[i].value())->imageLayout;
-                if (combinedImageSamplerDescriptorInfo.sampler == VK_NULL_HANDLE) { throw std::runtime_error("no image given or given image does not have an associated sampler!"); }
+                if (combinedImageSamplerDescriptorInfo.sampler == VK_NULL_HANDLE) {
+                    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update descriptor set with an image without a sampler!");
+                }
                 imageDescriptorInfos.push_back(combinedImageSamplerDescriptorInfo);
                 writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
@@ -129,7 +147,9 @@ void update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IE
                 storageBufferDescriptorInfo.buffer = std::get<VkBuffer>(std::get<IEBuffer *>(newData[i].value())->buffer);
                 storageBufferDescriptorInfo.offset = 0;
                 storageBufferDescriptorInfo.range = VK_WHOLE_SIZE;
-                if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no buffer given or given buffer has not been created!"); }
+                if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) {
+                    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update descriptor set with a non-existent buffer!");
+                }
                 bufferDescriptorInfos.push_back(storageBufferDescriptorInfo);
                 writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
@@ -137,10 +157,14 @@ void update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IE
                 uniformBufferDescriptorInfo.buffer = std::get<VkBuffer>(std::get<IEBuffer *>(newData[i].value())->buffer);
                 uniformBufferDescriptorInfo.offset = 0;
                 uniformBufferDescriptorInfo.range = VK_WHOLE_SIZE;
-                if (uniformBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no buffer given or given buffer has not been created!"); }
+                if (uniformBufferDescriptorInfo.buffer == VK_NULL_HANDLE) {
+                    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update descriptor set with a non-existent buffer!");
+                }
                 bufferDescriptorInfos.push_back(uniformBufferDescriptorInfo);
                 writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
-            } else { throw std::runtime_error("unsupported descriptor type: " + std::to_string(writeDescriptorSet.descriptorType)); }
+            } else {
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to update descriptor set with unsupported descriptor type: " + std::to_string(writeDescriptorSet.descriptorType));
+            }
             descriptorWrites[i] = writeDescriptorSet;
         }
     }

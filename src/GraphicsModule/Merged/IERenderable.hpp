@@ -20,6 +20,9 @@ public:
     std::vector<IEShader*> shaders{};
     std::vector<IEMesh> meshes{};
     Assimp::Importer importer{};
+    IEBuffer modelBuffer{};
+    IEDescriptorSet descriptorSet{};
+    IEPipeline pipeline{};
     bool render{true};
 
     void create(IERenderEngineLink* engineLink, const std::string& file = "") {

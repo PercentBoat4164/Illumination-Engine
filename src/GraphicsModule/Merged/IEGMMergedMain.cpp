@@ -22,12 +22,13 @@ int main(int argc, char **argv) {
         input = IE_RENDER_ENGINE_API_NAME_OPENGL;
         std::cout << "Forcing OpenGL because Vulkan is not supported" << std::endl;
     }
-    IELogger log{};
+//    IELogger log{};
     IERenderEngineLink renderEngineLink{};
     IERenderEngine renderEngine{input, &renderEngineLink};
     renderEngine.create();
     IERenderable cube{};
     cube.create(&renderEngineLink, "res/Models/Cube/cube.obj");
+    renderEngine.loadRenderable(&cube);
     while (renderEngine.update()) {
         glfwPollEvents();
     }
