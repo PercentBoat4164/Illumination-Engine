@@ -1,20 +1,30 @@
 #pragma once
 
-#include <vector>
-
 #include "IEImage.hpp"
 #include "IERenderEngineLink.hpp"
 #include "IERenderPass.hpp"
 #include "IEFramebufferAttachment.hpp"
 
+#ifdef ILLUMINATION_ENGINE_VULKAN
+#inlude <vulkan/vulkan.hpp>
+#endif
+
+#include <vector>
+
 enum IeFramebufferAttachmentFormat {
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     IE_FRAMEBUFFER_DEPTH_ATTACHMENT_FORMAT = VK_FORMAT_D32_SFLOAT_S8_UINT
+    #else
+    IE_FRAMEBUFFER_DEPTH_ATTACHMENT_FORMAT = GL_FLOAT_32_UNSIGNED_INT_24_8_REV
+    #endif
 };
 
 struct IeRenderPassAttachmentDescription {
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     VkAttachmentDescription depth{};
     std::vector<VkAttachmentDescription> color{};
     std::vector<VkAttachmentDescription> resolve{};
+    #endif
 };
 
 class IERenderPass;
@@ -24,7 +34,9 @@ public:
     struct CreateInfo {
         IeFramebufferAspect aspects{IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR};
         uint8_t msaaSamples{1};
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         VkImageView swapchainImageView;
+        #endif
         IeImageFormat format;
         IEFramebuffer* dependentOn;
         IEFramebuffer* requiredBy;
@@ -41,8 +53,10 @@ public:
     IEFramebufferAttachment depth{};
     std::vector<IEFramebufferAttachment> colorAttachments{};
     std::vector<IEFramebufferAttachment> resolveAttachments{};
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     std::vector<VkFramebuffer> framebuffers{};
     std::vector<VkClearValue> clearValues{3};
+    #endif
     IERenderEngineLink *linkedRenderEngine{};
 
 
@@ -60,6 +74,7 @@ public:
      * @param createInfo
      */
     static IeRenderPassAttachmentDescription generateAttachmentDescriptions(IERenderEngineLink* linkedRenderEngine, IEFramebuffer::CreateInfo* createInfo) {
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         IeRenderPassAttachmentDescription renderPassAttachmentDescription{}; // prepare result contentsString
         if (createInfo->aspects & IE_FRAMEBUFFER_ASPECT_COLOR_BIT) {
             if (createInfo->colorImageCount == 0) {
@@ -114,13 +129,20 @@ public:
             };
         }
         return renderPassAttachmentDescription;
+        #else
+        return IeRenderPassAttachmentDescription{};
+        #endif
     }
 
     void destroy() {
         if (created.framebuffer) {
-            for (VkFramebuffer framebuffer : framebuffers) {
-                vkDestroyFramebuffer(linkedRenderEngine->device.device, framebuffer, nullptr);
+            #ifdef ILLUMINATION_ENGINE_VULKAN
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+                for (VkFramebuffer framebuffer: framebuffers) {
+                    vkDestroyFramebuffer(linkedRenderEngine->device.device, framebuffer, nullptr);
+                }
             }
+            #endif
         }
     }
 

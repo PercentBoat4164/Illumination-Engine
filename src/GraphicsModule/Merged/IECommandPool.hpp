@@ -3,7 +3,9 @@
 #include "IERenderEngineLink.hpp"
 #include "Core/LogModule/IELogger.hpp"
 
+#ifdef ILLUMINATION_ENGINE_VULKAN
 #include "VkBootstrap.h"
+#endif
 
 class IECommandPool {
 public:
@@ -86,9 +88,11 @@ public:
         #endif
     }
 
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     VkCommandBuffer operator[](uint32_t index) {
         return commandBuffers[index];
     }
+    #endif
 
     void destroy() const {
         #ifdef ILLUMINATION_ENGINE_VULKAN

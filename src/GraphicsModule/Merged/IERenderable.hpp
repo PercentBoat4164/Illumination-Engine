@@ -4,7 +4,7 @@
 #include "IEShader.hpp"
 #include "IEMesh.hpp"
 
-#include <glm.hpp>
+#include <glm/glm.hpp>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -36,9 +36,11 @@ public:
     }
 
     void setShader(IEShader& shader) {
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         if (shader.created.all()) {
             shaders[shader.language] = &shader;
         }
+        #endif
     }
 
     void processNode(aiNode *node, const aiScene *scene, const std::string& directory) {

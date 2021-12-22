@@ -13,8 +13,8 @@ public:
             preDesignedImage = true;
             imageProperties.type = std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_TEXTURE_IMAGE ? IE_IMAGE_TYPE_2D : createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
             if (std::get<IePreDesignedImage>(createdWith.properties) != IE_PRE_DESIGNED_TEXTURE_IMAGE) {
-                imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->swapchain.extent.width;
-                imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->swapchain.extent.height;
+                imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->settings.renderResolution[0];
+                imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->settings.renderResolution[1];
             }
         } else if (createdWith.properties.index() == 1) {
             preDesignedImage = true;

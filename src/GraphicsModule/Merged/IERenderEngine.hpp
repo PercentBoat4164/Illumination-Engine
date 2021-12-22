@@ -39,10 +39,12 @@ class IERenderEngine {
 public:
     IERenderEngineLink* renderEngineLink{};
 
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     std::vector<VkFence> inFlightFences{};
     std::vector<VkFence> imagesInFlight{};
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
+    #endif
     IERenderPass renderPass{};
     std::vector<IEFramebuffer> framebuffers{};
     std::vector<IETexture> textures{};
@@ -221,7 +223,7 @@ public:
         if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
             glewInit();
             #if defined(_WIN32)
-            glfwSwapInterval(settings.vSync ? 1 : 0);
+            glfwSwapInterval(renderEngineLink->settings.vSync ? 1 : 0);
             #else
             glfwSwapInterval(1);
             #endif
@@ -254,35 +256,43 @@ public:
         uint32_t imageIndex{};
         for (IERenderable *renderable : renderables) {
             if (renderable->render) {
-                vkCmdBindVertexBuffers(renderCommandPool[imageIndex], 0, 1, &std::get<VkBuffer>(renderable->meshes[0].vertexBuffer.buffer), nullptr);
-                vkCmdBindIndexBuffer(renderCommandPool[imageIndex], std::get<VkBuffer>(renderable->meshes[0].indexBuffer.buffer), 0, VK_INDEX_TYPE_UINT32);
-                vkCmdBindPipeline(renderCommandPool[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, defaultPipeline.pipeline);
-                vkCmdBindDescriptorSets(renderCommandPool[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, defaultPipeline.pipelineLayout, 0, 1, &defaultDescriptorSet.descriptorSet, 0, nullptr);
-                vkCmdDrawIndexed(renderCommandPool[imageIndex], renderable->meshes[0].indices.size(), 1, 0, 0, 0);
+                #ifdef ILLUMINATION_ENGINE_VULKAN
+                if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+                    vkCmdBindVertexBuffers(renderCommandPool[imageIndex], 0, 1, &std::get<VkBuffer>(renderable->meshes[0].vertexBuffer.buffer), nullptr);
+                    vkCmdBindIndexBuffer(renderCommandPool[imageIndex], std::get<VkBuffer>(renderable->meshes[0].indexBuffer.buffer), 0, VK_INDEX_TYPE_UINT32);
+                    vkCmdBindPipeline(renderCommandPool[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, defaultPipeline.pipeline);
+                    vkCmdBindDescriptorSets(renderCommandPool[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, defaultPipeline.pipelineLayout, 0, 1, &defaultDescriptorSet.descriptorSet, 0, nullptr);
+                    vkCmdDrawIndexed(renderCommandPool[imageIndex], renderable->meshes[0].indices.size(), 1, 0, 0, 0);
+                }
+                #endif
             }
         }
     }
 
     void loadRenderable(IERenderable* renderable) {
-        IEBuffer::CreateInfo bufferCreateInfo{
-            .bufferSize=sizeof(IEGPUData::IEModelBuffer),
-            .usage=VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
-        };
-        renderable->modelBuffer.create(renderEngineLink, &bufferCreateInfo);
-        IEGPUData::IEModelBuffer modelBufferData{};
-        renderable->modelBuffer.upload(&modelBufferData, sizeof(glm::mat4));
-        IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
-                .poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}},
-                .shaderStages={static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)},
-                .data={&renderable->modelBuffer}
-        };
-        renderable->descriptorSet.create(renderEngineLink, &descriptorSetCreateInfo);
-        IEPipeline::CreateInfo pipelineCreateInfo{
-                .shaders=defaultShaders,
-                .descriptorSet=&defaultDescriptorSet,
-                .renderPass=&renderPass
-        };
+        #ifdef ILLUMINATION_ENGINE_VULKAN
+        if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+            IEBuffer::CreateInfo bufferCreateInfo{
+                    .bufferSize=sizeof(IEGPUData::IEModelBuffer),
+                    .usage=VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                    .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
+            };
+            renderable->modelBuffer.create(renderEngineLink, &bufferCreateInfo);
+            IEGPUData::IEModelBuffer modelBufferData{};
+            renderable->modelBuffer.upload(&modelBufferData, sizeof(glm::mat4));
+            IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
+                    .poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}},
+                    .shaderStages={static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)},
+                    .data={&renderable->modelBuffer}
+            };
+            renderable->descriptorSet.create(renderEngineLink, &descriptorSetCreateInfo);
+            IEPipeline::CreateInfo pipelineCreateInfo{
+                    .shaders=defaultShaders,
+                    .descriptorSet=&defaultDescriptorSet,
+                    .renderPass=&renderPass
+            };
+        }
+        #endif
     }
 
     void handleWindowSizeChange() {

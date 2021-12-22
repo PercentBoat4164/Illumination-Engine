@@ -113,6 +113,8 @@ else ()
     add_compile_options("-O3")
 endif ()
 
-add_link_options("-fuse-ld=lld")
+#add_link_options("-fuse-ld=lld")
+#message("${CMAKE_SOURCE_DIR}/deps/lld-link.exe")
+#set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_SOURCE_DIR}/deps/lld-link.exe")
 
 add_subdirectory(src)

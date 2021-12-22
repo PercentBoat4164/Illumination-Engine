@@ -150,7 +150,7 @@ const static std::unordered_multimap<IeImageFilter, std::pair<uint32_t, uint32_t
 };
 
 const static std::unordered_multimap<IeImageFormat, std::pair<uint32_t, uint32_t>> ieImageFormats{
-        {IE_IMAGE_FORMAT_R8G8B8_SRGB,                       {GL_RGB8,                           GL_RGB8}},
+        {IE_IMAGE_FORMAT_SRGB_RGB_8BIT,                     {GL_RGB8,                           GL_RGB8}},
         {IE_IMAGE_FORMAT_SRGB_RGBA_8BIT,                    {GL_RGBA8,                          GL_RGBA8}},
         {IE_IMAGE_FORMAT_UINT_SFLOAT_32BIT,                 {GL_FLOAT_32_UNSIGNED_INT_24_8_REV, GL_FLOAT_32_UNSIGNED_INT_24_8_REV}}
 };
@@ -164,9 +164,16 @@ const static std::unordered_multimap<IeImageLayout, std::pair<uint32_t , uint32_
         {IE_IMAGE_LAYOUT_WRITE,                              {GL_NONE,                           GL_NONE}},
         {IE_IMAGE_LAYOUT_DISPLAY,                            {GL_NONE,                           GL_NONE}},
         {IE_IMAGE_LAYOUT_DESTINATION,                        {GL_NONE,                           GL_NONE}},
-        {IE_IMAGE_USAGE_SOURCE,                             {GL_NONE,                           GL_NONE}},
+        {IE_IMAGE_LAYOUT_SOURCE,                             {GL_NONE,                           GL_NONE}},
         {IE_IMAGE_LAYOUT_UNDEFINED,                          {GL_NONE,                           GL_NONE}},
         {IE_IMAGE_LAYOUT_ANY,                                {GL_NONE,                           GL_NONE}}
+};
+
+const static std::unordered_multimap<IeImageTiling, std::pair<uint32_t, uint32_t>> ieImageTilings{
+        {IE_IMAGE_TILING_REPEAT,            {GL_REPEAT,                GL_REPEAT}},
+        {IE_IMAGE_TILING_MIRROR_REPEAT,     {GL_MIRRORED_REPEAT,       GL_MIRRORED_REPEAT}},
+        {IE_IMAGE_TILING_CLAMP,             {GL_CLAMP_TO_EDGE,         GL_CLAMP_TO_EDGE}},
+        {IE_IMAGE_TILING_MIRROR_CLAMP,      {GL_MIRROR_CLAMP_TO_EDGE,  GL_MIRROR_CLAMP_TO_EDGE}}
 };
 #endif
 #endif
@@ -180,7 +187,11 @@ public:
         IeImageFormat format{IE_IMAGE_FORMAT_SRGB_RGBA_8BIT};
         IeImageLayout layout{IE_IMAGE_LAYOUT_ANY};
         IeImageTiling tiling{IE_IMAGE_TILING_REPEAT};
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         uint32_t memoryUsage{VMA_MEMORY_USAGE_CPU_TO_GPU};
+        #else
+        uint32_t memoryUsage{0};
+        #endif
         uint8_t mipLevels{1};
         uint8_t msaaSamples{1};
         uint16_t width{1};
@@ -218,12 +229,14 @@ public:
     #ifdef ILLUMINATION_ENGINE_VULKAN
     VkImageView view{};
     VmaAllocation allocation{};
+    std::variant<VkImage, uint32_t> image{};
+    #else
+    std::variant<uint32_t> image{};
     #endif
     CreateInfo createdWith{};
     IECommandPool *commandPool{};
     uint32_t commandBufferIndex{};
     IERenderEngineLink *linkedRenderEngine{};
-    std::variant<VkImage, uint32_t> image{};
     Created created{};
     Properties imageProperties{};
     bool preDesignedImage{};
@@ -238,25 +251,37 @@ public:
             preDesignedImage = true;
             if (std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_COLOR_IMAGE) {
                 imageProperties.type = createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
-                imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->swapchain.extent.width;
-                imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->swapchain.extent.height;
+                imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->settings.renderResolution[0];
+                imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->settings.renderResolution[1];
                 imageProperties.layout = IE_IMAGE_LAYOUT_COLOR_WRITE;
                 imageProperties.format = IE_IMAGE_FORMAT_SRGB_RGBA_8BIT;
                 imageProperties.msaaSamples = createdWith.msaaSamples;
+                #ifdef ILLUMINATION_ENGINE_VULKAN
                 imageProperties.memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
+                #else
+                imageProperties.memoryUsage = 0;
+                #endif
             } if (std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_DEPTH_IMAGE) {
                 imageProperties.type = createdWith.msaaSamples > 1 ? IE_IMAGE_TYPE_2D_MULTISAMPLE : IE_IMAGE_TYPE_2D;
-                imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->swapchain.extent.width;
-                imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->swapchain.extent.height;
+                imageProperties.width = createdWith.width ? createdWith.width : linkedRenderEngine->settings.renderResolution[0];
+                imageProperties.height = createdWith.height ? createdWith.height : linkedRenderEngine->settings.renderResolution[1];
                 imageProperties.layout = IE_IMAGE_LAYOUT_DEPTH_WRITE;
                 imageProperties.format = IE_IMAGE_FORMAT_UINT_SFLOAT_32BIT;
                 imageProperties.msaaSamples = createdWith.msaaSamples;
+                #ifdef ILLUMINATION_ENGINE_VULKAN
                 imageProperties.memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
+                #else
+                imageProperties.memoryUsage = 0;
+                #endif
             } if (std::get<IePreDesignedImage>(createdWith.properties) == IE_PRE_DESIGNED_TEXTURE_IMAGE) {
                 imageProperties.type = IE_IMAGE_TYPE_2D;
                 imageProperties.layout = IE_IMAGE_LAYOUT_COLOR_READ;
                 imageProperties.format = IE_IMAGE_FORMAT_SRGB_RGBA_8BIT;
+                #ifdef ILLUMINATION_ENGINE_VULKAN
                 imageProperties.memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+                #else
+                imageProperties.memoryUsage = 0;
+                #endif
                 imageProperties.msaaSamples = 0;
                 imageProperties.tiling = IE_IMAGE_TILING_REPEAT;
             }
@@ -276,6 +301,7 @@ public:
         }
     }
 
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     virtual void transitionLayout(VkImageLayout newLayout, VkCommandBuffer commandBuffer) {
         VkImageLayout imageLayout = ieImageLayouts.find(std::get<Properties>(createdWith.properties).layout)->second.first;
         if (imageLayout == newLayout) { return; }
@@ -330,6 +356,7 @@ public:
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
         createdWith.properties;
     }
+    #endif
 
     virtual void unload() {
         if (created.loaded) {
@@ -392,6 +419,7 @@ public:
         created.loaded = true;
     }
 
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     virtual void toBuffer(const IEBuffer* buffer, VkCommandBuffer commandBuffer) {
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
@@ -405,6 +433,7 @@ public:
         region.imageExtent = {createdWith.width, createdWith.height, createdWith.depth};
         vkCmdCopyImageToBuffer(commandBuffer, std::get<VkImage>(image), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, std::get<VkBuffer>(buffer->buffer), 1, &region);
     }
+    #endif
 
     void destroy() {
         unload();
@@ -422,6 +451,7 @@ public:
     }
 };
 
+#ifdef ILLUMINATION_ENGINE_VULKAN
 void IEBuffer::toImage(IEImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer) {
     if (!created.buffer) {
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted conversion of non-existent buffer to image!");
@@ -460,3 +490,4 @@ void IEBuffer::toImage(IEImage* image, uint16_t width, uint16_t height, VkComman
         #endif
     }
 }
+#endif

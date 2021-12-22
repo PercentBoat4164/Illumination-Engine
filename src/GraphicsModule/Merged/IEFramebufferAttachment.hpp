@@ -8,12 +8,23 @@ enum IeFramebufferAspect {
     IE_FRAMEBUFFER_ASPECT_DEPTH_AND_COLOR = 0b11
 };
 
+#ifdef ILLUMINATION_ENGINE_VULKAN
 const static std::unordered_multimap<IeFramebufferAspect, std::pair<VkImageAspectFlagBits, uint32_t>> ieFramebufferAspects {
         {IE_FRAMEBUFFER_ASPECT_DEPTH_BIT,               {VK_IMAGE_ASPECT_DEPTH_BIT,              GL_DEPTH}},
         {IE_FRAMEBUFFER_ASPECT_COLOR_BIT,               {VK_IMAGE_ASPECT_COLOR_BIT,              GL_COLOR}},
         {IE_FRAMEBUFFER_ASPECT_DEPTH_ONLY,              {VK_IMAGE_ASPECT_DEPTH_BIT,              GL_DEPTH}},
         {IE_FRAMEBUFFER_ASPECT_COLOR_ONLY,              {VK_IMAGE_ASPECT_COLOR_BIT,              GL_COLOR}},
 };
+#else
+#ifdef ILLUMINATION_ENGINE_OPENGL
+const static std::unordered_multimap<IeFramebufferAspect, std::pair<uint32_t, uint32_t>> ieFramebufferAspects {
+        {IE_FRAMEBUFFER_ASPECT_DEPTH_BIT,               {GL_DEPTH,              GL_DEPTH}},
+        {IE_FRAMEBUFFER_ASPECT_COLOR_BIT,               {GL_COLOR,              GL_COLOR}},
+        {IE_FRAMEBUFFER_ASPECT_DEPTH_ONLY,              {GL_DEPTH,              GL_DEPTH}},
+        {IE_FRAMEBUFFER_ASPECT_COLOR_ONLY,              {GL_COLOR,              GL_COLOR}},
+};
+#endif
+#endif
 
 class IEFramebufferAttachment : public IEImage{
 public:
@@ -27,10 +38,13 @@ public:
 
     CreateInfo createdWith{};
     IeFramebufferAspect aspect{};
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     VkAttachmentDescription description{};
     VkAttachmentReference reference{};
+    #endif
 
     void generateDescription() {
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         if (!created.image) {
             return;
         }
@@ -56,5 +70,6 @@ public:
                 };
             }
         }
+        #endif
     }
 };

@@ -7,9 +7,11 @@
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
 #include <GL/glew.h>
-#include <vulkan/vulkan.h>
-
 #endif
+#endif
+
+#ifdef ILLUMINATION_ENGINE_VULKAN
+#include <vulkan/vulkan.h>
 #endif
 
 #include "GLFW/glfw3.h"

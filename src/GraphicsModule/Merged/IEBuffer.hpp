@@ -4,8 +4,8 @@
 
 class IEImage;
 
-#ifndef ILLUMINATION_ENGINE_VULKAN
-VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkBuffer);
+#ifdef ILLUMINATION_ENGINE_VULKAN
+#include <vulkan/vulkan.hpp>
 #endif
 
 /**@todo: Implement something similar to what was done for the IEImage class for selection of properties.*/
@@ -51,10 +51,12 @@ public:
     };
 
     void *bufferData{};
-    std::variant<VkBuffer, uint32_t> buffer{};
     #ifdef ILLUMINATION_ENGINE_VULKAN
+    std::variant<VkBuffer, uint32_t> buffer{};
     VkDeviceAddress deviceAddress{};
     VmaAllocation allocation{};
+    #else
+    std::variant<uint32_t> buffer{};
     #endif
     IERenderEngineLink *linkedRenderEngine{};
     CreateInfo createdWith{};
@@ -112,6 +114,7 @@ public:
         return *this;
     }
 
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     virtual void update(void *data, uint32_t sizeOfData, uint32_t startingPosition, VkCommandBuffer commandBuffer) {
         if (!created.buffer) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update a buffer that does not exist!");
@@ -123,8 +126,11 @@ public:
         }
         vkCmdUpdateBuffer(commandBuffer, std::get<VkBuffer>(buffer), startingPosition, sizeOfData, data);
     }
+    #endif
 
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     virtual void toImage(IEImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer);
+    #endif
 
     void destroy() {
         if (created.buffer) {

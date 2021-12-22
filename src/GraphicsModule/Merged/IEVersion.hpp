@@ -1,6 +1,9 @@
 #include <vector>
 #include <string>
+
+#ifdef ILLUMINATION_ENGINE_VULKAN
 #include <vulkan/vulkan.h>
+#endif
 
 
 /**
@@ -50,9 +53,11 @@ public:
 
     explicit IEVersion(uint32_t versionNumber) {
         number = versionNumber;
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         major = VK_VERSION_MAJOR(versionNumber);
         minor = VK_VERSION_MINOR(versionNumber);
         patch = VK_VERSION_PATCH(versionNumber);
+        #endif
         name = std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
         version = {major, minor, patch};
     }

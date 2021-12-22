@@ -12,11 +12,14 @@ public:
         std::vector<IEFramebuffer::CreateInfo> framebufferCreateInfos{};
     };
 
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     VkRenderPass renderPass{};
+    #endif
     CreateInfo createdWith{};
     IERenderEngineLink *linkedRenderEngine{};
 
     void create(IERenderEngineLink* engineLink, CreateInfo* createInfo) {
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         linkedRenderEngine = engineLink;
         createdWith = *createInfo;
         uint32_t framebufferCount = createdWith.framebufferCreateInfos.size();
@@ -71,10 +74,15 @@ public:
                 .pSubpasses=subpassDescriptions.data()
         };
         vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass);
+        #endif
     }
 
     void destroy() const {
-        vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr);
+        #ifdef ILLUMINATION_ENGINE_VULKAN
+        if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+            vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr);
+        }
+        #endif
     }
 
     ~IERenderPass() {
@@ -83,12 +91,15 @@ public:
 
 private:
     struct SubpassData {
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         VkAttachmentReference depth{};
         std::vector<VkAttachmentReference> color{};
         std::vector<VkAttachmentReference> resolve{};
         std::vector<VkAttachmentReference *> all{};
+        #endif
 
         void getAllAttachments() {
+            #ifdef ILLUMINATION_ENGINE_VULKAN
             all.clear();
             all.reserve(color.size() + resolve.size() + 1);
             all.push_back(&depth);
@@ -96,6 +107,7 @@ private:
                 all.push_back(&color[i]);
                 all.push_back(&resolve[i]);
             }
+            #endif
         }
     };
 

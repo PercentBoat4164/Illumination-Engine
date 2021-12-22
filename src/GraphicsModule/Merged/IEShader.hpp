@@ -48,8 +48,10 @@ public:
     uint32_t shaderType{};
     IERenderEngineLink* linkedRenderEngine{};
     std::vector<uint32_t> data{};
+    #ifdef ILLUMINATION_ENGINE_VULKAN
     VkShaderModule shaderModule{};
     EShLanguage language{};
+    #endif
 
     IEShader() = default;
 
@@ -82,6 +84,7 @@ public:
     }
 
     void compile() {
+        #ifdef ILLUMINATION_ENGINE_VULKAN
         std::vector<std::string> extensions = getExtensions(createdWith.filename);
         glslang::EShSource source = glslang::EShSourceGlsl;
         for (const std::string& extension : extensions) {
@@ -127,11 +130,16 @@ public:
         TBuiltInResource builtInResource{};
         EShMessages messages{};
         shader.parse(&builtInResource, 1, false, messages);
+        #endif
     }
 
     void destroy() const {
         if (created.module) {
-            vkDestroyShaderModule(linkedRenderEngine->device.device, shaderModule, nullptr);
+            #ifdef ILLUMINATION_ENGINE_VULKAN
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+                vkDestroyShaderModule(linkedRenderEngine->device.device, shaderModule, nullptr);
+            }
+            #endif
         }
     }
 
@@ -142,8 +150,26 @@ public:
 private:
     void create() {
         std::vector<std::string> extensions = getExtensions(createdWith.filename);
-        if (std::count(extensions.begin(), extensions.end(), IE_RENDER_ENGINE_SHADER_EXTENSION_VERTEX) > 0) { shaderType = linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN ? VK_SHADER_STAGE_VERTEX_BIT : GL_VERTEX_SHADER; }
-        else if (std::count(extensions.begin(), extensions.end(), IE_RENDER_ENGINE_SHADER_EXTENSION_FRAGMENT) > 0) { shaderType = linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN ? VK_SHADER_STAGE_FRAGMENT_BIT : GL_FRAGMENT_SHADER; }
+        if (std::count(extensions.begin(), extensions.end(), IE_RENDER_ENGINE_SHADER_EXTENSION_VERTEX) > 0) {
+            #ifdef ILLUMINATION_ENGINE_VULKAN
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+                shaderType = VK_SHADER_STAGE_VERTEX_BIT;
+            }
+            #endif
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+                shaderType = GL_VERTEX_SHADER;
+            }
+        }
+        else if (std::count(extensions.begin(), extensions.end(), IE_RENDER_ENGINE_SHADER_EXTENSION_FRAGMENT) > 0) {
+            #ifdef ILLUMINATION_ENGINE_VULKAN
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+                shaderType = VK_SHADER_STAGE_FRAGMENT_BIT;
+            }
+            #endif
+            if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+                shaderType = GL_FRAGMENT_SHADER;
+            }
+        }
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             createdWith.filename += ".spv";
