@@ -257,7 +257,7 @@ public:
         for (IERenderable *renderable : renderables) {
             if (renderable->render) {
                 #ifdef ILLUMINATION_ENGINE_VULKAN
-                if (renderEngineLink.api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+                if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
                     vkCmdBindVertexBuffers(renderCommandPool[imageIndex], 0, 1, &std::get<VkBuffer>(renderable->meshes[0].vertexBuffer.buffer), nullptr);
                     vkCmdBindIndexBuffer(renderCommandPool[imageIndex], std::get<VkBuffer>(renderable->meshes[0].indexBuffer.buffer), 0, VK_INDEX_TYPE_UINT32);
                     vkCmdBindPipeline(renderCommandPool[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, defaultPipeline.pipeline);
