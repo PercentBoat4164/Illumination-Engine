@@ -16,8 +16,8 @@ int main(int argc, char **argv) {
     }
     oRenderEngine.destroy();
     #ifdef ILLUMINATION_ENGINE_VULKAN
-    IERenderEngine vRenderEngine{};
-    IERenderable vCube{&vRenderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
+    VulkanRenderEngine vRenderEngine{};
+    VulkanRenderable vCube{&vRenderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
     vRenderEngine.loadRenderable(&vCube);
     vCube.position = {0, -3, 0};
     while (vRenderEngine.update()) {

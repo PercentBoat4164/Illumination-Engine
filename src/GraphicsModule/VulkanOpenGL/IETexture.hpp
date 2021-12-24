@@ -59,8 +59,8 @@ public:
         samplerInfo.maxLod = static_cast<float>(mipLevels);
     }
 
-    /**@todo: Combine as many command IEBuffer submissions as possible together to reduce prepare on GPU and CPU.*/
-    /**@todo: Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
+    /**@todo Combine as many command IEBuffer submissions as possible together to reduce prepare on GPU and CPU.*/
+    /**@todo Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     void upload() override {
         if (vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
         deletionQueue.emplace_front([&] { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
@@ -80,7 +80,7 @@ public:
         VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
         transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
         scratchBuffer.toImage(*this, createdWith.width, createdWith.height, commandBuffer);
-        /**@todo: Add support for more mipmap interpolation methods. Currently only linear interpolation is supported.*/
+        /**@todo Add support for more mipmap interpolation methods. Currently only linear interpolation is supported.*/
         if (createdWith.mipMapping) {
             VkFormatProperties formatProperties{};
             vkGetPhysicalDeviceFormatProperties(linkedRenderEngine->device->physical_device.physical_device, imageFormat, &formatProperties);

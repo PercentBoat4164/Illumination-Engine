@@ -37,7 +37,7 @@ public:
         int width = 0, height = 0;
 
         //Optional; Only use for non-texture images
-        /**@todo: Remove this item.*/
+        /**@todo Remove this item.*/
         VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_1_BIT};
         VkImageLayout imageLayout{VK_IMAGE_LAYOUT_UNDEFINED};
         VulkanImageType imageType{};
@@ -45,7 +45,7 @@ public:
 
         //Only use for texture images
         std::string filename{};
-        /**@todo: Remove this item.*/
+        /**@todo Remove this item.*/
         bool mipMapping{false};
         stbi_uc *data{};
     };
@@ -94,8 +94,8 @@ public:
         imageViewCreateInfo.subresourceRange.layerCount = 1;
     }
 
-    /**@todo: Combine as many command IEBuffer submissions as possible together to reduce prepare on GPU.*/
-    /**@todo: Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
+    /**@todo Combine as many command IEBuffer submissions as possible together to reduce prepare on GPU.*/
+    /**@todo Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     virtual void upload() {
         if (vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
         deletionQueue.emplace_front([&] { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });

@@ -70,17 +70,17 @@ template<> struct [[maybe_unused]] std::hash<IeKeyPressDescription> {
 /**
  * @brief The Keyboard class is intended to manage keyboard event handling.
  */
-class IeKeyboard {
+class IEKeyboard {
 public:
     void* attachment; // pointer to object for access through the window user pointer
 
     /**
-     * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the IeKeyboard object.
+     * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the IEKeyboard object.
      * @param initialWindow
      * @param initialAttachment=nullptr
-     * @return IeKeyboard
+     * @return IEKeyboard
      */
-    explicit IeKeyboard(GLFWwindow* initialWindow, void* initialAttachment=nullptr) {
+    explicit IEKeyboard(GLFWwindow* initialWindow, void* initialAttachment=nullptr) {
         window = initialWindow;
         attachment = initialAttachment;
         glfwSetWindowUserPointer(window, this);
@@ -200,7 +200,7 @@ public:
         if (action == GLFW_REPEAT) {
             return;
         }
-        auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard connected to the window
+        auto keyboard = static_cast<IEKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard connected to the window
         IeKeyPressDescription thisKeyPress{key, action};
         IeKeyPressDescription oppositeKeyPress{key, thisKeyPress.action == GLFW_PRESS ? GLFW_RELEASE : GLFW_PRESS};
         auto oppositeKeyPressIterator = std::find(keyboard->queue.begin(), keyboard->queue.end(), oppositeKeyPress);

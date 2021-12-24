@@ -1,5 +1,5 @@
 set(IEInputModuleSourceFiles
-        IeKeyboard.hpp
+        IEKeyboard.hpp
         IEInputModuleMain.cpp)
 add_executable(IEInputModule ${IEInputModuleSourceFiles})
 target_include_directories(IEInputModule PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
