@@ -420,7 +420,7 @@ public:
     }
 
     #ifdef ILLUMINATION_ENGINE_VULKAN
-    virtual void toBuffer(const IEBuffer* buffer, VkCommandBuffer commandBuffer) {
+    virtual void toBuffer(IEBuffer* buffer, VkCommandBuffer commandBuffer) {
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
@@ -431,7 +431,7 @@ public:
         region.imageSubresource.layerCount = 1;
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {createdWith.width, createdWith.height, createdWith.depth};
-        vkCmdCopyImageToBuffer(commandBuffer, std::get<VkImage>(image), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, std::get<VkBuffer>(buffer->buffer), 1, &region);
+        vkCmdCopyImageToBuffer(commandBuffer, std::get<VkImage>(image), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer->VulkanBuffer, 1, &region);
     }
     #endif
 
@@ -454,11 +454,11 @@ public:
 #ifdef ILLUMINATION_ENGINE_VULKAN
 void IEBuffer::toImage(IEImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer) {
     if (!created.buffer) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted conversion of non-existent buffer to image!");
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted conversion of non-existent VulkanBuffer to image!");
         return;
     }
     if (image == nullptr) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted conversion of buffer to non-existent image!");
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted conversion of VulkanBuffer to non-existent image!");
         return;
     }
     if (!image->created.image) {
@@ -484,7 +484,7 @@ void IEBuffer::toImage(IEImage* image, uint16_t width, uint16_t height, VkComman
             region.imageSubresource.layerCount = 1;
             region.imageExtent = {width, height, 1};
             image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
-            vkCmdCopyBufferToImage(commandBuffer, std::get<VkBuffer>(buffer), std::get<VkImage>(image->image), static_cast<VkImageLayout>(image->imageProperties.layout), 1, &region);
+            vkCmdCopyBufferToImage(commandBuffer, VulkanBuffer, std::get<VkImage>(image->image), static_cast<VkImageLayout>(image->imageProperties.layout), 1, &region);
             image->transitionLayout(oldLayout, commandBuffer);
         }
         #endif

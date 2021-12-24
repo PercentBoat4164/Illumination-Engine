@@ -339,7 +339,7 @@ public:
             }
         }
         vkCmdEndRenderPass(commandBuffer.commandBuffers[imageIndex]);
-        if (vkEndCommandBuffer(commandBuffer.commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record draw command buffer!"); }
+        if (vkEndCommandBuffer(commandBuffer.commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record draw command VulkanBuffer!"); }
         VkSemaphore waitSemaphores[]{imageAvailableSemaphores[currentFrame]};
         VkSemaphore signalSemaphores[]{renderFinishedSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[]{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -353,7 +353,7 @@ public:
         submitInfo.pSignalSemaphores = signalSemaphores;
         vkResetFences(device.device, 1, &inFlightFences[currentFrame]);
         VkResult test = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
-        if ( test != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command buffer!"); }
+        if ( test != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command VulkanBuffer!"); }
         VkSwapchainKHR swapchains[]{swapchain.swapchain};
         VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
         presentInfo.waitSemaphoreCount = 1;

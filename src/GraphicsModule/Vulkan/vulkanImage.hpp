@@ -86,7 +86,7 @@ public:
         imageViewCreateInfo.subresourceRange.layerCount = 1;
     }
 
-    /**@todo: Combine as many command buffer submissions as possible together to reduce prepare on GPU.*/
+    /**@todo: Combine as many command VulkanBuffer submissions as possible together to reduce prepare on GPU.*/
     /**@todo: Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     virtual void upload() {
         if (vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
@@ -190,7 +190,7 @@ protected:
 
 // NOTE: Input image should have a layout of VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL!
 void VulkanBuffer::toImage(VulkanImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer) {
-    if (!created) { throw std::runtime_error("Calling VulkanBuffer::toImage() on a buffer for which VulkanBuffer::create() has not been called is illegal."); }
+    if (!created) { throw std::runtime_error("Calling VulkanBuffer::toImage() on a VulkanBuffer for which VulkanBuffer::create() has not been called is illegal."); }
     VkBufferImageCopy region{};
     region.imageSubresource.aspectMask = image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.layerCount = 1;

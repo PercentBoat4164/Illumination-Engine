@@ -57,7 +57,7 @@ public:
         samplerInfo.maxLod = static_cast<float>(mipLevels);
     }
 
-    /**@todo: Combine as many command buffer submissions as possible together to reduce prepare on GPU and CPU.*/
+    /**@todo: Combine as many command VulkanBuffer submissions as possible together to reduce prepare on GPU and CPU.*/
     /**@todo: Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     void upload() override {
         if (vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }

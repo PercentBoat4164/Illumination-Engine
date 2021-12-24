@@ -132,7 +132,7 @@ public:
                     storageBufferDescriptorInfo.buffer = std::get<VulkanBuffer *>(newData[i].value())->buffer;
                     storageBufferDescriptorInfo.offset = 0;
                     storageBufferDescriptorInfo.range = VK_WHOLE_SIZE;
-                    if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no buffer given or given buffer has not been created!"); }
+                    if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no VulkanBuffer given or given VulkanBuffer has not been created!"); }
                     bufferDescriptorInfos.push_back(storageBufferDescriptorInfo);
                     writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
                 } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
@@ -140,7 +140,7 @@ public:
                     uniformBufferDescriptorInfo.buffer = std::get<VulkanBuffer *>(newData[i].value())->buffer;
                     uniformBufferDescriptorInfo.offset = 0;
                     uniformBufferDescriptorInfo.range = VK_WHOLE_SIZE;
-                    if (uniformBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no buffer given or given buffer has not been created!"); }
+                    if (uniformBufferDescriptorInfo.buffer == VK_NULL_HANDLE) { throw std::runtime_error("no VulkanBuffer given or given VulkanBuffer has not been created!"); }
                     bufferDescriptorInfos.push_back(uniformBufferDescriptorInfo);
                     writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
                 } else { throw std::runtime_error("unsupported descriptor type: " + std::to_string(writeDescriptorSet.descriptorType)); }

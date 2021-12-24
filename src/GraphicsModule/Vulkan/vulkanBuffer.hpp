@@ -10,7 +10,7 @@ class VulkanImage;
 class VulkanBuffer {
 public:
     struct CreateInfo {
-        //Only required for buffer
+        //Only required for VulkanBuffer
         VkDeviceSize size{};
         VkBufferUsageFlags usage{};
         VmaMemoryUsage allocationUsage{};
@@ -59,7 +59,7 @@ public:
         bufferCreateInfo.usage = createdWith.usage;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
-        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
+        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create VulkanBuffer!"); }
         deletionQueue.emplace_front([&] { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
         if (createdWith.data != nullptr) {
             if (createdWith.sizeOfData > createdWith.size) { throw std::runtime_error("VulkanBuffer::CreateInfo::sizeOfData must not be greater than VulkanBuffer::CreateInfo::bufferSize."); }
@@ -76,7 +76,7 @@ public:
     }
 
     void uploadData(void *input, uint32_t sizeOfInput) {
-        if (!created) { throw std::runtime_error("Calling VulkanBuffer::uploadData() on a buffer for which VulkanBuffer::create() has not been called is illegal."); }
+        if (!created) { throw std::runtime_error("Calling VulkanBuffer::uploadData() on a VulkanBuffer for which VulkanBuffer::create() has not been called is illegal."); }
         if (sizeOfInput > createdWith.size) { throw std::runtime_error("sizeOfInput must not be greater than VulkanBuffer::CreateInfo::bufferSize."); }
         vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
         memcpy(data, input, sizeOfInput);

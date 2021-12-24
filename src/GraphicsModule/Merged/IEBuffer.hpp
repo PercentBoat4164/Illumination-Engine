@@ -13,7 +13,7 @@ class IEImage;
 class IEBuffer {
 public:
     struct CreateInfo {
-        //Only required for buffer
+        //Only required for VulkanBuffer
         uint32_t bufferSize{};
         uint32_t usage{};
         #ifdef ILLUMINATION_ENGINE_OPENGL
@@ -52,12 +52,11 @@ public:
 
     void *bufferData{};
     #ifdef ILLUMINATION_ENGINE_VULKAN
-    std::variant<VkBuffer, uint32_t> buffer{};
+    VkBuffer VulkanBuffer{};
     VkDeviceAddress deviceAddress{};
     VmaAllocation allocation{};
-    #else
-    std::variant<uint32_t> buffer{};
     #endif
+    uint32_t OpenGLBuffer{};
     IERenderEngineLink *linkedRenderEngine{};
     CreateInfo createdWith{};
     Created created{};
@@ -69,19 +68,19 @@ public:
         if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
             VkBufferCreateInfo bufferCreateInfo{.sType=VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, .size=createdWith.bufferSize, .usage=createdWith.usage};
             VmaAllocationCreateInfo allocationCreateInfo{.usage=createdWith.allocationUsage};
-            if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &std::get<VkBuffer>(buffer), &allocation, nullptr) != VK_SUCCESS) {
-                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create buffer!");
+            if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &VulkanBuffer, &allocation, nullptr) != VK_SUCCESS) {
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create VulkanBuffer!");
             }
             created.buffer = true;
             if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
-                VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{.sType=VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer=std::get<VkBuffer>(buffer)};
+                VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{.sType=VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer=VulkanBuffer};
                 deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
             }
         }
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
         if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-            glGenBuffers(1, &std::get<uint32_t>(buffer));
+            glGenBuffers(1, &OpenGLBuffer);
             created.buffer = true;
         }
         #endif
@@ -91,7 +90,7 @@ public:
 
     virtual IEBuffer upload(void *data, uint32_t sizeOfData) {
         if (!created.buffer) {
-            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to upload to a buffer that does not exist!");
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to upload to a VulkanBuffer that does not exist!");
             return IEBuffer{};
         }
         if (sizeOfData > createdWith.bufferSize) {
@@ -107,7 +106,7 @@ public:
         #endif
         #ifdef ILLUMINATION_ENGINE_OPENGL
         if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-            glBindBuffer(createdWith.target, std::get<uint32_t>(buffer));
+            glBindBuffer(createdWith.target, OpenGLBuffer);
             glBufferData(createdWith.target, sizeOfData, data, createdWith.usage);
         }
         #endif
@@ -117,16 +116,25 @@ public:
     #ifdef ILLUMINATION_ENGINE_VULKAN
     virtual void update(void *data, uint32_t sizeOfData, uint32_t startingPosition, VkCommandBuffer commandBuffer) {
         if (!created.buffer) {
-            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update a buffer that does not exist!");
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update a VulkanBuffer that does not exist!");
             return;
         }
         if (data == nullptr) {
-            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to update an existing buffer with no data!");
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to update an existing VulkanBuffer with no data!");
             return;
         }
-        vkCmdUpdateBuffer(commandBuffer, std::get<VkBuffer>(buffer), startingPosition, sizeOfData, data);
+        vkCmdUpdateBuffer(commandBuffer, VulkanBuffer, startingPosition, sizeOfData, data);
     }
     #endif
+
+    void* getBuffer() {
+        #ifdef ILLUMINATION_ENGINE_VULKAN
+        if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+            return &VulkanBuffer;
+        }
+        #endif
+        return &OpenGLBuffer;
+    }
 
     #ifdef ILLUMINATION_ENGINE_VULKAN
     virtual void toImage(IEImage* image, uint16_t width, uint16_t height, VkCommandBuffer commandBuffer);
@@ -136,16 +144,14 @@ public:
         if (created.buffer) {
             #ifdef ILLUMINATION_ENGINE_VULKAN
             if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-                if (created.buffer) {
-                    vmaDestroyBuffer(linkedRenderEngine->allocator, std::get<VkBuffer>(buffer), allocation);
-                }
+                vmaDestroyBuffer(linkedRenderEngine->allocator, VulkanBuffer, allocation);
+                created.buffer = false;
             }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
             if (linkedRenderEngine->api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-                if (created.buffer) {
-                    glDeleteBuffers(1, &std::get<uint32_t>(buffer));
-                }
+                glDeleteBuffers(1, &OpenGLBuffer);
+                created.buffer = false;
             }
             #endif
         }

@@ -158,21 +158,21 @@ public:
                     writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
                 } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
                     VkDescriptorBufferInfo storageBufferDescriptorInfo{};
-                    storageBufferDescriptorInfo.buffer = std::get<VkBuffer>(std::get<IEBuffer *>(newData[i].value())->buffer);
+                    storageBufferDescriptorInfo.buffer = std::get<IEBuffer *>(newData[i].value())->VulkanBuffer;
                     storageBufferDescriptorInfo.offset = 0;
                     storageBufferDescriptorInfo.range = VK_WHOLE_SIZE;
                     if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE) {
-                        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update descriptor set with a non-existent buffer!");
+                        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update descriptor set with a non-existent VulkanBuffer!");
                     }
                     bufferDescriptorInfos.push_back(storageBufferDescriptorInfo);
                     writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
                 } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
                     VkDescriptorBufferInfo uniformBufferDescriptorInfo{};
-                    uniformBufferDescriptorInfo.buffer = std::get<VkBuffer>(std::get<IEBuffer *>(newData[i].value())->buffer);
+                    uniformBufferDescriptorInfo.buffer = std::get<IEBuffer *>(newData[i].value())->VulkanBuffer;
                     uniformBufferDescriptorInfo.offset = 0;
                     uniformBufferDescriptorInfo.range = VK_WHOLE_SIZE;
                     if (uniformBufferDescriptorInfo.buffer == VK_NULL_HANDLE) {
-                        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update descriptor set with a non-existent buffer!");
+                        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempted to update descriptor set with a non-existent VulkanBuffer!");
                     }
                     bufferDescriptorInfos.push_back(uniformBufferDescriptorInfo);
                     writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
