@@ -1,4 +1,4 @@
-#include "IeKeyboard.hpp"
+#include "IEKeyboard.hpp"
 
 #include <iostream>
 
@@ -15,7 +15,7 @@ void handleXKey(GLFWwindow* window) {
  * @brief Is responsible for handling a "w" key press. Demonstrates the capabilities and flexibility of this system.
  */
 void handleWKey(GLFWwindow* window) {
-    auto keyboard = static_cast<IeKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard controlling the window
+    auto keyboard = static_cast<IEKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard controlling the window
     keyboard->editActions(IeKeyPressDescription(GLFW_KEY_W), handleXKey, false);
     std::cout << "Wow-zah!" << std::endl;
     std::flush(std::cout);
@@ -28,7 +28,7 @@ void handleWKey(GLFWwindow* window) {
 int main(int argc, char **argv) {
     glfwInit();
     GLFWwindow* window = glfwCreateWindow(800, 600, "", nullptr, nullptr);
-    IeKeyboard keyboard{window};
+    IEKeyboard keyboard{window};
     keyboard.editActions(IeKeyPressDescription(GLFW_KEY_X), handleXKey, false);
     keyboard.editActions(IeKeyPressDescription(GLFW_KEY_W), handleWKey, false);
     while (!glfwWindowShouldClose(window)) {

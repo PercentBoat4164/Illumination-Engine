@@ -18,6 +18,7 @@ set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles
         IEVertex.hpp
         IEGMVulkanOpenGLMain.cpp)
 add_executable(IEGraphicsModuleVulkanOpenGL ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles})
+target_include_directories(IEGraphicsModuleVulkanOpenGL PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
 set_target_properties(IEGraphicsModuleVulkanOpenGL PROPERTIES LINKER_LANGUAGE CXX)
 add_subdirectory(DefaultShaders)
 add_dependencies(IEGraphicsModuleVulkanOpenGL IEGraphicsModuleVulkanOpenGLShaders)
@@ -26,3 +27,4 @@ addGLEW(IEGraphicsModuleVulkanOpenGL)
 addGLM(IEGraphicsModuleVulkanOpenGL)
 addVulkan(IEGraphicsModuleVulkanOpenGL)
 addGLFW(IEGraphicsModuleVulkanOpenGL)
+addSpdlog(IEGraphicsModuleVulkanOpenGL)

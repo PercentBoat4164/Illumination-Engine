@@ -1,10 +1,10 @@
-/**@todo: Add multithreading support throughout the engine
+/**@todo Add multithreading support throughout the engine
  * - LOW PRIORITY: GPU is busy 95-98% of the time.
  * This will be a higher priority if GPU hits 80-90%.
  * Focus is going to be put on making all engines work before perfecting any of them.
  */
 
-/**@todo: Add proper invalid input checks to, and clean up, the abstractions.
+/**@todo Add proper invalid input checks to, and clean up, the abstractions.
  * - HIGH PRIORITY: This should happen before moving on to a new part of the game engine.
  * This has already been started in vulkanDescriptorSet.hpp.
  */
@@ -91,7 +91,7 @@ public:
         glfwSetWindowUserPointer(window, this);
         if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS) { throw std::runtime_error("failed to create window surface!"); }
         engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(instance.instance, surface, nullptr); });
-        /**@todo: Implement a device selection scheme for systems with multiple GPUs.*/
+        /**@todo Implement a device selection scheme for systems with multiple GPUs.*/
         vkb::PhysicalDeviceSelector selector{instance};
         vkb::detail::Result<vkb::PhysicalDevice> temporaryPhysicalDeviceBuilder = selector.set_surface(surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
         if (!temporaryPhysicalDeviceBuilder) { throw std::runtime_error("failed to select Vulkan Physical Device! Does your device support Vulkan? Error: " + temporaryPhysicalDeviceBuilder.error().message() + "\n"); }

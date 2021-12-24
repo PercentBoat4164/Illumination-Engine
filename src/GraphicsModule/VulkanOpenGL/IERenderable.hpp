@@ -217,7 +217,7 @@ private:
         for (unsigned int i = 0; i < node->mNumChildren; ++i) { processNode(node->mChildren[i], scene, directory); }
     }
 
-    /**@todo: Make this auto-detect shader stage.*/
+    /**@todo Make this auto-detect shader stage.*/
     void loadShaders(const std::vector<const char *> &filenames) {
         shaderCreateInfos.clear();
         shaderCreateInfos.reserve(filenames.size());
