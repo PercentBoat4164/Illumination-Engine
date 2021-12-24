@@ -1,6 +1,5 @@
 #include "IERenderEngine.hpp"
 #include "InputModule/IEKeyboard.hpp"
-#include "Core/LogModule/IELogger.hpp"
 
 #include <iostream>
 
@@ -98,8 +97,8 @@ void resetAll(GLFWwindow* window) {
 }
 
 
-/*
- * Any code for testing Vulkan goes here.
+/**
+ * @brief Any code for testing the combined engine goes here.
  */
 int main(int argc, char **argv) {
     bool force{false};
