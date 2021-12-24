@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IEGraphicsEngineLink.hpp"
+#include "IEGraphicsLink.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -67,18 +67,18 @@ public:
         bufferCreateInfo.usage = createdWith.usage;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
-        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create IEBuffer!"); }
-        deletionQueue.emplace_front([&] { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
+        if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create IEBuffer!"); }
+        deletionQueue.emplace_front([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
         if (createdWith.data != nullptr) {
             if (createdWith.sizeOfData > createdWith.size) { throw std::runtime_error("IEBuffer::CreateInfo::sizeOfData must not be greater than IEBuffer::CreateInfo::bufferSize."); }
-            vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
+            vmaMapMemory(linkedRenderEngine->allocator, allocation, &data);
             memcpy(data, createdWith.data, createdWith.sizeOfData);
-            vmaUnmapMemory(*linkedRenderEngine->allocator, allocation);
+            vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
         }
         if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
             VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
             bufferDeviceAddressInfo.buffer = buffer;
-            deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device->device, &bufferDeviceAddressInfo);
+            deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
         }
         created = true;
     }
@@ -86,12 +86,14 @@ public:
     void uploadData(void *input, uint32_t sizeOfInput) {
         if (!created) { throw std::runtime_error("Calling IEBuffer::uploadData() on a IEBuffer for which IEBuffer::create() has not been called is illegal."); }
         if (sizeOfInput > createdWith.size) { throw std::runtime_error("sizeOfInput must not be greater than IEBuffer::CreateInfo::bufferSize."); }
-        vmaMapMemory(*linkedRenderEngine->allocator, allocation, &data);
+        vmaMapMemory(linkedRenderEngine->allocator, allocation, &data);
         memcpy(data, input, sizeOfInput);
-        vmaUnmapMemory(*linkedRenderEngine->allocator, allocation);
+        vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
     }
 
     void toImage(IEImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr);
+
+    virtual ~IEBuffer() = default;
 
 protected:
     std::deque<std::function<void()>> deletionQueue{};

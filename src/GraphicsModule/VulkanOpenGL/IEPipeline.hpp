@@ -3,7 +3,7 @@
 #include "IEShader.hpp"
 #include "IEDescriptorSet.hpp"
 #include "IERenderPass.hpp"
-#include "IEGraphicsEngineLink.hpp"
+#include "IEGraphicsLink.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -34,8 +34,8 @@ public:
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         pipelineLayoutCreateInfo.setLayoutCount = 1;
         pipelineLayoutCreateInfo.pSetLayouts = &createdWith.descriptorSet->descriptorSetLayout;
-        if (vkCreatePipelineLayout(linkedRenderEngine->device->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
-        deletionQueue.emplace_front([&] { vkDestroyPipelineLayout(linkedRenderEngine->device->device, pipelineLayout, nullptr); });
+        if (vkCreatePipelineLayout(linkedRenderEngine->device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
+        deletionQueue.emplace_front([&] { vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr); });
         //prepare shaders
         std::vector<VkPipelineShaderStageCreateInfo> shaders{};
         for (unsigned int i = 0; i < createdWith.shaders.size(); i++) {
@@ -43,7 +43,7 @@ public:
             VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
             shaderModuleCreateInfo.codeSize = createdWith.shaders[i].data.size();
             shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(createdWith.shaders[i].data.data());
-            if (vkCreateShaderModule(linkedRenderEngine->device->device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
+            if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
             VkPipelineShaderStageCreateInfo shaderStageInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
             shaderStageInfo.module = shaderModule;
             shaderStageInfo.pName = "main";
@@ -64,13 +64,13 @@ public:
         VkViewport viewport{};
         viewport.x = 0.f;
         viewport.y = 0.f;
-        viewport.width = (float)linkedRenderEngine->swapchain->extent.width;
-        viewport.height = (float)linkedRenderEngine->swapchain->extent.height;
+        viewport.width = (float)linkedRenderEngine->swapchain.extent.width;
+        viewport.height = (float)linkedRenderEngine->swapchain.extent.height;
         viewport.minDepth = 0.f;
         viewport.maxDepth = 1.f;
         VkRect2D scissor{};
         scissor.offset = {0, 0};
-        scissor.extent = linkedRenderEngine->swapchain->extent;
+        scissor.extent = linkedRenderEngine->swapchain.extent;
         VkPipelineViewportStateCreateInfo viewportStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO};
         viewportStateCreateInfo.viewportCount = 1;
         viewportStateCreateInfo.pViewports = &viewport;
@@ -85,9 +85,9 @@ public:
         rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
         VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
-        multisampleStateCreateInfo.sampleShadingEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.msaaSmoothing & (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT)) ? VK_TRUE : VK_FALSE;
+        multisampleStateCreateInfo.sampleShadingEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.msaaSmoothing & (linkedRenderEngine->settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT)) ? VK_TRUE : VK_FALSE;
         multisampleStateCreateInfo.minSampleShading = 1.0f;
-        multisampleStateCreateInfo.rasterizationSamples = linkedRenderEngine->settings->msaaSamples;
+        multisampleStateCreateInfo.rasterizationSamples = linkedRenderEngine->settings.msaaSamples;
         VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
         pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
         pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
@@ -97,7 +97,7 @@ public:
         pipelineDepthStencilStateCreateInfo.back.compareOp = VK_COMPARE_OP_ALWAYS;
         VkPipelineColorBlendAttachmentState colorBlendAttachmentState{};
         colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachmentState.blendEnable = linkedRenderEngine->settings->rayTracing ? VK_FALSE : VK_TRUE;
+        colorBlendAttachmentState.blendEnable = linkedRenderEngine->settings.rayTracing ? VK_FALSE : VK_TRUE;
         colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
@@ -126,9 +126,9 @@ public:
         pipelineCreateInfo.layout = pipelineLayout;
         pipelineCreateInfo.renderPass = createdWith.renderPass->renderPass;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
-        if (vkCreateGraphicsPipelines(linkedRenderEngine->device->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
-        for (VkPipelineShaderStageCreateInfo shader : shaders) { vkDestroyShaderModule(linkedRenderEngine->device->device, shader.module, nullptr); }
-        deletionQueue.emplace_front([&] { vkDestroyPipeline(linkedRenderEngine->device->device, pipeline, nullptr); });
+        if (vkCreateGraphicsPipelines(linkedRenderEngine->device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
+        for (VkPipelineShaderStageCreateInfo shader : shaders) { vkDestroyShaderModule(linkedRenderEngine->device.device, shader.module, nullptr); }
+        deletionQueue.emplace_front([&] { vkDestroyPipeline(linkedRenderEngine->device.device, pipeline, nullptr); });
     }
 
 private:

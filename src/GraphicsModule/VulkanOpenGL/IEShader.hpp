@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IEGraphicsEngineLink.hpp"
+#include "IEGraphicsLink.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -37,7 +37,7 @@ public:
     void create(IEGraphicsLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
-        std::string replaceWith = linkedRenderEngine->settings->rayTracing ? "RayTracing" : "Rasterizing";
+        std::string replaceWith = linkedRenderEngine->settings.rayTracing ? "RayTracing" : "Rasterizing";
         size_t pos = createdWith.filename.find('*');
         while( pos != std::string::npos) {
             createdWith.filename.replace(pos, 1, replaceWith);
@@ -58,8 +58,8 @@ public:
         VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
         shaderModuleCreateInfo.codeSize = data.size();
         shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(data.data());
-        if (vkCreateShaderModule(linkedRenderEngine->device->device, &shaderModuleCreateInfo, nullptr, &module) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
-        deletionQueue.emplace_front([&] { vkDestroyShaderModule(linkedRenderEngine->device->device, module, nullptr); });
+        if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &module) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
+        deletionQueue.emplace_front([&] { vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr); });
     }
 
     static void compile(const std::string& input, std::string output = "") {

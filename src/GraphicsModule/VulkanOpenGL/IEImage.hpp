@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IEGraphicsEngineLink.hpp"
+#include "IEGraphicsLink.hpp"
 #include "IEBuffer.hpp"
 
 #ifndef STB_IMAGE_IMPLEMENTATION
@@ -70,9 +70,9 @@ public:
         imageFormat = createdWith.format;
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-        createdWith.width = createdWith.width == 0 ? static_cast<int>(linkedRenderEngine->swapchain->extent.width) : createdWith.width;
+        createdWith.width = createdWith.width == 0 ? static_cast<int>(linkedRenderEngine->swapchain.extent.width) : createdWith.width;
         imageCreateInfo.extent.width = createdWith.width;
-        createdWith.height = createdWith.height == 0 ? static_cast<int>(linkedRenderEngine->swapchain->extent.height) : createdWith.height;
+        createdWith.height = createdWith.height == 0 ? static_cast<int>(linkedRenderEngine->swapchain.extent.height) : createdWith.height;
         imageCreateInfo.extent.height = createdWith.height;
         imageCreateInfo.extent.depth = 1;
         imageCreateInfo.mipLevels = mipLevels;
@@ -97,12 +97,12 @@ public:
     /**@todo Combine as many command IEBuffer submissions as possible together to reduce prepare on GPU.*/
     /**@todo Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     virtual void upload() {
-        if (vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
-        deletionQueue.emplace_front([&] { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
+        if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
+        deletionQueue.emplace_front([&] { vmaDestroyImage(linkedRenderEngine->allocator, image, allocation); });
         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageViewCreateInfo.image = image;
-        if (vkCreateImageView(linkedRenderEngine->device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr);});
+        if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
+        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);});
         if (createdWith.dataSource != nullptr) {
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             createdWith.dataSource->toImage(*this, createdWith.width, createdWith.height);
@@ -186,6 +186,8 @@ public:
         imageLayout = newLayout;
     }
 
+    virtual ~IEImage() = default;
+
 protected:
     IEGraphicsLink *linkedRenderEngine{};
     VmaAllocation allocation{};
@@ -205,7 +207,7 @@ void IEBuffer::toImage(IEImage &image, uint32_t width, uint32_t height, VkComman
     region.imageExtent = {width, height, 1};
     bool noCommandBuffer{commandBuffer == VK_NULL_HANDLE};
     if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
-    VkImageLayout oldLayout{};
+    VkImageLayout oldLayout;
     if (image.imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         oldLayout = image.imageLayout;
         image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);

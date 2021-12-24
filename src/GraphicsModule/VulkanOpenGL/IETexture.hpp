@@ -29,7 +29,7 @@ public:
         imageCreateInfo.format = createdWith.format;
         imageCreateInfo.tiling = createdWith.tiling;
         imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageCreateInfo.usage = createdWith.usage | (linkedRenderEngine->settings->mipMapping ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0);
+        imageCreateInfo.usage = createdWith.usage | (linkedRenderEngine->settings.mipMapping ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0);
         imageCreateInfo.samples = createdWith.msaaSamples;
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         allocationCreateInfo.usage = createdWith.allocationUsage;
@@ -46,15 +46,15 @@ public:
         samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         if (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering) {
-            samplerInfo.anisotropyEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering & (linkedRenderEngine->settings->anisotropicFilterLevel > 0)) ? VK_TRUE : VK_FALSE;
-            samplerInfo.maxAnisotropy = linkedRenderEngine->settings->anisotropicFilterLevel;
+            samplerInfo.anisotropyEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering & (linkedRenderEngine->settings.anisotropicFilterLevel > 0)) ? VK_TRUE : VK_FALSE;
+            samplerInfo.maxAnisotropy = linkedRenderEngine->settings.anisotropicFilterLevel;
         }
         samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
         samplerInfo.unnormalizedCoordinates = VK_FALSE;
         samplerInfo.compareEnable = VK_FALSE;
         samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
         samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.mipLodBias = linkedRenderEngine->settings->mipMapLevel;
+        samplerInfo.mipLodBias = linkedRenderEngine->settings.mipMapLevel;
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = static_cast<float>(mipLevels);
     }
@@ -62,14 +62,14 @@ public:
     /**@todo Combine as many command IEBuffer submissions as possible together to reduce prepare on GPU and CPU.*/
     /**@todo Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     void upload() override {
-        if (vmaCreateImage(*linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
-        deletionQueue.emplace_front([&] { vmaDestroyImage(*linkedRenderEngine->allocator, image, allocation); });
+        if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
+        deletionQueue.emplace_front([&] { vmaDestroyImage(linkedRenderEngine->allocator, image, allocation); });
         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageViewCreateInfo.image = image;
-        if (vkCreateImageView(linkedRenderEngine->device->device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device->device, view, nullptr);});
-        if (vkCreateSampler(linkedRenderEngine->device->device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
-        deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine->device->device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
+        if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
+        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);});
+        if (vkCreateSampler(linkedRenderEngine->device.device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
+        deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine->device.device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
         IEBuffer scratchBuffer{};
         IEBuffer::CreateInfo scratchBufferCreateInfo{};
         scratchBufferCreateInfo.size = static_cast<VkDeviceSize>(createdWith.width * createdWith.height) * 4;
@@ -83,7 +83,7 @@ public:
         /**@todo Add support for more mipmap interpolation methods. Currently only linear interpolation is supported.*/
         if (createdWith.mipMapping) {
             VkFormatProperties formatProperties{};
-            vkGetPhysicalDeviceFormatProperties(linkedRenderEngine->device->physical_device.physical_device, imageFormat, &formatProperties);
+            vkGetPhysicalDeviceFormatProperties(linkedRenderEngine->device.physical_device.physical_device, imageFormat, &formatProperties);
             if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) { throw std::runtime_error("texture image properties " + std::to_string(imageFormat) + " does not support linear blitting!"); }
             VkImageMemoryBarrier imageMemoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
             imageMemoryBarrier.image = image;

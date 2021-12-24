@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IEGraphicsEngineLink.hpp"
+#include "IEGraphicsLink.hpp"
 #include "IEBuffer.hpp"
 #include "IEVertex.hpp"
 
@@ -59,26 +59,26 @@ public:
         accelerationStructureBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
         accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
         VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR};
-        linkedRenderEngine->vkGetAccelerationStructureBuildSizesKHR(linkedRenderEngine->device->device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accelerationStructureBuildGeometryInfo, createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR ? &createdWith.primitiveCount : &count, &accelerationStructureBuildSizesInfo);
+        linkedRenderEngine->vkGetAccelerationStructureBuildSizesKHR(linkedRenderEngine->device.device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accelerationStructureBuildGeometryInfo, createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR ? &createdWith.primitiveCount : &count, &accelerationStructureBuildSizesInfo);
         createdWith.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
         VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
         bufferCreateInfo.size = createdWith.size;
         bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-        if (vmaCreateBuffer(*linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
+        if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
             throw std::runtime_error("failed to create acceleration structure!");
         }
-        deletionQueue.emplace_front([&] { vmaDestroyBuffer(*linkedRenderEngine->allocator, buffer, allocation); });
+        deletionQueue.emplace_front([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
         VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR};
         accelerationStructureCreateInfo.buffer = buffer;
         accelerationStructureCreateInfo.size = createdWith.size;
         accelerationStructureCreateInfo.type = createdWith.type;
-        linkedRenderEngine->vkCreateAccelerationStructureKHR(linkedRenderEngine->device->device, &accelerationStructureCreateInfo, nullptr, &accelerationStructure);
-        deletionQueue.emplace_front([&] { linkedRenderEngine->vkDestroyAccelerationStructureKHR(linkedRenderEngine->device->device, accelerationStructure, nullptr); });
+        linkedRenderEngine->vkCreateAccelerationStructureKHR(linkedRenderEngine->device.device, &accelerationStructureCreateInfo, nullptr, &accelerationStructure);
+        deletionQueue.emplace_front([&] { linkedRenderEngine->vkDestroyAccelerationStructureKHR(linkedRenderEngine->device.device, accelerationStructure, nullptr); });
         VkAccelerationStructureDeviceAddressInfoKHR accelerationStructureDeviceAddressInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR};
         accelerationStructureDeviceAddressInfo.accelerationStructure = accelerationStructure;
-        deviceAddress = linkedRenderEngine->vkGetAccelerationStructureDeviceAddressKHR(linkedRenderEngine->device->device, &accelerationStructureDeviceAddressInfo);
+        deviceAddress = linkedRenderEngine->vkGetAccelerationStructureDeviceAddressKHR(linkedRenderEngine->device.device, &accelerationStructureDeviceAddressInfo);
         IEBuffer::CreateInfo scratchBufferCreateInfo{accelerationStructureBuildSizesInfo.accelerationStructureSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU};
         IEBuffer scratchBuffer{};
         scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo);

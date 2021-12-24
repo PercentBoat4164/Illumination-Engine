@@ -5,7 +5,7 @@ set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles
         IECommandBuffer.hpp
         IEDescriptorSet.hpp
         IEFramebuffer.hpp
-        IEGraphicsEngineLink.hpp
+        IEGraphicsLink.hpp
         IEImage.hpp
         IEPipeline.hpp
         IERenderable.hpp
