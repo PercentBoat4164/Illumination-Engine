@@ -272,13 +272,14 @@ public:
     void loadRenderable(IERenderable* renderable) {
         #ifdef ILLUMINATION_ENGINE_VULKAN
         if (renderEngineLink->api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+            IEGPUData::IEModelBuffer modelBufferData{};
             IEBuffer::CreateInfo bufferCreateInfo{
                     .bufferSize=sizeof(IEGPUData::IEModelBuffer),
                     .usage=VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                    .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
+                    .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
+                    .data=&modelBufferData
             };
             renderable->modelBuffer.create(renderEngineLink, &bufferCreateInfo);
-            IEGPUData::IEModelBuffer modelBufferData{};
             IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
                     .poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}},
                     .shaderStages={static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)},
@@ -289,7 +290,6 @@ public:
                     .descriptorSet=&defaultDescriptorSet,
                     .renderPass=&renderPass
             };
-            renderable->modelBuffer.upload(&modelBufferData, sizeof(glm::mat4));
         }
         #endif
     }

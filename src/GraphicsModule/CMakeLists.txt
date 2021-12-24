@@ -1,3 +1,4 @@
+add_subdirectory(VulkanOpenGL)
 add_subdirectory(Merged)
 add_subdirectory(OpenGL)
 add_subdirectory(Vulkan)
