@@ -21,67 +21,67 @@ public:
     class IEAPI{
     public:
         std::string name{IE_RENDER_ENGINE_API_NAME_OPENGL}; // The name of the API to use. Defaults to "OpenGL"
-        IEVersion version; // The version of the API to use
+        IEVersion version = getHighestSupportedVersion(); // The version of the API to use
 
         /**
          * @brief Finds the highest supported API version.
          * @return An IEVersion populated with all the data about the highest supported API version
          */
-        IEVersion getHighestSupportedVersion() {
-        #ifdef ILLUMINATION_ENGINE_VULKAN
+        IEVersion getHighestSupportedVersion() const {
+            IEVersion temporaryVersion;
+            #ifdef ILLUMINATION_ENGINE_VULKAN
             if (name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
                 auto vkEnumerateDeviceInstanceVersion = reinterpret_cast<PFN_vkEnumerateInstanceVersion>(vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
-                if (vkEnumerateDeviceInstanceVersion == nullptr) { version = IEVersion{"1.0.0"}; } else {
+                if (vkEnumerateDeviceInstanceVersion == nullptr) { temporaryVersion = IEVersion{"1.0.0"}; } else {
                     uint32_t instanceVersion;
                     vkEnumerateDeviceInstanceVersion(&instanceVersion);
-                    version = IEVersion{VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion)};
-                    version.number = instanceVersion;
+                    temporaryVersion = IEVersion{VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion)};
+                    temporaryVersion.number = instanceVersion;
                 }
             }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
             if (name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
                 // Line of if statements that finds the correct OpenGL version in use
-                if (GLEW_VERSION_4_6) { version = IEVersion{"4.6.0"}; }
-                else if (GLEW_VERSION_4_5) { version = IEVersion{"4.5.0"}; }
-                else if (GLEW_VERSION_4_4) { version = IEVersion{"4.4.0"}; }
-                else if (GLEW_VERSION_4_3) { version = IEVersion{"4.3.0"}; }
-                else if (GLEW_VERSION_4_2) { version = IEVersion{"4.2.0"}; }
-                else if (GLEW_VERSION_4_1) { version = IEVersion{"4.1.0"}; }
-                else if (GLEW_VERSION_4_0) { version = IEVersion{"4.0.0"}; }
-                else if (GLEW_VERSION_3_3) { version = IEVersion{"3.3.0"}; }
-                else if (GLEW_VERSION_3_2) { version = IEVersion{"3.2.0"}; }
-                else if (GLEW_VERSION_3_1) { version = IEVersion{"3.1.0"}; }
-                else if (GLEW_VERSION_3_0) { version = IEVersion{"3.0.0"}; }
-                else if (GLEW_VERSION_2_1) { version = IEVersion{"2.1.0"}; }
-                else if (GLEW_VERSION_2_0) { version = IEVersion{"2.0.0"}; }
-                else if (GLEW_VERSION_1_5) { version = IEVersion{"1.5.0"}; }
-                else if (GLEW_VERSION_1_4) { version = IEVersion{"1.4.0"}; }
-                else if (GLEW_VERSION_1_3) { version = IEVersion{"1.3.0"}; }
-                else if (GLEW_VERSION_1_2_1) { version = IEVersion{"1.2.1"}; }
-                else if (GLEW_VERSION_1_2) { version = IEVersion{"1.2.0"}; }
-                else if (GLEW_VERSION_1_1) { version = IEVersion{"1.1.0"}; }
+                if (GLEW_VERSION_4_6) { temporaryVersion = IEVersion{"4.6.0"}; }
+                else if (GLEW_VERSION_4_5) { temporaryVersion = IEVersion{"4.5.0"}; }
+                else if (GLEW_VERSION_4_4) { temporaryVersion = IEVersion{"4.4.0"}; }
+                else if (GLEW_VERSION_4_3) { temporaryVersion = IEVersion{"4.3.0"}; }
+                else if (GLEW_VERSION_4_2) { temporaryVersion = IEVersion{"4.2.0"}; }
+                else if (GLEW_VERSION_4_1) { temporaryVersion = IEVersion{"4.1.0"}; }
+                else if (GLEW_VERSION_4_0) { temporaryVersion = IEVersion{"4.0.0"}; }
+                else if (GLEW_VERSION_3_3) { temporaryVersion = IEVersion{"3.3.0"}; }
+                else if (GLEW_VERSION_3_2) { temporaryVersion = IEVersion{"3.2.0"}; }
+                else if (GLEW_VERSION_3_1) { temporaryVersion = IEVersion{"3.1.0"}; }
+                else if (GLEW_VERSION_3_0) { temporaryVersion = IEVersion{"3.0.0"}; }
+                else if (GLEW_VERSION_2_1) { temporaryVersion = IEVersion{"2.1.0"}; }
+                else if (GLEW_VERSION_2_0) { temporaryVersion = IEVersion{"2.0.0"}; }
+                else if (GLEW_VERSION_1_5) { temporaryVersion = IEVersion{"1.5.0"}; }
+                else if (GLEW_VERSION_1_4) { temporaryVersion = IEVersion{"1.4.0"}; }
+                else if (GLEW_VERSION_1_3) { temporaryVersion = IEVersion{"1.3.0"}; }
+                else if (GLEW_VERSION_1_2_1) { temporaryVersion = IEVersion{"1.2.1"}; }
+                else if (GLEW_VERSION_1_2) { temporaryVersion = IEVersion{"1.2.0"}; }
+                else if (GLEW_VERSION_1_1) { temporaryVersion = IEVersion{"1.1.0"}; }
                 // Alternative solution if version is still not found
                 else {
                     glfwInit();
                     GLFWwindow *temporaryWindow = glfwCreateWindow(1, 1, "Gathering OpenGL Data...", nullptr, nullptr);
                     glfwMakeContextCurrent(temporaryWindow);
-                    version = IEVersion{std::string(reinterpret_cast<const char *const>(glGetString(GL_VERSION)))};
+                    std::string versionName = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+                    versionName = versionName.substr(0, versionName.find_first_of(' '));
+                    if (std::count(versionName.begin(), versionName.end(), '.') < 2) {
+                        versionName += ".0";
+                    }
+                    temporaryVersion = IEVersion{versionName};
                     glfwDestroyWindow(temporaryWindow);
                     glfwTerminate();
                 }
-                /**@todo Remove this section if it is not necessary.*/
-                for (char character : version.name) {
-                    if (character != '.') {
-                        version.number *= 10;
-                        version.number += std::stoi(std::string{character});
-                    }
-                }
             }
             #endif
-            return version;
+            return temporaryVersion;
         }
     };
+
     struct PhysicalDeviceInfo {
         //Device Properties
         VkPhysicalDeviceProperties physicalDeviceProperties{};
@@ -110,11 +110,17 @@ public:
         VkBool32 rayTracing{false};
     };
 
-    IESettings settings{};
-    IEAPI api{};
+    IEGraphicsLink () {
+        settings = new IESettings{};
+        api = new IEAPI{};
+    }
+
+    IESettings* settings;
+    IEAPI* api;
     vkb::Device device{};
     vkb::Swapchain swapchain{};
     vkb::Instance instance{};
+    vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
     VkSurfaceKHR surface{};
     VkCommandPool commandPool{};
     VmaAllocator allocator{};

@@ -101,19 +101,6 @@ void resetAll(GLFWwindow* window) {
  * @brief Any code for testing the combined engine goes here.
  */
 int main(int argc, char **argv) {
-    bool force{false};
-    if (argc > 1 && *(argv[1]) == 'f') {
-        force = true;
-    }
-    glfwInit();
-    if (!glfwVulkanSupported()) {
-        if (!force) {
-            throw std::runtime_error("Vulkan is not supported on this device.");
-        }
-        else {
-            std::cerr << "Attempting to run Vulkan on unsupported device!" << std::endl;
-        }
-    }
     IERenderEngine renderEngine{};
     IEKeyboard keyboard{renderEngine.window, &renderEngine};
     IERenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};

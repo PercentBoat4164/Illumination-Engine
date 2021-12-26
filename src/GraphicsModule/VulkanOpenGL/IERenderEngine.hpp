@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include "Core/LogModule/IELogger.hpp"
+
 #include "IERenderPass.hpp"
 #include "IEGraphicsLink.hpp"
 #include "IEBuffer.hpp"
@@ -44,23 +46,37 @@
 #include <functional>
 #include <optional>
 
+//REMOVE
+#include <iostream>
+
 class IERenderEngine {
-public:
-    explicit IERenderEngine() {
-        vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
+private:
+
+    vkb::Instance createVulkanInstance() {
         vkb::InstanceBuilder builder;
-        builder.set_app_name(renderEngineLink.settings.applicationName.c_str()).set_app_version(renderEngineLink.settings.applicationVersion.major, renderEngineLink.settings.applicationVersion.minor, renderEngineLink.settings.applicationVersion.patch).require_api_version(renderEngineLink.settings.requiredVulkanVersion.major, renderEngineLink.settings.requiredVulkanVersion.minor, renderEngineLink.settings.requiredVulkanVersion.patch);
+        builder.set_engine_name("Illumination Engine");
         #ifndef NDEBUG
-        if (systemInfo->validation_layers_available) { builder.request_validation_layers(); }
-        if (systemInfo->debug_utils_available) { builder.use_default_debug_messenger(); }
+        if (renderEngineLink.systemInfo->validation_layers_available) {
+            builder.request_validation_layers();
+        }
+        if (renderEngineLink.systemInfo->debug_utils_available) {
+            builder.use_default_debug_messenger();
+        }
         #endif
         vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
-        if (!instanceBuilder) { throw std::runtime_error("Failed to create Vulkan instance. Error: " + instanceBuilder.error().message() + "\n"); }
-        renderEngineLink.instance = instanceBuilder.value();
+        if (!instanceBuilder) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message());
+        }
+        return instanceBuilder.value();
+    }
+
+public:
+    explicit IERenderEngine() {
+        vkb::Instance instance = createVulkanInstance();
         engineDeletionQueue.emplace_front([&] { vkb::destroy_instance(renderEngineLink.instance); });
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        window = glfwCreateWindow(static_cast<int>(renderEngineLink.settings.resolution[0]), static_cast<int>(renderEngineLink.settings.resolution[1]), renderEngineLink.settings.applicationName.c_str(), renderEngineLink.settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+        window = glfwCreateWindow(static_cast<int>(renderEngineLink.settings->resolution[0]), static_cast<int>(renderEngineLink.settings->resolution[1]), renderEngineLink.settings->applicationName.c_str(), renderEngineLink.settings->fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
         int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
         GLFWimage icons[sizeof(sizes)/sizeof(int)];
         for (unsigned long i = 0; i < sizeof(sizes) / sizeof(sizes[0]); ++i) {
@@ -74,9 +90,9 @@ public:
         glfwSetWindowIcon(window, sizeof(icons)/sizeof(GLFWimage), icons);
         for (GLFWimage icon : icons) { stbi_image_free(icon.pixels); }
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-        int xPos{renderEngineLink.settings.windowPosition[0]}, yPos{renderEngineLink.settings.windowPosition[1]};
+        int xPos{renderEngineLink.settings->windowPosition[0]}, yPos{renderEngineLink.settings->windowPosition[1]};
         glfwGetWindowPos(window, &xPos, &yPos);
-        renderEngineLink.settings.windowPosition = {xPos, yPos};
+        renderEngineLink.settings->windowPosition = {xPos, yPos};
         glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         glfwSetWindowUserPointer(window, this);
@@ -178,7 +194,7 @@ public:
         for (std::function<void()> &function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
         vkb::SwapchainBuilder swapchainBuilder{ renderEngineLink.device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
+        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings->resolution[0], renderEngineLink.settings->resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         renderEngineLink.swapchain = swap_ret.value();
         recreationDeletionQueue.emplace_front([&] { vkb::destroy_swapchain(renderEngineLink.swapchain); });
@@ -235,7 +251,7 @@ public:
         renderable->deletionQueue.emplace_front([&](IERenderable *thisRenderable){ thisRenderable->modelBuffer.destroy(); });
         for (IERenderable::IEMesh &mesh : renderable->meshes) {
             bufferCreateInfo.size = sizeof(mesh.vertices[0]) * mesh.vertices.size();
-            bufferCreateInfo.usage = renderEngineLink.settings.rayTracing ? VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+            bufferCreateInfo.usage = renderEngineLink.settings->rayTracing ? VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             mesh.vertexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.vertexBuffer.uploadData(mesh.vertices.data(), sizeof(mesh.vertices[0]) * mesh.vertices.size());
             mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->vertexBuffer.destroy(); });
@@ -244,7 +260,7 @@ public:
             mesh.indexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.indexBuffer.uploadData(mesh.indices.data(), sizeof(mesh.indices[0]) * mesh.indices.size());
             mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->indexBuffer.destroy(); });
-            if (renderEngineLink.settings.rayTracing) {
+            if (renderEngineLink.settings->rayTracing) {
                 bufferCreateInfo.size = sizeof(mesh.transformationMatrix);
                 bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
                 mesh.transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
@@ -254,12 +270,12 @@ public:
             for (IETexture &texture : renderable->textures) {
                 texture.destroy();
                 IETexture::CreateInfo textureCreateInfo{texture.createdWith};
-                textureCreateInfo.mipMapping = renderEngineLink.settings.mipMapping;
+                textureCreateInfo.mipMapping = renderEngineLink.settings->mipMapping;
                 texture.create(&renderEngineLink, &textureCreateInfo);
                 texture.upload();
             }
             IEDescriptorSet::CreateInfo renderableDescriptorSetCreateInfo{};
-            if (renderEngineLink.settings.rayTracing) {
+            if (renderEngineLink.settings->rayTracing) {
                 renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}};
                 renderableDescriptorSetCreateInfo.shaderStages = {static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT), VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
                 renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textures[mesh.diffuseTexture], std::nullopt};
@@ -314,11 +330,11 @@ public:
         camera.update();
         auto time = static_cast<float>(glfwGetTime());
         for (IERenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera, time); } }
-        if (renderEngineLink.settings.rayTracing) {
+        if (renderEngineLink.settings->rayTracing) {
             topLevelAccelerationStructure.destroy();
             std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
             bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
-            for (IERenderable *renderable : renderables) { if (renderable->render & renderEngineLink.settings.rayTracing) { for (const IERenderable::IEMesh &mesh : renderable->meshes) { bottomLevelAccelerationStructureDeviceAddresses.push_back(mesh.bottomLevelAccelerationStructure.deviceAddress); } } }
+            for (IERenderable *renderable : renderables) { if (renderable->render & renderEngineLink.settings->rayTracing) { for (const IERenderable::IEMesh &mesh : renderable->meshes) { bottomLevelAccelerationStructureDeviceAddresses.push_back(mesh.bottomLevelAccelerationStructure.deviceAddress); } } }
             IEAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
             topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
             topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
@@ -329,7 +345,7 @@ public:
         for (IERenderable *renderable : renderables) {
             if (renderable->render) {
                 for (IERenderable::IEMesh &mesh : renderable->meshes) {
-                    if (renderEngineLink.settings.rayTracing) { mesh.descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
+                    if (renderEngineLink.settings->rayTracing) { mesh.descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
                     vkCmdBindVertexBuffers(commandBuffer.commandBuffers[imageIndex], 0, 1, &mesh.vertexBuffer.buffer, offsets);
                     vkCmdBindIndexBuffer(commandBuffer.commandBuffers[imageIndex], mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
                     vkCmdBindPipeline(commandBuffer.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, mesh.pipeline.pipeline);
@@ -380,8 +396,8 @@ public:
     }
 
     void handleFullscreenSettingsChange() {
-        if (renderEngineLink.settings.fullscreen) {
-            glfwGetWindowPos(window, &renderEngineLink.settings.windowPosition[0], &renderEngineLink.settings.windowPosition[1]);
+        if (renderEngineLink.settings->fullscreen) {
+            glfwGetWindowPos(window, &renderEngineLink.settings->windowPosition[0], &renderEngineLink.settings->windowPosition[1]);
             int monitorCount{}, i, windowX{}, windowY{}, windowWidth{}, windowHeight{}, monitorX{}, monitorY{}, monitorWidth, monitorHeight, bestMonitorWidth{}, bestMonitorHeight{}, bestMonitorRefreshRate{}, overlap, bestOverlap{0};
             GLFWmonitor **monitors;
             const GLFWvidmode *mode;
@@ -403,8 +419,8 @@ public:
                 }
             }
             glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
-        } else { glfwSetWindowMonitor(window, nullptr, renderEngineLink.settings.windowPosition[0], renderEngineLink.settings.windowPosition[1], static_cast<int>(renderEngineLink.settings.defaultWindowResolution[0]), static_cast<int>(renderEngineLink.settings.defaultWindowResolution[1]), static_cast<int>(renderEngineLink.settings.refreshRate)); }
-        glfwSetWindowTitle(window, renderEngineLink.settings.applicationName.c_str());
+        } else { glfwSetWindowMonitor(window, nullptr, renderEngineLink.settings->windowPosition[0], renderEngineLink.settings->windowPosition[1], static_cast<int>(renderEngineLink.settings->defaultWindowResolution[0]), static_cast<int>(renderEngineLink.settings->defaultWindowResolution[1]), static_cast<int>(renderEngineLink.settings->refreshRate)); }
+        glfwSetWindowTitle(window, renderEngineLink.settings->applicationName.c_str());
     }
 
     void destroy() {
@@ -446,7 +462,7 @@ private:
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
         auto vulkanRenderEngine = (IERenderEngine *)glfwGetWindowUserPointer(pWindow);
         vulkanRenderEngine->framebufferResized = true;
-        vulkanRenderEngine->renderEngineLink.settings.resolution[0] = width;
-        vulkanRenderEngine->renderEngineLink.settings.resolution[1] = height;
+        vulkanRenderEngine->renderEngineLink.settings->resolution[0] = width;
+        vulkanRenderEngine->renderEngineLink.settings->resolution[1] = height;
     }
 };

@@ -32,7 +32,7 @@ public:
         patch = std::stoul(name.substr(secondBreak + 1, nameLength - secondBreak));
         version = {major, minor, patch};
         number = (major << 22) | (minor << 12) | patch;
-
+        number = VK_MAKE_VERSION(major, minor, patch);
     }
 
     explicit IEVersion(const std::vector<uint32_t>& versionNumbers) {
@@ -41,7 +41,7 @@ public:
         minor = versionNumbers[1];
         patch = versionNumbers[2];
         name = std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
-        number = (major << 22) | (minor << 12) | patch;
+        number = VK_MAKE_VERSION(major, minor, patch);
     }
 
     IEVersion(uint32_t versionMajor, uint32_t versionMinor, uint32_t versionPatch) {
@@ -50,7 +50,7 @@ public:
         patch = versionPatch;
         name = std::to_string(versionMajor) + "." + std::to_string(versionMinor) + "." + std::to_string(versionPatch);
         version = {versionMajor, versionMinor, versionPatch};
-        number = (versionMajor << 22) | (versionMinor << 12) | versionPatch;
+        number = VK_MAKE_VERSION(major, minor, patch);
     }
 
     explicit IEVersion(uint32_t versionNumber) {
