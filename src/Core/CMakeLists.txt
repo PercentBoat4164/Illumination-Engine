@@ -7,7 +7,7 @@ add_executable(IECore IECoreMain.cpp)
 set_target_properties(IECore PROPERTIES LINKER_LANGUAGE CXX ENABLE_EXPORTS ON)
 
 # Add internal dependency libraries to the target
-target_link_libraries(IECore PUBLIC IELogModule)
+target_link_libraries(IECore INTERFACE IELogModule)
 target_link_libraries(IECore PUBLIC IEFileSystemModule)
 
 # Add internal includes to the target

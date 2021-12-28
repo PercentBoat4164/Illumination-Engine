@@ -1,6 +1,7 @@
 set(IELogModuleSourceFiles  # Gather sources
         IELogger.hpp
-        IELogModuleMain.cpp)
+        IELogModuleMain.cpp
+        )
 
 # Create and define properties for the executable target
 add_executable(IELogModule ${IELogModuleSourceFiles})
