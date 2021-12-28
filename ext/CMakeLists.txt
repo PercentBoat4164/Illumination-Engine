@@ -1,8 +1,6 @@
 find_package(Vulkan)  # Check for Vulkan
 find_package(OpenGL)  # Check for OpenGL
 
-set (external_dependencies)
-
 include(FetchContent)  # Requires CMake 3.14
 
 #Get AssImp
@@ -32,6 +30,13 @@ if (OpenGL_FOUND)
     FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw GIT_TAG 3.3.2 GIT_PROGRESS ON)
 
     #Get GLEW
+    if (BUILD_SHARED_LIBS)
+        set(glew-cmake_BUILD_SHARED ON)
+        set(glew-cmake_BUILD_STATIC OFF)
+    else ()
+        set(glew-cmake_BUILD_SHARED OFF)
+        set(glew-cmake_BUILD_STATIC ON)
+    endif ()
     message("Downloading GLEW glew-2.2.0")
     FetchContent_Declare(glew GIT_REPOSITORY https://github.com/Perlmint/glew-cmake GIT_TAG glew-cmake-2.2.0 GIT_PROGRESS ON)
 
@@ -61,8 +66,7 @@ if (Vulkan_FOUND)
     set(Vulkan_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
 endif ()
 
-# Build all libraries
-FetchContent_MakeAvailable(assimp glm spdlog)
+FetchContent_MakeAvailable(assimp glm spdlog)  # Build all libraries
 
 #Setup all needed includes
 set(assimp_DIR ${assimp_SOURCE_DIR}/include PARENT_SCOPE)
