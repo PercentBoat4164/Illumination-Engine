@@ -15,7 +15,7 @@
 
 #include <cmath>
 #include <deque>
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 enum VulkanImageType {
     VULKAN_DEPTH = 0x00000000,

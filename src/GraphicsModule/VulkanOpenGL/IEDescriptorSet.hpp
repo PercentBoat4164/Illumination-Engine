@@ -7,7 +7,7 @@
 #include <numeric>
 #include <vector>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 class IEDescriptorSet {
 public:

@@ -26,7 +26,7 @@
 
 #include <glm/gtc/quaternion.hpp>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 #include <cstddef>
 #include <fstream>

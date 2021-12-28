@@ -7,7 +7,7 @@
 #include <vector>
 #include <cstdint>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 
 class IEAccelerationStructure : public IEBuffer {

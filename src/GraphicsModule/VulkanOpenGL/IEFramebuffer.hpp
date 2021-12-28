@@ -4,7 +4,7 @@
 #include "IERenderPass.hpp"
 #include "IEImage.hpp"
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 #include <vector>
 #include <deque>
 

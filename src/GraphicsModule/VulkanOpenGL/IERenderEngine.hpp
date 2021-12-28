@@ -59,10 +59,10 @@ public:
         vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
         vkb::InstanceBuilder builder;
         builder.set_app_name(settings.applicationName.c_str()).set_app_version(settings.applicationVersion[0], settings.applicationVersion[1], settings.applicationVersion[2]).require_api_version(settings.requiredVulkanVersion[0], settings.requiredVulkanVersion[1], settings.requiredVulkanVersion[2]);
-#ifndef NDEBUG
+        #ifndef NDEBUG
         if (systemInfo->validation_layers_available) { builder.request_validation_layers(); }
         if (systemInfo->debug_utils_available) { builder.use_default_debug_messenger(); }
-#endif
+        #endif
         vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
         if (!instanceBuilder) { throw std::runtime_error("Failed to create Vulkan instance. Error: " + instanceBuilder.error().message() + "\n"); }
         instance = instanceBuilder.value();
