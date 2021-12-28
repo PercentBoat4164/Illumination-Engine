@@ -38,16 +38,12 @@ if (OpenGL_FOUND)
         set(glew-cmake_BUILD_STATIC ON)
     endif ()
     message("Downloading GLEW glew-2.2.0")
-    FetchContent_Declare(glew GIT_REPOSITORY https://github.com/Perlmint/glew-cmake GIT_TAG glew-cmake-2.2.0 GIT_PROGRESS ON)
+    FetchContent_Declare(glew URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
 
     FetchContent_MakeAvailable(glfw glew)  # Generate all external dependencies which require OpenGL
 
-    #Make "glew" the default glew target
-    if (BUILD_SHARED_LIBS)
-        add_library(glew ALIAS libglew_shared)
-    else ()
-        add_library(glew ALIAS libglew_static)
-    endif ()
+    #Special commands for generating GLEW
+    add_subdirectory(${glew_SOURCE_DIR}/build/cmake ${glew_BINARY_DIR})
 
     set(OpenGL_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
 endif ()
