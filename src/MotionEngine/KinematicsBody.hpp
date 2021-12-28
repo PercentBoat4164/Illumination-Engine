@@ -13,10 +13,12 @@ public:
     glm::vec3 position;
     glm::quat rotation;
 
-    KinematicsBody(float m, glm::vec3 v, glm::quat rotV, glm::vec3 a) {
+    KinematicsBody(float m, glm::vec3 pos, glm::quat rot, glm::vec3 v, glm::quat rotV, glm::vec3 a) {
         mass = m;
         velocity = v;
         rotationalVelocity = rotV;
         acceleration = a;
+        position = pos;
+        rotation = rot;
     }
 };

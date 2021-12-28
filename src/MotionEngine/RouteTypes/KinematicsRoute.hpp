@@ -13,7 +13,8 @@ public:
     void step(float time) {
         *position += *velocity * time + *acceleration * time * time * 0.5f;
         *velocity += *acceleration * time;
-        *rotation = glm::slerp(*rotation, *rotationalVelocity, time);
+        *rotation = glm::rotate(*rotation, glm::angle(*rotationalVelocity) * time, glm::axis(*rotationalVelocity));
+        //*rotation = glm::cross(*rotation, glm::quat(rotationalVelocity->w * time, rotationalVelocity->x, rotationalVelocity->y, rotationalVelocity->z));
     }
 
     void applyImpulse(glm::vec3 impulse) {

@@ -23,8 +23,8 @@ out vec4 fragmentColor;
 
 const vec3 lightPosition = vec3(0.0f, 0.0f, 2.0f);
 const vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
-const float brightness = 10.0f;
-const float ambientStrength = 0.0f;
+const float brightness = 25.0f;
+const float ambientStrength = 0.01f;
 
 vec4 aces(vec4 x) {
     vec4 tonemapped = clamp((x * (2.51f * x + 0.03f)) / (x * (2.43f * x + 0.59f) + 0.14f), 0.0f, 1.0f);

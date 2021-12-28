@@ -134,7 +134,7 @@ public:
 
     void update() {
         glm::quat quaternion = glm::quat(glm::radians(rotation));
-        model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
+        model = glm::rotate(glm::translate(glm::scale(glm::mat4(1.0f), scale), position), glm::angle(quaternion), glm::axis(quaternion));
     }
 
     void destroy() {

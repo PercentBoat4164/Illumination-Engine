@@ -31,6 +31,7 @@ public:
     OpenGLCamera camera{};
     std::vector<OpenGLRenderable *> renderables;
     OpenGLGraphicsEngineLink renderEngineLink{};
+    bool paused = false;
 
     explicit OpenGLRenderEngine() {
         if (!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
