@@ -1,13 +1,12 @@
+# Add all subdirectories.
 add_subdirectory(OpenGL)
 add_subdirectory(Vulkan)
+
+# Create and define properties for the executable target
 add_executable(IEGraphicsModule IEGraphicsModuleMain.cpp)
-add_dependencies(IEGraphicsModule IEGraphicsModuleOpenGL)
-add_dependencies(IEGraphicsModule IEGraphicsModuleVulkan)
-add_dependencies(IEGraphicsModule IELogModule)
-addAssImp(IEGraphicsModule)
-addGLEW(IEGraphicsModule)
-addGLM(IEGraphicsModule)
-addVulkan(IEGraphicsModule)
-addGLFW(IEGraphicsModule)
-addSpdlog(IEGraphicsModule)
-target_include_directories(IEGraphicsModule PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
+set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX ENABLE_EXPORTS ON)
+
+# Add internal dependency libraries to the target
+target_link_libraries(IEGraphicsModule PUBLIC IEGraphicsModuleOpenGL)
+target_link_libraries(IEGraphicsModule PUBLIC IEGraphicsModuleVulkan)
+target_link_libraries(IEGraphicsModule PUBLIC IECore)

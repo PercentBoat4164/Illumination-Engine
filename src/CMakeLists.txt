@@ -1,21 +1,12 @@
-add_executable(IlluminationEngine main.cpp)
+# Add all subdirectories
 add_subdirectory(Core)
 add_subdirectory(InputModule)
 add_subdirectory(GraphicsModule)
-add_dependencies(IlluminationEngine IELogModule)
-add_dependencies(IlluminationEngine IEInputModule)
-add_dependencies(IlluminationEngine IEGraphicsModule)
-target_include_directories(IlluminationEngine PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
-addAssImp(IlluminationEngine)
-addGLEW(IlluminationEngine)
-addGLM(IlluminationEngine)
-addVulkan(IlluminationEngine)
-addGLFW(IlluminationEngine)
-addSpdlog(IlluminationEngine)
-file(REMOVE ${CMAKE_BINARY_DIR}/VulkanFOUND)
-file(REMOVE ${CMAKE_BINARY_DIR}/OpenGLFOUND)
-file(REMOVE ${CMAKE_BINARY_DIR}/Log4cplusFOUND)
-file(REMOVE ${CMAKE_BINARY_DIR}/GLEWFOUND)
-file(REMOVE ${CMAKE_BINARY_DIR}/GLMFOUND)
-file(REMOVE ${CMAKE_BINARY_DIR}/GLFWFOUND)
-file(REMOVE ${CMAKE_BINARY_DIR}/AssImpFOUND)
+
+# Create and define properties for the executable target
+add_executable(IlluminationEngine main.cpp)
+set_target_properties(IlluminationEngine PROPERTIES LINKER_LANGUAGE CXX ENABLE_EXPORTS ON)
+
+# Add internal dependency libraries to the target
+target_link_libraries(IlluminationEngine PUBLIC IECore)
+target_link_libraries(IlluminationEngine PUBLIC IEGraphicsModule)
