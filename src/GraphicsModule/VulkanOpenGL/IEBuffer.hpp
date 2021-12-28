@@ -2,7 +2,7 @@
 
 #include "IEGraphicsLink.hpp"
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 #ifndef VMA_INCLUDED
 #define VMA_INCLUDED

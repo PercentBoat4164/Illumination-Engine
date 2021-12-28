@@ -5,7 +5,7 @@
 #include "IERenderPass.hpp"
 #include "IEGraphicsLink.hpp"
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 #include <deque>
 

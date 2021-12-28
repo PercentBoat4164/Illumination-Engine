@@ -11,7 +11,7 @@
 #include <fstream>
 #include <cstring>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 class IETexture : public IEImage {
 public:

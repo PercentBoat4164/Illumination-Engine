@@ -4,7 +4,7 @@
 
 #include <deque>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 class IEFramebuffer;
 

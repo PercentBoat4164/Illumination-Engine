@@ -5,7 +5,7 @@
 #include <deque>
 #include <vector>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 #include "VkBootstrap.h"
 
 class IECommandBuffer {
