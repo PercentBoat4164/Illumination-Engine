@@ -1,6 +1,6 @@
 # Add all subdirectories
-add_subdirectory(LogModule)
 add_subdirectory(FileSystemModule)
+add_subdirectory(LogModule)
 
 # Create and define properties for the executable target
 add_executable(IECore IECoreMain.cpp)
