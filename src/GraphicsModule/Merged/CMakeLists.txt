@@ -1,3 +1,5 @@
+add_subdirectory(DefaultShaders)  # Generate all subdirectories
+
 set(IEGraphicsModuleMergedSourceFiles
         IEBuffer.hpp
         IECamera.hpp
@@ -13,16 +15,18 @@ set(IEGraphicsModuleMergedSourceFiles
         IESettings.hpp
         IEShader.hpp
         IETexture.hpp
-        IEGMMergedMain.cpp IEFramebufferAttachment.hpp IEVertex.hpp IEMesh.hpp IEVersion.hpp IEGPUData.hpp)
-add_executable(IEGraphicsModuleMerged ${IEGraphicsModuleMergedSourceFiles})
+        IEFramebufferAttachment.hpp
+        IEVertex.hpp
+        IEMesh.hpp
+        IEVersion.hpp
+        IEGPUData.hpp
+        )
+
+# Create and define properties for the library
+add_library(IEGraphicsModuleMerged ${IEGraphicsModuleMergedSourceFiles})
 set_target_properties(IEGraphicsModuleMerged PROPERTIES LINKER_LANGUAGE CXX)
-add_subdirectory(DefaultShaders)
-add_dependencies(IEGraphicsModuleMerged IEGraphicsModuleShaders)
-add_dependencies(IEGraphicsModuleMerged IELogModule)
-addAssImp(IEGraphicsModuleMerged)
-addGLEW(IEGraphicsModuleMerged)
-addGLM(IEGraphicsModuleMerged)
-addVulkan(IEGraphicsModuleMerged)
-addGLFW(IEGraphicsModuleMerged)
-addSpdlog(IEGraphicsModuleMerged)
-target_include_directories(IEGraphicsModuleMerged PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
+
+add_dependencies(IEGraphicsModuleMerged PUBLIC IEGraphicsModuleShaders)  # Add shader pre-compilation as a dependency
+
+# Add external dependency libraries and include directories to the target
+target_link_libraries(IEGraphicsModuleOpenGLVulkan PUBLIC vk-bootstrap glfw glew spdlog assimp glm)

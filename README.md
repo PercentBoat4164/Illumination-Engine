@@ -1,17 +1,7 @@
-# Illumination Engine
-Illumination Engine is a game engine written in C++ that uses Vulkan for speed and to take advantage of newer hardware, and OpenGL for portability.
+# Core Modules
+The Core Modules are responsible for managing the basic internal operations and data structures that will be required of the engine no matter the use case.
 
 ### Requirements for Completion
-- [ ] GUI
-- [ ] File structure management
-- [ ] Building, linking, and compiling games
-- [ ] Scripting language support
-
-### Required modules
-- [ ] Core
-- [ ] Graphics
-- [ ] Physics
-- [ ] Sound
-- [ ] Input
-- [ ] Scripting
-- [ ] Asset
+ - [x] Logger
+ - [ ] File Structure Management System
+ - [ ] Other (to be filled in the future)

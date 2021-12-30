@@ -24,9 +24,6 @@
 #include "IETexture.hpp"
 #include "IEFramebuffer.hpp"
 
-#include <vulkan/vulkan.h>
-
-#include <VkBootstrap.h>
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
 #include <GL/glew.h>
@@ -40,6 +37,10 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 #endif
+
+#include <vulkan/vulkan.h>
+#include <VkBootstrap.h>
+#define GLFW_INCLUDE_VULKAN  // Needed for glfwCreateWindowSurface
 #include <GLFW/glfw3.h>
 
 #include <deque>

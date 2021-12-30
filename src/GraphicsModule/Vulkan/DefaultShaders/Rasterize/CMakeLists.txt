@@ -1,18 +1,25 @@
-add_custom_target(IEGraphicsModuleVulkanShadersRasterizing)
-set(IEDefaultVulkanRasterizingShaders
-        ${CMAKE_CURRENT_SOURCE_DIR}/fragmentShader.frag
-        ${CMAKE_CURRENT_SOURCE_DIR}/vertexShader.vert)
-find_program(GLSLC glslc glslc.exe)
+set(IEDefaultVulkanRasterizingShaders  # Gather sources
+        fragmentShader.frag
+        vertexShader.vert
+        )
+
+add_custom_target(IEGraphicsModuleVulkanShadersRasterizing)  # Create the custom target
+
+find_program(GLSLC glslc glslc.exe)  # Find glslc (program used to compile shaders)
+
 if (GLSLC)
-    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/shaders/Vulkan/Rasterizing)
+    set(shader_output_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/Vulkan/Rasterizing) #define destination directory
+    file(MAKE_DIRECTORY ${shader_output_directory})  # Create destination directory
+
     foreach (shader ${IEDefaultVulkanRasterizingShaders})
+        # Generate command for compiling the shader based on build type
         if (CMAKE_BUILD_TYPE STREQUAL Release)
-            add_custom_command(OUTPUT "${shader}.spv" COMMAND ${GLSLC} --target-env=vulkan1.2 ${shader} -o "${shader}.spv" DEPENDS ${shader} COMMENT "Compiling ${shader} in Release mode.")
+            add_custom_command(OUTPUT ${shader_output_directory}/${shader}.spv COMMAND ${GLSLC} --target-env=vulkan1.2 ${CMAKE_CURRENT_SOURCE_DIR}/${shader} -o ${shader_output_directory}/${shader}.spv DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${shader} COMMENT "Compiling ${CMAKE_CURRENT_SOURCE_DIR}/${shader} in Release mode.")  # Compile shader in release mode
         else ()
-            add_custom_command(OUTPUT "${shader}.spv" COMMAND ${GLSLC} --target-env=vulkan1.2 ${shader} -o "${shader}.spv" -g DEPENDS ${shader} COMMENT "Compiling ${shader} in Debug mode.")
+            add_custom_command(OUTPUT ${shader_output_directory}/${shader}.spv COMMAND ${GLSLC} --target-env=vulkan1.2 ${CMAKE_CURRENT_SOURCE_DIR}/${shader} -o ${shader_output_directory}/${shader}.spv -g DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${shader} COMMENT "Compiling ${CMAKE_CURRENT_SOURCE_DIR}/${shader} in Debug mode.")  # Compile shader in debug mode
+            add_custom_command(TARGET IEGraphicsModuleVulkanShadersRasterizing COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${shader} ${shader_output_directory}/${shader} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${shader})  # Copy source file to output directory
         endif ()
-        target_sources(IEGraphicsModuleVulkanShadersRasterizing PRIVATE "${shader}.spv")
-        add_custom_command(TARGET IEGraphicsModuleVulkanShadersRasterizing COMMAND ${CMAKE_COMMAND} -E copy "${shader}.spv" ${CMAKE_BINARY_DIR}/bin/shaders/Vulkan/Rasterizing DEPENDS "${shader}.spv")
-        add_custom_command(TARGET IEGraphicsModuleVulkanShadersRasterizing COMMAND ${CMAKE_COMMAND} -E copy "${shader}" ${CMAKE_BINARY_DIR}/bin/shaders/Vulkan/Rasterizing DEPENDS "${shader}")
+
+        target_sources(IEGraphicsModuleVulkanShadersRasterizing PRIVATE ${shader_output_directory}/${shader}.spv) # Add the compiled output to the sources so that it is regenerated upon change of source
     endforeach ()
 endif ()
