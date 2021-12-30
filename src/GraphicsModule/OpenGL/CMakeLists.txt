@@ -12,12 +12,11 @@ if (OpenGL_FOUND)
             openglSettings.hpp
             openglShader.hpp
             openglTexture.hpp
-            IEGMOpenGLMain.cpp
             )
 
-    # Create and define properties for the executable target
-    add_executable(IEGraphicsModuleOpenGL ${IlluminationEngineSourceGraphicsModuleOpenGLSourceFiles})
-    set_target_properties(IEGraphicsModuleOpenGL PROPERTIES LINKER_LANGUAGE CXX ENABLE_EXPORTS ON)
+    # Create and define properties for the library
+    add_library(IEGraphicsModuleOpenGL ${IlluminationEngineSourceGraphicsModuleOpenGLSourceFiles})
+    set_target_properties(IEGraphicsModuleOpenGL PROPERTIES LINKER_LANGUAGE CXX)
     target_compile_definitions(IEGraphicsModuleOpenGL PUBLIC ILLUMINATION_ENGINE_OPENGL)  # Compile with OpenGL support
 
     add_dependencies(IEGraphicsModuleOpenGL IEGraphicsModuleOpenGLShaders)  # Add shader pre-compilation as a dependency

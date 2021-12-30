@@ -18,12 +18,11 @@ set(IlluminationEngineSourceGraphicsModuleVulkanSourceFiles  # Gather sources
         vulkanTexture.hpp
         vulkanUniformBufferObject.hpp
         vulkanVertex.hpp
-        IEGMVulkanMain.cpp
         )
 
-# Create and define properties for the executable target
-add_executable(IEGraphicsModuleVulkan ${IlluminationEngineSourceGraphicsModuleVulkanSourceFiles})
-set_target_properties(IEGraphicsModuleVulkan PROPERTIES LINKER_LANGUAGE CXX ENABLE_EXPORTS ON)
+# Create and define properties for the library
+add_library(IEGraphicsModuleVulkan ${IlluminationEngineSourceGraphicsModuleVulkanSourceFiles})
+set_target_properties(IEGraphicsModuleVulkan PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_definitions(IEGraphicsModuleVulkan PUBLIC ILLUMINATION_ENGINE_VULKAN)  # Compile with Vulkan support
 
 add_dependencies(IEGraphicsModuleVulkan IEGraphicsModuleVulkanShaders)  # Add shader pre-compilation as a dependency
