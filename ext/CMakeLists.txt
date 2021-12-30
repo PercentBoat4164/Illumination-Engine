@@ -11,7 +11,6 @@ set(ASSIMP_BUILD_ZLIB ON)
 message("Downloading AssImp v5.1.4")
 FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG v5.1.4 GIT_PROGRESS ON)
 
-
 #Get GLM
 message("Downloading GLM 0.9.9.8")
 FetchContent_Declare(glm GIT_REPOSITORY https://github.com/g-truc/glm GIT_TAG 0.9.9.8 GIT_PROGRESS ON)
@@ -63,6 +62,7 @@ if (Vulkan_FOUND)
 endif ()
 
 FetchContent_MakeAvailable(assimp glm spdlog)  # Build all libraries
+set_target_properties(assimp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 #Setup all needed includes
 set(assimp_DIR ${assimp_SOURCE_DIR}/include PARENT_SCOPE)
