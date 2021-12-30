@@ -22,9 +22,6 @@
 #include "IETexture.hpp"
 #include "IEFramebuffer.hpp"
 
-#include <vulkan/vulkan.h>
-
-#include <VkBootstrap.h>
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
 #include <GL/glew.h>
@@ -38,6 +35,10 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 #endif
+
+#include <vulkan/vulkan.h>
+#include <VkBootstrap.h>
+#define GLFW_INCLUDE_VULKAN  // Needed for glfwCreateWindowSurface
 #include <GLFW/glfw3.h>
 
 #include <deque>
@@ -172,7 +173,7 @@ public:
         allocatorInfo.physicalDevice = device.physical_device.physical_device;
         allocatorInfo.device = device.device;
         allocatorInfo.instance = instance.instance;
-        allocatorInfo.flags = renderEngineLink.enabledPhysicalDeviceInfo.rayTracing ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0;
+//        allocatorInfo.flags = renderEngineLink.enabledPhysicalDeviceInfo.rayTracing ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0;
         vmaCreateAllocator(&allocatorInfo, &allocator);
         engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(allocator); });
         commandBuffer.create(&renderEngineLink, vkb::QueueType::graphics);

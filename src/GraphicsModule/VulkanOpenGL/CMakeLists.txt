@@ -1,4 +1,6 @@
-set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles
+add_subdirectory(DefaultShaders)  # Generate all subdirectories
+
+set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles  # Gather sources
         IEAccelerationStructure.hpp
         IEBuffer.hpp
         IECamera.hpp
@@ -16,15 +18,13 @@ set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles
         IETexture.hpp
         IEUniformBufferObject.hpp
         IEVertex.hpp
-        IEGMVulkanOpenGLMain.cpp)
-add_executable(IEGraphicsModuleVulkanOpenGL ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles})
-target_include_directories(IEGraphicsModuleVulkanOpenGL PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
-set_target_properties(IEGraphicsModuleVulkanOpenGL PROPERTIES LINKER_LANGUAGE CXX)
-add_subdirectory(DefaultShaders)
-add_dependencies(IEGraphicsModuleVulkanOpenGL IEGraphicsModuleVulkanOpenGLShaders)
-addAssImp(IEGraphicsModuleVulkanOpenGL)
-addGLEW(IEGraphicsModuleVulkanOpenGL)
-addGLM(IEGraphicsModuleVulkanOpenGL)
-addVulkan(IEGraphicsModuleVulkanOpenGL)
-addGLFW(IEGraphicsModuleVulkanOpenGL)
-addSpdlog(IEGraphicsModuleVulkanOpenGL)
+        )
+
+# Create and define properties for the library
+add_library(IEGraphicsModuleOpenGLVulkan ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles})
+set_target_properties(IEGraphicsModuleOpenGLVulkan PROPERTIES LINKER_LANGUAGE CXX)
+
+#add_dependencies(IEGraphicsModuleOpenGLVulkan PUBLIC IEGraphicsModuleVulkanOpenGLShaders)  # Add shader pre-compilation as a dependency
+
+# Add external dependency libraries and include directories to the target
+target_link_libraries(IEGraphicsModuleOpenGLVulkan PUBLIC vk-bootstrap glfw glew spdlog assimp glm)

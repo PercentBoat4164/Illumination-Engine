@@ -1,6 +1,6 @@
 # Add all subdirectories.
 add_subdirectory(VulkanOpenGL)
-add_subdirectory(Merged)
+#add_subdirectory(Merged)
 add_subdirectory(OpenGL)
 if (Vulkan_FOUND)
     add_subdirectory(Vulkan)
@@ -12,7 +12,7 @@ set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX)
 
 # Add internal dependency libraries to the target
 target_link_libraries(IEGraphicsModule INTERFACE IECore)
-target_link_libraries(IEGraphicsModule INTERFACE IEGraphicsModuleMerged)
+#target_link_libraries(IEGraphicsModule INTERFACE IEGraphicsModuleMerged)
 target_link_libraries(IEGraphicsModule INTERFACE IEGraphicsModuleOpenGLVulkan)
 target_link_libraries(IEGraphicsModule INTERFACE IEGraphicsModuleOpenGL)
 if (Vulkan_FOUND)

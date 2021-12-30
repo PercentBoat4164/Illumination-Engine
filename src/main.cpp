@@ -1,12 +1,12 @@
-#include "GraphicsModule/OpenGL/openglRenderEngine.hpp"
 #include "InputModule/IEKeyboard.hpp"
+#include "GraphicsModule/VulkanOpenGL/IERenderEngine.hpp"
 
 /**
  * @brief A key callback function. Moves the camera forward.
  * @param window
  */
 void moveCameraForward(GLFWwindow* window) {
-    auto renderEngine = static_cast<OpenGLRenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
+    auto renderEngine = static_cast<IERenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
     renderEngine->camera.position = renderEngine->camera.position + renderEngine->camera.front * renderEngine->frameTime *
             renderEngine->camera.speed;
 }
@@ -16,7 +16,7 @@ void moveCameraForward(GLFWwindow* window) {
  * @param window
  */
 void moveCameraBackward(GLFWwindow* window) {
-    auto renderEngine = static_cast<OpenGLRenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
+    auto renderEngine = static_cast<IERenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
     renderEngine->camera.position = renderEngine->camera.position - renderEngine->camera.front * renderEngine->frameTime *
             renderEngine->camera.speed;
 }
@@ -26,7 +26,7 @@ void moveCameraBackward(GLFWwindow* window) {
  * @param window
  */
 void moveCameraRight(GLFWwindow* window) {
-    auto renderEngine = static_cast<OpenGLRenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
+    auto renderEngine = static_cast<IERenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
     renderEngine->camera.position = renderEngine->camera.position + renderEngine->camera.right * renderEngine->frameTime *
             renderEngine->camera.speed;
 }
@@ -36,7 +36,7 @@ void moveCameraRight(GLFWwindow* window) {
  * @param window
  */
 void moveCameraLeft(GLFWwindow* window) {
-    auto renderEngine = static_cast<OpenGLRenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
+    auto renderEngine = static_cast<IERenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
     renderEngine->camera.position = renderEngine->camera.position - renderEngine->camera.right * renderEngine->frameTime *
             renderEngine->camera.speed;
 }
@@ -46,7 +46,7 @@ void moveCameraLeft(GLFWwindow* window) {
  * @param window
  */
 void moveCameraUp(GLFWwindow* window) {
-    auto renderEngine = static_cast<OpenGLRenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
+    auto renderEngine = static_cast<IERenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
     renderEngine->camera.position = renderEngine->camera.position + renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
 }
 
@@ -55,7 +55,7 @@ void moveCameraUp(GLFWwindow* window) {
  * @param window
  */
 void moveCameraDown(GLFWwindow* window) {
-    auto renderEngine = static_cast<OpenGLRenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
+    auto renderEngine = static_cast<IERenderEngine *>(static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window))->attachment);
     renderEngine->camera.position = renderEngine->camera.position - renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
 }
 
@@ -71,13 +71,13 @@ void moveSlower(GLFWwindow* window);
  */
 void moveFaster(GLFWwindow* window) {
     auto keyboard = static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window));
-    auto renderEngine = static_cast<OpenGLRenderEngine *>(keyboard->attachment);
+    auto renderEngine = static_cast<IERenderEngine *>(keyboard->attachment);
     renderEngine->camera.speed *= 3;
 }
 
 void moveSlower(GLFWwindow* window) {
     auto keyboard = static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window));
-    auto renderEngine = static_cast<OpenGLRenderEngine *>(keyboard->attachment);
+    auto renderEngine = static_cast<IERenderEngine *>(keyboard->attachment);
     renderEngine->camera.speed /= 3;
 }
 
@@ -87,9 +87,9 @@ void moveSlower(GLFWwindow* window) {
  */
 void resetAll(GLFWwindow* window) {
     auto keyboard = static_cast<IEKeyboard *>(glfwGetWindowUserPointer(window));
-    auto renderEngine = static_cast<OpenGLRenderEngine *>(keyboard->attachment);
+    auto renderEngine = static_cast<IERenderEngine *>(keyboard->attachment);
     keyboard->clearQueue();
-    renderEngine->camera = OpenGLCamera{};
+    renderEngine->camera = IECamera{};
     renderEngine->camera.linkedRenderEngine = &renderEngine->renderEngineLink;
 }
 
@@ -97,8 +97,8 @@ void resetAll(GLFWwindow* window) {
  * @brief Code for testing the entire engine with all its modular parts goes here.
  */
 int main(int argc, char **argv) {
-    OpenGLRenderEngine renderEngine{};
-    OpenGLRenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
+    IERenderEngine renderEngine{};
+    IERenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
     cube.position = {0, -3, 0};
     renderEngine.loadRenderable(&cube);
     IEKeyboard keyboard{renderEngine.window};
