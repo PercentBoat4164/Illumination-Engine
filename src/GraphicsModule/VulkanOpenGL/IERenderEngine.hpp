@@ -46,24 +46,36 @@
 #include <deque>
 #include <functional>
 #include <optional>
-
-//REMOVE
-#include <iostream>
+#include <filesystem>
 
 class IERenderEngine {
 private:
-
+    /**
+     * @brief Private helper function that creates a Vulkan instance.
+     * @return The newly created Vulkan instance.
+     */
     vkb::Instance createVulkanInstance() {
         vkb::InstanceBuilder builder;
-        builder.set_engine_name("Illumination Engine");
+
+        // Set engine properties
+        builder.set_engine_name(ILLUMINATION_ENGINE_NAME);
+        builder.set_engine_version(ILLUMINATION_ENGINE_VERSION_MAJOR, ILLUMINATION_ENGINE_VERSION_MINOR, ILLUMINATION_ENGINE_VERSION_PATCH);
+
+        // Set application properties
+        builder.set_app_name(renderEngineLink.settings->applicationName.c_str());
+        builder.set_app_version(renderEngineLink.settings->applicationVersion.number);
+
+        // If debugging and components are available, add validation layers and a debug messenger
         #ifndef NDEBUG
         if (renderEngineLink.systemInfo->validation_layers_available) {
             builder.request_validation_layers();
         }
         if (renderEngineLink.systemInfo->debug_utils_available) {
-            builder.use_default_debug_messenger();
+            builder.use_default_debug_messenger();  //*@todo Make a custom messenger that uses the logging system.*/
         }
         #endif
+
+        // Build the instance and check for errors.
         vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
         if (!instanceBuilder) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message());
@@ -71,25 +83,44 @@ private:
         return instanceBuilder.value();
     }
 
+    [[nodiscard]] GLFWwindow* createWindow() const {
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        GLFWwindow* pWindow = glfwCreateWindow(static_cast<int>(renderEngineLink.settings->resolution[0]), static_cast<int>(renderEngineLink.settings->resolution[1]), renderEngineLink.settings->applicationName.c_str(), renderEngineLink.settings->fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+        return pWindow;
+    }
+
+    void setWindowIcons(const std::string& path) const {
+        int width, height, channels;
+        std::vector<GLFWimage> icons{};
+        std::string filename = path.substr(path.find_last_of('/'));  // filename component of path
+
+        // iterate over all files and directories within path recursively
+        for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(path)) {
+            if (path.find(filename) >= 0) {  // if filename to look for is in path
+                stbi_uc* pixels = stbi_load(file.path().c_str(), &width, &height, &channels, STBI_rgb_alpha);  // Load image from disk
+                if (!pixels) {
+                    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to load icon " + file.path().generic_string() + ". Is it an image?");
+                }
+                icons.push_back(GLFWimage{.width=width, .height=height, .pixels=pixels});  // Generate image
+            }
+        }
+        glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
+        for (GLFWimage icon : icons) {
+            stbi_image_free(icon.pixels);  // Free all pixel data
+        }
+    }
+
 public:
     explicit IERenderEngine() {
-        vkb::Instance instance = createVulkanInstance();
+        // Create a Vulkan instance
+        renderEngineLink.instance = createVulkanInstance();
         engineDeletionQueue.emplace_front([&] { vkb::destroy_instance(renderEngineLink.instance); });
+
+        // Initialize GLFW then create and setup window
+        /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI abstraction.*/
         glfwInit();
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        window = glfwCreateWindow(static_cast<int>(renderEngineLink.settings->resolution[0]), static_cast<int>(renderEngineLink.settings->resolution[1]), renderEngineLink.settings->applicationName.c_str(), renderEngineLink.settings->fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
-        int width, height, channels, sizes[] = {256, 128, 64, 32, 16};
-        GLFWimage icons[sizeof(sizes)/sizeof(int)];
-        for (unsigned long i = 0; i < sizeof(sizes) / sizeof(sizes[0]); ++i) {
-            std::string filename = "res/Logos/IlluminationEngineLogo" + std::to_string(sizes[i]) + ".png";
-            stbi_uc *pixels = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-            if (!pixels) { throw std::runtime_error("failed to prepare icon image from file: " + filename); }
-            icons[i].pixels = pixels;
-            icons[i].height = height;
-            icons[i].width = width;
-        }
-        glfwSetWindowIcon(window, sizeof(icons)/sizeof(GLFWimage), icons);
-        for (GLFWimage icon : icons) { stbi_image_free(icon.pixels); }
+        window = createWindow();
+        setWindowIcons("res/icons");
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         int xPos{renderEngineLink.settings->windowPosition[0]}, yPos{renderEngineLink.settings->windowPosition[1]};
         glfwGetWindowPos(window, &xPos, &yPos);
@@ -180,7 +211,6 @@ public:
         allocatorInfo.physicalDevice = renderEngineLink.device.physical_device.physical_device;
         allocatorInfo.device = renderEngineLink.device.device;
         allocatorInfo.instance = renderEngineLink.instance.instance;
-        allocatorInfo.flags = renderEngineLink.enabledPhysicalDeviceInfo.rayTracing ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0;
         vmaCreateAllocator(&allocatorInfo, &renderEngineLink.allocator);
         engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(renderEngineLink.allocator); });
         commandBuffer.create(&renderEngineLink, vkb::QueueType::graphics);

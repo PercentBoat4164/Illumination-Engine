@@ -24,6 +24,11 @@
 
 #include <string>
 
+#define ILLUMINATION_ENGINE_VERSION_MAJOR 0
+#define ILLUMINATION_ENGINE_VERSION_MINOR 0
+#define ILLUMINATION_ENGINE_VERSION_PATCH 0
+#define ILLUMINATION_ENGINE_NAME "Illumination Engine"
+
 class IESettings {
 public:
     bool rayTracing{false};
