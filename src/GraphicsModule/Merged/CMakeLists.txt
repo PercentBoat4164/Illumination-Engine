@@ -26,7 +26,7 @@ set(IEGraphicsModuleMergedSourceFiles
 add_library(IEGraphicsModuleMerged ${IEGraphicsModuleMergedSourceFiles})
 set_target_properties(IEGraphicsModuleMerged PROPERTIES LINKER_LANGUAGE CXX)
 
-add_dependencies(IEGraphicsModuleMerged PUBLIC IEGraphicsModuleShaders)  # Add shader pre-compilation as a dependency
+add_dependencies(IEGraphicsModuleMerged IEGraphicsModuleShaders)  # Add shader pre-compilation as a dependency
 
 # Add external dependency libraries and include directories to the target
 target_link_libraries(IEGraphicsModuleOpenGLVulkan PUBLIC vk-bootstrap glfw glew spdlog assimp glm)
