@@ -109,7 +109,7 @@ public:
         uniformBufferObject.position = camera.position;
         uniformBufferObject.time = time;
         modelBuffer.uploadData(&uniformBufferObject, sizeof(uniformBufferObject));
-        if (linkedRenderEngine->settings->rayTracing) {
+        if (linkedRenderEngine->settings.rayTracing) {
             for (IEMesh &mesh : meshes) {
                 mesh.transformationMatrix = {
                         modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2], modelMatrix[3][0],
@@ -201,7 +201,7 @@ private:
                             textureCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
                             textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                             textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-                            textureCreateInfo.mipMapping = linkedRenderEngine->settings->mipMapping;
+                            textureCreateInfo.mipMapping = linkedRenderEngine->settings.mipMapping;
                             textureCreateInfo.imageType = VULKAN_TEXTURE;
                             textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
                             if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }

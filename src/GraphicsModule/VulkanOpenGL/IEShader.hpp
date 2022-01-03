@@ -37,7 +37,7 @@ public:
     void create(IEGraphicsLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
-        std::string replaceWith = linkedRenderEngine->settings->rayTracing ? "RayTracing" : "Rasterizing";
+        std::string replaceWith = linkedRenderEngine->settings.rayTracing ? "RayTracing" : "Rasterizing";
         size_t pos = createdWith.filename.find('*');
         while( pos != std::string::npos) {
             createdWith.filename.replace(pos, 1, replaceWith);

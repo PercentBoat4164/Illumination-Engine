@@ -18,7 +18,7 @@ set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles  # Gather sour
         IETexture.hpp
         IEUniformBufferObject.hpp
         IEVertex.hpp
-        )
+        IEMonitor.hpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModuleOpenGLVulkan ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles})

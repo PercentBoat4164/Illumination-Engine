@@ -1,7 +1,10 @@
-# Core Modules
-The Core Modules are responsible for managing the basic internal operations and data structures that will be required of the engine no matter the use case.
+# Graphics Module
+The Graphics Module is one of the modules that is designed to attach to the Illumination Engine core.
 
 ### Requirements for Completion
- - [x] Logger
- - [ ] File Structure Management System
- - [ ] Other (to be filled in the future)
+- [x] First working prototype
+- [x] Vulkan implementation
+- [x] OpenGL implementation
+- [ ] Merged implementation
+- [x] Add basic shading
+- [ ] Cleanup

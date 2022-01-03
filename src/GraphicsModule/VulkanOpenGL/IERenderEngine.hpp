@@ -62,8 +62,8 @@ private:
         builder.set_engine_version(ILLUMINATION_ENGINE_VERSION_MAJOR, ILLUMINATION_ENGINE_VERSION_MINOR, ILLUMINATION_ENGINE_VERSION_PATCH);
 
         // Set application properties
-        builder.set_app_name(renderEngineLink.settings->applicationName.c_str());
-        builder.set_app_version(renderEngineLink.settings->applicationVersion.number);
+        builder.set_app_name(renderEngineLink.settings.applicationName.c_str());
+        builder.set_app_version(renderEngineLink.settings.applicationVersion.number);
 
         // If debugging and components are available, add validation layers and a debug messenger
         #ifndef NDEBUG
@@ -71,7 +71,7 @@ private:
             builder.request_validation_layers();
         }
         if (renderEngineLink.systemInfo->debug_utils_available) {
-            builder.use_default_debug_messenger();  //*@todo Make a custom messenger that uses the logging system.*/
+            builder.use_default_debug_messenger();  /**@todo Make a custom messenger that uses the logging system.*/
         }
         #endif
 
@@ -83,12 +83,22 @@ private:
         return instanceBuilder.value();
     }
 
+    /**
+     * @brief Creates a window using hardcoded hints and settings from renderEngineLink.settings.
+     * @return The window that was just created.
+     */
     [[nodiscard]] GLFWwindow* createWindow() const {
+        // Specify all window hints for the window
+        /**todo Optional - Make a convenient way to change these programmatically based on some settings.*/
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        GLFWwindow* pWindow = glfwCreateWindow(static_cast<int>(renderEngineLink.settings->resolution[0]), static_cast<int>(renderEngineLink.settings->resolution[1]), renderEngineLink.settings->applicationName.c_str(), renderEngineLink.settings->fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+        GLFWwindow* pWindow = glfwCreateWindow(renderEngineLink.settings.defaultWindowResolution[0], renderEngineLink.settings.defaultWindowResolution[1], renderEngineLink.settings.applicationName.c_str(), renderEngineLink.settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
         return pWindow;
     }
 
+    /**
+     * @brief Changes the window icon to all of the images found in [path].
+     * @param path
+     */
     void setWindowIcons(const std::string& path) const {
         int width, height, channels;
         std::vector<GLFWimage> icons{};
@@ -99,7 +109,7 @@ private:
             if (path.find(filename) >= 0) {  // if filename to look for is in path
                 stbi_uc* pixels = stbi_load(file.path().c_str(), &width, &height, &channels, STBI_rgb_alpha);  // Load image from disk
                 if (!pixels) {
-                    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to load icon " + file.path().generic_string() + ". Is it an image?");
+                    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to load icon " + file.path().generic_string() + ". Is this file an image?");
                 }
                 icons.push_back(GLFWimage{.width=width, .height=height, .pixels=pixels});  // Generate image
             }
@@ -120,30 +130,27 @@ public:
         /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI abstraction.*/
         glfwInit();
         window = createWindow();
+
+        // Customize window
         setWindowIcons("res/icons");
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-        int xPos{renderEngineLink.settings->windowPosition[0]}, yPos{renderEngineLink.settings->windowPosition[1]};
-        glfwGetWindowPos(window, &xPos, &yPos);
-        renderEngineLink.settings->windowPosition = {xPos, yPos};
+        glfwGetWindowPos(window, &renderEngineLink.settings.windowPosition[0], &renderEngineLink.settings.windowPosition[1]);
         glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         glfwSetWindowUserPointer(window, this);
-        if (glfwCreateWindowSurface(renderEngineLink.instance.instance, window, nullptr, &renderEngineLink.surface) != VK_SUCCESS) { throw std::runtime_error("failed to create window surface!"); }
+
+        // Create surface
+        if (glfwCreateWindowSurface(renderEngineLink.instance.instance, window, nullptr, &renderEngineLink.surface) != VK_SUCCESS) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create window surface!");
+        }
         engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(renderEngineLink.instance.instance, renderEngineLink.surface, nullptr); });
+
         /**@todo Implement a device selection scheme for systems with multiple GPUs.*/
-        vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
-        vkb::detail::Result<vkb::PhysicalDevice> temporaryPhysicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
-        if (!temporaryPhysicalDeviceBuilder) { throw std::runtime_error("failed to select Vulkan Physical Device! Does your device support Vulkan? Error: " + temporaryPhysicalDeviceBuilder.error().message() + "\n"); }
-        vkb::DeviceBuilder temporaryLogicalDeviceBuilder{temporaryPhysicalDeviceBuilder.value()};
-        vkb::detail::Result<vkb::Device> temporaryLogicalDevice = temporaryLogicalDeviceBuilder.build();
-        if (!temporaryLogicalDevice) { throw std::runtime_error("failed to create Vulkan device! Error: " + temporaryLogicalDevice.error().message() + "\n"); }
-        renderEngineLink.device = temporaryLogicalDevice.value();
-        bool renderDocCapturing = std::getenv("ENABLE_VULKAN_RENDERDOC_CAPTURE") != nullptr;
-        renderEngineLink.build(renderDocCapturing);
-        vkb::destroy_device(renderEngineLink.device);
+        // Select a physical device
+
         //EXTENSION SELECTION
         //-------------------
-        std::vector<const char *> rayTracingExtensions{
+        std::vector<const char *> rayTracingExtensions {
                 VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
                 VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
                 VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
@@ -151,56 +158,56 @@ public:
                 VK_KHR_SPIRV_1_4_EXTENSION_NAME
         };
         std::vector<std::vector<const char *>> extensionGroups{
-            rayTracingExtensions
+                rayTracingExtensions
         };
         //DEVICE FEATURE SELECTION
         //------------------------
-        std::vector<VkBool32 *> anisotropicFilteringFeatures{
-            &renderEngineLink.enabledPhysicalDeviceInfo.anisotropicFiltering,
-            &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures.samplerAnisotropy
-        };
-        std::vector<VkBool32 *> msaaSmoothingFeatures{
-            &renderEngineLink.enabledPhysicalDeviceInfo.msaaSmoothing,
-            &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures.sampleRateShading
-        };
-        std::vector<std::vector<VkBool32 *>> deviceFeatureGroups{
-            anisotropicFilteringFeatures,
-            msaaSmoothingFeatures
-        };
+        // Anisotropic filtering
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures.samplerAnisotropy = true;
+        // Smooth shading
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures.sampleRateShading = true;
+//        std::vector<std::vector<VkBool32 *>> deviceFeatureGroups{
+//                anisotropicFilteringFeatures,
+//                msaaSmoothingFeatures
+//        };
         //EXTENSION FEATURE SELECTION
         //---------------------------
-        std::vector<VkBool32 *> rayTracingFeatures{
-                &renderEngineLink.enabledPhysicalDeviceInfo.rayTracing,
-                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress,
-                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure,
-                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayQueryFeatures.rayQuery,
-                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline
-        };
-        std::vector<std::vector<VkBool32 *>> extensionFeatureGroups{
-                rayTracingFeatures
-        };
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress = true;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure = true;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayQueryFeatures.rayQuery = true;
+        renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline = true;
+//        std::vector<std::vector<VkBool32 *>> extensionFeatureGroups{
+//                rayTracingFeatures
+//        };
         //===========================
-        for (const std::vector<VkBool32 *> &deviceFeatureGroup : deviceFeatureGroups) {
-            if (renderEngineLink.testFeature(std::vector<VkBool32 *>(deviceFeatureGroup.begin() + 1, deviceFeatureGroup.end()))[0]) {
-                *deviceFeatureGroup[0] = VK_TRUE;
-                *(deviceFeatureGroup[0] - (VkBool32 *)&renderEngineLink.enabledPhysicalDeviceInfo + (VkBool32 *)&renderEngineLink.supportedPhysicalDeviceInfo) = VK_TRUE;
-                renderEngineLink.enableFeature(deviceFeatureGroup);
-            }
+
+        bool renderDocCapturing = std::getenv("ENABLE_VULKAN_RENDERDOC_CAPTURE") != nullptr;
+        vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
+        selector.set_surface(renderEngineLink.surface)
+                .prefer_gpu_device_type(vkb::PreferredDeviceType::discrete)
+                .set_minimum_version(renderEngineLink.settings.minimumVulkanVersion.major, renderEngineLink.settings.minimumVulkanVersion.minor)
+                .set_desired_version(renderEngineLink.settings.desiredVulkanVersion.major, renderEngineLink.settings.desiredVulkanVersion.minor);
+        if (renderDocCapturing) {
+            selector.add_required_extension_features(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestRenderDocCompatibleFeature);
         }
-        for (const std::vector<VkBool32 *> &extensionFeatureGroup : extensionFeatureGroups) {
-            if (renderEngineLink.testFeature(std::vector<VkBool32 *>(extensionFeatureGroup.begin() + 1, extensionFeatureGroup.end()))[0]) {
-                *extensionFeatureGroup[0] = VK_TRUE;
-                *(extensionFeatureGroup[0] - (VkBool32 *)&renderEngineLink.enabledPhysicalDeviceInfo + (VkBool32 *)&renderEngineLink.supportedPhysicalDeviceInfo) = VK_TRUE;
-                renderEngineLink.enableFeature(extensionFeatureGroup);
-            }
+        else {
+            selector.add_required_extension_features(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature);
         }
+
         if (!extensionGroups.empty()) { selector.add_desired_extensions(*extensionGroups.data()); }
-        vkb::detail::Result<vkb::PhysicalDevice> finalPhysicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).set_required_features(renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
-        vkb::DeviceBuilder finalLogicalDeviceBuilder{finalPhysicalDeviceBuilder.value()};
-        finalLogicalDeviceBuilder.add_pNext(renderDocCapturing ? renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestRenderDocCompatibleFeature : renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature);
-        vkb::detail::Result<vkb::Device> finalLogicalDevice = finalLogicalDeviceBuilder.build();
-        if (!finalLogicalDevice) { throw std::runtime_error("failed to create Vulkan device. Error: " + finalLogicalDevice.error().message() + "\n"); }
-        renderEngineLink.device = finalLogicalDevice.value();
+        vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.select();
+        vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
+        if (renderDocCapturing) {
+            logicalDeviceBuilder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestRenderDocCompatibleFeature);
+        }
+        else {
+            logicalDeviceBuilder.add_pNext(renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature);
+        }
+        vkb::detail::Result<vkb::Device> logicalDevice = logicalDeviceBuilder.build();
+        if (!logicalDevice) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan device! Error: " + logicalDevice.error().message());
+        }
+        renderEngineLink.device = logicalDevice.value();
         renderEngineLink.build(renderDocCapturing);
         engineDeletionQueue.emplace_front([&] { vkb::destroy_device(renderEngineLink.device); });
         renderEngineLink.graphicsQueue = renderEngineLink.device.get_queue(vkb::QueueType::graphics).value();
@@ -225,7 +232,7 @@ public:
         for (std::function<void()> &function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
         vkb::SwapchainBuilder swapchainBuilder{ renderEngineLink.device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings->resolution[0], renderEngineLink.settings->resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
+        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         renderEngineLink.swapchain = swap_ret.value();
         recreationDeletionQueue.emplace_front([&] { vkb::destroy_swapchain(renderEngineLink.swapchain); });
@@ -282,7 +289,7 @@ public:
         renderable->deletionQueue.emplace_front([&](IERenderable *thisRenderable){ thisRenderable->modelBuffer.destroy(); });
         for (IERenderable::IEMesh &mesh : renderable->meshes) {
             bufferCreateInfo.size = sizeof(mesh.vertices[0]) * mesh.vertices.size();
-            bufferCreateInfo.usage = renderEngineLink.settings->rayTracing ? VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+            bufferCreateInfo.usage = renderEngineLink.settings.rayTracing ? VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             mesh.vertexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.vertexBuffer.uploadData(mesh.vertices.data(), sizeof(mesh.vertices[0]) * mesh.vertices.size());
             mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->vertexBuffer.destroy(); });
@@ -291,7 +298,7 @@ public:
             mesh.indexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.indexBuffer.uploadData(mesh.indices.data(), sizeof(mesh.indices[0]) * mesh.indices.size());
             mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->indexBuffer.destroy(); });
-            if (renderEngineLink.settings->rayTracing) {
+            if (renderEngineLink.settings.rayTracing) {
                 bufferCreateInfo.size = sizeof(mesh.transformationMatrix);
                 bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
                 mesh.transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
@@ -301,12 +308,12 @@ public:
             for (IETexture &texture : renderable->textures) {
                 texture.destroy();
                 IETexture::CreateInfo textureCreateInfo{texture.createdWith};
-                textureCreateInfo.mipMapping = renderEngineLink.settings->mipMapping;
+                textureCreateInfo.mipMapping = renderEngineLink.settings.mipMapping;
                 texture.create(&renderEngineLink, &textureCreateInfo);
                 texture.upload();
             }
             IEDescriptorSet::CreateInfo renderableDescriptorSetCreateInfo{};
-            if (renderEngineLink.settings->rayTracing) {
+            if (renderEngineLink.settings.rayTracing) {
                 renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}};
                 renderableDescriptorSetCreateInfo.shaderStages = {static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT), VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
                 renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textures[mesh.diffuseTexture], std::nullopt};
@@ -361,11 +368,11 @@ public:
         camera.update();
         auto time = static_cast<float>(glfwGetTime());
         for (IERenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera, time); } }
-        if (renderEngineLink.settings->rayTracing) {
+        if (renderEngineLink.settings.rayTracing) {
             topLevelAccelerationStructure.destroy();
             std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
             bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
-            for (IERenderable *renderable : renderables) { if (renderable->render & renderEngineLink.settings->rayTracing) { for (const IERenderable::IEMesh &mesh : renderable->meshes) { bottomLevelAccelerationStructureDeviceAddresses.push_back(mesh.bottomLevelAccelerationStructure.deviceAddress); } } }
+            for (IERenderable *renderable : renderables) { if (renderable->render & renderEngineLink.settings.rayTracing) { for (const IERenderable::IEMesh &mesh : renderable->meshes) { bottomLevelAccelerationStructureDeviceAddresses.push_back(mesh.bottomLevelAccelerationStructure.deviceAddress); } } }
             IEAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
             topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
             topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
@@ -376,7 +383,7 @@ public:
         for (IERenderable *renderable : renderables) {
             if (renderable->render) {
                 for (IERenderable::IEMesh &mesh : renderable->meshes) {
-                    if (renderEngineLink.settings->rayTracing) { mesh.descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
+                    if (renderEngineLink.settings.rayTracing) { mesh.descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
                     vkCmdBindVertexBuffers(commandBuffer.commandBuffers[imageIndex], 0, 1, &mesh.vertexBuffer.buffer, offsets);
                     vkCmdBindIndexBuffer(commandBuffer.commandBuffers[imageIndex], mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
                     vkCmdBindPipeline(commandBuffer.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, mesh.pipeline.pipeline);
@@ -427,8 +434,8 @@ public:
     }
 
     void handleFullscreenSettingsChange() {
-        if (renderEngineLink.settings->fullscreen) {
-            glfwGetWindowPos(window, &renderEngineLink.settings->windowPosition[0], &renderEngineLink.settings->windowPosition[1]);
+        if (renderEngineLink.settings.fullscreen) {
+            glfwGetWindowPos(window, &renderEngineLink.settings.windowPosition[0], &renderEngineLink.settings.windowPosition[1]);
             int monitorCount{}, i, windowX{}, windowY{}, windowWidth{}, windowHeight{}, monitorX{}, monitorY{}, monitorWidth, monitorHeight, bestMonitorWidth{}, bestMonitorHeight{}, bestMonitorRefreshRate{}, overlap, bestOverlap{0};
             GLFWmonitor **monitors;
             const GLFWvidmode *mode;
@@ -450,8 +457,8 @@ public:
                 }
             }
             glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
-        } else { glfwSetWindowMonitor(window, nullptr, renderEngineLink.settings->windowPosition[0], renderEngineLink.settings->windowPosition[1], static_cast<int>(renderEngineLink.settings->defaultWindowResolution[0]), static_cast<int>(renderEngineLink.settings->defaultWindowResolution[1]), static_cast<int>(renderEngineLink.settings->refreshRate)); }
-        glfwSetWindowTitle(window, renderEngineLink.settings->applicationName.c_str());
+        } else { glfwSetWindowMonitor(window, nullptr, renderEngineLink.settings.windowPosition[0], renderEngineLink.settings.windowPosition[1], static_cast<int>(renderEngineLink.settings.defaultWindowResolution[0]), static_cast<int>(renderEngineLink.settings.defaultWindowResolution[1]), static_cast<int>(renderEngineLink.settings.refreshRate)); }
+        glfwSetWindowTitle(window, renderEngineLink.settings.applicationName.c_str());
     }
 
     void destroy() {
@@ -493,7 +500,7 @@ private:
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
         auto vulkanRenderEngine = (IERenderEngine *)glfwGetWindowUserPointer(pWindow);
         vulkanRenderEngine->framebufferResized = true;
-        vulkanRenderEngine->renderEngineLink.settings->resolution[0] = width;
-        vulkanRenderEngine->renderEngineLink.settings->resolution[1] = height;
+        vulkanRenderEngine->renderEngineLink.settings.resolution[0] = width;
+        vulkanRenderEngine->renderEngineLink.settings.resolution[1] = height;
     }
 };
