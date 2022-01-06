@@ -45,9 +45,9 @@ public:
         samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        if (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering) {
-            samplerInfo.anisotropyEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering & (linkedRenderEngine->settings.anisotropicFilterLevel > 0)) ? VK_TRUE : VK_FALSE;
-            samplerInfo.maxAnisotropy = linkedRenderEngine->settings.anisotropicFilterLevel;
+        if (linkedRenderEngine->device.physical_device.features.samplerAnisotropy) {
+            samplerInfo.anisotropyEnable = linkedRenderEngine->settings.anisotropicFilterLevel > 0 ? VK_TRUE : VK_FALSE;
+            samplerInfo.maxAnisotropy = std::min(linkedRenderEngine->settings.anisotropicFilterLevel, linkedRenderEngine->device.physical_device.properties.limits.maxSamplerAnisotropy);
         }
         samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
         samplerInfo.unnormalizedCoordinates = VK_FALSE;

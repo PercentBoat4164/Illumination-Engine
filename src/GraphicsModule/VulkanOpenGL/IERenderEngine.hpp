@@ -147,77 +147,18 @@ public:
 
         /**@todo Implement a device selection scheme for systems with multiple GPUs.*/
         vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
-        vkb::detail::Result<vkb::PhysicalDevice> temporaryPhysicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
-        if (!temporaryPhysicalDeviceBuilder) { throw std::runtime_error("failed to select Vulkan Physical Device! Does your device support Vulkan? Error: " + temporaryPhysicalDeviceBuilder.error().message() + "\n"); }
-        vkb::DeviceBuilder temporaryLogicalDeviceBuilder{temporaryPhysicalDeviceBuilder.value()};
-        vkb::detail::Result<vkb::Device> temporaryLogicalDevice = temporaryLogicalDeviceBuilder.build();
-        if (!temporaryLogicalDevice) { throw std::runtime_error("failed to create Vulkan device! Error: " + temporaryLogicalDevice.error().message() + "\n"); }
-        renderEngineLink.device = temporaryLogicalDevice.value();
         bool renderDocCapturing = std::getenv("ENABLE_VULKAN_RENDERDOC_CAPTURE") != nullptr;
-        renderEngineLink.build(renderDocCapturing);
-        vkb::destroy_device(renderEngineLink.device);
-        //EXTENSION SELECTION
-        //-------------------
-        std::vector<const char *> rayTracingExtensions {
-                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-                VK_KHR_RAY_QUERY_EXTENSION_NAME,
-                VK_KHR_SPIRV_1_4_EXTENSION_NAME
-        };
-        std::vector<std::vector<const char *>> extensionGroups{
-    //            rayTracingExtensions
-        };
-        //DEVICE FEATURE SELECTION
-        //------------------------
-        std::vector<VkBool32 *> anisotropicFilteringFeatures{
-            &renderEngineLink.enabledPhysicalDeviceInfo.anisotropicFiltering,
-            &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures.samplerAnisotropy
-        };
-        std::vector<VkBool32 *> msaaSmoothingFeatures{
-            &renderEngineLink.enabledPhysicalDeviceInfo.msaaSmoothing,
-            &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures.sampleRateShading
-        };
-        std::vector<std::vector<VkBool32 *>> deviceFeatureGroups{
-            anisotropicFilteringFeatures,
-            msaaSmoothingFeatures
-        };
-        //EXTENSION FEATURE SELECTION
-        //---------------------------
-        std::vector<VkBool32 *> rayTracingFeatures{
-                &renderEngineLink.enabledPhysicalDeviceInfo.rayTracing,
-                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress,
-                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceAccelerationStructureFeatures.accelerationStructure,
-                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayQueryFeatures.rayQuery,
-                &renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceRayTracingPipelineFeatures.rayTracingPipeline
-        };
-        std::vector<std::vector<VkBool32 *>> extensionFeatureGroups{
-                rayTracingFeatures
-        };
-        //===========================
-        for (const std::vector<VkBool32 *> &deviceFeatureGroup : deviceFeatureGroups) {
-            if (renderEngineLink.testFeature(std::vector<VkBool32 *>(deviceFeatureGroup.begin() + 1, deviceFeatureGroup.end()))[0]) {
-                *deviceFeatureGroup[0] = VK_TRUE;
-                *(deviceFeatureGroup[0] - (VkBool32 *)&renderEngineLink.enabledPhysicalDeviceInfo + (VkBool32 *)&renderEngineLink.supportedPhysicalDeviceInfo) = VK_TRUE;
-                renderEngineLink.enableFeature(deviceFeatureGroup);
-            }
-        }
-        for (const std::vector<VkBool32 *> &extensionFeatureGroup : extensionFeatureGroups) {
-            if (renderEngineLink.testFeature(std::vector<VkBool32 *>(extensionFeatureGroup.begin() + 1, extensionFeatureGroup.end()))[0]) {
-                *extensionFeatureGroup[0] = VK_TRUE;
-                *(extensionFeatureGroup[0] - (VkBool32 *)&renderEngineLink.enabledPhysicalDeviceInfo + (VkBool32 *)&renderEngineLink.supportedPhysicalDeviceInfo) = VK_TRUE;
-                renderEngineLink.enableFeature(extensionFeatureGroup);
-            }
-        }
-
-        if (!extensionGroups.empty()) { selector.add_desired_extensions(*extensionGroups.data()); }
-        vkb::detail::Result<vkb::PhysicalDevice> finalPhysicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).set_required_features(renderEngineLink.enabledPhysicalDeviceInfo.physicalDeviceFeatures).prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).select();
-        vkb::DeviceBuilder finalLogicalDeviceBuilder{finalPhysicalDeviceBuilder.value()};
-        finalLogicalDeviceBuilder.add_pNext(renderDocCapturing ? renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestRenderDocCompatibleFeature : renderEngineLink.enabledPhysicalDeviceInfo.pNextHighestFeature);
-        vkb::detail::Result<vkb::Device> finalLogicalDevice = finalLogicalDeviceBuilder.build();
-        if (!finalLogicalDevice) { throw std::runtime_error("failed to create Vulkan device. Error: " + finalLogicalDevice.error().message() + "\n"); }
-        renderEngineLink.device = finalLogicalDevice.value();
-        renderEngineLink.build(renderDocCapturing);
+        /**
+         * Note: The physical device selection stage is used to add extensions while the logical device building stage is used to add extension features.
+         */
+        vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).add_required_extensions({VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, VK_KHR_MAINTENANCE3_EXTENSION_NAME}).select();
+        vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
+        VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES};
+        logicalDeviceBuilder.add_pNext(&descriptorIndexingFeatures);
+        vkb::detail::Result<vkb::Device> logicalDevice = logicalDeviceBuilder.build();
+        if (!logicalDevice) { throw std::runtime_error("failed to create Vulkan device. Error: " + logicalDevice.error().message() + "\n"); }
+        renderEngineLink.device = logicalDevice.value();
+        renderEngineLink.build();
         engineDeletionQueue.emplace_front([&] { vkb::destroy_device(renderEngineLink.device); });
         renderEngineLink.graphicsQueue = renderEngineLink.device.get_queue(vkb::QueueType::graphics).value();
         renderEngineLink.presentQueue = renderEngineLink.device.get_queue(vkb::QueueType::present).value();
@@ -239,6 +180,8 @@ public:
         engineDeletionQueue.emplace_front([&] { commandBuffer.destroy(); });
         camera.create(&renderEngineLink);
         createSwapchain(true);
+        printf("%s\n", renderEngineLink.device.physical_device.properties.deviceName);
+        printf("%s\n", IEVersion(renderEngineLink.device.physical_device.properties.apiVersion).name.c_str());
         engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); });
     }
 

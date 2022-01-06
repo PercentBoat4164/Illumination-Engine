@@ -67,6 +67,6 @@ public:
         if (!rawFile.is_open()) { throw std::runtime_error("failed to open file: " + input); }
         rawFile.close();
         if (output.empty()) { output = input + ".spv"; }
-        if (system((GLSLC + input + " -o " + output + " --target-env=vulkan1.2").c_str()) != 0) { throw std::runtime_error("failed to compile shaders: " + input); }
+        if (system((GLSLC + input + " -o " + output).c_str()) != 0) { throw std::runtime_error("failed to compile shaders: " + input); }
     }
 };
