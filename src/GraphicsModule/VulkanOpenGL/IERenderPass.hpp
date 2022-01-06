@@ -18,16 +18,16 @@ public:
         linkedRenderEngine = engineLink;
         VkAttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format = linkedRenderEngine->swapchain.image_format;
-        colorAttachmentDescription.samples = linkedRenderEngine->settings->msaaSamples;
+        colorAttachmentDescription.samples = linkedRenderEngine->settings.msaaSamples;
         colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachmentDescription.finalLayout = linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachmentDescription.finalLayout = linkedRenderEngine->settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         VkAttachmentDescription depthAttachmentDescription{};
         depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
-        depthAttachmentDescription.samples = linkedRenderEngine->settings->msaaSamples;
+        depthAttachmentDescription.samples = linkedRenderEngine->settings.msaaSamples;
         depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -57,7 +57,7 @@ public:
         subpassDescription.colorAttachmentCount = 1;
         subpassDescription.pColorAttachments = &colorAttachmentReference;
         subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
-        subpassDescription.pResolveAttachments = linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? nullptr : &colorResolveAttachmentReference;
+        subpassDescription.pResolveAttachments = linkedRenderEngine->settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? nullptr : &colorResolveAttachmentReference;
         VkSubpassDependency subpassDependency{};
         subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         subpassDependency.dstSubpass = 0;
@@ -66,7 +66,7 @@ public:
         subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         std::vector<VkAttachmentDescription> attachmentDescriptions{};
-        if (linkedRenderEngine->settings->msaaSamples != VK_SAMPLE_COUNT_1_BIT) { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription, colorResolveAttachmentDescription}; } else { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription}; }
+        if (linkedRenderEngine->settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription, colorResolveAttachmentDescription}; } else { attachmentDescriptions = {colorAttachmentDescription, depthAttachmentDescription}; }
         VkRenderPassCreateInfo renderPassCreateInfo{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
         renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
         renderPassCreateInfo.pAttachments = attachmentDescriptions.data();

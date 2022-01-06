@@ -29,7 +29,7 @@ public:
         imageCreateInfo.format = createdWith.format;
         imageCreateInfo.tiling = createdWith.tiling;
         imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageCreateInfo.usage = createdWith.usage | (linkedRenderEngine->settings->mipMapping ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0);
+        imageCreateInfo.usage = createdWith.usage | (linkedRenderEngine->settings.mipMapping ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0);
         imageCreateInfo.samples = createdWith.msaaSamples;
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         allocationCreateInfo.usage = createdWith.allocationUsage;
@@ -46,15 +46,15 @@ public:
         samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         if (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering) {
-            samplerInfo.anisotropyEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering & (linkedRenderEngine->settings->anisotropicFilterLevel > 0)) ? VK_TRUE : VK_FALSE;
-            samplerInfo.maxAnisotropy = linkedRenderEngine->settings->anisotropicFilterLevel;
+            samplerInfo.anisotropyEnable = (linkedRenderEngine->enabledPhysicalDeviceInfo.anisotropicFiltering & (linkedRenderEngine->settings.anisotropicFilterLevel > 0)) ? VK_TRUE : VK_FALSE;
+            samplerInfo.maxAnisotropy = linkedRenderEngine->settings.anisotropicFilterLevel;
         }
         samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
         samplerInfo.unnormalizedCoordinates = VK_FALSE;
         samplerInfo.compareEnable = VK_FALSE;
         samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
         samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.mipLodBias = linkedRenderEngine->settings->mipMapLevel;
+        samplerInfo.mipLodBias = linkedRenderEngine->settings.mipMapLevel;
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = static_cast<float>(mipLevels);
     }

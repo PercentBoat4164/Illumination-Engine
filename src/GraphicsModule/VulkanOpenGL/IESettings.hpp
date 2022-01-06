@@ -34,9 +34,10 @@ public:
     bool rayTracing{false};
     std::string applicationName{"Illumination Engine"};
     IEVersion applicationVersion{0, 0, 1};
-    IEVersion requiredVulkanVersion{1, 2, 0};
+    IEVersion minimumVulkanVersion{1, 0, 0};
+    IEVersion desiredVulkanVersion{1, 2, 0};
     VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_8_BIT};
-    std::array<uint32_t, 2> defaultWindowResolution{800, 600};
+    std::array<int, 2> defaultWindowResolution{800, 600};
     std::array<int, 2> windowPosition{0, 0};
     float anisotropicFilterLevel{16.0f};
     bool mipMapping{true};
@@ -44,7 +45,7 @@ public:
     bool fullscreen{false};
     int refreshRate{60};
     bool vSync{true};
-    std::array<uint32_t, 2> resolution{defaultWindowResolution};
+    std::array<int, 2> resolution{defaultWindowResolution};
     double fov{90};
     double renderDistance{1000000};
     double mouseSensitivity{0.1};

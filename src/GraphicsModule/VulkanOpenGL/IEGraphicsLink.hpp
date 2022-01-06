@@ -110,13 +110,8 @@ public:
         VkBool32 rayTracing{false};
     };
 
-    IEGraphicsLink () {
-        settings = new IESettings{};
-        api = new IEAPI{};
-    }
-
-    IESettings* settings;
-    IEAPI* api;
+    IESettings settings{};
+    IEAPI api{};
     vkb::Device device{};
     vkb::Swapchain swapchain{};
     vkb::Instance instance{};
