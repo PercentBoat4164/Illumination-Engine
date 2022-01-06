@@ -151,7 +151,7 @@ public:
                 VK_KHR_SPIRV_1_4_EXTENSION_NAME
         };
         std::vector<std::vector<const char *>> extensionGroups{
-            rayTracingExtensions
+//            rayTracingExtensions
         };
         //DEVICE FEATURE SELECTION
         //------------------------
@@ -213,6 +213,12 @@ public:
         allocatorInfo.instance = renderEngineLink.instance.instance;
         vmaCreateAllocator(&allocatorInfo, &renderEngineLink.allocator);
         engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(renderEngineLink.allocator); });
+        VkCommandPoolCreateInfo commandPoolCreateInfo {
+            .sType=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            .flags=VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+            .queueFamilyIndex=renderEngineLink.device.get_queue_index(vkb::QueueType::graphics).value()
+        };
+        vkCreateCommandPool(renderEngineLink.device.device, &commandPoolCreateInfo, nullptr, &renderEngineLink.commandPool);
         commandBuffer.create(&renderEngineLink, vkb::QueueType::graphics);
         engineDeletionQueue.emplace_front([&] { commandBuffer.destroy(); });
         camera.create(&renderEngineLink);
