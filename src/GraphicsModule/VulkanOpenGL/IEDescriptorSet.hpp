@@ -56,7 +56,9 @@ public:
         descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
         descriptorSetLayoutBindingFlagsCreateInfo.pBindingFlags = flags.data();
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-        descriptorSetLayoutCreateInfo.pNext = &descriptorSetLayoutBindingFlagsCreateInfo;
+        if (linkedRenderEngine->extensionAndFeatureInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount) {
+            descriptorSetLayoutCreateInfo.pNext = &descriptorSetLayoutBindingFlagsCreateInfo;
+        }
         descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
         descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
         if (vkCreateDescriptorSetLayout(linkedRenderEngine->device.device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor layout!"); }
@@ -71,7 +73,9 @@ public:
         descriptorSetVariableDescriptorCountAllocateInfo.descriptorSetCount = 1;
         descriptorSetVariableDescriptorCountAllocateInfo.pDescriptorCounts = &createdWith.maxIndex;
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
-        descriptorSetAllocateInfo.pNext = &descriptorSetVariableDescriptorCountAllocateInfo;
+        if (linkedRenderEngine->extensionAndFeatureInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount) {
+            descriptorSetAllocateInfo.pNext = &descriptorSetVariableDescriptorCountAllocateInfo;
+        }
         descriptorSetAllocateInfo.descriptorPool = descriptorPool;
         descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
         descriptorSetAllocateInfo.descriptorSetCount = 1;

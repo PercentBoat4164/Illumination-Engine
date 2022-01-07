@@ -120,6 +120,27 @@ private:
         }
     }
 
+    void setupDevice(std::vector<std::vector<const char *>>* desiredExtensions=nullptr, void* desiredExtensionFeatures=nullptr) {
+        vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
+        /**
+         * Note: The physical device selection stage is used to add extensions while the logical device building stage is used to add extension features.
+         */
+
+        if (desiredExtensions != nullptr) {
+            selector.add_desired_extensions(*desiredExtensions->data());
+        }
+        vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).select();
+        vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
+        if (desiredExtensionFeatures != nullptr) {
+            logicalDeviceBuilder.add_pNext(desiredExtensionFeatures);
+        }
+        vkb::detail::Result<vkb::Device> logicalDevice = logicalDeviceBuilder.build();
+        if (!logicalDevice) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan device. Error: " + logicalDevice.error().message());
+        }
+        renderEngineLink.device = logicalDevice.value();
+    }
+
 public:
     explicit IERenderEngine() {
         // Create a Vulkan instance
@@ -145,19 +166,7 @@ public:
         }
         engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(renderEngineLink.instance.instance, renderEngineLink.surface, nullptr); });
 
-        /**@todo Implement a device selection scheme for systems with multiple GPUs.*/
-        vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
-        bool renderDocCapturing = std::getenv("ENABLE_VULKAN_RENDERDOC_CAPTURE") != nullptr;
-        /**
-         * Note: The physical device selection stage is used to add extensions while the logical device building stage is used to add extension features.
-         */
-        vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).add_required_extensions({VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, VK_KHR_MAINTENANCE3_EXTENSION_NAME}).select();
-        vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
-        VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES};
-        logicalDeviceBuilder.add_pNext(&descriptorIndexingFeatures);
-        vkb::detail::Result<vkb::Device> logicalDevice = logicalDeviceBuilder.build();
-        if (!logicalDevice) { throw std::runtime_error("failed to create Vulkan device. Error: " + logicalDevice.error().message() + "\n"); }
-        renderEngineLink.device = logicalDevice.value();
+        setupDevice();
         renderEngineLink.build();
         engineDeletionQueue.emplace_front([&] { vkb::destroy_device(renderEngineLink.device); });
         renderEngineLink.graphicsQueue = renderEngineLink.device.get_queue(vkb::QueueType::graphics).value();

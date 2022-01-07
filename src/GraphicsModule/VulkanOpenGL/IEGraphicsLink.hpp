@@ -82,6 +82,25 @@ public:
         }
     };
 
+    struct ExtensionAndFeatureInfo {
+        // Extension Features
+        // NOTE: Ray tracing features are on the bottom of the pNext stack so that a pointer to higher up on the stack can grab only the structures supported by RenderDoc.
+        VkPhysicalDeviceDescriptorIndexingFeaturesEXT physicalDeviceDescriptorIndexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT};
+        // All the below are ray tracing features, and cannot be loaded by RenderDoc.
+        VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR, &physicalDeviceDescriptorIndexingFeatures};
+        VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES, &physicalDeviceAccelerationStructureFeatures};
+        VkPhysicalDeviceRayQueryFeaturesKHR physicalDeviceRayQueryFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR, &physicalDeviceBufferDeviceAddressFeatures};
+        VkPhysicalDeviceRayTracingPipelineFeaturesKHR physicalDeviceRayTracingPipelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR, &physicalDeviceRayQueryFeatures};
+        void *pNextHighestFeature = &physicalDeviceRayTracingPipelineFeatures;
+        void *pNextHighestRenderDocCompatibleFeature = &physicalDeviceDescriptorIndexingFeatures;
+
+        //Engine Features
+        VkBool32 anisotropicFiltering{VK_FALSE};
+        VkBool32 msaaSmoothing{VK_FALSE};
+        VkBool32 rayTracing{VK_FALSE};
+    };
+
+
     IESettings settings{};
     IEAPI api{};
     vkb::Device device{};
@@ -95,6 +114,7 @@ public:
     VkQueue presentQueue{};
     VkQueue transferQueue{};
     VkQueue computeQueue{};
+    ExtensionAndFeatureInfo extensionAndFeatureInfo{};
     std::vector<VkImageView> swapchainImageViews{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
     PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{};
@@ -114,7 +134,6 @@ public:
         vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device.device, "vkGetAccelerationStructureDeviceAddressKHR"));
         vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device.device, "vkAcquireNextImageKHR"));
         vkGetPhysicalDeviceProperties2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2KHR>(vkGetDeviceProcAddr(device.device, "vkGetPhysicalDeviceProperties2KHR"));
-
     }
 
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
