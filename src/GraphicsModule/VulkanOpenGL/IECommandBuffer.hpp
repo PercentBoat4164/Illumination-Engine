@@ -2,7 +2,6 @@
 
 #include "IEGraphicsLink.hpp"
 
-#include <deque>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -10,12 +9,17 @@
 
 class IECommandBuffer {
 public:
+    #ifndef NDEBUG
+    struct Created {
+        bool commandPool{};
+        bool commandBuffers{};
+    } created;
+    #endif
     VkCommandPool commandPool{};
     std::vector<VkCommandBuffer> commandBuffers{};
 
     void destroy() {
-        for (const std::function<void()> &function : commandBufferDeletionQueue) { function(); }
-        commandBufferDeletionQueue.clear();
+        freeCommandBuffers();
         for (const std::function<void()> &function : deletionQueue) { function(); }
         deletionQueue.clear();
     }
@@ -32,7 +36,19 @@ public:
         commandPoolCreateInfo.queueFamilyIndex = linkedRenderEngine->device.get_queue_index(queue).value();
         commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) { throw std::runtime_error("failed to create command pool!"); }
-        deletionQueue.emplace_front([&] { vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr); });
+        #ifndef NDEBUG
+        created.commandPool = true;
+        #endif
+        deletionQueue.emplace_back([&] {
+            #ifndef NDEBUG
+            if (created.commandPool) {
+                vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr);
+                created.commandPool = false;
+            }
+            #else
+            vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr);
+            #endif
+        });
     }
 
     void createCommandBuffers(int commandBufferCount) {
@@ -42,7 +58,19 @@ public:
         commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
         if (vkAllocateCommandBuffers(linkedRenderEngine->device.device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) { throw std::runtime_error("failed to allocate command buffers!"); }
-        commandBufferDeletionQueue.emplace_front([&] { vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data()); });
+        #ifndef NDEBUG
+        created.commandBuffers = true;
+        #endif
+        commandBufferDeletionQueue.emplace_back([&] {
+            #ifndef NDEBUG
+            if (created.commandBuffers) {
+                vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+                created.commandBuffers = false;
+            }
+            #else
+            vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+            #endif
+        });
     }
 
     [[maybe_unused]] void resetCommandBuffer(const std::vector<int> &resetIndices) {
@@ -63,9 +91,13 @@ public:
         if (vkBeginCommandBuffer(commandBuffers[recordIndex], &commandBufferBeginInfo) != VK_SUCCESS) { throw std::runtime_error("failed to begin recording command IEBuffer!"); }
     }
 
+    ~IECommandBuffer() {
+        destroy();
+    }
+
 private:
-    std::deque<std::function<void()>> deletionQueue{};
-    std::deque<std::function<void()>> commandBufferDeletionQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
+    std::vector<std::function<void()>> commandBufferDeletionQueue{};
     vkb::QueueType queue{};
     IEGraphicsLink *linkedRenderEngine{};
 };
