@@ -63,13 +63,13 @@ public:
     /**@todo Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     void upload() override {
         if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
-        deletionQueue.emplace_front([&] { vmaDestroyImage(linkedRenderEngine->allocator, image, allocation); });
+        deletionQueue.emplace_back([&] { vmaDestroyImage(linkedRenderEngine->allocator, image, allocation); });
         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageViewCreateInfo.image = image;
         if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);});
+        deletionQueue.emplace_back([&] { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);});
         if (vkCreateSampler(linkedRenderEngine->device.device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) { throw std::runtime_error("failed to create texture sampler!"); }
-        deletionQueue.emplace_front([&] { vkDestroySampler(linkedRenderEngine->device.device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
+        deletionQueue.emplace_back([&] { vkDestroySampler(linkedRenderEngine->device.device, sampler, nullptr); sampler = VK_NULL_HANDLE; });
         IEBuffer scratchBuffer{};
         IEBuffer::CreateInfo scratchBufferCreateInfo{};
         scratchBufferCreateInfo.size = static_cast<VkDeviceSize>(createdWith.width * createdWith.height) * 4;

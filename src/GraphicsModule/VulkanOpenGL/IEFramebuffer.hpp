@@ -6,7 +6,6 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
-#include <deque>
 
 class IEFramebuffer {
 public:
@@ -37,7 +36,7 @@ public:
             framebufferImageCreateInfo.imageType = VULKAN_COLOR;
             colorImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
             colorImage.upload();
-            deletionQueue.emplace_front([&] { colorImage.destroy(); });
+            deletionQueue.emplace_back([&] { colorImage.destroy(); });
         }
         framebufferImageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
         framebufferImageCreateInfo.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
@@ -45,7 +44,7 @@ public:
         framebufferImageCreateInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
         depthImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
         depthImage.upload();
-        deletionQueue.emplace_front([&] { depthImage.destroy(); });
+        deletionQueue.emplace_back([&] { depthImage.destroy(); });
         std::vector<VkImageView> framebufferAttachments{linkedRenderEngine->settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? createdWith.swapchainImageView : colorImage.view, depthImage.view, createdWith.swapchainImageView};
         VkFramebufferCreateInfo framebufferCreateInfo{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
         framebufferCreateInfo.renderPass = createdWith.renderPass.renderPass;
@@ -55,7 +54,7 @@ public:
         framebufferCreateInfo.height = linkedRenderEngine->swapchain.extent.height;
         framebufferCreateInfo.layers = 1;
         if (vkCreateFramebuffer(linkedRenderEngine->device.device, &framebufferCreateInfo, nullptr, &framebuffer) != VK_SUCCESS) { throw std::runtime_error("failed to create framebuffers!"); }
-        deletionQueue.emplace_front([&] { vkDestroyFramebuffer(linkedRenderEngine->device.device, framebuffer, nullptr); });
+        deletionQueue.emplace_back([&] { vkDestroyFramebuffer(linkedRenderEngine->device.device, framebuffer, nullptr); });
     }
 
     void destroy() {
@@ -64,7 +63,7 @@ public:
     }
 
 private:
-    std::deque<std::function<void()>> deletionQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
 };
 
 VkRenderPassBeginInfo IERenderPass::beginRenderPass(const IEFramebuffer &framebuffer) {

@@ -69,13 +69,13 @@ public:
         if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
             throw std::runtime_error("failed to create acceleration structure!");
         }
-        deletionQueue.emplace_front([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
+        deletionQueue.emplace_back([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
         VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR};
         accelerationStructureCreateInfo.buffer = buffer;
         accelerationStructureCreateInfo.size = createdWith.size;
         accelerationStructureCreateInfo.type = createdWith.type;
         linkedRenderEngine->vkCreateAccelerationStructureKHR(linkedRenderEngine->device.device, &accelerationStructureCreateInfo, nullptr, &accelerationStructure);
-        deletionQueue.emplace_front([&] { linkedRenderEngine->vkDestroyAccelerationStructureKHR(linkedRenderEngine->device.device, accelerationStructure, nullptr); });
+        deletionQueue.emplace_back([&] { linkedRenderEngine->vkDestroyAccelerationStructureKHR(linkedRenderEngine->device.device, accelerationStructure, nullptr); });
         VkAccelerationStructureDeviceAddressInfoKHR accelerationStructureDeviceAddressInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR};
         accelerationStructureDeviceAddressInfo.accelerationStructure = accelerationStructure;
         deviceAddress = linkedRenderEngine->vkGetAccelerationStructureDeviceAddressKHR(linkedRenderEngine->device.device, &accelerationStructureDeviceAddressInfo);

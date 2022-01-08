@@ -10,7 +10,6 @@
 #include <vk_mem_alloc.h>
 #endif
 
-#include <deque>
 #include <functional>
 
 class IEImage;
@@ -68,7 +67,7 @@ public:
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
         if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create IEBuffer!"); }
-        deletionQueue.emplace_front([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
+        deletionQueue.emplace_back([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
         if (createdWith.data != nullptr) {
             if (createdWith.sizeOfData > createdWith.size) { throw std::runtime_error("IEBuffer::CreateInfo::sizeOfData must not be greater than IEBuffer::CreateInfo::bufferSize."); }
             vmaMapMemory(linkedRenderEngine->allocator, allocation, &data);
@@ -93,10 +92,12 @@ public:
 
     void toImage(IEImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr);
 
-    virtual ~IEBuffer() = default;
+    virtual ~IEBuffer() {
+        destroy();
+    }
 
 protected:
-    std::deque<std::function<void()>> deletionQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
     IEGraphicsLink *linkedRenderEngine{};
     VmaAllocation allocation{};
 };
