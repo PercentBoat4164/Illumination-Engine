@@ -16,6 +16,9 @@
 #define IE_RENDER_ENGINE_API_NAME_VULKAN "Vulkan"
 #define IE_RENDER_ENGINE_API_NAME_OPENGL "OpenGL"
 
+#define IE_FEATURE_QUERY_RAY_QUERY_RAY_TRACING "RayQueryRayTracing"
+#define IE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT "VariableDescriptorCount"
+
 class IEGraphicsLink {
 public:
     class IEAPI{
@@ -85,21 +88,46 @@ public:
     struct ExtensionAndFeatureInfo {
         // Extension Features
         // NOTE: Ray tracing features are on the bottom of the pNext stack so that a pointer to higher up on the stack can grab only the structures supported by RenderDoc.
-        VkPhysicalDeviceDescriptorIndexingFeaturesEXT physicalDeviceDescriptorIndexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT};
+        VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT};
         // All the below are ray tracing features, and cannot be loaded by RenderDoc.
-        VkPhysicalDeviceAccelerationStructureFeaturesKHR physicalDeviceAccelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR, &physicalDeviceDescriptorIndexingFeatures};
-        VkPhysicalDeviceBufferDeviceAddressFeaturesEXT physicalDeviceBufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES, &physicalDeviceAccelerationStructureFeatures};
-        VkPhysicalDeviceRayQueryFeaturesKHR physicalDeviceRayQueryFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR, &physicalDeviceBufferDeviceAddressFeatures};
-        VkPhysicalDeviceRayTracingPipelineFeaturesKHR physicalDeviceRayTracingPipelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR, &physicalDeviceRayQueryFeatures};
-        void *pNextHighestFeature = &physicalDeviceRayTracingPipelineFeatures;
-        void *pNextHighestRenderDocCompatibleFeature = &physicalDeviceDescriptorIndexingFeatures;
+        VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR, &descriptorIndexingFeatures};
+        VkPhysicalDeviceBufferDeviceAddressFeaturesEXT bufferDeviceAddressFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES, &accelerationStructureFeatures};
+        VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR, &bufferDeviceAddressFeatures};
+        VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR, &rayQueryFeatures};
+        void *pNextHighestFeature = &rayTracingPipelineFeatures;
+        void *pNextHighestRenderDocCompatibleFeature = &descriptorIndexingFeatures;
 
-        //Engine Features
-        VkBool32 anisotropicFiltering{VK_FALSE};
-        VkBool32 msaaSmoothing{VK_FALSE};
-        VkBool32 rayTracing{VK_FALSE};
+        std::vector<std::string> supportedExtensions;
+
+        bool queryFeatureSupport(const std::string& feature) {
+            return (this->*extensionAndFeatureSupportQueries[feature])();
+        }
+
+        bool queryExtensionSupport(const std::string& extension) {
+            return std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end();
+        }
+
+        ExtensionAndFeatureInfo() {
+            uint32_t count;
+            vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+            std::vector<VkExtensionProperties> extensions(count);
+            vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
+        }
+
+    private:
+        std::unordered_map<std::string, bool(ExtensionAndFeatureInfo::*)()const> extensionAndFeatureSupportQueries {
+                {IE_FEATURE_QUERY_RAY_QUERY_RAY_TRACING,               &ExtensionAndFeatureInfo::rayTracingWithRayQuerySupportQuery},
+                {IE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT, &ExtensionAndFeatureInfo::variableDescriptorCountSupportQuery}
+        };
+
+        bool rayTracingWithRayQuerySupportQuery() const {
+            return bufferDeviceAddressFeatures.bufferDeviceAddress & accelerationStructureFeatures.accelerationStructure & rayQueryFeatures.rayQuery & rayTracingPipelineFeatures.rayTracingPipeline;
+        }
+
+        bool variableDescriptorCountSupportQuery() const {
+            return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount;
+        }
     };
-
 
     IESettings settings{};
     IEAPI api{};
@@ -114,6 +142,7 @@ public:
     VkQueue presentQueue{};
     VkQueue transferQueue{};
     VkQueue computeQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
     ExtensionAndFeatureInfo extensionAndFeatureInfo{};
     std::vector<VkImageView> swapchainImageViews{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
@@ -123,7 +152,6 @@ public:
     PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR{};
     PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR{};
     PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
-    PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR{};
 
     void build() {
         vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(vkGetDeviceProcAddr(device.device, "vkGetBufferDeviceAddressKHR"));
@@ -133,9 +161,18 @@ public:
         vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(vkGetDeviceProcAddr(device.device, "vkGetAccelerationStructureBuildSizesKHR"));
         vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device.device, "vkGetAccelerationStructureDeviceAddressKHR"));
         vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device.device, "vkAcquireNextImageKHR"));
-        vkGetPhysicalDeviceProperties2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2KHR>(vkGetDeviceProcAddr(device.device, "vkGetPhysicalDeviceProperties2KHR"));
     }
 
+    void destroy() {
+        for (std::function<void()> &function : deletionQueue) { function(); }
+        deletionQueue.clear();
+    }
+
+    ~IEGraphicsLink() {
+        destroy();
+    }
+
+    /**@todo Remove these functions as they are a very slow way of doing things.*/
     [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
         VkCommandBufferAllocateInfo allocInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -158,4 +195,5 @@ public:
         vkQueueWaitIdle(graphicsQueue);
         vkFreeCommandBuffers(device.device, commandPool, 1, &commandBuffer);
     }
+
 };

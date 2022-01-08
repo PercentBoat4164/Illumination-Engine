@@ -7,8 +7,6 @@
 
 #include <vulkan/vulkan.h>
 
-#include <deque>
-
 class IEPipeline {
 public:
     struct CreateInfo {
@@ -17,6 +15,12 @@ public:
         IEDescriptorSet *descriptorSet{};
         IERenderPass *renderPass{};
     };
+
+    #ifndef NDEBUG
+    struct Created {
+        bool pipelineLayout{};
+    } created;
+    #endif
 
     VkPipelineLayout pipelineLayout{};
     CreateInfo createdWith{};
@@ -35,7 +39,19 @@ public:
         pipelineLayoutCreateInfo.setLayoutCount = 1;
         pipelineLayoutCreateInfo.pSetLayouts = &createdWith.descriptorSet->descriptorSetLayout;
         if (vkCreatePipelineLayout(linkedRenderEngine->device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
-        deletionQueue.emplace_front([&] { vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr); });
+        #ifndef NDEBUG
+        created.pipelineLayout = true;
+        #endif
+        deletionQueue.emplace_back([&] {
+            #ifndef NDEBUG
+            if (created.pipelineLayout) {
+                vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr);
+                created.pipelineLayout = false;
+            }
+            #else
+            vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr);
+            #endif
+        });
         //prepare shaders
         std::vector<VkPipelineShaderStageCreateInfo> shaders{};
         for (unsigned int i = 0; i < createdWith.shaders.size(); i++) {
@@ -130,10 +146,14 @@ public:
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         if (vkCreateGraphicsPipelines(linkedRenderEngine->device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
         for (VkPipelineShaderStageCreateInfo shader : shaders) { vkDestroyShaderModule(linkedRenderEngine->device.device, shader.module, nullptr); }
-        deletionQueue.emplace_front([&] { vkDestroyPipeline(linkedRenderEngine->device.device, pipeline, nullptr); });
+        deletionQueue.emplace_back([&] { vkDestroyPipeline(linkedRenderEngine->device.device, pipeline, nullptr); });
+    }
+
+    ~IEPipeline() {
+        destroy();
     }
 
 private:
     IEGraphicsLink *linkedRenderEngine{};
-    std::deque<std::function<void()>> deletionQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
 };

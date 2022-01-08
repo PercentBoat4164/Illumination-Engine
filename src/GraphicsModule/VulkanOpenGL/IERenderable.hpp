@@ -32,7 +32,6 @@
 #include <fstream>
 #include <cstring>
 #include <vector>
-#include <deque>
 
 class IERenderable {
 public:
@@ -54,7 +53,7 @@ public:
         IEDescriptorSet descriptorSet{};
         IEPipeline pipeline{};
         IEAccelerationStructure bottomLevelAccelerationStructure{};
-        std::deque<std::function<void(IEMesh *mesh)>> deletionQueue{};
+        std::vector<std::function<void(IEMesh *mesh)>> deletionQueue{};
 
         void destroy() {
             for (const std::function<void(IEMesh *)> &function : deletionQueue) { function(this); }
@@ -62,7 +61,7 @@ public:
         }
     };
 
-    std::vector<const char *> shaderNames{"shaders/Vulkan/*/vertexShader.vert", "shaders/Vulkan/*/fragmentShader.frag"};
+    std::vector<const char *> shaderNames{"shaders/*/vertexShader.vert", "shaders/*/fragmentShader.frag"};
     const char *modelName{};
 
     explicit IERenderable(IEGraphicsLink *engineLink, const char *filePath) {
@@ -130,7 +129,7 @@ public:
         }
     }
 
-    std::deque<std::function<void(IERenderable *renderable)>> deletionQueue{};
+    std::vector<std::function<void(IERenderable *renderable)>> deletionQueue{};
     IEBuffer modelBuffer{};
     IEGraphicsLink *linkedRenderEngine{};
     IEUniformBufferObject uniformBufferObject{};

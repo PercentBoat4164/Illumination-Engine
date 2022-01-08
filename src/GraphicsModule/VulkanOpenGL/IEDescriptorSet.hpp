@@ -56,24 +56,24 @@ public:
         descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
         descriptorSetLayoutBindingFlagsCreateInfo.pBindingFlags = flags.data();
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-        if (linkedRenderEngine->extensionAndFeatureInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount) {
+        if (linkedRenderEngine->extensionAndFeatureInfo.queryFeatureSupport(IE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT)) {
             descriptorSetLayoutCreateInfo.pNext = &descriptorSetLayoutBindingFlagsCreateInfo;
         }
         descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
         descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
         if (vkCreateDescriptorSetLayout(linkedRenderEngine->device.device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor layout!"); }
-        deletionQueue.emplace_front([&] { vkDestroyDescriptorSetLayout(linkedRenderEngine->device.device, descriptorSetLayout, nullptr); });
+        deletionQueue.emplace_back([&] { vkDestroyDescriptorSetLayout(linkedRenderEngine->device.device, descriptorSetLayout, nullptr); });
         VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
         descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(createdWith.poolSizes.size());
         descriptorPoolCreateInfo.pPoolSizes = createdWith.poolSizes.data();
         descriptorPoolCreateInfo.maxSets = 1;
         if (vkCreateDescriptorPool(linkedRenderEngine->device.device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); }
-        deletionQueue.emplace_front([&] { vkDestroyDescriptorPool(linkedRenderEngine->device.device, descriptorPool, nullptr); });
+        deletionQueue.emplace_back([&] { vkDestroyDescriptorPool(linkedRenderEngine->device.device, descriptorPool, nullptr); });
         VkDescriptorSetVariableDescriptorCountAllocateInfoEXT descriptorSetVariableDescriptorCountAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT};
         descriptorSetVariableDescriptorCountAllocateInfo.descriptorSetCount = 1;
         descriptorSetVariableDescriptorCountAllocateInfo.pDescriptorCounts = &createdWith.maxIndex;
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
-        if (linkedRenderEngine->extensionAndFeatureInfo.physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount) {
+        if (linkedRenderEngine->extensionAndFeatureInfo.queryFeatureSupport(IE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT)) {
             descriptorSetAllocateInfo.pNext = &descriptorSetVariableDescriptorCountAllocateInfo;
         }
         descriptorSetAllocateInfo.descriptorPool = descriptorPool;
@@ -91,7 +91,7 @@ public:
             }
         }
         update(data, bindings);
-    }
+        }
 
     void update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> newData, std::vector<int> bindings = {}) {
         if (bindings.empty()) { assert(newData.size() == createdWith.data.size()); } else { assert(bindings.size() == newData.size()); }
@@ -156,7 +156,11 @@ public:
         if (!descriptorWrites.empty()) { vkUpdateDescriptorSets(linkedRenderEngine->device.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr); }
     }
 
+    ~IEDescriptorSet() {
+        destroy();
+    }
+
 private:
     IEGraphicsLink *linkedRenderEngine{};
-    std::deque<std::function<void()>> deletionQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
 };

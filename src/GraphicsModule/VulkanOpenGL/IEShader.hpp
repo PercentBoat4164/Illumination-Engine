@@ -7,7 +7,6 @@
 #include <fstream>
 #include <cstring>
 #include <vector>
-#include <deque>
 
 #if defined(_WIN32)
 #define GLSLC "glslc.exe "
@@ -22,8 +21,14 @@ public:
         std::string filename{};
     };
 
+    #ifndef NDEBUG
+    struct Created {
+        bool module;
+    } created;
+    #endif
+
     std::vector<char> data{};
-    std::deque<std::function<void()>> deletionQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
     VkShaderModule module{};
     IEGraphicsLink *linkedRenderEngine{};
     CreateInfo createdWith{};
@@ -37,9 +42,9 @@ public:
     void create(IEGraphicsLink *renderEngineLink, CreateInfo *createInfo) {
         linkedRenderEngine = renderEngineLink;
         createdWith = *createInfo;
-        std::string replaceWith = linkedRenderEngine->settings.rayTracing ? "RayTracing" : "Rasterizing";
+        std::string replaceWith = linkedRenderEngine->settings.rayTracing ? "RayTrace" : "Rasterize";
         size_t pos = createdWith.filename.find('*');
-        while( pos != std::string::npos) {
+        while(pos != std::string::npos) {
             createdWith.filename.replace(pos, 1, replaceWith);
             pos = createdWith.filename.find('*', pos + replaceWith.size());
         }
@@ -59,7 +64,23 @@ public:
         shaderModuleCreateInfo.codeSize = data.size();
         shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(data.data());
         if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &module) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
-        deletionQueue.emplace_front([&] { vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr); });
+        #ifndef NDEBUG
+        created.module = true;
+        #endif
+        deletionQueue.emplace_back([&] {
+            #ifndef NDEBUG
+            if (created.module) {
+                vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
+                created.module = false;
+            }
+            #else
+            vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
+            #endif
+        });
+    }
+
+    ~IEShader() {
+        destroy();
     }
 
     static void compile(const std::string& input, std::string output = "") {

@@ -14,7 +14,6 @@
 #endif
 
 #include <cmath>
-#include <deque>
 #include <vulkan/vulkan.h>
 
 enum VulkanImageType {
@@ -98,11 +97,11 @@ public:
     /**@todo Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     virtual void upload() {
         if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
-        deletionQueue.emplace_front([&] { vmaDestroyImage(linkedRenderEngine->allocator, image, allocation); });
+        deletionQueue.emplace_back([&] { vmaDestroyImage(linkedRenderEngine->allocator, image, allocation); });
         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageViewCreateInfo.image = image;
         if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_front([&] { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);});
+        deletionQueue.emplace_back([&] { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);});
         if (createdWith.dataSource != nullptr) {
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             createdWith.dataSource->toImage(*this, createdWith.width, createdWith.height);
@@ -186,12 +185,14 @@ public:
         imageLayout = newLayout;
     }
 
-    virtual ~IEImage() = default;
+    virtual ~IEImage() {
+        destroy();
+    }
 
 protected:
     IEGraphicsLink *linkedRenderEngine{};
     VmaAllocation allocation{};
-    std::deque<std::function<void()>> deletionQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
     VkImageCreateInfo imageCreateInfo{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     VmaAllocationCreateInfo allocationCreateInfo{};
     VkImageViewCreateInfo imageViewCreateInfo{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};

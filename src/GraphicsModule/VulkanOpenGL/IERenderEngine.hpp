@@ -43,7 +43,6 @@
 #define GLFW_INCLUDE_VULKAN  // Needed for glfwCreateWindowSurface
 #include <GLFW/glfw3.h>
 
-#include <deque>
 #include <functional>
 #include <optional>
 #include <filesystem>
@@ -120,12 +119,23 @@ private:
         }
     }
 
-    void setupDevice(std::vector<std::vector<const char *>>* desiredExtensions=nullptr, void* desiredExtensionFeatures=nullptr) {
-        vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
-        /**
-         * Note: The physical device selection stage is used to add extensions while the logical device building stage is used to add extension features.
-         */
+    /**
+     * @brief Creates a VkSurface for the window.
+     */
+    void createWindowSurface() {
+        if (glfwCreateWindowSurface(renderEngineLink.instance.instance, window, nullptr, &renderEngineLink.surface) != VK_SUCCESS) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create window surface!");
+        }
+    }
 
+    /**
+     * @brief Creates a physical and logical device with the extensions and features provided activated.
+     * @param desiredExtensions
+     * @param desiredExtensionFeatures
+     */
+    void setUpDevice(std::vector<std::vector<const char *>>* desiredExtensions= nullptr, void* desiredExtensionFeatures= nullptr) {
+        vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
+        // Note: The physical device selection stage is used to add extensions while the logical device building stage is used to add extension features.
         if (desiredExtensions != nullptr) {
             selector.add_desired_extensions(*desiredExtensions->data());
         }
@@ -145,7 +155,7 @@ public:
     explicit IERenderEngine() {
         // Create a Vulkan instance
         renderEngineLink.instance = createVulkanInstance();
-        engineDeletionQueue.emplace_front([&] { vkb::destroy_instance(renderEngineLink.instance); });
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_instance(renderEngineLink.instance); });
 
         // Initialize GLFW then create and setup window
         /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI abstraction.*/
@@ -161,14 +171,13 @@ public:
         glfwSetWindowUserPointer(window, this);
 
         // Create surface
-        if (glfwCreateWindowSurface(renderEngineLink.instance.instance, window, nullptr, &renderEngineLink.surface) != VK_SUCCESS) {
-            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create window surface!");
-        }
-        engineDeletionQueue.emplace_front([&] { vkDestroySurfaceKHR(renderEngineLink.instance.instance, renderEngineLink.surface, nullptr); });
+        createWindowSurface();
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_surface(renderEngineLink.instance.instance, renderEngineLink.surface); });
 
-        setupDevice();
+        // set up the device and build the renderEngineLink.
+        setUpDevice();
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_device(renderEngineLink.device); });
         renderEngineLink.build();
-        engineDeletionQueue.emplace_front([&] { vkb::destroy_device(renderEngineLink.device); });
         renderEngineLink.graphicsQueue = renderEngineLink.device.get_queue(vkb::QueueType::graphics).value();
         renderEngineLink.presentQueue = renderEngineLink.device.get_queue(vkb::QueueType::present).value();
         renderEngineLink.transferQueue = renderEngineLink.device.get_queue(vkb::QueueType::transfer).value();
@@ -178,20 +187,21 @@ public:
         allocatorInfo.device = renderEngineLink.device.device;
         allocatorInfo.instance = renderEngineLink.instance.instance;
         vmaCreateAllocator(&allocatorInfo, &renderEngineLink.allocator);
-        engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(renderEngineLink.allocator); });
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vmaDestroyAllocator(renderEngineLink.allocator); });
         VkCommandPoolCreateInfo commandPoolCreateInfo {
             .sType=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .flags=VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
             .queueFamilyIndex=renderEngineLink.device.get_queue_index(vkb::QueueType::graphics).value()
         };
         vkCreateCommandPool(renderEngineLink.device.device, &commandPoolCreateInfo, nullptr, &renderEngineLink.commandPool);
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkDestroyCommandPool(renderEngineLink.device.device, renderEngineLink.commandPool, nullptr); });
         commandBuffer.create(&renderEngineLink, vkb::QueueType::graphics);
-        engineDeletionQueue.emplace_front([&] { commandBuffer.destroy(); });
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { commandBuffer.destroy(); });
         camera.create(&renderEngineLink);
         createSwapchain(true);
         printf("%s\n", renderEngineLink.device.physical_device.properties.deviceName);
         printf("%s\n", IEVersion(renderEngineLink.device.physical_device.properties.apiVersion).name.c_str());
-        engineDeletionQueue.emplace_front([&] { topLevelAccelerationStructure.destroy(); });
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { topLevelAccelerationStructure.destroy(); });
     }
 
     void createSwapchain(bool fullRecreate = false) {
@@ -202,16 +212,16 @@ public:
         vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
         if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
         renderEngineLink.swapchain = swap_ret.value();
-        recreationDeletionQueue.emplace_front([&] { vkb::destroy_swapchain(renderEngineLink.swapchain); });
+        recreationDeletionQueue.emplace_back([&] { vkb::destroy_swapchain(renderEngineLink.swapchain); });
         renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
-        recreationDeletionQueue.emplace_front([&] { renderEngineLink.swapchain.destroy_image_views(renderEngineLink.swapchainImageViews); });
+        recreationDeletionQueue.emplace_back([&] { renderEngineLink.swapchain.destroy_image_views(renderEngineLink.swapchainImageViews); });
         imagesInFlight.clear();
         imagesInFlight.resize(renderEngineLink.swapchain.image_count, VK_NULL_HANDLE);
         if (fullRecreate) {
             for (std::function<void()> &function : fullRecreationDeletionQueue) { function(); }
             fullRecreationDeletionQueue.clear();
             commandBuffer.createCommandBuffers((int)renderEngineLink.swapchain.image_count);
-            fullRecreationDeletionQueue.emplace_front([&] { commandBuffer.freeCommandBuffers(); });
+            fullRecreationDeletionQueue.emplace_back([&] { commandBuffer.freeCommandBuffers(); });
             imageAvailableSemaphores.resize(renderEngineLink.swapchain.image_count);
             renderFinishedSemaphores.resize(renderEngineLink.swapchain.image_count);
             inFlightFences.resize(renderEngineLink.swapchain.image_count);
@@ -223,13 +233,13 @@ public:
                 if (vkCreateSemaphore(renderEngineLink.device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
                 if (vkCreateFence(renderEngineLink.device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create fences!"); }
             }
-            fullRecreationDeletionQueue.emplace_front([&] { for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(renderEngineLink.device.device, imageAvailableSemaphore, nullptr); } });
-            fullRecreationDeletionQueue.emplace_front([&] { for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(renderEngineLink.device.device, renderFinishedSemaphore, nullptr); } });
-            fullRecreationDeletionQueue.emplace_front([&] { for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(renderEngineLink.device.device, inFlightFence, nullptr); } });
+            fullRecreationDeletionQueue.emplace_back([&] { for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(renderEngineLink.device.device, imageAvailableSemaphore, nullptr); } });
+            fullRecreationDeletionQueue.emplace_back([&] { for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(renderEngineLink.device.device, renderFinishedSemaphore, nullptr); } });
+            fullRecreationDeletionQueue.emplace_back([&] { for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(renderEngineLink.device.device, inFlightFence, nullptr); } });
             renderPass.create(&renderEngineLink);
-            fullRecreationDeletionQueue.emplace_front([&] { renderPass.destroy(); });
+            fullRecreationDeletionQueue.emplace_back([&] { renderPass.destroy(); });
             for (IERenderable *renderable : renderables) { loadRenderable(renderable, false); }
-            fullRecreationDeletionQueue.emplace_front([&] { for (IERenderable *renderable : renderables) { renderable->destroy(); } });
+            fullRecreationDeletionQueue.emplace_back([&] { for (IERenderable *renderable : renderables) { renderable->destroy(); } });
         }
         IEFramebuffer::CreateInfo framebufferCreateInfo{};
         framebuffers.resize(renderEngineLink.swapchain.image_count);
@@ -238,7 +248,7 @@ public:
             framebufferCreateInfo.swapchainImageView = (renderEngineLink.swapchainImageViews)[i];
             framebuffers[i].create(&renderEngineLink, &framebufferCreateInfo);
         }
-        recreationDeletionQueue.emplace_front([&] { for (IEFramebuffer &framebuffer : framebuffers) { framebuffer.destroy(); } });
+        recreationDeletionQueue.emplace_back([&] { for (IEFramebuffer &framebuffer : framebuffers) { framebuffer.destroy(); } });
         camera.updateSettings();
     }
 
@@ -247,30 +257,30 @@ public:
         renderable->reloadRenderable(renderable->shaderNames);
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
         for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
-        renderable->deletionQueue.emplace_front([&] (IERenderable *thisRenderable) { for (IEShader &shader : thisRenderable->shaders) { shader.destroy(); } });
+        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) { for (IEShader &shader : thisRenderable->shaders) { shader.destroy(); } });
         IEBuffer::CreateInfo bufferCreateInfo{};
         bufferCreateInfo.size = sizeof(IEUniformBufferObject);
         bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         bufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         renderable->modelBuffer.create(&renderEngineLink, &bufferCreateInfo);
-        renderable->deletionQueue.emplace_front([&](IERenderable *thisRenderable){ thisRenderable->modelBuffer.destroy(); });
+        renderable->deletionQueue.emplace_back([&](IERenderable *thisRenderable){ thisRenderable->modelBuffer.destroy(); });
         for (IERenderable::IEMesh &mesh : renderable->meshes) {
             bufferCreateInfo.size = sizeof(mesh.vertices[0]) * mesh.vertices.size();
             bufferCreateInfo.usage = renderEngineLink.settings.rayTracing ? VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             mesh.vertexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.vertexBuffer.uploadData(mesh.vertices.data(), sizeof(mesh.vertices[0]) * mesh.vertices.size());
-            mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->vertexBuffer.destroy(); });
+            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->vertexBuffer.destroy(); });
             bufferCreateInfo.size = sizeof(mesh.indices[0]) * mesh.indices.size();
             bufferCreateInfo.usage ^= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
             mesh.indexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.indexBuffer.uploadData(mesh.indices.data(), sizeof(mesh.indices[0]) * mesh.indices.size());
-            mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->indexBuffer.destroy(); });
+            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->indexBuffer.destroy(); });
             if (renderEngineLink.settings.rayTracing) {
                 bufferCreateInfo.size = sizeof(mesh.transformationMatrix);
                 bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
                 mesh.transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
-                mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->transformationBuffer.destroy(); });
-                mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->bottomLevelAccelerationStructure.destroy(); });
+                mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->transformationBuffer.destroy(); });
+                mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->bottomLevelAccelerationStructure.destroy(); });
             }
             for (IETexture &texture : renderable->textures) {
                 texture.destroy();
@@ -290,16 +300,16 @@ public:
                 renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textures[mesh.diffuseTexture], &renderable->textures[mesh.specularTexture]};
             }
             mesh.descriptorSet.create(&renderEngineLink, &renderableDescriptorSetCreateInfo);
-            mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->descriptorSet.destroy(); });
+            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->descriptorSet.destroy(); });
             IEPipeline::CreateInfo renderablePipelineCreateInfo{};
             renderablePipelineCreateInfo.descriptorSet = &mesh.descriptorSet;
             renderablePipelineCreateInfo.renderPass = &renderPass;
             renderablePipelineCreateInfo.shaders = renderable->shaders;
             mesh.pipeline.create(&renderEngineLink, &renderablePipelineCreateInfo);
-            mesh.deletionQueue.emplace_front([&] (IERenderable::IEMesh *thisMesh) { thisMesh->pipeline.destroy(); });
+            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->pipeline.destroy(); });
         }
-        renderable->deletionQueue.emplace_front([&] (IERenderable *thisRenderable) { for (IETexture &texture : thisRenderable->textures) { texture.destroy(); } });
-        renderable->deletionQueue.emplace_front([&] (IERenderable *thisRenderable) { for (IERenderable::IEMesh &mesh : thisRenderable->meshes) { mesh.destroy(); } });
+        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) { for (IETexture &texture : thisRenderable->textures) { texture.destroy(); } });
+        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) { for (IERenderable::IEMesh &mesh : thisRenderable->meshes) { mesh.destroy(); } });
         if (append) { renderables.push_back(renderable); }
     }
 
@@ -434,8 +444,10 @@ public:
         recreationDeletionQueue.clear();
         for (std::function<void()> &function : fullRecreationDeletionQueue) { function(); }
         fullRecreationDeletionQueue.clear();
-        for (std::function<void()> &function : engineDeletionQueue) { function(); }
-        engineDeletionQueue.clear();
+    }
+
+    ~IERenderEngine() {
+        destroy();
     }
 
     GLFWmonitor *monitor{};
@@ -457,9 +469,8 @@ private:
     std::vector<IERenderable *> renderables{};
     IEAccelerationStructure topLevelAccelerationStructure{};
     IECommandBuffer commandBuffer{};
-    std::deque<std::function<void()>> engineDeletionQueue{};
-    std::deque<std::function<void()>> fullRecreationDeletionQueue{};
-    std::deque<std::function<void()>> recreationDeletionQueue{};
+    std::vector<std::function<void()>> fullRecreationDeletionQueue{};
+    std::vector<std::function<void()>> recreationDeletionQueue{};
     size_t currentFrame{};
     bool framebufferResized{false};
     float previousTime{};

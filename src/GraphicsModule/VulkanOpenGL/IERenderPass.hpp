@@ -2,8 +2,6 @@
 
 #include "IEGraphicsLink.hpp"
 
-#include <deque>
-
 #include <vulkan/vulkan.h>
 
 class IEFramebuffer;
@@ -75,7 +73,7 @@ public:
         renderPassCreateInfo.dependencyCount = 1;
         renderPassCreateInfo.pDependencies = &subpassDependency;
         if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
-        deletionQueue.emplace_front([&] { vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr); });
+        deletionQueue.emplace_back([&] { vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr); });
     }
 
     VkRenderPassBeginInfo beginRenderPass(const IEFramebuffer &framebuffer);
@@ -86,6 +84,6 @@ public:
     }
 
 private:
-    std::deque<std::function<void()>> deletionQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
     IEGraphicsLink *linkedRenderEngine{};
 };
