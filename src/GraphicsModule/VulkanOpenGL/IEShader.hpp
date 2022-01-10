@@ -83,11 +83,16 @@ public:
         destroy();
     }
 
-    static void compile(const std::string& input, std::string output = "") {
+    void compile(const std::string& input, std::string output = "") const {
         std::ifstream rawFile(input, std::ios::ate | std::ios::binary);
         if (!rawFile.is_open()) { throw std::runtime_error("failed to open file: " + input); }
         rawFile.close();
         if (output.empty()) { output = input + ".spv"; }
-        if (system((GLSLC + input + " -o " + output).c_str()) != 0) { throw std::runtime_error("failed to compile shaders: " + input); }
+        if (linkedRenderEngine->settings.rayTracing) {
+            if (system((GLSLC + input + " -o " + output + " --target-env=vulkan1.2").c_str()) != 0) { throw std::runtime_error("failed to compile shaders: " + input); }
+        }
+        else {
+            if (system((GLSLC + input + " -o " + output).c_str()) != 0) { throw std::runtime_error("failed to compile shaders: " + input); }
+        }
     }
 };

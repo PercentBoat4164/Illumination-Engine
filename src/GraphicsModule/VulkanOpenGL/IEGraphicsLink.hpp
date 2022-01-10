@@ -8,6 +8,7 @@
 #ifndef VMA_INCLUDED
 #define VMA_INCLUDED
 #define VMA_IMPLEMENTATION
+#define VMA_BUFFER_DEVICE_ADDRESS 1
 #include <vk_mem_alloc.h>
 #endif
 
@@ -16,15 +17,22 @@
 #define IE_RENDER_ENGINE_API_NAME_VULKAN "Vulkan"
 #define IE_RENDER_ENGINE_API_NAME_OPENGL "OpenGL"
 
-#define IE_FEATURE_QUERY_RAY_QUERY_RAY_TRACING "RayQueryRayTracing"
-#define IE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT "VariableDescriptorCount"
+#define IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING "RayQueryRayTracing"
+#define IE_ENGINE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT "VariableDescriptorCount"
 
 class IEGraphicsLink {
 public:
     class IEAPI{
     public:
-        std::string name{IE_RENDER_ENGINE_API_NAME_OPENGL}; // The name of the API to use. Defaults to "OpenGL"
-        IEVersion version = getHighestSupportedVersion(); // The version of the API to use
+        explicit IEAPI(const std::string& apiName) {
+            name = apiName;
+            version = getHighestSupportedVersion();
+        }
+
+        IEAPI() = default;
+
+        std::string name{}; // The name of the API to use.
+        IEVersion version{}; // The version of the API to use
 
         /**
          * @brief Finds the highest supported API version.
@@ -65,20 +73,8 @@ public:
                 else if (GLEW_VERSION_1_2_1) { temporaryVersion = IEVersion{"1.2.1"}; }
                 else if (GLEW_VERSION_1_2) { temporaryVersion = IEVersion{"1.2.0"}; }
                 else if (GLEW_VERSION_1_1) { temporaryVersion = IEVersion{"1.1.0"}; }
-                // Alternative solution if version is still not found
-                else {
-                    glfwInit();
-                    GLFWwindow *temporaryWindow = glfwCreateWindow(1, 1, "Gathering OpenGL Data...", nullptr, nullptr);
-                    glfwMakeContextCurrent(temporaryWindow);
-                    std::string versionName = reinterpret_cast<const char *>(glGetString(GL_VERSION));
-                    versionName = versionName.substr(0, versionName.find_first_of(' '));
-                    if (std::count(versionName.begin(), versionName.end(), '.') < 2) {
-                        versionName += ".0";
-                    }
-                    temporaryVersion = IEVersion{versionName};
-                    glfwDestroyWindow(temporaryWindow);
-                    glfwTerminate();
-                }
+                // If none of these is active then GLEW something is wrong.
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "No OpenGL version was found!");
             }
             #endif
             return temporaryVersion;
@@ -107,17 +103,49 @@ public:
             return std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end();
         }
 
+        std::vector<const char *> queryEngineFeatureExtensionRequirements(const std::string& engineFeature, IEAPI* API) {
+            if (API->name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+                return engineFeatureExtensionRequirementQueries[engineFeature][API->version.minor];
+            }
+            return {};
+        }
+
         ExtensionAndFeatureInfo() {
             uint32_t count;
             vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
             std::vector<VkExtensionProperties> extensions(count);
             vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
+            supportedExtensions.reserve(count);
+            for (VkExtensionProperties extension : extensions) {
+                supportedExtensions.emplace_back(extension.extensionName);
+            }
         }
 
     private:
+        std::unordered_map<std::string, std::vector<std::vector<const char *>>> engineFeatureExtensionRequirementQueries {
+                {IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, { //ray query ray tracing extensions
+                        {  // 1.0
+
+                        },
+                        {  // 1.1
+
+                        },
+                        {  // 1.2
+                            VK_KHR_DEVICE_GROUP_EXTENSION_NAME,
+                            VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                            VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+                            VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+                            VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+                            VK_KHR_RAY_QUERY_EXTENSION_NAME,
+                            VK_KHR_SPIRV_1_4_EXTENSION_NAME
+                        }
+                    }
+                }
+        };
+
         std::unordered_map<std::string, bool(ExtensionAndFeatureInfo::*)()const> extensionAndFeatureSupportQueries {
-                {IE_FEATURE_QUERY_RAY_QUERY_RAY_TRACING,               &ExtensionAndFeatureInfo::rayTracingWithRayQuerySupportQuery},
-                {IE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT, &ExtensionAndFeatureInfo::variableDescriptorCountSupportQuery}
+                {IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, &ExtensionAndFeatureInfo::rayTracingWithRayQuerySupportQuery},
+                {IE_ENGINE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT, &ExtensionAndFeatureInfo::variableDescriptorCountSupportQuery}
         };
 
         bool rayTracingWithRayQuerySupportQuery() const {
@@ -130,7 +158,7 @@ public:
     };
 
     IESettings settings{};
-    IEAPI api{};
+    IEAPI api;
     vkb::Device device{};
     vkb::Swapchain swapchain{};
     vkb::Instance instance{};
@@ -161,6 +189,11 @@ public:
         vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(vkGetDeviceProcAddr(device.device, "vkGetAccelerationStructureBuildSizesKHR"));
         vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device.device, "vkGetAccelerationStructureDeviceAddressKHR"));
         vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device.device, "vkAcquireNextImageKHR"));
+        graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
+        presentQueue = device.get_queue(vkb::QueueType::present).value();
+        transferQueue = device.get_queue(vkb::QueueType::transfer).value();
+        computeQueue = device.get_queue(vkb::QueueType::compute).value();
+        api = IEAPI{IE_RENDER_ENGINE_API_NAME_VULKAN};
     }
 
     void destroy() {

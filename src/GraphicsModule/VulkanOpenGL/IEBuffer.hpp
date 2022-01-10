@@ -66,6 +66,9 @@ public:
         bufferCreateInfo.usage = createdWith.usage;
         VmaAllocationCreateInfo allocationCreateInfo{};
         allocationCreateInfo.usage = createdWith.allocationUsage;
+        if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+            allocationCreateInfo.preferredFlags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+        }
         if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create IEBuffer!"); }
         deletionQueue.emplace_back([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
         if (createdWith.data != nullptr) {
