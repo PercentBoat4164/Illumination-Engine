@@ -97,7 +97,8 @@ void resetAll(GLFWwindow* window) {
  * @brief Code for testing the entire engine with all its modular parts goes here.
  */
 int main(int argc, char **argv) {
-    IERenderEngine renderEngine{};
+    IESettings settings{.rayTracing=false, .vSync=false};
+    IERenderEngine renderEngine{&settings};
     IERenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
     cube.position = {0, -3, 0};
     renderEngine.loadRenderable(&cube);

@@ -53,8 +53,8 @@ if (Vulkan_FOUND)
     FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG v0.5 GIT_PROGRESS ON)
 
     #Get VMA
-    message("Downloading VMA v2.3.0+vs2017")
-    FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG v2.3.0+vs2017 GIT_PROGRESS ON)
+    message("Downloading VMA from VMA's master branch")
+    FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG master GIT_PROGRESS ON)
 
     FetchContent_MakeAvailable(vk-bootstrap vma)  # Generate all external dependencies which require Vulkan
 
@@ -72,5 +72,5 @@ set(glm_DIR ${glm_SOURCE_DIR} PARENT_SCOPE)
 set(stb_image_DIR ${assimp_SOURCE_DIR}/contrib/stb PARENT_SCOPE)
 if (Vulkan_FOUND)
     set(vk-bootstrap_DIR ${vk-bootstrap_SOURCE_DIR}/src PARENT_SCOPE)
-    set(vma_DIR ${vma_SOURCE_DIR}/src PARENT_SCOPE)
+    set(vma_DIR ${vma_SOURCE_DIR}/include PARENT_SCOPE)
 endif ()

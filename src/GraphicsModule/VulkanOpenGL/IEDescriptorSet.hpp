@@ -56,7 +56,7 @@ public:
         descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
         descriptorSetLayoutBindingFlagsCreateInfo.pBindingFlags = flags.data();
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-        if (linkedRenderEngine->extensionAndFeatureInfo.queryFeatureSupport(IE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT)) {
+        if (linkedRenderEngine->extensionAndFeatureInfo.queryFeatureSupport(IE_ENGINE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT)) {
             descriptorSetLayoutCreateInfo.pNext = &descriptorSetLayoutBindingFlagsCreateInfo;
         }
         descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
@@ -73,7 +73,7 @@ public:
         descriptorSetVariableDescriptorCountAllocateInfo.descriptorSetCount = 1;
         descriptorSetVariableDescriptorCountAllocateInfo.pDescriptorCounts = &createdWith.maxIndex;
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
-        if (linkedRenderEngine->extensionAndFeatureInfo.queryFeatureSupport(IE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT)) {
+        if (linkedRenderEngine->extensionAndFeatureInfo.queryFeatureSupport(IE_ENGINE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT)) {
             descriptorSetAllocateInfo.pNext = &descriptorSetVariableDescriptorCountAllocateInfo;
         }
         descriptorSetAllocateInfo.descriptorPool = descriptorPool;

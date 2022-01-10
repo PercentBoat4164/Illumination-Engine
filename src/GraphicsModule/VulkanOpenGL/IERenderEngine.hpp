@@ -79,14 +79,16 @@ private:
         if (!instanceBuilder) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message());
         }
-        return instanceBuilder.value();
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_instance(renderEngineLink.instance); });
+        renderEngineLink.instance = instanceBuilder.value();
+        return renderEngineLink.instance;
     }
 
     /**
      * @brief Creates a window using hardcoded hints and settings from renderEngineLink.settings.
      * @return The window that was just created.
      */
-    [[nodiscard]] GLFWwindow* createWindow() const {
+    GLFWwindow* createWindow() const {
         // Specify all window hints for the window
         /**todo Optional - Make a convenient way to change these programmatically based on some settings.*/
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -95,8 +97,8 @@ private:
     }
 
     /**
-     * @brief Changes the window icon to all of the images found in [path].
-     * @param path
+     * @brief Changes the window icon to all of the images found in [path] with a name that contains last part of [path].
+     * @param path string of path to icons folder plus the identifier.
      */
     void setWindowIcons(const std::string& path) const {
         int width, height, channels;
@@ -121,22 +123,26 @@ private:
 
     /**
      * @brief Creates a VkSurface for the window.
+     * @return The newly created surface.
      */
-    void createWindowSurface() {
+    VkSurfaceKHR createWindowSurface() {
         if (glfwCreateWindowSurface(renderEngineLink.instance.instance, window, nullptr, &renderEngineLink.surface) != VK_SUCCESS) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create window surface!");
         }
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_surface(renderEngineLink.instance.instance, renderEngineLink.surface); });
+        return renderEngineLink.surface;
     }
 
     /**
      * @brief Creates a physical and logical device with the extensions and features provided activated.
-     * @param desiredExtensions
-     * @param desiredExtensionFeatures
+     * @param desiredExtensions vector of vectors of Vulkan extension names.
+     * @param desiredExtensionFeatures pointer to pNext chain of desired features.
+     * @return The newly created vkb::Device.
      */
-    void setUpDevice(std::vector<std::vector<const char *>>* desiredExtensions= nullptr, void* desiredExtensionFeatures= nullptr) {
+    vkb::Device setUpDevice(std::vector<std::vector<const char *>>* desiredExtensions=nullptr, void* desiredExtensionFeatures=nullptr) {
         vkb::PhysicalDeviceSelector selector{renderEngineLink.instance};
         // Note: The physical device selection stage is used to add extensions while the logical device building stage is used to add extension features.
-        if (desiredExtensions != nullptr) {
+        if (desiredExtensions != nullptr && !desiredExtensions->empty()) {
             selector.add_desired_extensions(*desiredExtensions->data());
         }
         vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(renderEngineLink.surface).select();
@@ -148,21 +154,40 @@ private:
         if (!logicalDevice) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan device. Error: " + logicalDevice.error().message());
         }
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_device(renderEngineLink.device); });
         renderEngineLink.device = logicalDevice.value();
+        return renderEngineLink.device;
+    }
+
+    /**
+     * @brief Creates a VmaAllocator with no flags activated.
+     * @return The newly created VmaAllocator.
+     */
+    VmaAllocator setUpGPUMemoryAllocator () {
+        VmaAllocatorCreateInfo allocatorInfo{};
+        allocatorInfo.physicalDevice = renderEngineLink.device.physical_device.physical_device;
+        allocatorInfo.device = renderEngineLink.device.device;
+        allocatorInfo.instance = renderEngineLink.instance.instance;
+        if (renderEngineLink.settings.rayTracing) {
+            allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+        }
+//        allocatorInfo.vulkanApiVersion = renderEngineLink.api.version.number;
+        vmaCreateAllocator(&allocatorInfo, &renderEngineLink.allocator);
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vmaDestroyAllocator(renderEngineLink.allocator); });
+        return renderEngineLink.allocator;
     }
 
 public:
-    explicit IERenderEngine() {
+    explicit IERenderEngine(IESettings* settings=nullptr) {
+        renderEngineLink.settings = *settings;
+
         // Create a Vulkan instance
-        renderEngineLink.instance = createVulkanInstance();
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_instance(renderEngineLink.instance); });
+        createVulkanInstance();
 
         // Initialize GLFW then create and setup window
         /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI abstraction.*/
         glfwInit();
         window = createWindow();
-
-        // Customize window
         setWindowIcons("res/icons");
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
         glfwGetWindowPos(window, &renderEngineLink.settings.windowPosition[0], &renderEngineLink.settings.windowPosition[1]);
@@ -172,22 +197,26 @@ public:
 
         // Create surface
         createWindowSurface();
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_surface(renderEngineLink.instance.instance, renderEngineLink.surface); });
 
-        // set up the device and build the renderEngineLink.
-        setUpDevice();
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_device(renderEngineLink.device); });
+        // Set up the device
+        renderEngineLink.api = IEGraphicsLink::IEAPI{IE_RENDER_ENGINE_API_NAME_VULKAN};
+        std::vector<std::vector<const char *>> extensions{};
+        if (renderEngineLink.settings.rayTracing) {
+            extensions.push_back(renderEngineLink.extensionAndFeatureInfo.queryEngineFeatureExtensionRequirements(IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, &renderEngineLink.api));
+            renderEngineLink.extensionAndFeatureInfo.accelerationStructureFeatures.accelerationStructure = VK_TRUE;
+            renderEngineLink.extensionAndFeatureInfo.bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
+            renderEngineLink.extensionAndFeatureInfo.rayQueryFeatures.rayQuery = VK_TRUE;
+            renderEngineLink.extensionAndFeatureInfo.rayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
+        }
+        setUpDevice(&extensions, renderEngineLink.extensionAndFeatureInfo.pNextHighestFeature);
+
+        // Build function pointers and generate queues
         renderEngineLink.build();
-        renderEngineLink.graphicsQueue = renderEngineLink.device.get_queue(vkb::QueueType::graphics).value();
-        renderEngineLink.presentQueue = renderEngineLink.device.get_queue(vkb::QueueType::present).value();
-        renderEngineLink.transferQueue = renderEngineLink.device.get_queue(vkb::QueueType::transfer).value();
-        renderEngineLink.computeQueue = renderEngineLink.device.get_queue(vkb::QueueType::compute).value();
-        VmaAllocatorCreateInfo allocatorInfo{};
-        allocatorInfo.physicalDevice = renderEngineLink.device.physical_device.physical_device;
-        allocatorInfo.device = renderEngineLink.device.device;
-        allocatorInfo.instance = renderEngineLink.instance.instance;
-        vmaCreateAllocator(&allocatorInfo, &renderEngineLink.allocator);
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vmaDestroyAllocator(renderEngineLink.allocator); });
+
+        /**@todo All of this should not be done here!*/
+        // Set up GPU Memory allocator
+        setUpGPUMemoryAllocator();
+
         VkCommandPoolCreateInfo commandPoolCreateInfo {
             .sType=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .flags=VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
@@ -198,9 +227,9 @@ public:
         commandBuffer.create(&renderEngineLink, vkb::QueueType::graphics);
         renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { commandBuffer.destroy(); });
         camera.create(&renderEngineLink);
-        createSwapchain(true);
-        printf("%s\n", renderEngineLink.device.physical_device.properties.deviceName);
-        printf("%s\n", IEVersion(renderEngineLink.device.physical_device.properties.apiVersion).name.c_str());
+        createSwapchain(true);  // The above to-do does not apply to this.
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink.device.physical_device.properties.deviceName);
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink.api.name + " v" +renderEngineLink.api.version.name);
         renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { topLevelAccelerationStructure.destroy(); });
     }
 
@@ -403,6 +432,7 @@ public:
             createSwapchain();
         } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
         currentFrame = (currentFrame + 1) % (int)renderEngineLink.swapchain.image_count;
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(1/frameTime));
         return glfwWindowShouldClose(window) != 1;
     }
 
