@@ -260,12 +260,13 @@ public:
         std::vector<std::vector<const char *>> extensions{};
         if (renderEngineLink.settings.rayTracing) {
             extensions.push_back(renderEngineLink.extensionAndFeatureInfo.queryEngineFeatureExtensionRequirements(IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, &renderEngineLink.api));
+
+            /**@todo Find a better way to handle specifying features. Perhaps use a similar method as was used for extensions.*/
+            renderEngineLink.extensionAndFeatureInfo.accelerationStructureFeatures.accelerationStructure = VK_TRUE;
+            renderEngineLink.extensionAndFeatureInfo.bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
+            renderEngineLink.extensionAndFeatureInfo.rayQueryFeatures.rayQuery = VK_TRUE;
+            renderEngineLink.extensionAndFeatureInfo.rayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
         }
-        /**@todo Find a better way to handle specifying features. Perhaps use a similar method as was used for extensions.*/
-        renderEngineLink.extensionAndFeatureInfo.accelerationStructureFeatures.accelerationStructure = VK_TRUE;
-        renderEngineLink.extensionAndFeatureInfo.bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
-        renderEngineLink.extensionAndFeatureInfo.rayQueryFeatures.rayQuery = VK_TRUE;
-        renderEngineLink.extensionAndFeatureInfo.rayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
         setUpDevice(&extensions, renderEngineLink.extensionAndFeatureInfo.pNextHighestFeature);
 
         // Build function pointers and generate queues
