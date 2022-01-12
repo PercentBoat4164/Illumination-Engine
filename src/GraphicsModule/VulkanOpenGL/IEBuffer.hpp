@@ -93,7 +93,7 @@ public:
         vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
     }
 
-    void toImage(IEImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer = nullptr);
+    void toImage(IEImage &image, uint32_t width, uint32_t height);
 
     virtual ~IEBuffer() {
         destroy();
@@ -101,6 +101,6 @@ public:
 
 protected:
     std::vector<std::function<void()>> deletionQueue{};
-    IEGraphicsLink *linkedRenderEngine{};
+    IEGraphicsLink* linkedRenderEngine{};
     VmaAllocation allocation{};
 };

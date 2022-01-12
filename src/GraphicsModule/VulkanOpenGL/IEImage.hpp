@@ -109,9 +109,7 @@ public:
         if (createdWith.imageLayout != imageLayout) { transitionLayout(createdWith.imageLayout); }
     }
 
-    [[maybe_unused]] void toBuffer(const IEBuffer &buffer, VkCommandBuffer commandBuffer = nullptr) const {
-        bool noCommandBuffer{false};
-        if (commandBuffer == nullptr) { noCommandBuffer = true; }
+    [[maybe_unused]] void toBuffer(const IEBuffer &buffer) const {
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
@@ -122,15 +120,11 @@ public:
         region.imageSubresource.layerCount = 1;
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {static_cast<uint32_t>(createdWith.width), static_cast<uint32_t>(createdWith.height), 1};
-        if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
-        vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1, &region);
-        if (noCommandBuffer) { linkedRenderEngine->endSingleTimeCommands(commandBuffer); }
+        vkCmdCopyImageToBuffer((*linkedRenderEngine->computeCommandPool)[0], image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1, &region);
     }
 
-    void transitionLayout(VkImageLayout newLayout, VkCommandBuffer commandBuffer = nullptr) {
+    void transitionLayout(VkImageLayout newLayout) {
         if (imageLayout == newLayout) { return; }
-        bool noCommandBuffer{false};
-        if (commandBuffer == nullptr) { noCommandBuffer = true; }
         VkImageMemoryBarrier imageMemoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
         imageMemoryBarrier.oldLayout = imageLayout;
         imageMemoryBarrier.newLayout = newLayout;
@@ -179,9 +173,7 @@ public:
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         } else { throw std::runtime_error("Unknown transition parameters!"); }
-        if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
-        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-        if (noCommandBuffer) { linkedRenderEngine->endSingleTimeCommands(commandBuffer); }
+        vkCmdPipelineBarrier((*linkedRenderEngine->computeCommandPool)[0], sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
         imageLayout = newLayout;
     }
 
@@ -200,20 +192,17 @@ protected:
 };
 
 // NOTE: Input image should have a layout of VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL!
-void IEBuffer::toImage(IEImage &image, uint32_t width, uint32_t height, VkCommandBuffer commandBuffer) {
+void IEBuffer::toImage(IEImage &image, uint32_t width, uint32_t height) {
     if (!created) { throw std::runtime_error("Calling IEBuffer::toImage() on a IEBuffer for which IEBuffer::create() has not been called is illegal."); }
     VkBufferImageCopy region{};
     region.imageSubresource.aspectMask = image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.layerCount = 1;
     region.imageExtent = {width, height, 1};
-    bool noCommandBuffer{commandBuffer == VK_NULL_HANDLE};
-    if (noCommandBuffer) { commandBuffer = linkedRenderEngine->beginSingleTimeCommands(); }
     VkImageLayout oldLayout;
     if (image.imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         oldLayout = image.imageLayout;
-        image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
-        vkCmdCopyBufferToImage(commandBuffer, buffer, image.image, image.imageLayout, 1, &region);
-        image.transitionLayout(oldLayout, commandBuffer);
-    } else { vkCmdCopyBufferToImage(commandBuffer, buffer, image.image, image.imageLayout, 1, &region); }
-    if (noCommandBuffer) { linkedRenderEngine->endSingleTimeCommands(commandBuffer); }
+        image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vkCmdCopyBufferToImage((*linkedRenderEngine->computeCommandPool)[0], buffer, image.image, image.imageLayout, 1, &region);
+        image.transitionLayout(oldLayout);
+    } else { vkCmdCopyBufferToImage((*linkedRenderEngine->computeCommandPool)[0], buffer, image.image, image.imageLayout, 1, &region); }
 }

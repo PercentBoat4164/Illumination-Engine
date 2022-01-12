@@ -14,13 +14,13 @@
 #include "Core/LogModule/IELogger.hpp"
 
 #include "IERenderPass.hpp"
+#include "IECommandPool.hpp"
 #include "IEGraphicsLink.hpp"
 #include "IEBuffer.hpp"
 #include "IECamera.hpp"
 #include "IERenderable.hpp"
 #include "IEUniformBufferObject.hpp"
 #include "IESettings.hpp"
-#include "IECommandBuffer.hpp"
 #include "IETexture.hpp"
 #include "IEFramebuffer.hpp"
 
@@ -177,6 +177,63 @@ private:
         return renderEngineLink.allocator;
     }
 
+    /**
+     * @brief Creates a new swapchain. Uses the old swapchain if [useOldSwapchain] is true.
+     * @param useOldSwapchain
+     * @return The newly created swapchain.
+     */
+    vkb::Swapchain createSwapchain(bool useOldSwapchain=true) {
+        // Create swapchain builder
+        vkb::SwapchainBuilder swapchainBuilder{renderEngineLink.device};
+        swapchainBuilder.set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
+                        .set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1])
+                        .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})  // This may have to change in the event that HDR is to be supported.
+                        .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+        if (useOldSwapchain) {  // Use the old swapchain if it exists and that was requested.
+            swapchainBuilder.set_old_swapchain(renderEngineLink.swapchain);
+        }
+        vkb::detail::Result<vkb::Swapchain> swapchain = swapchainBuilder.build();
+        if (!swapchain) {
+            // Failure! Log it then continue without deleting the old swapchain.
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create swapchain! Error: " + swapchain.error().message());
+        }
+        else {
+            // Success! Delete the old swapchain and images and replace them with the new ones.
+            renderEngineLink.swapchain.destroy_image_views(renderEngineLink.swapchainImageViews);
+            vkb::destroy_swapchain(renderEngineLink.swapchain);
+            renderEngineLink.swapchain = swapchain.value();
+            renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
+        }
+        return renderEngineLink.swapchain;
+    }
+
+    /**
+     * @brief Creates the basic sync objects. Recreates them if the already exist.
+     */
+    void createSyncObjects() {
+        // Avoid potential major issues when threading by waiting for the device to stop using any sync objects
+        vkDeviceWaitIdle(renderEngineLink.device.device);
+
+        // Prepare for creation
+        VkSemaphoreCreateInfo semaphoreCreateInfo{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+        VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, VK_FENCE_CREATE_SIGNALED_BIT};
+
+        // Ensure that the vectors have the appropriate size as to avoid errors in the next step.
+        imageAvailableSemaphores.resize(renderEngineLink.swapchain.image_count);
+        renderFinishedSemaphores.resize(renderEngineLink.swapchain.image_count);
+        inFlightFences.resize(renderEngineLink.swapchain.image_count);
+
+        // Perform destruction and creation in one pass over the vectors.
+        for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
+            vkDestroySemaphore(renderEngineLink.device.device, imageAvailableSemaphores[i], nullptr);
+            vkCreateSemaphore(renderEngineLink.device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]);
+            vkDestroySemaphore(renderEngineLink.device.device, renderFinishedSemaphores[i], nullptr);
+            vkCreateSemaphore(renderEngineLink.device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]);
+            vkDestroyFence(renderEngineLink.device.device, inFlightFences[i], nullptr);
+            vkCreateFence(renderEngineLink.device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
+        }
+    }
+
 public:
     explicit IERenderEngine(IESettings* settings=nullptr) {
         renderEngineLink.settings = *settings;
@@ -204,6 +261,7 @@ public:
         if (renderEngineLink.settings.rayTracing) {
             extensions.push_back(renderEngineLink.extensionAndFeatureInfo.queryEngineFeatureExtensionRequirements(IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, &renderEngineLink.api));
         }
+        /**@todo Find a better way to handle specifying features. Perhaps use a similar method as was used for extensions.*/
         renderEngineLink.extensionAndFeatureInfo.accelerationStructureFeatures.accelerationStructure = VK_TRUE;
         renderEngineLink.extensionAndFeatureInfo.bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
         renderEngineLink.extensionAndFeatureInfo.rayQueryFeatures.rayQuery = VK_TRUE;
@@ -213,27 +271,39 @@ public:
         // Build function pointers and generate queues
         renderEngineLink.build();
 
-        /**@todo All of this should not be done here!*/
         // Set up GPU Memory allocator
         setUpGPUMemoryAllocator();
 
-        VkCommandPoolCreateInfo commandPoolCreateInfo {
-            .sType=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-            .flags=VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-            .queueFamilyIndex=renderEngineLink.device.get_queue_index(vkb::QueueType::graphics).value()
-        };
-        vkCreateCommandPool(renderEngineLink.device.device, &commandPoolCreateInfo, nullptr, &renderEngineLink.commandPool);
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkDestroyCommandPool(renderEngineLink.device.device, renderEngineLink.commandPool, nullptr); });
-        commandBuffer.create(&renderEngineLink, vkb::QueueType::graphics);
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { commandBuffer.destroy(); });
+        // Create swapchain
+        createSwapchain(false);
+
+        // Create sync objects
+        /**@todo Create an abstraction for sync objects if necessary.*/
+        createSyncObjects();
+
+        // Create command pools
+        renderEngineLink.computeCommandPool = &computeCommandPool;
+        renderEngineLink.computeCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::compute});
+        renderEngineLink.computeCommandPool->addCommandBuffers(1);
+        renderEngineLink.graphicsCommandPool = &graphicsCommandPool;
+        renderEngineLink.graphicsCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::graphics});
+        renderEngineLink.graphicsCommandPool->addCommandBuffers(1);
+        renderEngineLink.transferCommandPool = &transferCommandPool;
+        renderEngineLink.transferCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::transfer});
+        renderEngineLink.transferCommandPool->addCommandBuffers(1);
+        renderEngineLink.presentCommandPool = &presentCommandPool;
+        renderEngineLink.presentCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::present});
+        renderEngineLink.presentCommandPool->addCommandBuffers(1);
+
+        /**@todo All of this should not be done here!*/
+
         camera.create(&renderEngineLink);
-        createSwapchain(true);  // The above to-do does not apply to this.
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink.device.physical_device.properties.deviceName);
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink.api.name + " v" +renderEngineLink.api.version.name);
         renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { topLevelAccelerationStructure.destroy(); });
     }
 
-    void createSwapchain(bool fullRecreate = false) {
+    void CreateSwapchain(bool fullRecreate) {
         vkDeviceWaitIdle(renderEngineLink.device.device);
         for (std::function<void()> &function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
@@ -249,8 +319,8 @@ public:
         if (fullRecreate) {
             for (std::function<void()> &function : fullRecreationDeletionQueue) { function(); }
             fullRecreationDeletionQueue.clear();
-            commandBuffer.createCommandBuffers((int)renderEngineLink.swapchain.image_count);
-            fullRecreationDeletionQueue.emplace_back([&] { commandBuffer.freeCommandBuffers(); });
+//            commandPool.createCommandBuffers((int)renderEngineLink.swapchain.image_count);
+//            fullRecreationDeletionQueue.emplace_back([&] { commandBuffer.freeCommandBuffers(); });
             imageAvailableSemaphores.resize(renderEngineLink.swapchain.image_count);
             renderFinishedSemaphores.resize(renderEngineLink.swapchain.image_count);
             inFlightFences.resize(renderEngineLink.swapchain.image_count);
@@ -349,14 +419,14 @@ public:
         uint32_t imageIndex{0};
         VkResult result = renderEngineLink.vkAcquireNextImageKhr(renderEngineLink.device.device, renderEngineLink.swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-            createSwapchain();
+            CreateSwapchain(false);
             return glfwWindowShouldClose(window) != 1;
         } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) { throw std::runtime_error("failed to acquire swapchain image!"); }
         if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) { vkWaitForFences(renderEngineLink.device.device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX); }
         imagesInFlight[imageIndex] = inFlightFences[currentFrame];
         VkDeviceSize offsets[] = {0};
-        commandBuffer.resetCommandBuffer((int)(imageIndex + (renderEngineLink.swapchain.image_count - 1)) % (int)renderEngineLink.swapchain.image_count);
-        commandBuffer.recordCommandBuffer((int)imageIndex);
+        renderEngineLink.graphicsCommandPool->resetCommandBuffer((int)(imageIndex + (renderEngineLink.swapchain.image_count - 1)) % (int)renderEngineLink.swapchain.image_count);
+        renderEngineLink.graphicsCommandPool->recordCommandBuffer((int)imageIndex);
         VkViewport viewport{};
         viewport.x = 0.f;
         viewport.y = 0.f;
@@ -364,13 +434,13 @@ public:
         viewport.height = (float)renderEngineLink.swapchain.extent.height;
         viewport.minDepth = 0.f;
         viewport.maxDepth = 1.f;
-        vkCmdSetViewport(commandBuffer.commandBuffers[imageIndex], 0, 1, &viewport);
+        vkCmdSetViewport((*renderEngineLink.graphicsCommandPool)[imageIndex], 0, 1, &viewport);
         VkRect2D scissor{};
         scissor.offset = {0, 0};
         scissor.extent = renderEngineLink.swapchain.extent;
-        vkCmdSetScissor(commandBuffer.commandBuffers[imageIndex], 0, 1, &scissor);
+        vkCmdSetScissor((*renderEngineLink.graphicsCommandPool)[imageIndex], 0, 1, &scissor);
         VkRenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(framebuffers[imageIndex]);
-        vkCmdBeginRenderPass(commandBuffer.commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass((*renderEngineLink.graphicsCommandPool)[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         camera.update();
         auto time = static_cast<float>(glfwGetTime());
         for (IERenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera, time); } }
@@ -390,16 +460,16 @@ public:
             if (renderable->render) {
                 for (IERenderable::IEMesh &mesh : renderable->meshes) {
                     if (renderEngineLink.settings.rayTracing) { mesh.descriptorSet.update({&topLevelAccelerationStructure}, {2}); }
-                    vkCmdBindVertexBuffers(commandBuffer.commandBuffers[imageIndex], 0, 1, &mesh.vertexBuffer.buffer, offsets);
-                    vkCmdBindIndexBuffer(commandBuffer.commandBuffers[imageIndex], mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-                    vkCmdBindPipeline(commandBuffer.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, mesh.pipeline.pipeline);
-                    vkCmdBindDescriptorSets(commandBuffer.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, mesh.pipeline.pipelineLayout, 0, 1, &mesh.descriptorSet.descriptorSet, 0, nullptr);
-                    vkCmdDrawIndexed(commandBuffer.commandBuffers[imageIndex], static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
+                    vkCmdBindVertexBuffers((*renderEngineLink.graphicsCommandPool)[imageIndex], 0, 1, &mesh.vertexBuffer.buffer, offsets);
+                    vkCmdBindIndexBuffer((*renderEngineLink.graphicsCommandPool)[imageIndex], mesh.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+                    vkCmdBindPipeline((*renderEngineLink.graphicsCommandPool)[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, mesh.pipeline.pipeline);
+                    vkCmdBindDescriptorSets((*renderEngineLink.graphicsCommandPool)[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, mesh.pipeline.pipelineLayout, 0, 1, &mesh.descriptorSet.descriptorSet, 0, nullptr);
+                    vkCmdDrawIndexed((*renderEngineLink.graphicsCommandPool)[imageIndex], static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
                 }
             }
         }
-        vkCmdEndRenderPass(commandBuffer.commandBuffers[imageIndex]);
-        if (vkEndCommandBuffer(commandBuffer.commandBuffers[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record draw command IEBuffer!"); }
+        vkCmdEndRenderPass((*renderEngineLink.graphicsCommandPool)[imageIndex]);
+        if (vkEndCommandBuffer((*renderEngineLink.graphicsCommandPool)[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record draw command IEBuffer!"); }
         VkSemaphore waitSemaphores[]{imageAvailableSemaphores[currentFrame]};
         VkSemaphore signalSemaphores[]{renderFinishedSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[]{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -408,7 +478,7 @@ public:
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer.commandBuffers[imageIndex];
+        submitInfo.pCommandBuffers = &(*renderEngineLink.graphicsCommandPool)[imageIndex];
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
         vkResetFences(renderEngineLink.device.device, 1, &inFlightFences[currentFrame]);
@@ -429,7 +499,7 @@ public:
         vkQueueWaitIdle(renderEngineLink.presentQueue);
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
             framebufferResized = false;
-            createSwapchain();
+            CreateSwapchain(false);
         } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
         currentFrame = (currentFrame + 1) % (int)renderEngineLink.swapchain.image_count;
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(1/frameTime));
@@ -485,6 +555,10 @@ public:
     IECamera camera{};
     IERenderPass renderPass{};
     IEGraphicsLink renderEngineLink{};
+    IECommandPool graphicsCommandPool{};
+    IECommandPool presentCommandPool{};
+    IECommandPool transferCommandPool{};
+    IECommandPool computeCommandPool{};
     float frameTime{};
     int frameNumber{};
     bool captureInput{};
@@ -498,7 +572,6 @@ private:
     std::vector<IEFramebuffer> framebuffers{};
     std::vector<IERenderable *> renderables{};
     IEAccelerationStructure topLevelAccelerationStructure{};
-    IECommandBuffer commandBuffer{};
     std::vector<std::function<void()>> fullRecreationDeletionQueue{};
     std::vector<std::function<void()>> recreationDeletionQueue{};
     size_t currentFrame{};

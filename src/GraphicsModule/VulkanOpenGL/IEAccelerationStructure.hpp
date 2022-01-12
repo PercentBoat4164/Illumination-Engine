@@ -89,9 +89,7 @@ public:
         VkAccelerationStructureBuildRangeInfoKHR accelerationStructureBuildRangeInfo{};
         accelerationStructureBuildRangeInfo.primitiveCount = createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR ? createdWith.primitiveCount : count;
         std::vector<VkAccelerationStructureBuildRangeInfoKHR *> pAccelerationStructureBuildRangeInfo{&accelerationStructureBuildRangeInfo};
-        VkCommandBuffer commandBuffer = linkedRenderEngine->beginSingleTimeCommands();
-        linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
-        linkedRenderEngine->endSingleTimeCommands(commandBuffer);
+        linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR((*linkedRenderEngine->computeCommandPool)[0], 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
         scratchBuffer.destroy();
         if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) {
             instancesBuffer.destroy();

@@ -154,6 +154,6 @@ public:
     }
 
 private:
-    IEGraphicsLink *linkedRenderEngine{};
+    IEGraphicsLink* linkedRenderEngine{};
     std::vector<std::function<void()>> deletionQueue{};
 };

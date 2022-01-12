@@ -8,7 +8,6 @@
 #ifndef VMA_INCLUDED
 #define VMA_INCLUDED
 #define VMA_IMPLEMENTATION
-#define VMA_BUFFER_DEVICE_ADDRESS 1
 #include <vk_mem_alloc.h>
 #endif
 
@@ -19,6 +18,8 @@
 
 #define IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING "RayQueryRayTracing"
 #define IE_ENGINE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT "VariableDescriptorCount"
+
+class IECommandPool;
 
 class IEGraphicsLink {
 public:
@@ -164,8 +165,11 @@ public:
     vkb::Instance instance{};
     vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
     VkSurfaceKHR surface{};
-    VkCommandPool commandPool{};
     VmaAllocator allocator{};
+    IECommandPool* graphicsCommandPool{};
+    IECommandPool* presentCommandPool{};
+    IECommandPool* transferCommandPool{};
+    IECommandPool* computeCommandPool{};
     VkQueue graphicsQueue{};
     VkQueue presentQueue{};
     VkQueue transferQueue{};
@@ -204,29 +208,4 @@ public:
     ~IEGraphicsLink() {
         destroy();
     }
-
-    /**@todo Remove these functions as they are a very slow way of doing things.*/
-    [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const {
-        VkCommandBufferAllocateInfo allocInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = commandPool;
-        allocInfo.commandBufferCount = 1;
-        VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(device.device, &allocInfo, &commandBuffer);
-        VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        vkBeginCommandBuffer(commandBuffer, &beginInfo);
-        return commandBuffer;
-    }
-
-    void endSingleTimeCommands(VkCommandBuffer commandBuffer) const {
-        vkEndCommandBuffer(commandBuffer);
-        VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
-        vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(graphicsQueue);
-        vkFreeCommandBuffers(device.device, commandPool, 1, &commandBuffer);
-    }
-
 };
