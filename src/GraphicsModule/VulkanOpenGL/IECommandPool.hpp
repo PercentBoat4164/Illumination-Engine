@@ -10,7 +10,7 @@ public:
     struct CreateInfo {
     public:
         VkCommandPoolCreateFlagBits flags{static_cast<VkCommandPoolCreateFlagBits>(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)};  // Optional
-        vkb::QueueType commandQueue{vkb::QueueType::graphics};  // Optional
+        vkb::QueueType commandQueue;  // Required
     } createdWith{};
 
     struct Created {
@@ -30,6 +30,7 @@ public:
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create command pool!");
         }
         created.commandPool = true;
+        addCommandBuffers(1);
     }
 
     void addCommandBuffers(uint32_t commandBufferCount) {

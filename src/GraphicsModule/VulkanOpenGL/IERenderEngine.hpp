@@ -223,15 +223,39 @@ private:
         renderFinishedSemaphores.resize(renderEngineLink.swapchain.image_count);
         inFlightFences.resize(renderEngineLink.swapchain.image_count);
 
-        // Perform destruction and creation in one pass over the vectors.
-        for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
-            vkDestroySemaphore(renderEngineLink.device.device, imageAvailableSemaphores[i], nullptr);
+        // Destroy all the semaphores and fences.
+        for (int i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
             vkCreateSemaphore(renderEngineLink.device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]);
-            vkDestroySemaphore(renderEngineLink.device.device, renderFinishedSemaphores[i], nullptr);
             vkCreateSemaphore(renderEngineLink.device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]);
-            vkDestroyFence(renderEngineLink.device.device, inFlightFences[i], nullptr);
             vkCreateFence(renderEngineLink.device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
         }
+    }
+
+    /**
+     * @brief Initializes all the command pools in renderEngineLink. Each one is set to use its respective queue.
+     */
+    void createCommandPools() {
+        renderEngineLink.computeCommandPool = &computeCommandPool;
+        renderEngineLink.computeCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::compute});
+        renderEngineLink.graphicsCommandPool = &graphicsCommandPool;
+        renderEngineLink.graphicsCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::graphics});
+        renderEngineLink.transferCommandPool = &transferCommandPool;
+        renderEngineLink.transferCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::transfer});
+        renderEngineLink.presentCommandPool = &presentCommandPool;
+        renderEngineLink.presentCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::present});
+    }
+
+    void destroySyncObjects() {
+        for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
+            vkDestroySemaphore(renderEngineLink.device.device, imageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(renderEngineLink.device.device, renderFinishedSemaphores[i], nullptr);
+            vkDestroyFence(renderEngineLink.device.device, inFlightFences[i], nullptr);
+        }
+    }
+
+    void destroySwapchain() {
+        renderEngineLink.swapchain.destroy_image_views(renderEngineLink.swapchainImageViews);
+        vkb::destroy_swapchain(renderEngineLink.swapchain);
     }
 
 public:
@@ -283,20 +307,27 @@ public:
         createSyncObjects();
 
         // Create command pools
-        renderEngineLink.computeCommandPool = &computeCommandPool;
-        renderEngineLink.computeCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::compute});
-        renderEngineLink.computeCommandPool->addCommandBuffers(1);
-        renderEngineLink.graphicsCommandPool = &graphicsCommandPool;
-        renderEngineLink.graphicsCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::graphics});
-        renderEngineLink.graphicsCommandPool->addCommandBuffers(1);
-        renderEngineLink.transferCommandPool = &transferCommandPool;
-        renderEngineLink.transferCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::transfer});
-        renderEngineLink.transferCommandPool->addCommandBuffers(1);
-        renderEngineLink.presentCommandPool = &presentCommandPool;
-        renderEngineLink.presentCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::present});
-        renderEngineLink.presentCommandPool->addCommandBuffers(1);
+        createCommandPools();
 
-        /**@todo All of this should not be done here!*/
+        // Create the renderPass
+        renderPass.create(&renderEngineLink);
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&]{
+            renderPass.destroy();
+        });
+
+        // Create framebuffers
+        IEFramebuffer::CreateInfo framebufferCreateInfo{};
+        framebuffers.resize(renderEngineLink.swapchain.image_count);
+        for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
+            framebufferCreateInfo.renderPass = &renderPass;
+            framebufferCreateInfo.swapchainImageView = (renderEngineLink.swapchainImageViews)[i];
+            framebuffers[i].create(&renderEngineLink, &framebufferCreateInfo);
+        }
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&]{
+            for (IEFramebuffer& framebuffer : framebuffers) {
+                framebuffer.destroy();
+            }
+        });
 
         camera.create(&renderEngineLink);
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink.device.physical_device.properties.deviceName);
@@ -304,55 +335,21 @@ public:
         renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { topLevelAccelerationStructure.destroy(); });
     }
 
-    void CreateSwapchain(bool fullRecreate) {
-        vkDeviceWaitIdle(renderEngineLink.device.device);
-        for (std::function<void()> &function : recreationDeletionQueue) { function(); }
-        recreationDeletionQueue.clear();
-        vkb::SwapchainBuilder swapchainBuilder{ renderEngineLink.device };
-        vkb::detail::Result<vkb::Swapchain> swap_ret = swapchainBuilder.set_desired_present_mode(renderEngineLink.settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR).set_desired_extent(renderEngineLink.settings.resolution[0], renderEngineLink.settings.resolution[1]).set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}).set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).build();
-        if (!swap_ret) { throw std::runtime_error(swap_ret.error().message()); }
-        renderEngineLink.swapchain = swap_ret.value();
-        recreationDeletionQueue.emplace_back([&] { vkb::destroy_swapchain(renderEngineLink.swapchain); });
-        renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
-        recreationDeletionQueue.emplace_back([&] { renderEngineLink.swapchain.destroy_image_views(renderEngineLink.swapchainImageViews); });
-        imagesInFlight.clear();
-        imagesInFlight.resize(renderEngineLink.swapchain.image_count, VK_NULL_HANDLE);
-        if (fullRecreate) {
-            for (std::function<void()> &function : fullRecreationDeletionQueue) { function(); }
-            fullRecreationDeletionQueue.clear();
-//            commandPool.createCommandBuffers((int)renderEngineLink.swapchain.image_count);
-//            fullRecreationDeletionQueue.emplace_back([&] { commandBuffer.freeCommandBuffers(); });
-            imageAvailableSemaphores.resize(renderEngineLink.swapchain.image_count);
-            renderFinishedSemaphores.resize(renderEngineLink.swapchain.image_count);
-            inFlightFences.resize(renderEngineLink.swapchain.image_count);
-            VkSemaphoreCreateInfo semaphoreCreateInfo{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-            VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-            for (unsigned int i = 0; i < renderEngineLink.swapchain.image_count; i++) {
-                if (vkCreateSemaphore(renderEngineLink.device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
-                if (vkCreateSemaphore(renderEngineLink.device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create semaphores!"); }
-                if (vkCreateFence(renderEngineLink.device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) { throw std::runtime_error("failed to create fences!"); }
-            }
-            fullRecreationDeletionQueue.emplace_back([&] { for (VkSemaphore imageAvailableSemaphore : imageAvailableSemaphores) { vkDestroySemaphore(renderEngineLink.device.device, imageAvailableSemaphore, nullptr); } });
-            fullRecreationDeletionQueue.emplace_back([&] { for (VkSemaphore renderFinishedSemaphore : renderFinishedSemaphores) { vkDestroySemaphore(renderEngineLink.device.device, renderFinishedSemaphore, nullptr); } });
-            fullRecreationDeletionQueue.emplace_back([&] { for (VkFence inFlightFence : inFlightFences) { vkDestroyFence(renderEngineLink.device.device, inFlightFence, nullptr); } });
-            renderPass.create(&renderEngineLink);
-            fullRecreationDeletionQueue.emplace_back([&] { renderPass.destroy(); });
-            for (IERenderable *renderable : renderables) { loadRenderable(renderable, false); }
-            fullRecreationDeletionQueue.emplace_back([&] { for (IERenderable *renderable : renderables) { renderable->destroy(); } });
-        }
-        IEFramebuffer::CreateInfo framebufferCreateInfo{};
-        framebuffers.resize(renderEngineLink.swapchain.image_count);
-        for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
-            framebufferCreateInfo.renderPass = renderPass;
-            framebufferCreateInfo.swapchainImageView = (renderEngineLink.swapchainImageViews)[i];
-            framebuffers[i].create(&renderEngineLink, &framebufferCreateInfo);
-        }
-        recreationDeletionQueue.emplace_back([&] { for (IEFramebuffer &framebuffer : framebuffers) { framebuffer.destroy(); } });
-        camera.updateSettings();
+    void loadRenderable(IERenderable* renderable) {
+        // Create Shaders
+
+
+        // Create model buffer
+        // Create meshes
+        //     Create mesh vertex buffer
+        //     Create mesh index buffer
+        //     Create mesh transformation buffer and acceleration structure if ray tracing
+        //     Create mesh descriptor set
+        //     Create mesh pipeline
+        //     Create mesh texture
     }
 
-    void loadRenderable(IERenderable *renderable, bool append = true) {
+    void loadRenderable(IERenderable *renderable, bool append) {
         renderable->destroy();
         renderable->reloadRenderable(renderable->shaderNames);
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
@@ -420,7 +417,7 @@ public:
         uint32_t imageIndex{0};
         VkResult result = renderEngineLink.vkAcquireNextImageKhr(renderEngineLink.device.device, renderEngineLink.swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-            CreateSwapchain(false);
+            /**@todo Handle window resize*/
             return glfwWindowShouldClose(window) != 1;
         } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) { throw std::runtime_error("failed to acquire swapchain image!"); }
         if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) { vkWaitForFences(renderEngineLink.device.device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX); }
@@ -500,7 +497,7 @@ public:
         vkQueueWaitIdle(renderEngineLink.presentQueue);
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
             framebufferResized = false;
-            CreateSwapchain(false);
+            createSwapchain(false);
         } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
         currentFrame = (currentFrame + 1) % (int)renderEngineLink.swapchain.image_count;
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(1/frameTime));
@@ -540,6 +537,8 @@ public:
     }
 
     void destroy() {
+        destroySyncObjects();
+        destroySwapchain();
         for (IERenderable *renderable : renderables) { renderable->destroy(); }
         for (std::function<void()> &function : recreationDeletionQueue) { function(); }
         recreationDeletionQueue.clear();
@@ -575,6 +574,7 @@ private:
     IEAccelerationStructure topLevelAccelerationStructure{};
     std::vector<std::function<void()>> fullRecreationDeletionQueue{};
     std::vector<std::function<void()>> recreationDeletionQueue{};
+    std::vector<std::function<void()>> deletionQueue{};
     size_t currentFrame{};
     bool framebufferResized{false};
     float previousTime{};
