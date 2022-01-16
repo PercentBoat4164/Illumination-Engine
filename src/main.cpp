@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
     IERenderEngine renderEngine{&settings};
     IERenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
     cube.position = {0, -3, 0};
-    renderEngine.loadRenderable(&cube);
+    renderEngine.loadRenderable(&cube, true);
     IEKeyboard keyboard{renderEngine.window};
     keyboard.attachment = &renderEngine;
     keyboard.editActions(GLFW_KEY_W, moveCameraForward);
