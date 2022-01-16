@@ -37,6 +37,13 @@ Those are the packages that Linux users will need to download to compile Illumin
 
 Required: [cmake](https://cmake.org/download/), [Vulkan](https://vulkan.lunarg.com/sdk/home)
 
+When installing CMake, make sure that the `install to path` option is selected.
+
+If you don't plan to use CLion or another IDE with a compiler built in, you'll need to
+install [MiniGW v9.0](http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download).
+
+Windows users will need the above packages installed on their machine to compile Illumination Engine.
+
 ## Building Illumination Engine
 
 ### IDE Specific Instructions
@@ -52,8 +59,9 @@ the project.
 
 #### - Linux
 
-To build Illumination Engine without an IDE, open your terminal window
-and type the command `mkdir build`. This will create the folder that will hold all the files
+To build Illumination Engine without an IDE on Linux, make sure that you have the required packages installed.
+Then, open your terminal window inside
+the project folder and type the command `mkdir build`. This will create the folder that will hold all the files
 used to build the program. Next, type the command `cd build`. This moves you into the folder
 you just created. Next, type the command `cmake ..`. This will generate a makefile that can be used
 to build the project. After it is generated, type the command `make`. This will take a moment and
@@ -62,6 +70,16 @@ Finally, to run what was just built, enter the command `./IlluminationEngine`.
 This will launch the Illumination Engine program that was just built.
 
 #### - Windows
+
+To build Illumination Engine without an IDE on Windows, make sure that you have the required packages installed.
+Then, open a Windows Powershell window inside the project folder and enter the command `mkdir build`.
+This will create the folder that will hold all the files used to build the program.
+Next, type the command `cd build`. This moves you into the folder
+you just created. Next, type the command `cmake ..`. This will generate a makefile that can be used
+to build the project. After it is generated, type the command `make`. This will take a moment and
+should successfully build your project if your computer has all the libraries listed above.
+Finally, to run what was just built, enter the command `./IlluminationEngine`.
+This will launch the Illumination Engine program that was just built.
 
 ## Support
 
