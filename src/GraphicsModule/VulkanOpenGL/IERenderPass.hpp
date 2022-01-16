@@ -79,8 +79,14 @@ public:
     VkRenderPassBeginInfo beginRenderPass(const IEFramebuffer &framebuffer);
 
     void destroy() {
-        for (std::function<void()> &function : deletionQueue) { function(); }
+        for (std::function<void()> &function : deletionQueue) {
+            function();
+        }
         deletionQueue.clear();
+    }
+
+    ~IERenderPass() {
+        destroy();
     }
 
 private:

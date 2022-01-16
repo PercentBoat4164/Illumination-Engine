@@ -99,7 +99,7 @@ public:
                 imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                 imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-                vkCmdPipelineBarrier((*linkedRenderEngine->computeCommandPool)[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+                vkCmdPipelineBarrier((*linkedRenderEngine->graphicsCommandPool)[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
                 VkImageBlit imageBlit{};
                 imageBlit.srcOffsets[0] = {0, 0, 0};
                 imageBlit.srcOffsets[1] = {mipWidth, mipHeight, 1};
@@ -113,12 +113,12 @@ public:
                 imageBlit.dstSubresource.mipLevel = i;
                 imageBlit.dstSubresource.baseArrayLayer = 0;
                 imageBlit.dstSubresource.layerCount = 1;
-                vkCmdBlitImage((*linkedRenderEngine->computeCommandPool)[0], image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
+                vkCmdBlitImage((*linkedRenderEngine->graphicsCommandPool)[0], image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
                 imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                 imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                vkCmdPipelineBarrier((*linkedRenderEngine->computeCommandPool)[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+                vkCmdPipelineBarrier((*linkedRenderEngine->graphicsCommandPool)[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
                 if (mipWidth > 1) { mipWidth /= 2; }
                 if (mipHeight > 1) { mipHeight /= 2; }
             }
@@ -127,10 +127,11 @@ public:
             imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            vkCmdPipelineBarrier((*linkedRenderEngine->computeCommandPool)[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+            vkCmdPipelineBarrier((*linkedRenderEngine->graphicsCommandPool)[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
             imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
         transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        scratchBuffer.destroy();
+        linkedRenderEngine->graphicsCommandPool->executeCommandBuffer(0);
+        linkedRenderEngine->graphicsCommandPool->recordCommandBuffer(0);
     }
 };

@@ -58,7 +58,9 @@ public:
     CreateInfo createdWith{};
 
     void destroy() {
-        for (std::function<void()> &function : deletionQueue) { function(); }
+        for (std::function<void()> &function : deletionQueue) {
+            function();
+        }
         deletionQueue.clear();
     }
 
@@ -97,16 +99,22 @@ public:
     /**@todo Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
     virtual void upload() {
         if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
-        deletionQueue.emplace_back([&] { vmaDestroyImage(linkedRenderEngine->allocator, image, allocation); });
+        deletionQueue.emplace_back([&] {
+            vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
+        });
         imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageViewCreateInfo.image = image;
         if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
-        deletionQueue.emplace_back([&] { vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);});
+        deletionQueue.emplace_back([&] {
+            vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
+        });
         if (createdWith.dataSource != nullptr) {
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             createdWith.dataSource->toImage(*this, createdWith.width, createdWith.height);
         }
-        if (createdWith.imageLayout != imageLayout) { transitionLayout(createdWith.imageLayout); }
+        if (createdWith.imageLayout != imageLayout) {auto &
+            transitionLayout(createdWith.imageLayout);
+        }
     }
 
     [[maybe_unused]] void toBuffer(const IEBuffer &buffer) const {
@@ -120,7 +128,7 @@ public:
         region.imageSubresource.layerCount = 1;
         region.imageOffset = {0, 0, 0};
         region.imageExtent = {static_cast<uint32_t>(createdWith.width), static_cast<uint32_t>(createdWith.height), 1};
-        vkCmdCopyImageToBuffer((*linkedRenderEngine->computeCommandPool)[0], image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1, &region);
+        vkCmdCopyImageToBuffer((*linkedRenderEngine->graphicsCommandPool)[0], image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1, &region);
     }
 
     void transitionLayout(VkImageLayout newLayout) {
@@ -173,7 +181,7 @@ public:
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         } else { throw std::runtime_error("Unknown transition parameters!"); }
-        vkCmdPipelineBarrier((*linkedRenderEngine->computeCommandPool)[0], sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+        vkCmdPipelineBarrier((*linkedRenderEngine->graphicsCommandPool)[0], sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
         imageLayout = newLayout;
     }
 
@@ -202,7 +210,7 @@ void IEBuffer::toImage(IEImage &image, uint32_t width, uint32_t height) {
     if (image.imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         oldLayout = image.imageLayout;
         image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        vkCmdCopyBufferToImage((*linkedRenderEngine->computeCommandPool)[0], buffer, image.image, image.imageLayout, 1, &region);
+        vkCmdCopyBufferToImage((*linkedRenderEngine->graphicsCommandPool)[0], buffer, image.image, image.imageLayout, 1, &region);
         image.transitionLayout(oldLayout);
-    } else { vkCmdCopyBufferToImage((*linkedRenderEngine->computeCommandPool)[0], buffer, image.image, image.imageLayout, 1, &region); }
+    } else { vkCmdCopyBufferToImage((*linkedRenderEngine->graphicsCommandPool)[0], buffer, image.image, image.imageLayout, 1, &region); }
 }
