@@ -5,7 +5,7 @@ var annotated_dup =
     ] ],
     [ "IeKeyboard", "class_ie_keyboard.html", "class_ie_keyboard" ],
     [ "IeKeyPressDescription", "struct_ie_key_press_description.html", "struct_ie_key_press_description" ],
-    [ "Log", "class_log.html", "class_log" ],
+    [ "IELogger", "class_i_e_logger.html", "class_i_e_logger" ],
     [ "OpenGLCamera", "class_open_g_l_camera.html", "class_open_g_l_camera" ],
     [ "OpenGLFramebuffer", "class_open_g_l_framebuffer.html", "class_open_g_l_framebuffer" ],
     [ "OpenGLGraphicsEngineLink", "class_open_g_l_graphics_engine_link.html", "class_open_g_l_graphics_engine_link" ],

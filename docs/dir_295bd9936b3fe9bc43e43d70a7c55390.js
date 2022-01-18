@@ -20,8 +20,12 @@ var dir_295bd9936b3fe9bc43e43d70a7c55390 =
       [ "OpenGLRenderable::OpenGLMesh", "struct_open_g_l_renderable_1_1_open_g_l_mesh.html", "struct_open_g_l_renderable_1_1_open_g_l_mesh" ],
       [ "OpenGLRenderable::OpenGLMesh::OpenGLVertex", "struct_open_g_l_renderable_1_1_open_g_l_mesh_1_1_open_g_l_vertex.html", "struct_open_g_l_renderable_1_1_open_g_l_mesh_1_1_open_g_l_vertex" ]
     ] ],
-    [ "openglRenderEngine.hpp", "opengl_render_engine_8hpp.html", "opengl_render_engine_8hpp" ],
+    [ "openglRenderEngine.hpp", "opengl_render_engine_8hpp.html", [
+      [ "OpenGLRenderEngine", "class_open_g_l_render_engine.html", "class_open_g_l_render_engine" ]
+    ] ],
     [ "openglSettings.hpp", "opengl_settings_8hpp.html", "opengl_settings_8hpp" ],
     [ "openglShader.hpp", "opengl_shader_8hpp.html", "opengl_shader_8hpp" ],
-    [ "openglTexture.hpp", "opengl_texture_8hpp.html", "opengl_texture_8hpp" ]
+    [ "openglTexture.hpp", "opengl_texture_8hpp.html", [
+      [ "OpenGLTexture", "class_open_g_l_texture.html", "class_open_g_l_texture" ]
+    ] ]
 ];

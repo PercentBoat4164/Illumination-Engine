@@ -13,7 +13,7 @@ var hierarchy =
     [ "std::hash< IeKeyPressDescription >", "structstd_1_1hash_3_01_ie_key_press_description_01_4.html", null ],
     [ "IeKeyboard", "class_ie_keyboard.html", null ],
     [ "IeKeyPressDescription", "struct_ie_key_press_description.html", null ],
-    [ "Log", "class_log.html", null ],
+    [ "IELogger", "class_i_e_logger.html", null ],
     [ "OpenGLCamera", "class_open_g_l_camera.html", null ],
     [ "OpenGLFramebuffer", "class_open_g_l_framebuffer.html", null ],
     [ "OpenGLGraphicsEngineLink", "class_open_g_l_graphics_engine_link.html", null ],

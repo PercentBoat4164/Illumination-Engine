@@ -1,7 +1,6 @@
-<map id="Illumination&#45;Engine/src/LogModule/IELogModuleMain.cpp" name="Illumination&#45;Engine/src/LogModule/IELogModuleMain.cpp">
-<area shape="rect" id="node1" title=" " alt="" coords="97,5,303,61"/>
-<area shape="rect" id="node2" href="$_log_8hpp.html" title=" " alt="" coords="163,109,237,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="5,184,147,211"/>
-<area shape="rect" id="node4" title=" " alt="" coords="171,184,229,211"/>
-<area shape="rect" id="node5" title=" " alt="" coords="253,184,339,211"/>
+<map id="Illumination&#45;Engine/src/Core/LogModule/IELogModuleMain.cpp" name="Illumination&#45;Engine/src/Core/LogModule/IELogModuleMain.cpp">
+<area shape="rect" id="node1" title=" " alt="" coords="62,5,230,61"/>
+<area shape="rect" id="node2" href="$_i_e_logger_8hpp.html" title=" " alt="" coords="93,109,199,136"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,191,129,218"/>
+<area shape="rect" id="node4" title=" " alt="" coords="154,184,295,225"/>
 </map>

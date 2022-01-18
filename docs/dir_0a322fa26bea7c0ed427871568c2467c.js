@@ -21,10 +21,7 @@ var dir_0a322fa26bea7c0ed427871568c2467c =
       [ "VulkanFramebuffer", "class_vulkan_framebuffer.html", "class_vulkan_framebuffer" ],
       [ "VulkanFramebuffer::CreateInfo", "struct_vulkan_framebuffer_1_1_create_info.html", "struct_vulkan_framebuffer_1_1_create_info" ]
     ] ],
-    [ "vulkanGraphicsEngineLink.hpp", "vulkan_graphics_engine_link_8hpp.html", [
-      [ "VulkanGraphicsEngineLink", "class_vulkan_graphics_engine_link.html", "class_vulkan_graphics_engine_link" ],
-      [ "VulkanGraphicsEngineLink::PhysicalDeviceInfo", "struct_vulkan_graphics_engine_link_1_1_physical_device_info.html", "struct_vulkan_graphics_engine_link_1_1_physical_device_info" ]
-    ] ],
+    [ "vulkanGraphicsEngineLink.hpp", "vulkan_graphics_engine_link_8hpp.html", "vulkan_graphics_engine_link_8hpp" ],
     [ "vulkanImage.hpp", "vulkan_image_8hpp.html", "vulkan_image_8hpp" ],
     [ "vulkanPipeline.hpp", "vulkan_pipeline_8hpp.html", [
       [ "VulkanPipeline", "class_vulkan_pipeline.html", "class_vulkan_pipeline" ],
