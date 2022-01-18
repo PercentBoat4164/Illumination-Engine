@@ -199,8 +199,7 @@ private:
         }
         else {
             // Success! Delete the old swapchain and images and replace them with the new ones.
-            renderEngineLink.swapchain.destroy_image_views(renderEngineLink.swapchainImageViews);
-            vkb::destroy_swapchain(renderEngineLink.swapchain);
+            destroySwapchain();
             renderEngineLink.swapchain = swapchain.value();
             renderEngineLink.swapchainImageViews = renderEngineLink.swapchain.get_image_views().value();
         }
@@ -229,7 +228,6 @@ private:
             vkCreateSemaphore(renderEngineLink.device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]);
             vkCreateSemaphore(renderEngineLink.device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]);
             vkCreateFence(renderEngineLink.device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
-            vkCreateFence(renderEngineLink.device.device, &fenceCreateInfo, nullptr, &imagesInFlight[i]);
         }
     }
 
@@ -247,15 +245,20 @@ private:
         renderEngineLink.presentCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::present});
     }
 
+    /**
+     * @brief Destroys all the sync objects required by the program.
+     */
     void destroySyncObjects() {
         for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
             vkDestroySemaphore(renderEngineLink.device.device, imageAvailableSemaphores[i], nullptr);
             vkDestroySemaphore(renderEngineLink.device.device, renderFinishedSemaphores[i], nullptr);
             vkDestroyFence(renderEngineLink.device.device, inFlightFences[i], nullptr);
-            vkDestroyFence(renderEngineLink.device.device, imagesInFlight[i], nullptr);
         }
     }
 
+    /**
+     * @brief Destroys the swapchain.
+     */
     void destroySwapchain() {
         renderEngineLink.swapchain.destroy_image_views(renderEngineLink.swapchainImageViews);
         vkb::destroy_swapchain(renderEngineLink.swapchain);
@@ -358,31 +361,43 @@ public:
         renderable->destroy();
         renderable->reloadRenderable(renderable->shaderNames);
         renderable->shaders.resize(renderable->shaderCreateInfos.size());
-        for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
-        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) { for (IEShader &shader : thisRenderable->shaders) { shader.destroy(); } });
+        for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) {
+            renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]);
+        }
+        renderable->deletionQueue.emplace_back([&] (IERenderable* thisRenderable) {
+            for (IEShader &shader : thisRenderable->shaders) {
+                shader.destroy();
+            }
+        });
         IEBuffer::CreateInfo bufferCreateInfo{};
         bufferCreateInfo.size = sizeof(IEUniformBufferObject);
         bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         bufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         renderable->modelBuffer.create(&renderEngineLink, &bufferCreateInfo);
-        renderable->deletionQueue.emplace_back([&](IERenderable *thisRenderable){ thisRenderable->modelBuffer.destroy(); });
+        renderable->deletionQueue.emplace_back([&](IERenderable* thisRenderable){
+            thisRenderable->modelBuffer.destroy();
+        });
         for (IERenderable::IEMesh &mesh : renderable->meshes) {
             bufferCreateInfo.size = sizeof(mesh.vertices[0]) * mesh.vertices.size();
             bufferCreateInfo.usage = renderEngineLink.settings.rayTracing ? VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             mesh.vertexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.vertexBuffer.uploadData(mesh.vertices.data(), sizeof(mesh.vertices[0]) * mesh.vertices.size());
-            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->vertexBuffer.destroy(); });
+            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh* thisMesh) {
+                thisMesh->vertexBuffer.destroy();
+            });
             bufferCreateInfo.size = sizeof(mesh.indices[0]) * mesh.indices.size();
             bufferCreateInfo.usage ^= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
             mesh.indexBuffer.create(&renderEngineLink, &bufferCreateInfo);
             mesh.indexBuffer.uploadData(mesh.indices.data(), sizeof(mesh.indices[0]) * mesh.indices.size());
-            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->indexBuffer.destroy(); });
+            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh* thisMesh) {
+                thisMesh->indexBuffer.destroy();
+            });
             if (renderEngineLink.settings.rayTracing) {
                 bufferCreateInfo.size = sizeof(mesh.transformationMatrix);
                 bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
                 mesh.transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
-                mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->transformationBuffer.destroy(); });
-                mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->bottomLevelAccelerationStructure.destroy(); });
+                mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh* thisMesh) { thisMesh->transformationBuffer.destroy(); });
+                mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh* thisMesh) { thisMesh->bottomLevelAccelerationStructure.destroy(); });
             }
             for (IETexture &texture : renderable->textures) {
                 texture.destroy();
@@ -402,22 +417,41 @@ public:
                 renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textures[mesh.diffuseTexture], &renderable->textures[mesh.specularTexture]};
             }
             mesh.descriptorSet.create(&renderEngineLink, &renderableDescriptorSetCreateInfo);
-            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->descriptorSet.destroy(); });
+            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) {
+                thisMesh->descriptorSet.destroy();
+            });
             IEPipeline::CreateInfo renderablePipelineCreateInfo{};
             renderablePipelineCreateInfo.descriptorSet = &mesh.descriptorSet;
             renderablePipelineCreateInfo.renderPass = &renderPass;
             renderablePipelineCreateInfo.shaders = &renderable->shaders;
             mesh.pipeline.create(&renderEngineLink, &renderablePipelineCreateInfo);
-            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->pipeline.destroy(); });
+            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) {
+                thisMesh->pipeline.destroy();
+            });
         }
-        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) { for (IETexture &texture : thisRenderable->textures) { texture.destroy(); } });
-        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) { for (IERenderable::IEMesh &mesh : thisRenderable->meshes) { mesh.destroy(); } });
-        if (append) { renderables.push_back(renderable); }
+        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) {
+            for (IETexture& texture : thisRenderable->textures) {
+                texture.destroy();
+            }
+        });
+        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) {
+            for (IERenderable::IEMesh& mesh : thisRenderable->meshes) {
+                mesh.destroy();
+            }
+        });
+        if (append) {
+            renderables.push_back(renderable);
+        }
+        renderEngineLink.graphicsCommandPool->resetCommandBuffer(0);
     }
 
     bool update() {
-        if (window == nullptr) { return false; }
-        if (renderables.empty()) { return glfwWindowShouldClose(window) != 1; }
+        if (window == nullptr) {
+            return false;
+        }
+        if (renderables.empty()) {
+            return glfwWindowShouldClose(window) != 1;
+        }
         vkWaitForFences(renderEngineLink.device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         uint32_t imageIndex{0};
         VkResult result = renderEngineLink.vkAcquireNextImageKhr(renderEngineLink.device.device, renderEngineLink.swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
@@ -476,7 +510,8 @@ public:
             }
         }
         vkCmdEndRenderPass((*renderEngineLink.graphicsCommandPool)[imageIndex]);
-        if (vkEndCommandBuffer((*renderEngineLink.graphicsCommandPool)[imageIndex]) != VK_SUCCESS) { throw std::runtime_error("failed to record draw command IEBuffer!"); }
+        if (vkEndCommandBuffer((*renderEngineLink.graphicsCommandPool)[imageIndex]) != VK_SUCCESS) {
+            throw std::runtime_error("failed to record draw command IEBuffer!"); }
         VkSemaphore waitSemaphores[]{imageAvailableSemaphores[currentFrame]};
         VkSemaphore signalSemaphores[]{renderFinishedSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[]{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -490,7 +525,9 @@ public:
         submitInfo.pSignalSemaphores = signalSemaphores;
         vkResetFences(renderEngineLink.device.device, 1, &inFlightFences[currentFrame]);
         VkResult test = vkQueueSubmit(renderEngineLink.graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
-        if ( test != VK_SUCCESS) { throw std::runtime_error("failed to submit draw command IEBuffer!"); }
+        if ( test != VK_SUCCESS) {
+            throw std::runtime_error("failed to submit draw command IEBuffer!");
+        }
         VkSwapchainKHR swapchains[]{renderEngineLink.swapchain.swapchain};
         VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
         presentInfo.waitSemaphoreCount = 1;

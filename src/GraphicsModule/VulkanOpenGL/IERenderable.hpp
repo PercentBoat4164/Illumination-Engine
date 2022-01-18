@@ -92,10 +92,18 @@ public:
     }
 
     void destroy() {
-        if (!created) { return; }
-        for (const std::function<void(IERenderable *)> &function : deletionQueue) { function(this); }
+        if (!created) {
+            return;
+        }
+        for (const std::function<void(IERenderable*)> &function : deletionQueue) {
+            function(this);
+        }
         deletionQueue.clear();
         created = false;
+    }
+
+    ~IERenderable() {
+        destroy();
     }
 
     void update(const IECamera &camera, float time) {
