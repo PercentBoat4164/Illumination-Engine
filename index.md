@@ -19,15 +19,21 @@ Here is a list of a few packages that you will need to download:
 
 ### - Linux:
 
-Required: cmake, g++-11, libglu1-mesa-dev, mesa-common-dev, libxrandr-dev, libxinerama-dev, libxcursor-dev, libxi-dev
+Required: g++-11, libglu1-mesa-dev, mesa-common-dev, libxrandr-dev, libxinerama-dev, libxcursor-dev, libxi-dev
 
-`sudo apt install cmake libglu1-mesa-dev mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev`
+`sudo apt install libglu1-mesa-dev mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev`
     
 `sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt update; sudo apt install -y g++-11`
   
 If you plan to compile the Vulkan Render Engine, you will need to install the Vulkan software development kit. To accomplish this task, install the Vulkan software development kit using the following commmand:
     
 `wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.198-focal.list https://packages.lunarg.com/vulkan/1.2.198/lunarg-vulkan-1.2.198-focal.list;sudo apt update;sudo apt install vulkan-sdk`
+
+In an upcoming release, users won't need to install the Vulkan SDK.
+
+If you are not using CLion or another IDE with CMake bundled, you will need to install CMake:
+
+`sudo apt install cmake`
     
 (Copy and paste the commands into your terminal)
 
@@ -35,11 +41,15 @@ Those are the packages that Linux users will need to download to compile Illumin
 
 ### - Windows:
 
-Required: [cmake](https://cmake.org/download/), [Vulkan](https://vulkan.lunarg.com/sdk/home)
+Required: [Vulkan](https://vulkan.lunarg.com/sdk/home)
+
+In an upcoming release users won't have to install the Vulkan SDK.
+
+If you are not using CLion or another IDE with CMake bundled, you will need to install [CMake](https://cmake.org/download/).
 
 When installing CMake, make sure that the `install to path` option is selected.
 
-If you don't plan to use CLion or another IDE with a compiler built in, you'll need to
+Additionally, if you don't plan to use CLion or another IDE with a GCC v11.2 compatible compiler built in, you'll need to
 install [MiniGW v9.0](http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download).
 
 Windows users will need the above packages installed on their machine to compile Illumination Engine.
