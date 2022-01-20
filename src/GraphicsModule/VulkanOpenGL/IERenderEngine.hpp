@@ -337,7 +337,7 @@ public:
 
     void loadRenderable(IERenderable* renderable) {
         // Create Shaders
-
+        renderable->generateShaders(renderable->directory);
 
         // Create model buffer
         // Create meshes

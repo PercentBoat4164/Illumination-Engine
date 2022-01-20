@@ -32,6 +32,7 @@
 #include <fstream>
 #include <cstring>
 #include <vector>
+#include <filesystem>
 
 class IERenderable {
 public:
@@ -64,9 +65,10 @@ public:
     std::vector<const char *> shaderNames{"shaders/*/vertexShader.vert", "shaders/*/fragmentShader.frag"};
     const char *modelName{};
 
-    explicit IERenderable(IEGraphicsLink *engineLink, const char *filePath) {
+    explicit IERenderable(IEGraphicsLink *engineLink, const std::string& filePath) {
         linkedRenderEngine = engineLink;
-        modelName = filePath;
+        modelName = filePath.c_str();
+        directory = filePath.substr(0, filePath.find_last_of('/'));
         int channels{};
         IETexture::CreateInfo textureCreateInfo{};
         textureCreateInfo.filename = std::string("res/Models/NoTexture.png");
@@ -81,21 +83,32 @@ public:
         Assimp::Importer importer{};
         const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath)); }
-        std::string directory = std::string(filePath).substr(0, std::string(filePath).find_last_of('/'));
         meshes.reserve(scene->mNumMeshes);
         processNode(scene->mRootNode, scene, directory);
     }
 
-    void reloadRenderable(const std::vector<const char *> &shaderFileNames) {
+    void reloadRenderable(const std::vector<const char*> &shaderFileNames) {
         loadShaders(shaderFileNames);
         created = true;
     }
 
     void destroy() {
         if (!created) { return; }
-        for (const std::function<void(IERenderable *)> &function : deletionQueue) { function(this); }
+        for (const std::function<void(IERenderable*)> &function : deletionQueue) { function(this); }
         deletionQueue.clear();
         created = false;
+    }
+
+    void generateShaders(const std::string& shaderDirectory) {
+        IEShader shader;
+        for (const std::filesystem::directory_entry& dirEntry : std::filesystem::recursive_directory_iterator(shaderDirectory)) {
+            if (!dirEntry.is_directory()) {
+                shader = IEShader{};
+                IEShader::CreateInfo shaderCreateInfo{.filename=dirEntry.operator const std::filesystem::path &()};
+                shader.create(linkedRenderEngine, &shaderCreateInfo);
+                shaders.push_back(shader);
+            }
+        }
     }
 
     void update(const IECamera &camera, float time) {
@@ -129,7 +142,7 @@ public:
         }
     }
 
-    std::vector<std::function<void(IERenderable *renderable)>> deletionQueue{};
+    std::vector<std::function<void(IERenderable* renderable)>> deletionQueue{};
     IEBuffer modelBuffer{};
     IEGraphicsLink *linkedRenderEngine{};
     IEUniformBufferObject uniformBufferObject{};
@@ -142,8 +155,8 @@ public:
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
     bool render{true};
     bool created{false};
+    std::string directory{};
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
-
 
 private:
     void processNode(aiNode *node, const aiScene *scene, const std::string& directory) {
