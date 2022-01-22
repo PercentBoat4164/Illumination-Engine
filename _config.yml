@@ -5,3 +5,5 @@ more_pages: true
 view_on_github: true
 home: https://percentboat4164.github.io/Illumination-Engine/
 docs: https://percentboat4164.github.io/Illumination-Engine/docs/index.html
+include:  
+- "_*.html" 
