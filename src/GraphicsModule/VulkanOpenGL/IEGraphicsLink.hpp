@@ -21,6 +21,10 @@
 
 class IECommandPool;
 
+class IERenderPass;
+
+class IETexture;
+
 class IEGraphicsLink {
 public:
     class IEAPI{
@@ -160,6 +164,8 @@ public:
 
     IESettings settings{};
     IEAPI api;
+    std::vector<IETexture>* textures;
+    IERenderPass* renderPass{};
     vkb::Device device{};
     vkb::Swapchain swapchain{};
     vkb::Instance instance{};

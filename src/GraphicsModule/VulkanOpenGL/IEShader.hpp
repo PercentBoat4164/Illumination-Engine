@@ -50,9 +50,9 @@ public:
         }
         replaceWith.~basic_string();
         data.clear();
-        compile(createdWith.filename);
+//        compile(createdWith.filename);
         compiled = true;
-        std::string compiledFileName = createdWith.filename + ".spv";
+        std::string compiledFileName = createdWith.filename;// + ".spv";
         std::ifstream compiledFile(compiledFileName, std::ios::ate | std::ios::binary);
         if (!compiledFile.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName); }
         long fileSize = compiledFile.tellg();

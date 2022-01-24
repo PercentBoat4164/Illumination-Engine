@@ -131,5 +131,7 @@ public:
             imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
         transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        linkedRenderEngine->graphicsCommandPool->executeCommandBuffer(0);
+        linkedRenderEngine->graphicsCommandPool->recordCommandBuffer(0);
     }
 };

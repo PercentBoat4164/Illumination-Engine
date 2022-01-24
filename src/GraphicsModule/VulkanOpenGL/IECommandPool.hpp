@@ -22,9 +22,11 @@ public:
     VkCommandPool commandPool{};
     std::vector<VkCommandBuffer> commandBuffers{};
     IEGraphicsLink* linkedRenderEngine{};
+    VkQueue queue;
 
-    void create(IEGraphicsLink *engineLink, CreateInfo *createInfo) {
+    void create(IEGraphicsLink* engineLink, CreateInfo* createInfo) {
         linkedRenderEngine = engineLink;
+        queue = linkedRenderEngine->device.get_queue(createdWith.commandQueue).value();
         VkCommandPoolCreateInfo commandPoolCreateInfo{.sType=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, .flags=createInfo->flags, .queueFamilyIndex=linkedRenderEngine->device.get_queue_index(createInfo->commandQueue).value()};
         if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create command pool!");
@@ -34,15 +36,23 @@ public:
     }
 
     void addCommandBuffers(uint32_t commandBufferCount) {
-        commandBuffers.resize(commandBufferCount + commandBuffers.size());
-        VkCommandBufferAllocateInfo commandBufferAllocateInfo{.sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, .commandPool=commandPool, .level=VK_COMMAND_BUFFER_LEVEL_PRIMARY, .commandBufferCount=static_cast<uint32_t>(commandBuffers.size())};
-        if (vkAllocateCommandBuffers(linkedRenderEngine->device.device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS) {
+        // Create vector of new command buffers
+        std::vector<VkCommandBuffer> newCommandBuffers{commandBufferCount};
+
+        // Allocate the new command buffers.
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo{.sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, .commandPool=commandPool, .level=VK_COMMAND_BUFFER_LEVEL_PRIMARY, .commandBufferCount=static_cast<uint32_t>(commandBufferCount)};
+        if (vkAllocateCommandBuffers(linkedRenderEngine->device.device, &commandBufferAllocateInfo, newCommandBuffers.data()) != VK_SUCCESS) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to allocate command buffers!");
         }
+
+        // Add new command buffers to the end of the old command buffers.
+        commandBuffers.insert(commandBuffers.cend(), newCommandBuffers.cbegin(), newCommandBuffers.cend());
+
+        // Note that command buffers are now created and hence need to be destroyed.
         created.commandBuffers = true;
     };
 
-    void resetCommandBuffer(const std::vector<uint32_t> &resetIndices) {
+    void resetCommandBuffer(const std::vector<uint32_t>& resetIndices) {
         for (uint32_t i : resetIndices) { this->resetCommandBuffer(i); }
     }
 
@@ -51,11 +61,11 @@ public:
         vkResetCommandBuffer(commandBuffers[resetIndex], commandBufferResetFlags);
     }
 
-    void recordCommandBuffer(const std::vector<uint32_t> &recordIndices) {
+    void recordCommandBuffer(const std::vector<uint32_t>& recordIndices) {
         for (uint32_t i : recordIndices) { this->recordCommandBuffer(i); }
     }
 
-    void recordCommandBuffer(uint32_t recordIndex = 0) {
+    void recordCommandBuffer(uint32_t recordIndex=0) {
         VkCommandBufferBeginInfo commandBufferBeginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
         if (vkBeginCommandBuffer(commandBuffers[recordIndex], &commandBufferBeginInfo) != VK_SUCCESS) {  }
     }
@@ -70,6 +80,14 @@ public:
         vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, 1, &commandBuffers[freeIndex]);
     }
 
+    /**@todo Multi-thread this to prevent waiting for the GPU to finish all its work before starting to assign it more work.*/
+    void executeCommandBuffer(uint32_t submitIndex) {
+        vkEndCommandBuffer(commandBuffers[submitIndex]);
+        VkSubmitInfo submitInfo{.sType=VK_STRUCTURE_TYPE_SUBMIT_INFO, .commandBufferCount=1, .pCommandBuffers=&commandBuffers[submitIndex]};
+        vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(queue);
+    }
+
     const VkCommandBuffer& operator[](uint32_t index) const {
         return commandBuffers[index];
     }
@@ -79,8 +97,12 @@ public:
     }
 
     void destroy() const {
-        if (created.commandBuffers) { vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, commandBuffers.size(), commandBuffers.data()); }
-        if (created.commandPool) { vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr); }
+        if (created.commandBuffers) {
+            vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, commandBuffers.size(), commandBuffers.data());
+        }
+        if (created.commandPool) {
+            vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr);
+        }
     }
 
     ~IECommandPool() {
