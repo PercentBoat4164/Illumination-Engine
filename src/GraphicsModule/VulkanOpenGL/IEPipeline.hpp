@@ -12,8 +12,8 @@ public:
     struct CreateInfo {
         //Required
         std::vector<IEShader>* shaders{};
-        IEDescriptorSet *descriptorSet{};
-        IERenderPass *renderPass{};
+        IEDescriptorSet* descriptorSet{};
+        IERenderPass* renderPass{};
     };
 
     #ifndef NDEBUG
@@ -27,7 +27,9 @@ public:
     VkPipeline pipeline{};
 
     void destroy() {
-        for (const std::function<void()> &function : deletionQueue) { function(); }
+        for (const std::function<void()> &function : deletionQueue) {
+            function();
+        }
         deletionQueue.clear();
     }
 
@@ -38,7 +40,9 @@ public:
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         pipelineLayoutCreateInfo.setLayoutCount = 1;
         pipelineLayoutCreateInfo.pSetLayouts = &createdWith.descriptorSet->descriptorSetLayout;
-        if (vkCreatePipelineLayout(linkedRenderEngine->device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) { throw std::runtime_error("failed to create pipeline layout!"); }
+        if (vkCreatePipelineLayout(linkedRenderEngine->device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to create pipeline layout!");
+        }
         #ifndef NDEBUG
         created.pipelineLayout = true;
         #endif
@@ -59,7 +63,9 @@ public:
             VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
             shaderModuleCreateInfo.codeSize = createdWith.shaders->at(i).data.size();
             shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(createdWith.shaders->at(i).data.data());
-            if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
+            if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create shader module!");
+            }
             VkPipelineShaderStageCreateInfo shaderStageInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
             shaderStageInfo.module = shaderModule;
             shaderStageInfo.pName = "main";
@@ -144,9 +150,15 @@ public:
         pipelineCreateInfo.layout = pipelineLayout;
         pipelineCreateInfo.renderPass = createdWith.renderPass->renderPass;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
-        if (vkCreateGraphicsPipelines(linkedRenderEngine->device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) { throw std::runtime_error("failed to create graphics pipeline!"); }
-        for (VkPipelineShaderStageCreateInfo shader : shaders) { vkDestroyShaderModule(linkedRenderEngine->device.device, shader.module, nullptr); }
-        deletionQueue.emplace_back([&] { vkDestroyPipeline(linkedRenderEngine->device.device, pipeline, nullptr); });
+        if (vkCreateGraphicsPipelines(linkedRenderEngine->device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create pipeline!");
+        }
+        for (VkPipelineShaderStageCreateInfo shader : shaders) {
+            vkDestroyShaderModule(linkedRenderEngine->device.device, shader.module, nullptr);
+        }
+        deletionQueue.emplace_back([&] {
+            vkDestroyPipeline(linkedRenderEngine->device.device, pipeline, nullptr);
+        });
     }
 
     ~IEPipeline() {
