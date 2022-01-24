@@ -99,14 +99,6 @@ public:
         shaderCreateInfo.filename="shaders/Rasterize/vertexShader.vert.spv";
         shader.create(linkedRenderEngine, &shaderCreateInfo);
         shaders.push_back(shader);
-//        for (const std::filesystem::directory_entry& dirEntry : std::filesystem::recursive_directory_iterator(shaderDirectory)) {
-//            if (!dirEntry.is_directory()) {
-//                shader = IEShader{};
-//                IEShader::CreateInfo shaderCreateInfo{.filename=dirEntry.operator const std::filesystem::path &()};
-//                shader.create(linkedRenderEngine, &shaderCreateInfo);
-//                shaders.push_back(shader);
-//            }
-//        }
     }
 
     void createModelBuffer() {
@@ -207,7 +199,7 @@ public:
         });
     }
 
-    void createTextures() {
+    void uploadTextures() {
         for (IETexture& texture : *textures) {
             texture.upload();
         }
@@ -300,7 +292,7 @@ private:
                 }
             }
         }
-        /**@todo DON'T DO THIS! THIS IS TERRIBLE!*/
+        /**@todo DON'T DO THIS! THIS IS TERRIBLE! ... I think.*/
         for (unsigned int i = 0; i < node->mNumChildren; ++i) {
             processNode(node->mChildren[i], scene);
         }

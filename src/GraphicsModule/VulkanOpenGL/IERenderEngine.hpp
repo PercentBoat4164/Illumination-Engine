@@ -301,7 +301,6 @@ public:
         createWindowSurface();
 
         // Set up the device
-        renderEngineLink.api = IEGraphicsLink::IEAPI{IE_RENDER_ENGINE_API_NAME_VULKAN};
         std::vector<std::vector<const char *>> extensions{};
         if (renderEngineLink.settings.rayTracing) {
             extensions.push_back(renderEngineLink.extensionAndFeatureInfo.queryEngineFeatureExtensionRequirements(IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, &renderEngineLink.api));
@@ -316,6 +315,10 @@ public:
 
         // Build function pointers and generate queues
         renderEngineLink.build();
+
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(renderEngineLink.device.physical_device, &properties);
+        printf("%s", (new IEVersion(properties.apiVersion))->name.c_str());
 
         // Set up GPU Memory allocator
         setUpGPUMemoryAllocator();
@@ -374,7 +377,7 @@ public:
         // Create mesh transformation buffer and acceleration structure if ray tracing
 
         // Create texture
-        renderable->createTextures();
+        renderable->uploadTextures();
 
         // Create descriptor set
         renderable->createDescriptorSet();

@@ -31,29 +31,24 @@ public:
     public:
         explicit IEAPI(const std::string& apiName) {
             name = apiName;
-            version = getHighestSupportedVersion();
         }
 
         IEAPI() = default;
 
-        std::string name{}; // The name of the API to use.
+        std::string name{}; // The name of the API to use
         IEVersion version{}; // The version of the API to use
 
         /**
          * @brief Finds the highest supported API version.
          * @return An IEVersion populated with all the data about the highest supported API version
          */
-        IEVersion getHighestSupportedVersion() const {
+        IEVersion getHighestSupportedVersion(IEGraphicsLink* linkedRenderEngine) const {
             IEVersion temporaryVersion;
             #ifdef ILLUMINATION_ENGINE_VULKAN
             if (name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-                auto vkEnumerateDeviceInstanceVersion = reinterpret_cast<PFN_vkEnumerateInstanceVersion>(vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
-                if (vkEnumerateDeviceInstanceVersion == nullptr) { temporaryVersion = IEVersion{"1.0.0"}; } else {
-                    uint32_t instanceVersion;
-                    vkEnumerateDeviceInstanceVersion(&instanceVersion);
-                    temporaryVersion = IEVersion{VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion)};
-                    temporaryVersion.number = instanceVersion;
-                }
+                VkPhysicalDeviceProperties properties;
+                vkGetPhysicalDeviceProperties(linkedRenderEngine->device.physical_device, &properties);
+                temporaryVersion = IEVersion(properties.apiVersion);
             }
             #endif
             #ifdef ILLUMINATION_ENGINE_OPENGL
@@ -128,7 +123,7 @@ public:
 
     private:
         std::unordered_map<std::string, std::vector<std::vector<const char *>>> engineFeatureExtensionRequirementQueries {
-                {IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, { //ray query ray tracing extensions
+                {IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, { // ray query ray tracing extensions
                         {  // 1.0
 
                         },
@@ -204,6 +199,7 @@ public:
         transferQueue = device.get_queue(vkb::QueueType::transfer).value();
         computeQueue = device.get_queue(vkb::QueueType::compute).value();
         api = IEAPI{IE_RENDER_ENGINE_API_NAME_VULKAN};
+        api.version = api.getHighestSupportedVersion(this);
     }
 
     void destroy() {
