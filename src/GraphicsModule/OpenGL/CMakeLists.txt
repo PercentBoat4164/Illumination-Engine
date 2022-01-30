@@ -12,7 +12,7 @@ if (OpenGL_FOUND)
             openglSettings.hpp
             openglShader.hpp
             openglTexture.hpp
-            )
+            IEWindowUserPointer.hpp)
 
     # Create and define properties for the library
     add_library(IEGraphicsModuleOpenGL ${IlluminationEngineSourceGraphicsModuleOpenGLSourceFiles})

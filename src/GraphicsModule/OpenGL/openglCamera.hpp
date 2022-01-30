@@ -24,6 +24,7 @@ public:
 
     void update() {
         front = glm::normalize(glm::vec3{cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch))});
+//        front = glm::vec3{0, -1, 0};
         right = glm::normalize(glm::cross(front, up));
         view = glm::lookAt(position, position + front, up);
         proj = glm::perspective(glm::radians(horizontalFOV), aspectRatio, 0.01, linkedRenderEngine->settings->renderDistance);
