@@ -1,9 +1,11 @@
-set(IEInputModuleSourceFiles
-        IeKeyboard.hpp
-        IEInputModuleMain.cpp)
+set(IEInputModuleSourceFiles  # Gather sources
+        IEKeyboard.hpp
+        )
+
+# Create and define properties for the library
 add_executable(IEInputModule ${IEInputModuleSourceFiles})
-target_include_directories(IEInputModule PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
-add_dependencies(IEInputModule IEGraphicsModuleOpenGL)
-addAssImp(IEInputModule)
-addGLEW(IEInputModule)
-addGLFW(IEInputModule)
+set_target_properties(IEInputModule PROPERTIES LINKER_LANGUAGE CXX)
+
+# Add external dependency libraries and include directories to the target
+target_link_libraries(IEInputModule PUBLIC glfw glew)
+target_include_directories(IEInputModule PUBLIC ${glfwDIR} ${glewDIR})

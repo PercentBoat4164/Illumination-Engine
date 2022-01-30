@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef ILLUMINATION_ENGINE_VULKAN
 #include <vulkan/vulkan.h>
 
 #ifndef GLEW_IMPLEMENTATION
@@ -42,3 +43,4 @@ public:
     double mouseSensitivity{0.1};
     float movementSpeed{2.5};
 };
+#endif

@@ -162,7 +162,6 @@ public:
         allocatorInfo.physicalDevice = device.physical_device.physical_device;
         allocatorInfo.device = device.device;
         allocatorInfo.instance = instance.instance;
-        allocatorInfo.flags = renderEngineLink.enabledPhysicalDeviceInfo.rayTracing ? VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT : 0;
         vmaCreateAllocator(&allocatorInfo, &allocator);
         engineDeletionQueue.emplace_front([&] { vmaDestroyAllocator(allocator); });
         commandBuffer.create(&renderEngineLink, vkb::QueueType::graphics);

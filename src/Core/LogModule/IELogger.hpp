@@ -3,6 +3,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
+//Illumination Engine replacements for spdlog log levels.
 #define ILLUMINATION_ENGINE_LOG_LEVEL_TRACE spdlog::level::trace
 #define ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG spdlog::level::debug
 #define ILLUMINATION_ENGINE_LOG_LEVEL_INFO spdlog::level::info
@@ -27,7 +28,7 @@
 class IELogger {
 public:
     /**
-     * @brief Create a loggers named "IE default logger" that logs to "logs/IEDefaultLog.log"
+     * @brief Create a logger named "IE default logger" that logs to "logs/IEDefaultLog.log"
      */
     IELogger() {
         loggers.push_back(spdlog::basic_logger_mt("IE default logger", "logs/IEDefaultLog.log", true));
@@ -35,7 +36,7 @@ public:
     }
 
     /**
-     * @brief Create a loggers that is named <name> and logs to "logs/<name>.log".
+     * @brief Create a logger that is named <name> and logs to "logs/[name].log".
      * @param name
      */
     explicit IELogger(const std::string& name) {
@@ -44,7 +45,7 @@ public:
     };
 
     /**
-     * @brief Create a loggers that is named <name> and logs to "logs/<file>.log".
+     * @brief Create a logger that is named <name> and logs to "logs/[file].log".
      * @param name
      * @param file
      */
@@ -53,7 +54,13 @@ public:
         spdlog::set_default_logger(loggers[0]);
     };
 
-    void logAll(spdlog::level::level_enum level, const std::string& message, const std::string& name="") {
+    /**
+     * @brief Logs [message] at [level] to all loggers named [name].
+     * @param level
+     * @param message
+     * @param name
+     */
+    void logToAll(spdlog::level::level_enum level, const std::string& message, const std::string& name= "") {
         for (const std::shared_ptr<spdlog::logger>& logger : loggers) {
             if (name.empty() || logger->name() == name) {
                 logger->log(level, message);
@@ -61,26 +68,49 @@ public:
         }
     }
 
+    /**
+     * @brief Adds a logger with name [name] to the internal list of loggers.
+     * @param name
+     */
     void addLog(const std::string& name) {
         loggers.push_back(spdlog::basic_logger_mt(name, "logs/" + name + ".log", true));
     }
 
+    /**
+     * @brief Adds a logger that outputs to [file] with name [name] to the internal list of loggers.
+     * @param name
+     */
     void addLog(const std::string& name, const std::string& file) {
         loggers.push_back(spdlog::basic_logger_mt(name, "logs/" + file + ".log", true));
     }
 
+    /**
+     * @brief Logs [message] at [level] to the current logger.
+     * @param level
+     * @param message
+     */
     static void logDefault(spdlog::level::level_enum level, const std::string& message) {
         spdlog::log(level, message);
     }
 
+    /**
+     * @brief Logs [message] at [level] to the current logger.
+     * @param level
+     * @param message
+     */
     void operator()(spdlog::level::level_enum level, const std::string& message) {
-        logAll(level, message);
+        logToAll(level, message);
     }
 
+    /**
+     * @brief Get the logger at [index].
+     * @param index
+     * @return Logger in internal list at [index].
+     */
     std::shared_ptr<spdlog::logger> operator[](uint32_t index) {
         return loggers[index];
     }
 
 private:
-    std::vector<std::shared_ptr<spdlog::logger>> loggers;
+    std::vector<std::shared_ptr<spdlog::logger>> loggers; // Internal list of loggers
 };
