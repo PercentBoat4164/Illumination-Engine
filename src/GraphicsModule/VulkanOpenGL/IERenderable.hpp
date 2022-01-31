@@ -99,6 +99,14 @@ public:
         shaderCreateInfo.filename="shaders/Rasterize/vertexShader.vert.spv";
         shader.create(linkedRenderEngine, &shaderCreateInfo);
         shaders.push_back(shader);
+//        for (const std::filesystem::directory_entry& dirEntry : std::filesystem::recursive_directory_iterator(shaderDirectory)) {
+//            if (!dirEntry.is_directory()) {
+//                shader = IEShader{};
+//                IEShader::CreateInfo shaderCreateInfo{.filename=dirEntry.operator const std::filesystem::path &()};
+//                shader.create(linkedRenderEngine, &shaderCreateInfo);
+//                shaders.push_back(shader);
+//            }
+//        }
     }
 
     void createModelBuffer() {

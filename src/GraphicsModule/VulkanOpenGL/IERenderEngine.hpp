@@ -316,10 +316,6 @@ public:
         // Build function pointers and generate queues
         renderEngineLink.build();
 
-        VkPhysicalDeviceProperties properties;
-        vkGetPhysicalDeviceProperties(renderEngineLink.device.physical_device, &properties);
-        printf("%s", (new IEVersion(properties.apiVersion))->name.c_str());
-
         // Set up GPU Memory allocator
         setUpGPUMemoryAllocator();
 
