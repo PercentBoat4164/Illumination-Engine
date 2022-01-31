@@ -9,6 +9,7 @@
 #include "vulkanAccelerationStructure.hpp"
 #include "vulkanUniformBufferObject.hpp"
 #include "vulkanGraphicsEngineLink.hpp"
+#include "Core/AssetModule/IEAsset.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -86,9 +87,9 @@ public:
         created = false;
     }
 
-    void update(const VulkanCamera &camera, float time) {
-        glm::quat quaternion = glm::quat(glm::radians(rotation));
-        glm::mat4 modelMatrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
+    void update(const IEAsset& asset, const VulkanCamera &camera, float time) {
+        glm::quat quaternion = glm::quat(glm::radians(asset.rotation));
+        glm::mat4 modelMatrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), asset.scale), glm::angle(quaternion), glm::axis(quaternion)), asset.position);
         uniformBufferObject.viewModelMatrix = camera.viewMatrix;
         uniformBufferObject.modelMatrix = modelMatrix;
         uniformBufferObject.projectionMatrix = camera.projectionMatrix;
@@ -125,9 +126,6 @@ public:
     std::vector<VulkanTexture> textures{1};
     std::vector<VulkanShader::CreateInfo> shaderCreateInfos{};
     std::vector<VulkanShader> shaders{};
-    glm::vec3 position{};
-    glm::vec3 rotation{};
-    glm::vec3 scale{1.0f, 1.0f, 1.0f};
     bool render{true};
     bool created{false};
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};

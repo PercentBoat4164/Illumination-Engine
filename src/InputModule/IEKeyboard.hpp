@@ -5,7 +5,6 @@
 #include <GL/glew.h>
 #endif
 
-#define GLFW_INCLUDE_VULKAN  // Needed for glfwCreateWindowSurface
 #include <GLFW/glfw3.h>
 
 #include <functional>
@@ -74,16 +73,18 @@ template<> struct [[maybe_unused]] std::hash<IeKeyPressDescription> {
 class IEKeyboard {
 public:
     void* attachment; // pointer to object for access through the window user pointer
+    IEWindowUserPointer windowUser;
 
     /**
-     * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the IEKeyboard object.
+     * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the IeKeyboard object.
      * @param initialWindow
      * @param initialAttachment=nullptr
-     * @return IEKeyboard
+     * @return IeKeyboard
      */
     explicit IEKeyboard(GLFWwindow* initialWindow, void* initialAttachment=nullptr) {
         window = initialWindow;
         attachment = initialAttachment;
+        windowUser = {this, ((IEWindowUserPointer *)glfwGetWindowUserPointer(window))->renderEngine};
         glfwSetWindowUserPointer(window, this);
         glfwSetKeyCallback(window, keyCallback);
     }
@@ -201,7 +202,7 @@ public:
         if (action == GLFW_REPEAT) {
             return;
         }
-        auto keyboard = static_cast<IEKeyboard*>(glfwGetWindowUserPointer(window)); // keyboard connected to the window
+        auto keyboard = (IEKeyboard *)((IEWindowUserPointer *)(glfwGetWindowUserPointer(window)))->keyboard; // keyboard connected to the window
         IeKeyPressDescription thisKeyPress{key, action};
         IeKeyPressDescription oppositeKeyPress{key, thisKeyPress.action == GLFW_PRESS ? GLFW_RELEASE : GLFW_PRESS};
         auto oppositeKeyPressIterator = std::find(keyboard->queue.begin(), keyboard->queue.end(), oppositeKeyPress);

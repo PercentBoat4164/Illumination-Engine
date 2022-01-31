@@ -5,6 +5,7 @@
 #include "openglRenderable.hpp"
 #include "openglFramebuffer.hpp"
 #include "openglGraphicsEngineLink.hpp"
+#include "IEWindowUserPointer.hpp"
 
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
@@ -31,6 +32,7 @@ public:
     OpenGLCamera camera{};
     std::vector<OpenGLRenderable *> renderables;
     OpenGLGraphicsEngineLink renderEngineLink{};
+    IEWindowUserPointer windowUser{nullptr, this};
 
     explicit OpenGLRenderEngine() {
         if (!glfwInit()) { throw std::runtime_error("failed to initialize GLFW"); }
@@ -74,7 +76,7 @@ public:
         glfwGetWindowPos(window, &xPos, &yPos);
         settings.windowPosition = {xPos, yPos};
         glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
-        glfwSetWindowUserPointer(window, this);
+        glfwSetWindowUserPointer(window, &windowUser);
         if (window == nullptr) { throw std::runtime_error("failed to open GLFW window!"); }
         glfwMakeContextCurrent(window);
         glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -139,37 +141,39 @@ public:
         camera.update();
         for (OpenGLRenderable *renderable : renderables) {
             if (renderable->render) {
-                renderable->update();
-                glUseProgram(renderable->program.ID);
-                renderable->program.setValue("projectionMatrix", camera.proj);
-                renderable->program.setValue("normalMatrix", glm::mat3(glm::transpose(glm::inverse(renderable->model))));
-                renderable->program.setValue("viewModelMatrix", camera.view * renderable->model);
-                renderable->program.setValue("modelMatrix", renderable->model);
-                renderable->program.setValue("diffuseTexture", 0);
-                renderable->program.setValue("emissionTexture", 1);
-                renderable->program.setValue("heightTexture", 2);
-                renderable->program.setValue("metallicTexture", 3);
-                renderable->program.setValue("normalTexture", 4);
-                renderable->program.setValue("roughnessTexture", 5);
-                renderable->program.setValue("specularTexture", 6);
-                renderable->program.setValue("cameraPosition", camera.position);
-                for (const OpenGLRenderable::OpenGLMesh& mesh : renderable->meshes) {
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.diffuseTexture].ID);
-                    glActiveTexture(GL_TEXTURE1);
-                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.emissionTexture].ID);
-                    glActiveTexture(GL_TEXTURE2);
-                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.heightTexture].ID);
-                    glActiveTexture(GL_TEXTURE3);
-                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.metallicTexture].ID);
-                    glActiveTexture(GL_TEXTURE4);
-                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.normalTexture].ID);
-                    glActiveTexture(GL_TEXTURE5);
-                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.roughnessTexture].ID);
-                    glActiveTexture(GL_TEXTURE6);
-                    glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.specularTexture].ID);
-                    glBindVertexArray(mesh.vertexArrayObject);
-                    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.indices.size()), GL_UNSIGNED_INT, nullptr);
+                for (const IEAsset* asset: renderable->associatedAssets) {
+                    renderable->update(*asset);
+                    glUseProgram(renderable->program.ID);
+                    renderable->program.setValue("projectionMatrix", camera.proj);
+                    renderable->program.setValue("normalMatrix", glm::mat3(glm::transpose(glm::inverse(renderable->model))));
+                    renderable->program.setValue("viewModelMatrix", camera.view * renderable->model);
+                    renderable->program.setValue("modelMatrix", renderable->model);
+                    renderable->program.setValue("diffuseTexture", 0);
+                    renderable->program.setValue("emissionTexture", 1);
+                    renderable->program.setValue("heightTexture", 2);
+                    renderable->program.setValue("metallicTexture", 3);
+                    renderable->program.setValue("normalTexture", 4);
+                    renderable->program.setValue("roughnessTexture", 5);
+                    renderable->program.setValue("specularTexture", 6);
+                    renderable->program.setValue("cameraPosition", camera.position);
+                    for (const OpenGLRenderable::OpenGLMesh &mesh: renderable->meshes) {
+                        glActiveTexture(GL_TEXTURE0);
+                        glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.diffuseTexture].ID);
+                        glActiveTexture(GL_TEXTURE1);
+                        glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.emissionTexture].ID);
+                        glActiveTexture(GL_TEXTURE2);
+                        glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.heightTexture].ID);
+                        glActiveTexture(GL_TEXTURE3);
+                        glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.metallicTexture].ID);
+                        glActiveTexture(GL_TEXTURE4);
+                        glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.normalTexture].ID);
+                        glActiveTexture(GL_TEXTURE5);
+                        glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.roughnessTexture].ID);
+                        glActiveTexture(GL_TEXTURE6);
+                        glBindTexture(GL_TEXTURE_2D, renderable->textures[mesh.specularTexture].ID);
+                        glBindVertexArray(mesh.vertexArrayObject);
+                        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.indices.size()), GL_UNSIGNED_INT, nullptr);
+                    }
                 }
             }
         }
@@ -269,7 +273,7 @@ private:
     }
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-        auto pOpenGlRenderEngine = (OpenGLRenderEngine *)glfwGetWindowUserPointer(pWindow);
+        auto pOpenGlRenderEngine = (OpenGLRenderEngine *)((IEWindowUserPointer *)glfwGetWindowUserPointer(pWindow))->renderEngine;
         pOpenGlRenderEngine->settings.resolution[0] = width;
         pOpenGlRenderEngine->settings.resolution[1] = height;
         pOpenGlRenderEngine->camera.updateSettings();

@@ -2,6 +2,7 @@
 
 #include "openglProgram.hpp"
 #include "openglTexture.hpp"
+#include "Core/AssetModule/IEAsset.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -14,7 +15,7 @@
 #include <vector>
 #include <unordered_map>
 
-class OpenGLRenderable {
+class OpenGLRenderable : public IEAspect {
 public:
     struct OpenGLMesh {
         struct OpenGLVertex {
@@ -44,9 +45,6 @@ public:
     std::vector<OpenGLShader> shaders{};
     OpenGLProgram program{};
     OpenGLGraphicsEngineLink *linkedRenderEngine{};
-    glm::vec3 position{0.0f, 0.0f, 0.0f};
-    glm::vec3 rotation{0.0f, 0.0f, 0.0f};
-    glm::vec3 scale{1.0f, 1.0f, 1.0f};
     glm::mat4 model{1.0f};
     const char *path{};
     bool render{true};
@@ -132,9 +130,9 @@ public:
         upload();
     }
 
-    void update() {
-        glm::quat quaternion = glm::quat(glm::radians(rotation));
-        model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
+    void update(const IEAsset& asset) {
+        glm::quat quaternion = glm::quat(glm::radians(asset.rotation));
+        model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), asset.scale), glm::angle(quaternion), glm::axis(quaternion)), asset.position);
     }
 
     void destroy() {
