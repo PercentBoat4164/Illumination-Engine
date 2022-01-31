@@ -23,6 +23,7 @@
 #endif
 #endif
 
+#define GLFW_INCLUDE_VULKAN  // Needed for glfwCreateWindowSurface
 #include <GLFW/glfw3.h>
 
 #include <string>

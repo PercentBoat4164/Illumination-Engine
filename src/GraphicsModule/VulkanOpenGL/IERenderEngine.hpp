@@ -279,7 +279,12 @@ private:
 
 public:
     explicit IERenderEngine(IESettings* settings=nullptr) {
-        renderEngineLink.settings = *settings;
+        if (settings) {
+            renderEngineLink.settings = *settings;
+        }
+        else {
+            renderEngineLink.settings = *new IESettings{};
+        }
         renderEngineLink.renderPass = &renderPass;
         renderEngineLink.textures = &textures;
 

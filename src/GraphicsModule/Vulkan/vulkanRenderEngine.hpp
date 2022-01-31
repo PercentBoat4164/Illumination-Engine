@@ -28,6 +28,8 @@
 #define GLEW_IMPLEMENTATION
 #include <GL/glew.h>
 #endif
+
+#define GLFW_INCLUDE_VULKAN  // Needed for glfwCreateWindowSurface
 #include <GLFW/glfw3.h>
 
 #include <deque>
