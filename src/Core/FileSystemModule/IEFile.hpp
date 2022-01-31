@@ -2,29 +2,70 @@
 #include <string>
 
 class IEFile {
-public:
-    std::string path;
-    std::string name;
-    std::vector<std::string> extensions;
-    std::string contents;
+private:
+    bool exist{};
 
-    std::vector<std::string> getExtensions() {
-        std::string originalPath;
-        std::swap(originalPath, path);
-        extensions = std::vector<std::string>{};
-        uint32_t lastExtensionPosition{static_cast<uint32_t>(path.find_last_of('.'))};
-        while (lastExtensionPosition < path.size()) {
-            extensions.push_back(path.substr(lastExtensionPosition, path.size() - lastExtensionPosition));
-            path = path.substr(0, lastExtensionPosition);
-            lastExtensionPosition = path.find_last_of('.');
-        }
-        std::swap(path, originalPath);
-        return extensions;
+public:
+    std::streamsize length{};
+    std::string path{};
+    std::fstream file;
+
+    IEFile() = default;
+
+    explicit IEFile(const std::string& filename) {
+        // Record this filename
+        path = filename;
+
+        // Open the file to prepare for reading and writing
+        file.open(path, std::ios_base::in | std::ios_base::out);
+
+        // Get file length
+        length = file.tellg();
+
+        // This file now exists
+        exist = true;
     }
 
-    std::string getName() {
-        uint32_t nameStartPosition{static_cast<uint32_t>(path.find_last_of('/') + 1)}; // starting position of name in path
-        name = path.substr(nameStartPosition, path.size() - nameStartPosition);
-        return name;
+    std::string read(std::string& data, std::streamsize numBytes, std::streamsize startPosition=-1) {
+        if (startPosition == -1) {  // If no starting position
+            startPosition = file.tellg();  // Start here
+        }
+        // Go to start position
+        file.seekg(startPosition);
+
+        // Read the specified number of bytes into the contents string
+        file.read(data.data(), numBytes);
+        return data;
+    }
+
+    bool insert(std::basic_string<char> data, std::streamsize startPosition=-1) {
+        if (startPosition == -1) {  // If no starting position
+            startPosition = file.tellg();  // Start here
+        }
+
+        // Read data that is about to be overwritten
+        auto dataSize = static_cast<std::streamsize>(data.size());
+        read(data, dataSize, startPosition);
+
+        file.seekg(startPosition);  // Go to starting position
+        file.write(data.data(), length - startPosition);  // Write entirety of data and file contents after data
+        file.seekg(startPosition + dataSize);  // Go to where the new data ends
+    }
+
+    bool overwrite(const std::string& data, std::streamsize startPosition=-1) {
+        if (startPosition == -1) {  // If no starting position
+            startPosition = file.tellg();  // Start here
+        }
+
+        // Write to file.
+        file.write(data.data(), static_cast<std::streamsize>(data.size()));
+    }
+
+    bool exists() const {
+        return exist;
+    }
+
+    ~IEFile() {
+        file.close();
     }
 };
