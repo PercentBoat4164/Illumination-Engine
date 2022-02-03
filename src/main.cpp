@@ -126,8 +126,5 @@ void resetAll(GLFWwindow* window) {
 
 int main() {
     IEFileSystem fileSystem{"res/Assets"};
-    std::cout << fileSystem.getAssetFile("cube")->path << std::endl;
-    fileSystem.getAssetFile("cube")->insert("This is an example file.", 0);
-    std::cout << fileSystem.getAssetFile("cube")->file.is_open();
-    std::cout << fileSystem.getAssetFile("cube")->read(*new std::string{}, 12) << std::endl;
+    fileSystem.getAssetFile("cube");
 }

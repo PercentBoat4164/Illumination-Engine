@@ -4,54 +4,78 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <variant>
 
 #define ILLUMINATION_ENGINE_ASSET_FILE_EXTENSION "iea"
+
+enum IEPathName {
+    IE_FILE_BIT = 0x1,
+    IE_DIRECTORY_BIT = 0x10,
+    IE_HIDDEN_BIT = 0x100,
+    IE_VISIBLE_FILE = IE_FILE_BIT,
+    IE_VISIBLE_DIRECTORY = IE_DIRECTORY_BIT,
+    IE_HIDDEN_FILE = IE_FILE_BIT | IE_HIDDEN_BIT,
+    IE_HIDDEN_DIRECTORY = IE_DIRECTORY_BIT | IE_HIDDEN_BIT
+};
 
 class IEFileSystem {
 private:
     std::unordered_map<std::string, IEFile> files{};
-    std::string assetDirectory{};
-
-    static std::string stringFilename(const std::string& thisPartOfPath) {
-        return "." + thisPartOfPath;
-    }
-
-    template<typename... Args> static std::string stringFilename(const std::string& thisPartOfPath, Args... args) {
-        return thisPartOfPath + "/" + stringFilename(args...);
-    }
-
-    static std::string stringPath(const std::string& thisPartOfPath) {
-        return thisPartOfPath;
-    }
-
-    template<typename... Args> static std::string stringPath(const std::string& thisPartOfPath, Args... args) {
-        return thisPartOfPath + "/" + stringPath(args...);
-    }
+    std::unordered_map<std::string, IEDirectory> directories{};
+    std::vector<std::variant<IEFile, IEDirectory>> trash{};
+    IEDirectory baseDirectory{};
 
 public:
     explicit IEFileSystem(const std::string& initialAssetDirectory) {
-        assetDirectory = initialAssetDirectory;
+        baseDirectory = IEDirectory{initialAssetDirectory};
     }
 
-    template<typename... Args> static std::string composeFilename(Args... args) {
-        std::string filename{stringFilename(args...)};
-        size_t position{filename.find_last_of('/')};
-        return filename.substr(0, position) + filename.substr(position + 1);
+    explicit IEFileSystem(const IEDirectory& initialBaseDirectory) {
+        baseDirectory = initialBaseDirectory;
     }
 
-    template<typename... Args> static std::string composePath(Args... args) {
-        return stringPath(args...);
+    template<typename... Args> static std::string composePath(IEPathName format, const Args&... args) {
+        std::vector<std::string> arguments = {args...};
+        std::string pathName{};
+        for (const std::string& argument : arguments) {
+            pathName += "/" + argument;
+        }
+        if (format & IE_FILE_BIT) {
+            size_t beginFileName = pathName.find_last_of('/');
+            pathName = pathName.substr(0, beginFileName) + '.' + pathName.substr(beginFileName + 1);
+        }
+        if (format & IE_HIDDEN_BIT) {
+            size_t beginFileName = pathName.find_last_of('/');
+            pathName = pathName.substr(0, beginFileName + 1) + '.' + pathName.substr(beginFileName + 1);
+        }
+        return pathName;
     }
 
     IEFile* getAssetFile(const std::string& assetName) {
         IEFile* file = &files[assetName];
-        if (!file->exists()) {
-            file->path = composeFilename(assetDirectory, assetName, assetName, ILLUMINATION_ENGINE_ASSET_FILE_EXTENSION);
+        if (file->path.empty()) {
+            *file = IEFile{composePath(IE_VISIBLE_FILE, baseDirectory.path, assetName, assetName, ILLUMINATION_ENGINE_ASSET_FILE_EXTENSION)};
         }
         return file;
     }
 
-    std::string getAssetDirectory(const std::string& assetName) {
-        return composePath(assetDirectory, assetName);
+    IEFile* getFile(const std::string& filePath) {
+        IEFile* file = &files[filePath];
+        if (file->path.empty()) {
+            *file = IEFile{composePath(IE_VISIBLE_FILE, baseDirectory.path, filePath, filePath, ILLUMINATION_ENGINE_ASSET_FILE_EXTENSION)};
+        }
+        return file;
+    }
+
+    template <typename... Args> auto getAssetDirectory(Args&&... args) -> decltype(getDirectory(std::forward<Args>(args)...)) {
+        return getDirectory(std::forward<Args>(args)...);
+    }
+
+    IEDirectory* getDirectory(const std::string& assetName) {
+        IEDirectory* directory = &directories[assetName];
+        if (directory->path.empty()) {
+            *directory = IEDirectory{composePath(IE_DIRECTORY_BIT, baseDirectory.path, assetName)};
+        }
+        return directory;
     }
 };

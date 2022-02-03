@@ -1,29 +1,36 @@
+#pragma once
+
 #include <vector>
 #include <string>
 
 class IEFile {
-private:
-    bool exist{};
-
 public:
-    std::streamsize length{};
-    std::string path{};
-    std::fstream file;
-
     IEFile() = default;
 
-    explicit IEFile(const std::string& filename) {
+    explicit IEFile(const std::string& initialPath) {
         // Record this filename
-        path = filename;
+        path = initialPath;
+    }
 
-        // Open the file to prepare for reading and writing
-        file.open(path, std::ios_base::in | std::ios_base::out);
+    std::streamsize length{};
+    std::string path{};
+    std::fstream file{};
 
-        // Get file length
-        length = file.tellg();
+    void open() {
+        if (file.is_open()) {
+            return;
+        }
+        file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::ate);
+        if (!file.is_open()) {
+            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
+        }
+    }
 
-        // This file now exists
-        exist = true;
+    void close() {
+        if (!file.is_open()) {
+            return;
+        }
+        file.close();
     }
 
     std::string read(std::string& data, std::streamsize numBytes, std::streamsize startPosition=-1) {
@@ -38,7 +45,7 @@ public:
         return data;
     }
 
-    bool insert(std::basic_string<char> data, std::streamsize startPosition=-1) {
+    void insert(std::basic_string<char> data, std::streamsize startPosition=-1) {
         if (startPosition == -1) {  // If no starting position
             startPosition = file.tellg();  // Start here
         }
@@ -52,7 +59,7 @@ public:
         file.seekg(startPosition + dataSize);  // Go to where the new data ends
     }
 
-    bool overwrite(const std::string& data, std::streamsize startPosition=-1) {
+    void overwrite(const std::string& data, std::streamsize startPosition=-1) {
         if (startPosition == -1) {  // If no starting position
             startPosition = file.tellg();  // Start here
         }
@@ -61,11 +68,20 @@ public:
         file.write(data.data(), static_cast<std::streamsize>(data.size()));
     }
 
-    bool exists() const {
-        return exist;
+    ~IEFile() {
+        close();
     }
 
-    ~IEFile() {
-        file.close();
+    IEFile& operator=(const IEFile& other) {
+        // Copy over data from other
+        path = other.path;
+        length = other.length;
+
+        // Close this file to avoid memory leaks
+        close();
+
+        // Open the new file
+        open();
+        return *this;
     }
 };
