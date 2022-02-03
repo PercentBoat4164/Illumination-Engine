@@ -46,7 +46,7 @@ public:
         }
 
         // Add new command buffers to the end of the old command buffers.
-        commandBuffers.insert(commandBuffers.cend(), newCommandBuffers.cbegin(), newCommandBuffers.cend());
+        commandBuffers.insert(commandBuffers.end(), newCommandBuffers.begin(), newCommandBuffers.end());
 
         // Note that command buffers are now created and hence need to be destroyed.
         created.commandBuffers = true;
@@ -96,11 +96,12 @@ public:
         return commandBuffers[index];
     }
 
-    void destroy() const {
-        if (created.commandBuffers) {
+    void destroy() {
+        if (!commandBuffers.empty()) {
             vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool, commandBuffers.size(), commandBuffers.data());
+            commandBuffers.clear();
         }
-        if (created.commandPool) {
+        if (commandPool) {
             vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr);
         }
     }

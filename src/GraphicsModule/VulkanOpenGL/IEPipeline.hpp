@@ -49,11 +49,11 @@ public:
         deletionQueue.emplace_back([&] {
             #ifndef NDEBUG
             if (created.pipelineLayout) {
+            #endif
                 vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr);
+                #ifndef NDEBUG
                 created.pipelineLayout = false;
             }
-            #else
-            vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr);
             #endif
         });
         //prepare shaders

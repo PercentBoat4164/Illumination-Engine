@@ -21,12 +21,6 @@ public:
         std::string filename{};
     };
 
-    #ifndef NDEBUG
-    struct Created {
-        bool module;
-    } created;
-    #endif
-
     std::vector<char> data{};
     std::vector<std::function<void()>> deletionQueue{};
     VkShaderModule module{};
@@ -35,7 +29,9 @@ public:
     bool compiled{false};
 
     void destroy() {
-        for (const std::function<void()>& function : deletionQueue) { function(); }
+        for (const std::function<void()>& function : deletionQueue) {
+            function();
+        }
         deletionQueue.clear();
     }
 
@@ -64,18 +60,10 @@ public:
         shaderModuleCreateInfo.codeSize = data.size();
         shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(data.data());
         if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &module) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
-        #ifndef NDEBUG
-        created.module = true;
-        #endif
         deletionQueue.emplace_back([&] {
-            #ifndef NDEBUG
-            if (created.module) {
+            if (module) {
                 vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
-                created.module = false;
             }
-            #else
-            vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
-            #endif
         });
     }
 

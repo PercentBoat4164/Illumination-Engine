@@ -79,7 +79,7 @@ private:
         if (!instanceBuilder) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message());
         }
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_instance(renderEngineLink.instance); });
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&] { vkb::destroy_instance(renderEngineLink.instance); });
         renderEngineLink.instance = instanceBuilder.value();
         return renderEngineLink.instance;
     }
@@ -129,7 +129,9 @@ private:
         if (glfwCreateWindowSurface(renderEngineLink.instance.instance, window, nullptr, &renderEngineLink.surface) != VK_SUCCESS) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create window surface!");
         }
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_surface(renderEngineLink.instance.instance, renderEngineLink.surface); });
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&] {
+            vkb::destroy_surface(renderEngineLink.instance.instance, renderEngineLink.surface);
+        });
         return renderEngineLink.surface;
     }
 
@@ -168,7 +170,9 @@ private:
 
         // get the device and add its destruction to the deletion queue.
         renderEngineLink.device = logicalDevice.value();
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vkb::destroy_device(renderEngineLink.device); });
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&] {
+            vkb::destroy_device(renderEngineLink.device);
+        });
         return renderEngineLink.device;
     }
 
@@ -186,7 +190,9 @@ private:
         }
 //        allocatorInfo.vulkanApiVersion = renderEngineLink.api.version.number;
         vmaCreateAllocator(&allocatorInfo, &renderEngineLink.allocator);
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { vmaDestroyAllocator(renderEngineLink.allocator); });
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&] {
+            vmaDestroyAllocator(renderEngineLink.allocator);
+        });
         return renderEngineLink.allocator;
     }
 
@@ -248,14 +254,22 @@ private:
      * @brief Initializes all the command pools in renderEngineLink. Each one is set to use its respective queue.
      */
     void createCommandPools() {
-        renderEngineLink.computeCommandPool = &computeCommandPool;
-        renderEngineLink.computeCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::compute});
-        renderEngineLink.graphicsCommandPool = &graphicsCommandPool;
-        renderEngineLink.graphicsCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::graphics});
-        renderEngineLink.transferCommandPool = &transferCommandPool;
-        renderEngineLink.transferCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::transfer});
-        renderEngineLink.presentCommandPool = &presentCommandPool;
-        renderEngineLink.presentCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::present});
+        if (renderEngineLink.graphicsQueue) {
+            renderEngineLink.graphicsCommandPool = &graphicsCommandPool;
+            renderEngineLink.graphicsCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::graphics});
+        }
+        if (renderEngineLink.presentQueue) {
+            renderEngineLink.presentCommandPool = &presentCommandPool;
+            renderEngineLink.presentCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::present});
+        }
+        if (renderEngineLink.transferQueue) {
+            renderEngineLink.transferCommandPool = &transferCommandPool;
+            renderEngineLink.transferCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::transfer});
+        }
+        if (renderEngineLink.computeQueue) {
+            renderEngineLink.computeCommandPool = &computeCommandPool;
+            renderEngineLink.computeCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::compute});
+        }
     }
 
     /**
@@ -275,6 +289,13 @@ private:
     void destroySwapchain() {
         renderEngineLink.swapchain.destroy_image_views(renderEngineLink.swapchainImageViews);
         vkb::destroy_swapchain(renderEngineLink.swapchain);
+    }
+
+    void destroyCommandPools() {
+        graphicsCommandPool.destroy();
+        presentCommandPool.destroy();
+        transferCommandPool.destroy();
+        computeCommandPool.destroy();
     }
 
 public:
@@ -326,18 +347,27 @@ public:
 
         // Create swapchain
         createSwapchain(false);
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&] {
+            destroySwapchain();
+        });
 
         // Create sync objects
         /**@todo Create an abstraction for sync objects if necessary.*/
         createSyncObjects();
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&] {
+            destroySyncObjects();
+        });
 
         // Create command pools
         createCommandPools();
         renderEngineLink.graphicsCommandPool->addCommandBuffers(renderEngineLink.swapchain.image_count);
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&] {
+            destroyCommandPools();
+        });
 
         // Create the renderPass
         renderPass.create(&renderEngineLink);
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&]{
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&]{
             renderPass.destroy();
         });
 
@@ -349,7 +379,7 @@ public:
             framebufferCreateInfo.swapchainImageView = (renderEngineLink.swapchainImageViews)[i];
             framebuffers[i].create(&renderEngineLink, &framebufferCreateInfo);
         }
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&]{
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&]{
             for (IEFramebuffer& framebuffer : framebuffers) {
                 framebuffer.destroy();
             }
@@ -358,7 +388,7 @@ public:
         camera.create(&renderEngineLink);
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink.device.physical_device.properties.deviceName);
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink.api.name + " v" +renderEngineLink.api.version.name);
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.cbegin(), [&] { topLevelAccelerationStructure.destroy(); });
+        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&] { topLevelAccelerationStructure.destroy(); });
     }
 
     void loadRenderable(IERenderable* renderable) {
@@ -595,10 +625,21 @@ public:
     void destroy() {
         destroySyncObjects();
         destroySwapchain();
-        for (IERenderable *renderable : renderables) { renderable->destroy(); }
-        for (std::function<void()> &function : recreationDeletionQueue) { function(); }
+        destroyCommandPools();
+        for (IETexture texture : textures) {
+            texture.destroy();
+        }
+        for (IERenderable* renderable : renderables) {
+            renderable->destroy();
+        }
+        renderables.clear();
+        for (std::function<void()> &function : recreationDeletionQueue) {
+            function();
+        }
         recreationDeletionQueue.clear();
-        for (std::function<void()> &function : fullRecreationDeletionQueue) { function(); }
+        for (std::function<void()> &function : fullRecreationDeletionQueue) {
+            function();
+        }
         fullRecreationDeletionQueue.clear();
     }
 

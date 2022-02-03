@@ -34,9 +34,11 @@
 #include <vector>
 #include <filesystem>
 
+#include "IERenderableSettings.hpp"
+
 /**@todo Refine the asset management process. Abstract this to the Asset Module.*/
 
-class IERenderable {
+class IERenderable : public IEAspect {
 public:
     const char *modelName{};
     std::vector<uint32_t> indices{};
@@ -99,6 +101,11 @@ public:
         shaderCreateInfo.filename="shaders/Rasterize/vertexShader.vert.spv";
         shader.create(linkedRenderEngine, &shaderCreateInfo);
         shaders.push_back(shader);
+        deletionQueue.emplace_back([&] {
+            for (IEShader shader : shaders) {
+                shader.destroy();
+            }
+        });
 //        for (const std::filesystem::directory_entry& dirEntry : std::filesystem::recursive_directory_iterator(shaderDirectory)) {
 //            if (!dirEntry.is_directory()) {
 //                shader = IEShader{};

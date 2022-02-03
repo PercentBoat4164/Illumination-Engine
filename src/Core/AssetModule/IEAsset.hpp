@@ -13,13 +13,6 @@ public:
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
     std::string filename{};
 
-    /** @brief Aspects can be one of:
-     * - Renderable xN  // Control how the asset is displayed visually
-     * - SoundPlayerThing xN  // Control what sounds the asset creates in-game
-     * - Script xN  // Control the asset based on events or timings
-     * - PhysicsBody xN  // Control how the asset interacts with other assets
-     * - ???User specified??? xN  // Control low-level interactions with the game engine
-     */
     std::vector<void*> aspects{};
 
     void addAspect(IEAspect* aspect) {

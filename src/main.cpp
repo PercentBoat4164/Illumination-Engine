@@ -127,4 +127,11 @@ void resetAll(GLFWwindow* window) {
 
 int main() {
     IERenderEngine renderEngine{};
+    IERenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
+    IEKeyboard keyboard{renderEngine.window};
+    IEWindowUserPointer windowUser{&keyboard, &renderEngine};
+    glfwSetWindowUserPointer(renderEngine.window, &windowUser);
+    renderEngine.loadRenderable(&cube);
+    IEAsset asset{};
+    asset.addAspect(&cube);
 }

@@ -194,16 +194,30 @@ public:
         vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(vkGetDeviceProcAddr(device.device, "vkGetAccelerationStructureBuildSizesKHR"));
         vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device.device, "vkGetAccelerationStructureDeviceAddressKHR"));
         vkAcquireNextImageKhr = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device.device, "vkAcquireNextImageKHR"));
-        graphicsQueue = device.get_queue(vkb::QueueType::graphics).value();
-        presentQueue = device.get_queue(vkb::QueueType::present).value();
-        transferQueue = device.get_queue(vkb::QueueType::transfer).value();
-        computeQueue = device.get_queue(vkb::QueueType::compute).value();
+        vkb::detail::Result<VkQueue> graphicsQueueDetails = device.get_queue(vkb::QueueType::graphics);
+        if (graphicsQueueDetails.has_value()) {
+            graphicsQueue = graphicsQueueDetails.value();
+        }
+        vkb::detail::Result<VkQueue> presentQueueDetails = device.get_queue(vkb::QueueType::present);
+        if (presentQueueDetails.has_value()) {
+            presentQueue = presentQueueDetails.value();
+        }
+        vkb::detail::Result<VkQueue> transferQueueDetails = device.get_queue(vkb::QueueType::transfer);
+        if (transferQueueDetails.has_value()) {
+            transferQueue = transferQueueDetails.value();
+        }
+        vkb::detail::Result<VkQueue> computeQueueDetails = device.get_queue(vkb::QueueType::compute);
+        if (computeQueueDetails.has_value()) {
+            computeQueue = computeQueueDetails.value();
+        }
         api = IEAPI{IE_RENDER_ENGINE_API_NAME_VULKAN};
         api.version = api.getHighestSupportedVersion(this);
     }
 
     void destroy() {
-        for (std::function<void()> &function : deletionQueue) { function(); }
+        for (std::function<void()> &function : deletionQueue) {
+            function();
+        }
         deletionQueue.clear();
     }
 
