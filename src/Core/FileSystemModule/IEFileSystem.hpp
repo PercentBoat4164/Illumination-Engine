@@ -48,7 +48,7 @@ public:
             size_t beginFileName = pathName.find_last_of('/');
             pathName = pathName.substr(0, beginFileName + 1) + '.' + pathName.substr(beginFileName + 1);
         }
-        return pathName;
+        return pathName.substr(1);
     }
 
     IEFile* getAssetFile(const std::string& assetName) {
