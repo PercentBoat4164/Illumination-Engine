@@ -77,7 +77,7 @@ public:
 
     void insert(const std::string& data, std::streamsize startPosition=-1) {
         if (startPosition > length) {
-            IELogger::logToMasterLogger(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to insert from beyond the length of the file!");
+            // Attempt to insert from beyond the length of the file!
             return;
         }
         if (startPosition == -1) {  // If no starting position

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "spdlog/spdlog.h"
 
 //Illumination Engine replacements for spdlog log levels.
@@ -23,66 +25,22 @@
 #define ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_HIGH ILLUMINATION_ENGINE_LOG_LEVEL_5
 
 #define ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME "Illumination Engine Default Logger"
-
+#define ILLUMINATION_ENGINE_DEFAULT_LOG_FILENAME "IlluminationEngine.log"
 
 /**
  * @brief A small logging tool that is a very thin wrapper for spdlog.
  * @class IELogger
  */
-class IELogger : public spdlog::logger{
+class IELogger {
 public:
-    IELogger() : spdlog::logger(ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME) {}
-
-    explicit IELogger(spdlog::logger* initialMasterLogger) : spdlog::logger(ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME) {
-        masterLogger = initialMasterLogger;
+    IELogger(const std::string& name, const std::string& path) {
+        logger = spdlog::basic_logger_mt(name, path, true);
     }
 
-    explicit IELogger(const std::string &name) : spdlog::logger(name) {}
-
-    explicit IELogger(const std::string &name, spdlog::logger* initialMasterLogger) : spdlog::logger(name) {
-        masterLogger = initialMasterLogger;
-    }
-
-    IELogger(const std::string &name, const spdlog::sinks_init_list &sinks) : spdlog::logger(name, sinks) {}
-
-    IELogger(const std::string &name, const spdlog::sinks_init_list &sinks, spdlog::logger* initialMasterLogger) : spdlog::logger(name, sinks) {
-        masterLogger = initialMasterLogger;
-    }
-
-    explicit IELogger(const logger &other) : spdlog::logger(other) {}
-
-    explicit IELogger(logger &&other) : spdlog::logger(other) {}
-
-    #pragma clang diagnostic push
-    #pragma ide diagnostic ignored "HidingNonVirtualFunction"
-    template<typename T> void log(spdlog::level::level_enum level, const T& msg) {
-        spdlog::logger::log(level, msg);
-        if (masterLogger) {
-            masterLogger->log(level, msg);
-        }
-    }
-    #pragma clang diagnostic pop
-
-    template<typename T> void log(spdlog::source_loc loc, const T& msg) {
-        spdlog::logger::log(loc, msg);
-        if (masterLogger) {
-            masterLogger->log(loc, msg);
-        }
-    }
-
-    template<typename T> void log(spdlog::log_clock::time_point timePoint, const T& msg) {
-        spdlog::logger::log(timePoint, msg);
-        if (masterLogger) {
-            masterLogger->log(timePoint, msg);
-        }
-    }
-
-    template<typename T> static void logToMasterLogger(spdlog::level::level_enum level, const T& msg) {
-        if (masterLogger) {
-            masterLogger->log(level, msg);
-        }
+    void log(spdlog::level::level_enum level, const std::string& msg) {
+        logger->log(level, msg);
     }
 
 private:
-    static spdlog::logger* masterLogger;
+    std::shared_ptr<spdlog::logger> logger;
 };

@@ -1,10 +1,8 @@
+#include <iostream>
 #include "Core/LogModule/IELogger.hpp"
 #include "Core/FileSystemModule/IEFileSystem.hpp"
-#include <iostream>
 
 int main() {
-    IELogger logger{};
-    logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_0, "Message");
     IEFileSystem fileSystem{"res/Assets"};
     IEFile* cubeFile = fileSystem.getAssetFile("cube");
     cubeFile->open();
