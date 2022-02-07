@@ -1,13 +1,15 @@
-add_subdirectory(DefaultShaders)  # Generate all subdirectories
+# Generate all subdirectories
+add_subdirectory(DefaultShaders)
+add_subdirectory(Image)
 
 set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles  # Gather sources
+        ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles}
         IEAccelerationStructure.hpp
         IEBuffer.hpp
         IECamera.hpp
         IEDescriptorSet.hpp
         IEFramebuffer.hpp
         IEGraphicsLink.hpp
-        IEImage.hpp
         IEMonitor.hpp
         IEPipeline.hpp
         IERenderEngine.hpp
@@ -15,10 +17,11 @@ set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles  # Gather sour
         IERenderable.hpp
         IESettings.hpp
         IEShader.hpp
-        IETexture.hpp
         IEUniformBufferObject.hpp
         IEVertex.hpp
-        IEMonitor.hpp IERenderableSettings.hpp)
+        IEMonitor.hpp
+        IERenderableSettings.hpp
+        )
 
 # Create and define properties for the library
 add_library(IEGraphicsModuleVulkanOpenGL ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles})

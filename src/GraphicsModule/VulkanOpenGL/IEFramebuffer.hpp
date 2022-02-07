@@ -2,7 +2,7 @@
 
 #include "IEGraphicsLink.hpp"
 #include "IERenderPass.hpp"
-#include "IEImage.hpp"
+#include "GraphicsModule/VulkanOpenGL/Image/IEImage.hpp"
 
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -31,21 +31,19 @@ public:
         clearValues[1].depthStencil = {1.0f, 0};
         clearValues[2].color = clearValues[0].color;
         IEImage::CreateInfo framebufferImageCreateInfo{linkedRenderEngine->swapchain.image_format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY};
-        framebufferImageCreateInfo.msaaSamples = linkedRenderEngine->settings.msaaSamples;
+        VkImageFormatProperties imageFormats;
+        vkGetPhysicalDeviceImageFormatProperties(linkedRenderEngine->device.physical_device.physical_device, framebufferImageCreateInfo.format, VK_IMAGE_TYPE_2D, framebufferImageCreateInfo.tiling, framebufferImageCreateInfo.usage, VK_IMAGE_CREATE_EXTENDED_USAGE_BIT_KHR, &imageFormats);
+        framebufferImageCreateInfo.msaaSamples = static_cast<VkSampleCountFlagBits>(std::min(static_cast<uint32_t>(linkedRenderEngine->settings.msaaSamples), imageFormats.sampleCounts));
         if (linkedRenderEngine->settings.msaaSamples != VK_SAMPLE_COUNT_1_BIT) {
-            framebufferImageCreateInfo.imageType = VULKAN_COLOR;
             colorImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
-            colorImage.upload();
             deletionQueue.emplace_back([&] {
                 colorImage.destroy();
             });
         }
         framebufferImageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
         framebufferImageCreateInfo.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
-        framebufferImageCreateInfo.imageType = VULKAN_DEPTH;
         framebufferImageCreateInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
         depthImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
-        depthImage.upload();
         deletionQueue.emplace_back([&] {
             depthImage.destroy();
         });

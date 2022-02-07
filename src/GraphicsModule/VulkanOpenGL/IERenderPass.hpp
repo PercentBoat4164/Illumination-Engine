@@ -73,7 +73,9 @@ public:
         renderPassCreateInfo.dependencyCount = 1;
         renderPassCreateInfo.pDependencies = &subpassDependency;
         if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
-        deletionQueue.emplace_back([&] { vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr); });
+        deletionQueue.emplace_back([&] {
+            vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr);
+        });
     }
 
     VkRenderPassBeginInfo beginRenderPass(const IEFramebuffer &framebuffer);

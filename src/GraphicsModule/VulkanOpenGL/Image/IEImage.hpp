@@ -1,7 +1,7 @@
 #pragma once
 
-#include "IEGraphicsLink.hpp"
-#include "IEBuffer.hpp"
+#include "GraphicsModule/VulkanOpenGL/IEGraphicsLink.hpp"
+#include "GraphicsModule/VulkanOpenGL/IEBuffer.hpp"
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -16,10 +16,9 @@
 #include <cmath>
 #include <vulkan/vulkan.h>
 
-enum VulkanImageType {
-    VULKAN_DEPTH = 0x00000000,
-    VULKAN_COLOR = 0x00000001,
-    VULKAN_TEXTURE = 0x00000002
+enum IEMipLevels {
+    IE_MIP_LEVEL_NONE = 0x0,
+    IE_MIP_LEVEL_50_PERCENT = 0x50
 };
 
 class IEImage {
@@ -33,20 +32,20 @@ public:
         VmaMemoryUsage allocationUsage{};
 
         //Optional
-        int width = 0, height = 0;
+        uint32_t width = 0, height = 0;
 
         //Optional; Only use for non-texture images
         /**@todo Remove this item.*/
         VkSampleCountFlagBits msaaSamples{VK_SAMPLE_COUNT_1_BIT};
         VkImageLayout imageLayout{VK_IMAGE_LAYOUT_UNDEFINED};
-        VulkanImageType imageType{};
+        VkImageType imageType{VK_IMAGE_TYPE_2D};
         IEBuffer *dataSource{};
 
         //Only use for texture images
         std::string filename{};
         /**@todo Remove this item.*/
         bool mipMapping{false};
-        stbi_uc *data{};
+        std::string data{};
     };
 
     VkImage image{};
@@ -64,54 +63,95 @@ public:
         deletionQueue.clear();
     }
 
-    virtual void create(IEGraphicsLink *engineLink, CreateInfo *createInfo) {
-        linkedRenderEngine = engineLink;
-        createdWith = *createInfo;
-        mipLevels = std::max((static_cast<uint32_t>(std::floor(std::log2(std::max(createdWith.width, createdWith.height)))) + 1) * createdWith.mipMapping, static_cast<uint32_t>(1));
-        imageFormat = createdWith.format;
-        imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-        createdWith.width = createdWith.width == 0 ? static_cast<int>(linkedRenderEngine->swapchain.extent.width) : createdWith.width;
-        imageCreateInfo.extent.width = createdWith.width;
-        createdWith.height = createdWith.height == 0 ? static_cast<int>(linkedRenderEngine->swapchain.extent.height) : createdWith.height;
-        imageCreateInfo.extent.height = createdWith.height;
-        imageCreateInfo.extent.depth = 1;
-        imageCreateInfo.mipLevels = mipLevels;
-        imageCreateInfo.arrayLayers = 1;
-        imageCreateInfo.format = createdWith.format;
-        imageCreateInfo.tiling = createdWith.tiling;
-        imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageCreateInfo.usage = createdWith.usage;
-        imageCreateInfo.samples = createdWith.msaaSamples;
-        imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        allocationCreateInfo.usage = createdWith.allocationUsage;
-        imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        imageViewCreateInfo.format = createdWith.format;
-        imageViewCreateInfo.subresourceRange.aspectMask = createdWith.imageType == VulkanImageType::VULKAN_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-        imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-        imageViewCreateInfo.subresourceRange.levelCount = 1;
-        imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-        imageViewCreateInfo.subresourceRange.layerCount = 1;
+    virtual void create(CreateInfo* createInfo) {
+        if (!linkedRenderEngine) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create an image without a render engine!");
+        }
     }
 
-    /**@todo Combine as many command IEBuffer submissions as possible together to reduce prepare on GPU.*/
-    /**@todo Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other.*/
-    virtual void upload() {
-        if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image!"); }
+    virtual void create(IEGraphicsLink* engineLink, CreateInfo* createInfo) {
+        if (engineLink) {  // Assume that this image is being recreated in a new engine, or created for the first time.
+            destroy();  // Delete anything that was created in the context of the old engine
+            linkedRenderEngine = engineLink;
+        }
+        createdWith = *createInfo;
+
+        // Determine image data based on settings and input data
+        auto maxMipLevel = static_cast<uint8_t>(std::floor(std::log2(std::max(createdWith.width, createdWith.height))) + 1);
+        mipLevels = createdWith.mipMapping && linkedRenderEngine->settings.mipMapping ? std::min(std::max(maxMipLevel, static_cast<uint8_t>(1)), static_cast<uint8_t>(linkedRenderEngine->settings.mipMapLevel)) : 1;
+        createdWith.width = createdWith.width == 0 ? static_cast<uint16_t>(linkedRenderEngine->swapchain.extent.width) : createdWith.width;
+        createdWith.height = createdWith.height == 0 ? static_cast<uint16_t>(linkedRenderEngine->swapchain.extent.height) : createdWith.height;
+
+        // Determine the number of MSAA samples to use
+        uint8_t msaaSamples = 1;
+
+        // Start with specified format, and an undefined layout.
+        imageFormat = createdWith.format;
+        imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        // Set up image create info.
+        VkImageCreateInfo imageCreateInfo{
+            .sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .imageType=createdWith.imageType,
+            .format=createdWith.format,
+            .extent=VkExtent3D{
+                .width=createdWith.width,
+                .height=createdWith.height,
+                .depth=1
+            },
+            .mipLevels=1, // mipLevels, Unused due to no implementation of mip-mapping support yet.
+            .arrayLayers=1,
+            .samples=static_cast<VkSampleCountFlagBits>(msaaSamples),
+            .tiling=createdWith.tiling,
+            .usage=createdWith.usage,
+            .sharingMode=VK_SHARING_MODE_EXCLUSIVE,
+            .initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+
+        // Set up allocation create info
+        VmaAllocationCreateInfo allocationCreateInfo {
+            .usage=createdWith.allocationUsage,
+        };
+
+        // Create image
+        if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create texture image!");
+        }
         deletionQueue.emplace_back([&] {
             vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
         });
-        imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageViewCreateInfo.image = image;
-        if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) { throw std::runtime_error("failed to create texture image view!"); }
+
+        // Set up image view create info.
+        VkImageViewCreateInfo imageViewCreateInfo {
+            .sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .image=image,
+            .viewType=VK_IMAGE_VIEW_TYPE_2D, /**@todo Add support for more than just 2D images.*/
+            .format=createdWith.format,
+            .components=VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},  // Unused. All components are mapped to default data.
+            .subresourceRange=VkImageSubresourceRange{
+                .aspectMask=createdWith.format == linkedRenderEngine->swapchain.image_format ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT,
+                .baseMipLevel=0,
+                .levelCount=1,  // Unused. Mip-mapping is not yet implemented.
+                .baseArrayLayer=0,
+                .layerCount=1,
+            },
+        };
+
+        // Create image view
+        if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create texture image view!");
+        }
         deletionQueue.emplace_back([&] {
             vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
         });
+
+        // Upload data if provided
         if (createdWith.dataSource != nullptr) {
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             createdWith.dataSource->toImage(*this, createdWith.width, createdWith.height);
         }
+
+        // Set transition to requested layout from undefined or dst_optimal.
         if (createdWith.imageLayout != imageLayout) {auto &
             transitionLayout(createdWith.imageLayout);
         }
@@ -122,7 +162,7 @@ public:
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
         region.bufferImageHeight = 0;
-        region.imageSubresource.aspectMask = createdWith.imageType == VULKAN_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.aspectMask = createdWith.format == linkedRenderEngine->swapchain.image_format ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT;
         region.imageSubresource.mipLevel = 0;
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = 1;
@@ -191,15 +231,11 @@ public:
 
 protected:
     IEGraphicsLink *linkedRenderEngine{};
-    VmaAllocation allocation{};
     std::vector<std::function<void()>> deletionQueue{};
-    VkImageCreateInfo imageCreateInfo{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
-    VmaAllocationCreateInfo allocationCreateInfo{};
-    VkImageViewCreateInfo imageViewCreateInfo{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
-    VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+    VmaAllocation allocation{};
 };
 
-// NOTE: Input image should have a layout of VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL!
+//@todo: Input image should have a layout of VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL!
 void IEBuffer::toImage(IEImage &image, uint32_t width, uint32_t height) {
     if (!created) { throw std::runtime_error("Calling IEBuffer::toImage() on a IEBuffer for which IEBuffer::create() has not been called is illegal."); }
     VkBufferImageCopy region{};

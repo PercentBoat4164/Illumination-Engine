@@ -3,7 +3,7 @@
 #include "IEShader.hpp"
 #include "IECamera.hpp"
 #include "IEVertex.hpp"
-#include "IETexture.hpp"
+#include "GraphicsModule/VulkanOpenGL/Image/IETexture.hpp"
 #include "IEDescriptorSet.hpp"
 #include "IEPipeline.hpp"
 #include "IEAccelerationStructure.hpp"
@@ -71,9 +71,8 @@ public:
         textureCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-        textureCreateInfo.imageType = VULKAN_TEXTURE;
-        textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.width, &textureCreateInfo.height, &channels, STBI_rgb_alpha);
-        if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
+        textureCreateInfo.data = std::string(reinterpret_cast<const char *>(stbi_load(textureCreateInfo.filename.c_str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha)));
+        if (textureCreateInfo.data.empty()) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
         (*textures)[0].create(linkedRenderEngine, &textureCreateInfo);
         Assimp::Importer importer{};
         const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
@@ -296,9 +295,8 @@ private:
                             textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                             textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
                             textureCreateInfo.mipMapping = linkedRenderEngine->settings.mipMapping;
-                            textureCreateInfo.imageType = VULKAN_TEXTURE;
-                            textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), &textureCreateInfo.height, &textureCreateInfo.width, &channels, STBI_rgb_alpha);
-                            if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
+                            textureCreateInfo.data = std::string(reinterpret_cast<const char *>(stbi_load(textureCreateInfo.filename.c_str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha)));
+                            if (textureCreateInfo.data.empty()) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
                             temporaryTexture.create(linkedRenderEngine, &textureCreateInfo);
                             textures->push_back(temporaryTexture);
                             *textureType.first = textures->size() - 1;

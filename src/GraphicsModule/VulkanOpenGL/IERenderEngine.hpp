@@ -21,7 +21,7 @@
 #include "IERenderable.hpp"
 #include "IEUniformBufferObject.hpp"
 #include "IESettings.hpp"
-#include "IETexture.hpp"
+#include "GraphicsModule/VulkanOpenGL/Image/IETexture.hpp"
 #include "IEFramebuffer.hpp"
 
 #ifndef GLEW_IMPLEMENTATION

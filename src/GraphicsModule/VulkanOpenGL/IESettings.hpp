@@ -41,7 +41,7 @@ public:
     std::array<int, 2> windowPosition{0, 0};
     float anisotropicFilterLevel{16.0f};
     bool mipMapping{true};
-    float mipMapLevel{0.0f};
+    uint8_t mipMapLevel{0};
     bool fullscreen{false};
     int refreshRate{60};
     bool vSync{true};
