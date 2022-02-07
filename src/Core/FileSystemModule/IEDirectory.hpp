@@ -4,7 +4,6 @@
 
 #include <vector>
 #include <functional>
-#include <sys/stat.h>
 
 
 class IEDirectory {
@@ -33,6 +32,7 @@ public:
             std::vector<IEDirectory*> theseSubDirectories{subDirectory->allDirectories()};
             allSubDirectories.insert(allSubDirectories.end(), theseSubDirectories.begin(), theseSubDirectories.end());
         }
+        return allSubDirectories;
     }
 
     std::vector<IEFile*> allFiles() {
@@ -41,15 +41,14 @@ public:
             std::vector<IEFile*> theseFiles{subDirectory->allFiles()};
             allFiles.insert(allFiles.end(), theseFiles.begin(), theseFiles.end());
         }
+        return allFiles;
     }
 
     void create() {
-        mkdir(path.c_str(), 0777);
         exists = true;
     }
 
     void remove() {
-        rmdir(path.c_str());
         exists = false;
     }
 };

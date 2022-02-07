@@ -1,7 +1,8 @@
 set(IEFileSystemModuleSourceFiles  # Gather sources
         IEFileSystem.hpp
         IEFile.hpp
-        IEDirectory.hpp)
+        IEDirectory.hpp
+        )
 
 # Create and define properties for the executable target
 add_library(IEFileSystemModule ${IEFileSystemModuleSourceFiles})

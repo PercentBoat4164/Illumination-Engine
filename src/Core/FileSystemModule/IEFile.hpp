@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Core/LogModule/IELogger.hpp"
+
 #include <vector>
 #include <string>
 #include <filesystem>
-#include "Core/LogModule/IELogger.hpp"
+#include <fstream>
 
 class IEFile {
 public:
@@ -75,7 +77,7 @@ public:
 
     void insert(const std::string& data, std::streamsize startPosition=-1) {
         if (startPosition > length) {
-            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to insert from beyond the length of the file!");
+            IELogger::logToMasterLogger(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to insert from beyond the length of the file!");
             return;
         }
         if (startPosition == -1) {  // If no starting position
