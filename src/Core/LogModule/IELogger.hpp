@@ -3,6 +3,7 @@
 #include <string>
 
 #include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 //Illumination Engine replacements for spdlog log levels.
 #define ILLUMINATION_ENGINE_LOG_LEVEL_TRACE spdlog::level::trace

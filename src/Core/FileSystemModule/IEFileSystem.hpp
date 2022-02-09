@@ -59,10 +59,17 @@ public:
         return file;
     }
 
-    IEFile* getFile(const std::string& filePath) {
+    IEFile* getFile(const std::string& filePath, bool isCompletePath=true) {
         IEFile* file = &files[filePath];
         if (file->path.empty()) {
-            *file = IEFile{composePath(IE_VISIBLE_FILE, baseDirectory.path, filePath, filePath, ILLUMINATION_ENGINE_ASSET_FILE_EXTENSION)};
+
+            // Do this if the path is complete
+            if (isCompletePath) {
+                *file = IEFile{composePath(IE_VISIBLE_FILE, baseDirectory.path, filePath, filePath, ILLUMINATION_ENGINE_ASSET_FILE_EXTENSION)};
+            }
+            else  {
+                *file = IEFile{filePath};
+            }
         }
         return file;
     }

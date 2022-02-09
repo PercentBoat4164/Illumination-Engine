@@ -11,4 +11,9 @@ int main() {
     cubeFile->insert("cupine", 3);
     cubeFile->erase(1);
     std::cout << cubeFile->read(cubeFile->length, 0);
+
+    std::string path = "shaders/Vulkan/Rasterizing/fragmentShader.frag";
+    IEFile* shaderFile = fileSystem.getFile(path);
+    shaderFile->open();
+    std::cout << shaderFile->read(shaderFile->length, 0);
 }

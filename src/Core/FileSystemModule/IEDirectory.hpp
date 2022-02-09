@@ -26,6 +26,15 @@ public:
     std::string path{};
     bool exists{};
 
+    void createDirectory() const {
+        for (int i = 0; i < path.size(); ++i) {
+            if (path[i] == '/') {
+                std::filesystem::create_directory(path.substr(0, i));
+            }
+        }
+        std::filesystem::create_directory(path);
+    }
+
     std::vector<IEDirectory*> allDirectories() {
         std::vector<IEDirectory*> allSubDirectories{subDirectories};
         for (IEDirectory* subDirectory : subDirectories) {
@@ -45,10 +54,12 @@ public:
     }
 
     void create() {
+        createDirectory();
         exists = true;
     }
 
     void remove() {
+        std::filesystem::remove_all(path);
         exists = false;
     }
 };

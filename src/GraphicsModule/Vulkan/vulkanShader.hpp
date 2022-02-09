@@ -43,6 +43,7 @@ public:
         data.clear();
         compile(createdWith.filename);
         compiled = true;
+
         std::string compiledFileName = createdWith.filename + ".spv";
         std::ifstream compiledFile(compiledFileName, std::ios::ate | std::ios::binary);
         if (!compiledFile.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName); }
@@ -51,6 +52,7 @@ public:
         compiledFile.seekg(0);
         compiledFile.read(data.data(), fileSize);
         compiledFile.close();
+
         VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
         shaderModuleCreateInfo.codeSize = data.size();
         shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(data.data());
