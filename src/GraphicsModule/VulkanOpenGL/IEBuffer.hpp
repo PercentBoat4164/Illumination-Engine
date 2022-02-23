@@ -95,7 +95,9 @@ public:
         vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
     }
 
-    void toImage(IEImage &image, uint32_t width, uint32_t height);
+    void toImage(IEImage *image, uint32_t width, uint32_t height);
+
+    void toImage(IEImage *image);
 
     virtual ~IEBuffer() {
         destroy();

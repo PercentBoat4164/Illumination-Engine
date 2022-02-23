@@ -2,4 +2,5 @@ set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles  # Gather sour
         ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles}
         IEImage.hpp
         IETexture.hpp
+        IEFramebuffer.hpp
         )

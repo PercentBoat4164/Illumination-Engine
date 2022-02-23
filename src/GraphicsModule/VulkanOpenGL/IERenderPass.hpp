@@ -1,18 +1,21 @@
 #pragma once
 
 #include "IEGraphicsLink.hpp"
+#include "Image/IEFramebuffer.hpp"
 
 #include <vulkan/vulkan.h>
 
-class IEFramebuffer;
-
 class IERenderPass {
 public:
-    VkRenderPass renderPass{};
+    struct CreateInfo {
+        std::vector<uint8_t> msaaSamples{1};
+    } createdWith;
 
-    void create(IEGraphicsLink *engineLink) {
-        for (std::function<void()> &function : deletionQueue) { function(); }
-        deletionQueue.clear();
+    VkRenderPass renderPass{};
+    std::vector<IEFramebuffer> framebuffers{};
+
+    void create(IEGraphicsLink *engineLink, CreateInfo *createInfo) {
+        createdWith = *createInfo;
         linkedRenderEngine = engineLink;
         VkAttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format = linkedRenderEngine->swapchain.image_format;
@@ -78,7 +81,20 @@ public:
         });
     }
 
-    VkRenderPassBeginInfo beginRenderPass(const IEFramebuffer &framebuffer);
+    VkRenderPassBeginInfo beginRenderPass(const IEFramebuffer &framebuffer) {
+        VkRenderPassBeginInfo renderPassBeginInfo{
+                .sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+                .renderPass = renderPass,
+                .framebuffer = framebuffer.framebuffer,
+                .renderArea{
+                        .offset = {0, 0},
+                        .extent = linkedRenderEngine->swapchain.extent,
+                },
+                .clearValueCount = static_cast<uint32_t>(linkedRenderEngine->settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3),
+                .pClearValues = framebuffer.clearValues.data(),
+        };
+        return renderPassBeginInfo;
+    }
 
     void destroy() {
         for (std::function<void()> &function : deletionQueue) {

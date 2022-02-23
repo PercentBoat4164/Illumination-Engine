@@ -1,8 +1,7 @@
 #pragma once
 
-#include "IEGraphicsLink.hpp"
-#include "IERenderPass.hpp"
-#include "GraphicsModule/VulkanOpenGL/Image/IEImage.hpp"
+#include "GraphicsModule/VulkanOpenGL/IEGraphicsLink.hpp"
+#include "IEImage.hpp"
 
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -10,9 +9,8 @@
 class IEFramebuffer {
 public:
     struct CreateInfo {
-        //Required
-        IERenderPass* renderPass{};
-        VkImageView swapchainImageView{};
+        // Required
+        uint8_t msaaSamples{1};
     };
 
     CreateInfo createdWith{};
@@ -22,11 +20,14 @@ public:
     IEImage colorImage{};
     IEImage depthImage{};
 
-    void create(IEGraphicsLink *engineLink, CreateInfo *createInfo) {
-        createdWith = *createInfo;
+    void create(IEGraphicsLink *engineLink, VkImageView swapchainImageView, VkRenderPass renderPass) {
         linkedRenderEngine = engineLink;
-        if (createdWith.swapchainImageView == VK_NULL_HANDLE) { throw std::runtime_error("IEFramebuffer::CreateInfo::swapchainImageView cannot be VK_NULL_HANDLE!"); }
-        if (createdWith.renderPass->renderPass == VK_NULL_HANDLE) { throw std::runtime_error("IEFramebuffer::CreateInfo::renderPass::renderPass cannot be VK_NULL_HANDLE!"); }
+        if (swapchainImageView == VK_NULL_HANDLE) {
+            throw std::runtime_error("IEFramebuffer::CreateInfo::swapchainImageView cannot be VK_NULL_HANDLE!");
+        }
+        if (renderPass == VK_NULL_HANDLE) {
+            throw std::runtime_error("IEFramebuffer::CreateInfo::renderPass::renderPass cannot be VK_NULL_HANDLE!");
+        }
         clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         clearValues[2].color = clearValues[0].color;
@@ -47,9 +48,9 @@ public:
         deletionQueue.emplace_back([&] {
             depthImage.destroy();
         });
-        std::vector<VkImageView> framebufferAttachments{linkedRenderEngine->settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? createdWith.swapchainImageView : colorImage.view, depthImage.view, createdWith.swapchainImageView};
+        std::vector<VkImageView> framebufferAttachments{linkedRenderEngine->settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? swapchainImageView : colorImage.view, depthImage.view, swapchainImageView};
         VkFramebufferCreateInfo framebufferCreateInfo{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
-        framebufferCreateInfo.renderPass = createdWith.renderPass->renderPass;
+        framebufferCreateInfo.renderPass = renderPass;
         framebufferCreateInfo.attachmentCount = linkedRenderEngine->settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3;
         framebufferCreateInfo.pAttachments = framebufferAttachments.data();
         framebufferCreateInfo.width = linkedRenderEngine->swapchain.extent.width;
@@ -73,14 +74,3 @@ public:
 private:
     std::vector<std::function<void()>> deletionQueue{};
 };
-
-VkRenderPassBeginInfo IERenderPass::beginRenderPass(const IEFramebuffer &framebuffer) {
-    VkRenderPassBeginInfo renderPassBeginInfo{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-    renderPassBeginInfo.renderArea.offset = {0, 0};
-    renderPassBeginInfo.renderArea.extent = linkedRenderEngine->swapchain.extent;
-    renderPassBeginInfo.clearValueCount = linkedRenderEngine->settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3;
-    renderPassBeginInfo.pClearValues = framebuffer.clearValues.data();
-    renderPassBeginInfo.renderPass = renderPass;
-    renderPassBeginInfo.framebuffer = framebuffer.framebuffer;
-    return renderPassBeginInfo;
-}

@@ -2,6 +2,7 @@
 
 #include "GraphicsModule/VulkanOpenGL/IEGraphicsLink.hpp"
 #include "GraphicsModule/VulkanOpenGL/IEBuffer.hpp"
+#include "GraphicsModule/VulkanOpenGL/IECommandPool.hpp"
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -43,9 +44,10 @@ public:
 
         //Only use for texture images
         std::string filename{};
+        float anisotropyLevel{};
         /**@todo Remove this item.*/
         bool mipMapping{false};
-        std::string data{};
+        stbi_uc *data{};
     };
 
     VkImage image{};
@@ -57,19 +59,19 @@ public:
     CreateInfo createdWith{};
 
     void destroy() {
-        for (std::function<void()> &function : deletionQueue) {
+        for (std::function<void()> &function: deletionQueue) {
             function();
         }
         deletionQueue.clear();
     }
 
-    virtual void create(CreateInfo* createInfo) {
+    virtual void create(CreateInfo *createInfo) {
         if (!linkedRenderEngine) {
             IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create an image without a render engine!");
         }
     }
 
-    virtual void create(IEGraphicsLink* engineLink, CreateInfo* createInfo) {
+    virtual void create(IEGraphicsLink *engineLink, CreateInfo *createInfo) {
         if (engineLink) {  // Assume that this image is being recreated in a new engine, or created for the first time.
             destroy();  // Delete anything that was created in the context of the old engine
             linkedRenderEngine = engineLink;
@@ -91,26 +93,26 @@ public:
 
         // Set up image create info.
         VkImageCreateInfo imageCreateInfo{
-            .sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-            .imageType=createdWith.imageType,
-            .format=createdWith.format,
-            .extent=VkExtent3D{
-                .width=createdWith.width,
-                .height=createdWith.height,
-                .depth=1
-            },
-            .mipLevels=1, // mipLevels, Unused due to no implementation of mip-mapping support yet.
-            .arrayLayers=1,
-            .samples=static_cast<VkSampleCountFlagBits>(msaaSamples),
-            .tiling=createdWith.tiling,
-            .usage=createdWith.usage,
-            .sharingMode=VK_SHARING_MODE_EXCLUSIVE,
-            .initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,
+                .sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                .imageType=createdWith.imageType,
+                .format=createdWith.format,
+                .extent=VkExtent3D{
+                        .width=createdWith.width,
+                        .height=createdWith.height,
+                        .depth=1
+                },
+                .mipLevels=1, // mipLevels, Unused due to no implementation of mip-mapping support yet.
+                .arrayLayers=1,
+                .samples=static_cast<VkSampleCountFlagBits>(msaaSamples),
+                .tiling=createdWith.tiling,
+                .usage=createdWith.usage,
+                .sharingMode=VK_SHARING_MODE_EXCLUSIVE,
+                .initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,
         };
 
         // Set up allocation create info
-        VmaAllocationCreateInfo allocationCreateInfo {
-            .usage=createdWith.allocationUsage,
+        VmaAllocationCreateInfo allocationCreateInfo{
+                .usage=createdWith.allocationUsage,
         };
 
         // Create image
@@ -122,19 +124,19 @@ public:
         });
 
         // Set up image view create info.
-        VkImageViewCreateInfo imageViewCreateInfo {
-            .sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image=image,
-            .viewType=VK_IMAGE_VIEW_TYPE_2D, /**@todo Add support for more than just 2D images.*/
-            .format=createdWith.format,
-            .components=VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},  // Unused. All components are mapped to default data.
-            .subresourceRange=VkImageSubresourceRange{
-                .aspectMask=createdWith.format == linkedRenderEngine->swapchain.image_format ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT,
-                .baseMipLevel=0,
-                .levelCount=1,  // Unused. Mip-mapping is not yet implemented.
-                .baseArrayLayer=0,
-                .layerCount=1,
-            },
+        VkImageViewCreateInfo imageViewCreateInfo{
+                .sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                .image=image,
+                .viewType=VK_IMAGE_VIEW_TYPE_2D, /**@todo Add support for more than just 2D images.*/
+                .format=createdWith.format,
+                .components=VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},  // Unused. All components are mapped to default data.
+                .subresourceRange=VkImageSubresourceRange{
+                        .aspectMask=createdWith.format == linkedRenderEngine->swapchain.image_format ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT,
+                        .baseMipLevel=0,
+                        .levelCount=1,  // Unused. Mip-mapping is not yet implemented.
+                        .baseArrayLayer=0,
+                        .layerCount=1,
+                },
         };
 
         // Create image view
@@ -148,11 +150,11 @@ public:
         // Upload data if provided
         if (createdWith.dataSource != nullptr) {
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-            createdWith.dataSource->toImage(*this, createdWith.width, createdWith.height);
+            createdWith.dataSource->toImage(this, createdWith.width, createdWith.height);
         }
 
         // Set transition to requested layout from undefined or dst_optimal.
-        if (createdWith.imageLayout != imageLayout) {auto &
+        if (createdWith.imageLayout != imageLayout) {
             transitionLayout(createdWith.imageLayout);
         }
     }
@@ -172,7 +174,9 @@ public:
     }
 
     void transitionLayout(VkImageLayout newLayout) {
-        if (imageLayout == newLayout) { return; }
+        if (imageLayout == newLayout) {
+            return;
+        }
         VkImageMemoryBarrier imageMemoryBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
         imageMemoryBarrier.oldLayout = imageLayout;
         imageMemoryBarrier.newLayout = newLayout;
@@ -236,17 +240,32 @@ protected:
 };
 
 //@todo: Input image should have a layout of VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL!
-void IEBuffer::toImage(IEImage &image, uint32_t width, uint32_t height) {
+void IEBuffer::toImage(IEImage *image, uint32_t width, uint32_t height) {
     if (!created) { throw std::runtime_error("Calling IEBuffer::toImage() on a IEBuffer for which IEBuffer::create() has not been called is illegal."); }
     VkBufferImageCopy region{};
-    region.imageSubresource.aspectMask = image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image.imageLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.aspectMask = image->imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->imageLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.layerCount = 1;
     region.imageExtent = {width, height, 1};
     VkImageLayout oldLayout;
-    if (image.imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-        oldLayout = image.imageLayout;
-        image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        vkCmdCopyBufferToImage((*linkedRenderEngine->graphicsCommandPool)[0], buffer, image.image, image.imageLayout, 1, &region);
-        image.transitionLayout(oldLayout);
-    } else { vkCmdCopyBufferToImage((*linkedRenderEngine->graphicsCommandPool)[0], buffer, image.image, image.imageLayout, 1, &region); }
+    if (image->imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        oldLayout = image->imageLayout;
+        image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vkCmdCopyBufferToImage((*linkedRenderEngine->graphicsCommandPool)[0], buffer, image->image, image->imageLayout, 1, &region);
+        image->transitionLayout(oldLayout);
+    } else { vkCmdCopyBufferToImage((*linkedRenderEngine->graphicsCommandPool)[0], buffer, image->image, image->imageLayout, 1, &region); }
+}
+
+void IEBuffer::toImage(IEImage *image) {
+    if (!created) { throw std::runtime_error("Calling IEBuffer::toImage() on a IEBuffer for which IEBuffer::create() has not been called is illegal."); }
+    VkBufferImageCopy region{};
+    region.imageSubresource.aspectMask = image->imageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->imageLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.layerCount = 1;
+    region.imageExtent = {image->createdWith.width, image->createdWith.height, 1};
+    VkImageLayout oldLayout;
+    if (image->imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        oldLayout = image->imageLayout;
+        image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vkCmdCopyBufferToImage((*linkedRenderEngine->graphicsCommandPool)[0], buffer, image->image, image->imageLayout, 1, &region);
+        image->transitionLayout(oldLayout);
+    } else { vkCmdCopyBufferToImage((*linkedRenderEngine->graphicsCommandPool)[0], buffer, image->image, image->imageLayout, 1, &region); }
 }

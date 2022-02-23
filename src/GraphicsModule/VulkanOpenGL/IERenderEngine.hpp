@@ -22,7 +22,7 @@
 #include "IEUniformBufferObject.hpp"
 #include "IESettings.hpp"
 #include "GraphicsModule/VulkanOpenGL/Image/IETexture.hpp"
-#include "IEFramebuffer.hpp"
+#include "GraphicsModule/VulkanOpenGL/Image/IEFramebuffer.hpp"
 
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
@@ -291,6 +291,9 @@ private:
         vkb::destroy_swapchain(renderEngineLink.swapchain);
     }
 
+    /**
+     * Destroys the command pools and all associated command buffers.
+     */
     void destroyCommandPools() {
         graphicsCommandPool.destroy();
         presentCommandPool.destroy();
@@ -366,23 +369,13 @@ public:
         });
 
         // Create the renderPass
-        renderPass.create(&renderEngineLink);
+        IERenderPass::CreateInfo renderPassCreateInfo {
+            .msaaSamples={1}
+        };
+
+        renderPass.create(&renderEngineLink, &renderPassCreateInfo);
         renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&]{
             renderPass.destroy();
-        });
-
-        // Create framebuffers
-        IEFramebuffer::CreateInfo framebufferCreateInfo{};
-        framebuffers.resize(renderEngineLink.swapchain.image_count);
-        for (uint32_t i = 0; i < renderEngineLink.swapchain.image_count; ++i) {
-            framebufferCreateInfo.renderPass = &renderPass;
-            framebufferCreateInfo.swapchainImageView = (renderEngineLink.swapchainImageViews)[i];
-            framebuffers[i].create(&renderEngineLink, &framebufferCreateInfo);
-        }
-        renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&]{
-            for (IEFramebuffer& framebuffer : framebuffers) {
-                framebuffer.destroy();
-            }
         });
 
         camera.create(&renderEngineLink);
@@ -405,10 +398,8 @@ public:
 
         // Create index buffer
         renderable->createIndexBuffer();
-        // Create mesh transformation buffer and acceleration structure if ray tracing
 
-        // Create texture
-        renderable->uploadTextures();
+        // Create mesh transformation buffer and acceleration structure if ray tracing
 
         // Create descriptor set
         renderable->createDescriptorSet();
@@ -417,67 +408,6 @@ public:
         renderable->createPipeline();
         graphicsCommandPool.executeCommandBuffer(0);
     }
-
-//    void loadRenderable(IERenderable* renderable, bool append) {
-//        renderable->destroy();
-//        renderable->reloadRenderable(renderable->shaderNames);
-//        renderable->shaders.resize(renderable->shaderCreateInfos.size());
-//        for (int i = 0; i < renderable->shaderCreateInfos.size(); ++i) { renderable->shaders[i].create(&renderEngineLink, &renderable->shaderCreateInfos[i]); }
-//        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) { for (IEShader& shader : thisRenderable->shaders) { shader.destroy(); } });
-//        IEBuffer::CreateInfo bufferCreateInfo{};
-//        bufferCreateInfo.size = sizeof(IEUniformBufferObject);
-//        bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-//        bufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-//        renderable->modelBuffer.create(&renderEngineLink, &bufferCreateInfo);
-//        renderable->deletionQueue.emplace_back([&](IERenderable *thisRenderable){ thisRenderable->modelBuffer.destroy(); });
-//        for (IERenderable::IEMesh& mesh : renderable->meshes) {
-//            bufferCreateInfo.size = sizeof(mesh.vertices[0]) * mesh.vertices.size();
-//            bufferCreateInfo.usage = renderEngineLink.settings.rayTracing ? VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-//            mesh.vertexBuffer.create(&renderEngineLink, &bufferCreateInfo);
-//            mesh.vertexBuffer.uploadData(mesh.vertices.data(), sizeof(mesh.vertices[0]) * mesh.vertices.size());
-//            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->vertexBuffer.destroy(); });
-//            bufferCreateInfo.size = sizeof(mesh.indices[0]) * mesh.indices.size();
-//            bufferCreateInfo.usage ^= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-//            mesh.indexBuffer.create(&renderEngineLink, &bufferCreateInfo);
-//            mesh.indexBuffer.uploadData(mesh.indices.data(), sizeof(mesh.indices[0]) * mesh.indices.size());
-//            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->indexBuffer.destroy(); });
-//            if (renderEngineLink.settings.rayTracing) {
-//                bufferCreateInfo.size = sizeof(mesh.transformationMatrix);
-//                bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
-//                mesh.transformationBuffer.create(&renderEngineLink, &bufferCreateInfo);
-//                mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->transformationBuffer.destroy(); });
-//                mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->bottomLevelAccelerationStructure.destroy(); });
-//            }
-//            for (IETexture &texture : renderable->textures) {
-//                texture.destroy();
-//                IETexture::CreateInfo textureCreateInfo{texture.createdWith};
-//                textureCreateInfo.mipMapping = renderEngineLink.settings.mipMapping;
-//                texture.create(&renderEngineLink, &textureCreateInfo);
-//                texture.upload();
-//            }
-//            IEDescriptorSet::CreateInfo renderableDescriptorSetCreateInfo{};
-//            if (renderEngineLink.settings.rayTracing) {
-//                renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1}};
-//                renderableDescriptorSetCreateInfo.shaderStages = {static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT), VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
-//                renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textures[mesh.diffuseTexture], std::nullopt};
-//            } else {
-//                renderableDescriptorSetCreateInfo.poolSizes = {{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}};
-//                renderableDescriptorSetCreateInfo.shaderStages = {static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT), VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
-//                renderableDescriptorSetCreateInfo.data = {&renderable->modelBuffer, &renderable->textures[mesh.diffuseTexture], &renderable->textures[mesh.specularTexture]};
-//            }
-//            mesh.descriptorSet.create(&renderEngineLink, &renderableDescriptorSetCreateInfo);
-//            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->descriptorSet.destroy(); });
-//            IEPipeline::CreateInfo renderablePipelineCreateInfo{};
-//            renderablePipelineCreateInfo.descriptorSet = &mesh.descriptorSet;
-//            renderablePipelineCreateInfo.renderPass = &renderPass;
-//            renderablePipelineCreateInfo.shaders = &renderable->shaders;
-//            mesh.pipeline.create(&renderEngineLink, &renderablePipelineCreateInfo);
-//            mesh.deletionQueue.emplace_back([&] (IERenderable::IEMesh *thisMesh) { thisMesh->pipeline.destroy(); });
-//        }
-//        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) { for (IETexture &texture : thisRenderable->textures) { texture.destroy(); } });
-//        renderable->deletionQueue.emplace_back([&] (IERenderable *thisRenderable) { for (IERenderable::IEMesh &mesh : thisRenderable->meshes) { mesh.destroy(); } });
-//        if (append) { renderables.push_back(renderable); }
-//    }
 
     bool update() {
         if (window == nullptr) {
@@ -549,7 +479,8 @@ public:
         }
         vkCmdEndRenderPass((*renderEngineLink.graphicsCommandPool)[imageIndex]);
         if (vkEndCommandBuffer((*renderEngineLink.graphicsCommandPool)[imageIndex]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to record draw command IEBuffer!"); }
+            throw std::runtime_error("failed to record draw command IEBuffer!");
+        }
         VkSemaphore waitSemaphores[]{imageAvailableSemaphores[currentFrame]};
         VkSemaphore signalSemaphores[]{renderFinishedSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[]{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -582,7 +513,10 @@ public:
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
             framebufferResized = false;
             createSwapchain(false);
-        } else if (result != VK_SUCCESS) { throw std::runtime_error("failed to present swapchain image!"); }
+        }
+        else if (result != VK_SUCCESS) {
+            throw std::runtime_error("failed to present swapchain image!");
+        }
         currentFrame = (currentFrame + 1) % (int)renderEngineLink.swapchain.image_count;
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(1/frameTime));
         return glfwWindowShouldClose(window) != 1;

@@ -8,7 +8,6 @@ set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles  # Gather sour
         IEBuffer.hpp
         IECamera.hpp
         IEDescriptorSet.hpp
-        IEFramebuffer.hpp
         IEGraphicsLink.hpp
         IEMonitor.hpp
         IEPipeline.hpp
