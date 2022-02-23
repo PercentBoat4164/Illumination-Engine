@@ -64,7 +64,7 @@ public:
         if (file->path.empty()) {
 
             // Do this if the path is complete
-            if (isCompletePath) {
+            if (!isCompletePath) {
                 *file = IEFile{composePath(IE_VISIBLE_FILE, baseDirectory.path, filePath, filePath, ILLUMINATION_ENGINE_ASSET_FILE_EXTENSION)};
             }
             else  {
