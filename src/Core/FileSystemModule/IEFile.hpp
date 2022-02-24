@@ -47,6 +47,7 @@ public:
             file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
         }
         length = file.tellg();
+        file.seekg(0);
     }
 
     void close() {

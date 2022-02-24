@@ -1,17 +1,24 @@
-# Illumination Engine
-Illumination Engine is a game engine written in C++ that uses Vulkan for speed and to take advantage of newer hardware, and OpenGL for portability.
+# ScriptingModule
 
-### Requirements for Completion
-- [ ] GUI
-- [ ] File structure management
-- [ ] Building, linking, and compiling games
-- [ ] Scripting language support
+The goal of the scripting module is to create a way for game creators to interact with the engine's components, other assets, and the game world through scripts. Illumination Engine's API is not yet available in scripts.
 
-### Required modules
-- [ ] Core
-- [ ] Graphics
-- [ ] Physics
-- [ ] Sound
-- [ ] Input
-- [ ] Scripting
-- [ ] Asset
+## Requirements for Completion
+- [x] Compilation of custom external scripts
+- [x] Execution of compiled code
+- [ ] Expose Illumination Engine's API to the scripts
+- [ ] Allow for users to set custom values in scripts
+
+## Goals
+- [ ] Support for a variety of scripting languages
+  - [x] Lua
+  - [ ] C#
+  - [ ] Python
+  - [ ] C/C++
+  - [ ] Java (maybe)
+
+### Optional Packages
+#### Linux:
+Install all the following packages with `sudo apt install <package_name>`
+
+- For Lua Support:
+  - liblua5.3-dev lua5.3
