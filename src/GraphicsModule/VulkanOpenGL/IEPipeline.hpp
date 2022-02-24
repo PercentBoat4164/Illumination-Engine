@@ -111,7 +111,7 @@ public:
             multisampleStateCreateInfo.sampleShadingEnable = linkedRenderEngine->settings.msaaSamples >= VK_SAMPLE_COUNT_1_BIT ? VK_TRUE : VK_FALSE;
             multisampleStateCreateInfo.minSampleShading = 1.0f;
         }
-        multisampleStateCreateInfo.rasterizationSamples = linkedRenderEngine->settings.msaaSamples;
+        multisampleStateCreateInfo.rasterizationSamples = static_cast<VkSampleCountFlagBits>(linkedRenderEngine->settings.msaaSamples);
         VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
         pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
         pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;

@@ -369,6 +369,7 @@ public:
         });
 
         // Create the renderPass
+        graphicsCommandPool.recordCommandBuffer(0);
         IERenderPass::CreateInfo renderPassCreateInfo {
             .msaaSamples={1}
         };
@@ -377,6 +378,8 @@ public:
         renderEngineLink.deletionQueue.insert(renderEngineLink.deletionQueue.begin(), [&]{
             renderPass.destroy();
         });
+        graphicsCommandPool.executeCommandBuffer(0);
+
 
         camera.create(&renderEngineLink);
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, renderEngineLink.device.physical_device.properties.deviceName);
