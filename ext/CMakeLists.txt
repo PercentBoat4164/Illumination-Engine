@@ -4,6 +4,7 @@ find_package(Lua)  # Check for Lua
 
 include(FetchContent)  # Requires CMake 3.14
 
+#**@todo Transition all FetchContent commands to ExternalProject commands.
 # Get AssImp
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 set(ASSIMP_BUILD_SAMPLES OFF)
@@ -17,21 +18,27 @@ message("Downloading GLM 0.9.9.8")
 FetchContent_Declare(glm GIT_REPOSITORY https://github.com/g-truc/glm GIT_TAG 0.9.9.8 GIT_PROGRESS ON)
 
 # Get spdlog
-message("Downloading spdlog")
+message("Downloading spdlog v1.x")
 FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog GIT_TAG v1.x GIT_PROGRESS ON)
 
-if (Lua_FOUND)
-    # Get LuaCpp
-    message("Downloading LuaCpp v0.1.0")
-    FetchContent_Declare(luacpp GIT_REPOSITORY https://github.com/jordanvrtanoski/luacpp GIT_TAG v0.1.0 GIT_PROGRESS ON)
+if (NOT(Lua_FOUND))
+    # Get Lua
+    message("Downloading Lua v5.3.6")
+    FetchContent_Declare(lua GIT_REPOSITORY https://github.com/lua/lua GIT_TAG v5.3.6 GIT_PROGRESS ON)
 
-    FetchContent_MakeAvailable(luacpp)  # Generate dependencies that require Lua
+    # Generate Lua
+    FetchContent_MakeAvailable(lua)
 
-    # Special commands for generating LuaCpp
-    add_subdirectory(${luacpp_SOURCE_DIR}/Source ${luacpp_BINARY_DIR})
+    # Fill in requirements for finding package
+    set(LUA_INCLUDE_DIR ${lua_SOURCE_DIR})
+    set(LUA_LIBRARIES ${lua_SOURCE_DIR})
 
     set(Lua_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
 endif ()
+
+# Get LuaCpp
+message("Downloading LuaCpp v0.1.0")
+FetchContent_Declare(luacpp GIT_REPOSITORY https://github.com/jordanvrtanoski/luacpp GIT_TAG v0.1.0 GIT_PROGRESS ON)
 
 if (OpenGL_FOUND)
     # Get GLFW
@@ -75,7 +82,11 @@ if (Vulkan_FOUND)
     set(Vulkan_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
 endif ()
 
-FetchContent_MakeAvailable(assimp glm spdlog)  # Build all libraries
+FetchContent_MakeAvailable(assimp glm spdlog luacpp)  # Build all libraries
+
+# Special commands for generating LuaCpp
+add_subdirectory(${luacpp_SOURCE_DIR}/Source ${luacpp_BINARY_DIR})
+
 
 # Special commands for getting AssImp build results
 set_target_properties(assimp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
