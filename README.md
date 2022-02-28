@@ -16,8 +16,10 @@ The goal of the scripting module is to create a way for game creators to interac
   - [ ] C/C++
   - [ ] Java (maybe)
 
-### Optional Packages
-#### Linux:
+## Optional Packages
+Some languages require additional packages to be installed in order to work. These often consist of the language's development packages as well as the language itself.
+
+### Linux:
 Install all the following packages with `sudo apt install <package_name>`
 
 - For Lua Support:
