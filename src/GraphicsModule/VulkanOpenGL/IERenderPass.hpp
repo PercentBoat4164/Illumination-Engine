@@ -8,7 +8,7 @@
 class IERenderPass {
 public:
     struct CreateInfo {
-        std::vector<uint8_t> msaaSamples{1};
+        uint8_t msaaSamples{1};
     } createdWith;
 
     VkRenderPass renderPass{};
@@ -19,7 +19,7 @@ public:
         linkedRenderEngine = engineLink;
 
         // Generate attachment descriptions
-        uint8_t thisAttachmentMsaaSampleCount = std::min(linkedRenderEngine->settings.msaaSamples, createdWith.msaaSamples[0]);
+        uint8_t thisAttachmentMsaaSampleCount = std::max(static_cast<uint8_t>(1), std::min(linkedRenderEngine->settings.msaaSamples, createdWith.msaaSamples));
 
         VkAttachmentDescription colorAttachmentDescription{
                 .format=linkedRenderEngine->swapchain.image_format,
@@ -94,17 +94,19 @@ public:
                 .dependencyCount=1,
                 .pDependencies=&subpassDependency
         };
-        if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) { throw std::runtime_error("failed to create render pass!"); }
+        if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) {
+            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create render pass!");
+        }
         deletionQueue.emplace_back([&] {
             vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr);
         });
 
         // Create framebuffers
-        framebuffers.resize(createdWith.msaaSamples.size());
+        framebuffers.resize(linkedRenderEngine->swapchainImageViews.size());
         IEFramebuffer::CreateInfo framebufferCreateInfo {
                 .renderPass=renderPass,
         };
-        for (uint32_t i = 0; i < createdWith.msaaSamples.size(); ++i) {
+        for (uint32_t i = 0; i < linkedRenderEngine->swapchainImageViews.size(); ++i) {
             framebufferCreateInfo.swapchainImageView = linkedRenderEngine->swapchainImageViews[i];
             framebuffers[i].create(linkedRenderEngine, &framebufferCreateInfo);
         }

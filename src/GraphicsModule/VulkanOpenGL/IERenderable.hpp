@@ -36,8 +36,6 @@
 
 #include "IERenderableSettings.hpp"
 
-/**@todo Refine the asset management process. Abstract this to the Asset Module.*/
-
 class IERenderable : public IEAspect {
 public:
     const char *modelName{};
@@ -61,6 +59,7 @@ public:
 
     IERenderable(IEGraphicsLink* engineLink, const std::string& filePath) {
         linkedRenderEngine = engineLink;
+        linkedRenderEngine->graphicsCommandPool->recordCommandBuffer(0);
         textures = linkedRenderEngine->textures;
         modelName = filePath.c_str();
         directory = filePath.substr(0, filePath.find_last_of('/'));
@@ -78,6 +77,7 @@ public:
         const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath)); }
         processNode(scene->mRootNode, scene);
+        linkedRenderEngine->graphicsCommandPool->executeCommandBuffer(0);
     }
 
     void destroy() {

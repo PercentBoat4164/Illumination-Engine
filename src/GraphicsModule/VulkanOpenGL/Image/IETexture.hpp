@@ -16,10 +16,10 @@
 class IETexture : public IEImage {
 public:
     struct CreateInfo {
-        VkFormat format{};
-        VkImageLayout layout{};
-        VkImageType type{};
-        VkImageUsageFlags usage{};
+        VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};
+        VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};
+        VkImageType type{VK_IMAGE_TYPE_2D};
+        VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
         VkImageCreateFlags flags{};
         VmaMemoryUsage allocationUsage{};
         uint32_t width{}, height{};
@@ -88,7 +88,7 @@ public:
 
         // Create image
         if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create texture image!");
+            throw std::runtime_error("Failed to create texture image!");
         }
         deletionQueue.emplace_back([&] {
             vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
@@ -102,7 +102,7 @@ public:
                 .format=imageFormat,
                 .components=VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},  // Unused. All components are mapped to default data.
                 .subresourceRange=VkImageSubresourceRange{
-                        .aspectMask=imageFormat == linkedRenderEngine->swapchain.image_format ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT,
+                        .aspectMask=VK_IMAGE_ASPECT_COLOR_BIT,
                         .baseMipLevel=0,
                         .levelCount=1,  // Unused. Mip-mapping is not yet implemented.
                         .baseArrayLayer=0,
@@ -131,7 +131,7 @@ public:
                 .addressModeV=VK_SAMPLER_ADDRESS_MODE_REPEAT,
                 .addressModeW=VK_SAMPLER_ADDRESS_MODE_REPEAT,
                 .mipLodBias=linkedRenderEngine->settings.mipMapLevel,
-                .anisotropyEnable=linkedRenderEngine->settings.anisotropicFilterLevel > 0,
+//                .anisotropyEnable=linkedRenderEngine->settings.anisotropicFilterLevel > 0,
 //                .maxAnisotropy=anisotropyLevel,
                 .compareEnable=VK_FALSE,
                 .compareOp=VK_COMPARE_OP_ALWAYS,

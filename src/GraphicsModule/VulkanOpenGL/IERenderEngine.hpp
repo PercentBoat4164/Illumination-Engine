@@ -376,7 +376,7 @@ public:
         // Create the renderPass
         graphicsCommandPool.recordCommandBuffer(0);
         IERenderPass::CreateInfo renderPassCreateInfo {
-            .msaaSamples={}
+            .msaaSamples=1
         };
 
         renderPass.create(&renderEngineLink, &renderPassCreateInfo);
