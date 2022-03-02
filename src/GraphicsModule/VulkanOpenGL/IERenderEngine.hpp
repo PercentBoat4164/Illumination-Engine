@@ -254,21 +254,26 @@ private:
      * @brief Initializes all the command pools in renderEngineLink. Each one is set to use its respective queue.
      */
     void createCommandPools() {
+        IECommandPool::CreateInfo commandPoolCreateInfo{};
         if (renderEngineLink.graphicsQueue) {
             renderEngineLink.graphicsCommandPool = &graphicsCommandPool;
-            renderEngineLink.graphicsCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::graphics});
+            commandPoolCreateInfo.commandQueue=vkb::QueueType::graphics;
+            renderEngineLink.graphicsCommandPool->create(&renderEngineLink, &commandPoolCreateInfo);
         }
         if (renderEngineLink.presentQueue) {
             renderEngineLink.presentCommandPool = &presentCommandPool;
-            renderEngineLink.presentCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::present});
+            commandPoolCreateInfo.commandQueue=vkb::QueueType::present;
+            renderEngineLink.graphicsCommandPool->create(&renderEngineLink, &commandPoolCreateInfo);
         }
         if (renderEngineLink.transferQueue) {
             renderEngineLink.transferCommandPool = &transferCommandPool;
-            renderEngineLink.transferCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::transfer});
+            commandPoolCreateInfo.commandQueue=vkb::QueueType::transfer;
+            renderEngineLink.graphicsCommandPool->create(&renderEngineLink, &commandPoolCreateInfo);
         }
         if (renderEngineLink.computeQueue) {
             renderEngineLink.computeCommandPool = &computeCommandPool;
-            renderEngineLink.computeCommandPool->create(&renderEngineLink, new IECommandPool::CreateInfo{.commandQueue=vkb::QueueType::compute});
+            commandPoolCreateInfo.commandQueue=vkb::QueueType::compute;
+            renderEngineLink.graphicsCommandPool->create(&renderEngineLink, &commandPoolCreateInfo);
         }
     }
 
@@ -307,7 +312,7 @@ public:
             renderEngineLink.settings = *settings;
         }
         else {
-            renderEngineLink.settings = *new IESettings{};
+            renderEngineLink.settings = IESettings{};
         }
         renderEngineLink.renderPass = &renderPass;
         renderEngineLink.textures = &textures;
