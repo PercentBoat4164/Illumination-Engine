@@ -65,13 +65,13 @@ public:
         modelName = filePath.c_str();
         directory = filePath.substr(0, filePath.find_last_of('/'));
         int channels{};
-        IETexture::CreateInfo textureCreateInfo{};
-        textureCreateInfo.filename = std::string("res/Models/NoTexture.png");
-        textureCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-        textureCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-        textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha);
+        IETexture::CreateInfo textureCreateInfo{
+                .format=VK_FORMAT_R8G8B8A8_SRGB,
+                .usage=VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                .allocationUsage=VMA_MEMORY_USAGE_GPU_ONLY,
+                .data=stbi_load("res/Models/NoTexture.png", reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha),
+                .filename=std::string("res/Models/NoTexture.png"),
+        };
         if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
         (*textures)[0].create(linkedRenderEngine, &textureCreateInfo);
         Assimp::Importer importer{};
@@ -105,14 +105,6 @@ public:
                 shader.destroy();
             }
         });
-//        for (const std::filesystem::directory_entry& dirEntry : std::filesystem::recursive_directory_iterator(shaderDirectory)) {
-//            if (!dirEntry.is_directory()) {
-//                shader = IEShader{};
-//                IEShader::CreateInfo shaderCreateInfo{.filename=dirEntry.operator const std::filesystem::path &()};
-//                shader.create(linkedRenderEngine, &shaderCreateInfo);
-//                shaders.push_back(shader);
-//            }
-//        }
     }
 
     void createModelBuffer() {
@@ -275,7 +267,7 @@ private:
                         }
                         std::string texturePath{directory + '/' + std::string(filename.C_Str())};
                         for (uint32_t k = 0; k < textures->size(); ++k) {
-                            if (std::strcmp((*textures)[k].createdWith.filename.c_str(), texturePath.c_str()) == 0) {
+                            if (std::strcmp((*textures)[k].filename.c_str(), texturePath.c_str()) == 0) {
                                 *textureType.first = k;
                                 textureAlreadyLoaded = true;
                                 break;
@@ -285,10 +277,8 @@ private:
                             int channels{};
                             textureCreateInfo.filename = texturePath;
                             textureCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-                            textureCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
                             textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                             textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-                            textureCreateInfo.mipMapping = linkedRenderEngine->settings.mipMapping;
                             textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha);
                             if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
                             temporaryTexture.create(linkedRenderEngine, &textureCreateInfo);

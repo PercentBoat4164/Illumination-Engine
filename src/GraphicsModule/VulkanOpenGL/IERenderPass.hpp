@@ -106,7 +106,6 @@ public:
         };
         for (uint32_t i = 0; i < createdWith.msaaSamples.size(); ++i) {
             framebufferCreateInfo.swapchainImageView = linkedRenderEngine->swapchainImageViews[i];
-            framebufferCreateInfo.msaaSamples = createdWith.msaaSamples[i];
             framebuffers[i].create(linkedRenderEngine, &framebufferCreateInfo);
         }
     }
