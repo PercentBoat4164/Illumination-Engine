@@ -42,6 +42,7 @@ public:
     /**@todo Add code to compile / pre-process / prepare the program files. The result of such a piece of code should be pointers to executable functions.*/
     void compileInPlace() {
         try {
+            luaContext.AddGlobalVariable("i", std::make_shared<LuaCpp::Engine::LuaTNumber>(0));
             luaContext.CompileString("update", file->read(file->length, 0));
         }
         catch (std::runtime_error& e) {
