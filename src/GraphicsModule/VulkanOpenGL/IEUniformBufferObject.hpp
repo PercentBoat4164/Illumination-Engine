@@ -1,5 +1,7 @@
 #pragma once
 
+/* Include classes used as attributes or function arguments. */
+// External dependencies
 #include <glm/glm.hpp>
 
 struct IEUniformBufferObject {

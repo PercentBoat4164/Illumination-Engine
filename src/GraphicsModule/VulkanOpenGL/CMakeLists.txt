@@ -1,30 +1,53 @@
 # Generate all subdirectories
 add_subdirectory(DefaultShaders)
-add_subdirectory(Image)
 
 set(IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles  # Gather sources
-        ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles}
+#        ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles}
+        IEAPI.cpp
+        IEAPI.hpp
+        IEAccelerationStructure.cpp
         IEAccelerationStructure.hpp
+        IEBuffer.cpp
         IEBuffer.hpp
+        IECamera.cpp
         IECamera.hpp
+        IECommandPool.cpp
+        IECommandPool.hpp
+        IEDescriptorSet.cpp
         IEDescriptorSet.hpp
-        IEGraphicsLink.hpp
+        IEMonitor.cpp
         IEMonitor.hpp
+        IEPipeline.cpp
         IEPipeline.hpp
-        IERenderEngine.hpp
-        IERenderPass.hpp
+        IERenderable.cpp
         IERenderable.hpp
-        IESettings.hpp
-        IEShader.hpp
-        IEUniformBufferObject.hpp
-        IEVertex.hpp
-        IEMonitor.hpp
+        IERenderableSettings.cpp
         IERenderableSettings.hpp
+        IERenderEngine.cpp
+        IERenderEngine.hpp
+        IERenderPass.cpp
+        IERenderPass.hpp
+        IESettings.cpp
+        IESettings.hpp
+        IEShader.cpp
+        IEShader.hpp
+        IEUniformBufferObject.cpp
+        IEUniformBufferObject.hpp
+        IEVersion.cpp
+        IEVersion.hpp
+        IEVertex.cpp
+        IEVertex.hpp
+        Image/IEFramebuffer.cpp
+        Image/IEFramebuffer.hpp
+        Image/IEImage.cpp
+        Image/IEImage.hpp
+        Image/IETexture.cpp
+        Image/IETexture.hpp
         )
 
 # Create and define properties for the library
 add_library(IEGraphicsModuleVulkanOpenGL ${IlluminationEngineSourceGraphicsModuleVulkanOpenGLSourceFiles})
-target_include_directories(IEGraphicsModuleVulkanOpenGL PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
+target_include_directories(IEGraphicsModuleVulkanOpenGL PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(IEGraphicsModuleVulkanOpenGL PROPERTIES LINKER_LANGUAGE CXX)
 
 add_dependencies(IEGraphicsModuleVulkanOpenGL IEGraphicsModuleVulkanOpenGLShaders)  # Add shader pre-compilation as a dependency

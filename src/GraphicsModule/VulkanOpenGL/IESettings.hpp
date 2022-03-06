@@ -1,33 +1,22 @@
 #pragma once
 
-#include "IEVersion.hpp"
-
-#include <vulkan/vulkan.h>
-
-#ifndef GLEW_IMPLEMENTATION
-#define GLEW_IMPLEMENTATION
-#include <GL/glew.h>
-#endif
-
-#define GLFW_INCLUDE_VULKAN  // Needed for glfwCreateWindowSurface
-#include <GLFW/glfw3.h>
-
-#include <array>
-
-#if defined(_WIN32)
-#define NOMINMAX
-#include <Windows.h>
-#else
-#include <climits>
-#include <unistd.h>
-#endif
-
-#include <string>
-
+/* Define macros used throughout the file. */
 #define ILLUMINATION_ENGINE_VERSION_MAJOR 0
 #define ILLUMINATION_ENGINE_VERSION_MINOR 0
 #define ILLUMINATION_ENGINE_VERSION_PATCH 0
 #define ILLUMINATION_ENGINE_NAME "Illumination Engine"
+
+/* Include classes used as attributes or function arguments. */
+// Internal dependencies
+#include "IEVersion.hpp"
+
+// External dependencies
+#include <vulkan/vulkan.h>
+
+// System dependencies
+#include <string>
+#include <array>
+
 
 class IESettings {
 public:

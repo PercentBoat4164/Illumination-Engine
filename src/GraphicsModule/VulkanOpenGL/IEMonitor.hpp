@@ -1,8 +1,8 @@
 #pragma once
 
+/* Include classes used as attributes or function arguments. */
+// System dependencies
 #include <cstdint>
-
-/**@todo Move this class to the GUI module when it comes into existence.*/
 
 class IEMonitor {
     uint16_t refreshRate{};

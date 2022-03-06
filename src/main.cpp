@@ -1,7 +1,7 @@
+#include "GraphicsModule/VulkanOpenGL/IERenderEngine.cpp"
 #include "GraphicsModule/OpenGL/openglRenderEngine.hpp"
 #include "InputModule/IEKeyboard.hpp"
 #include "GraphicsModule/OpenGL/IEWindowUserPointer.hpp"
-#include "GraphicsModule/VulkanOpenGL/IERenderEngine.hpp"
 
 /**
  * @brief A key callback function. Moves the camera forward.
@@ -127,7 +127,7 @@ void resetAll(GLFWwindow* window) {
 
 int main() {
     IERenderEngine renderEngine{};
-    IERenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
+    IERenderable cube{&renderEngine, "res/Models/Cube/cube.obj"};
     IEKeyboard keyboard{renderEngine.window};
     IEWindowUserPointer windowUser{&keyboard, &renderEngine};
     glfwSetWindowUserPointer(renderEngine.window, &windowUser);
