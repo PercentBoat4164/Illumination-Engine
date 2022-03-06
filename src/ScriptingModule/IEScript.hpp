@@ -1,8 +1,18 @@
 #pragma once
 
+/* Predefine classes used with pointers or as return values for functions. */
+class IEFile;
+
+/* Include classes used as attributes or function arguments. */
+// Modular dependencies
 #include "Core/AssetModule/IEAspect.hpp"
-#include "Core/FileSystemModule/IEFile.hpp"
-#include "LuaCpp.hpp"
+
+// External dependencies
+#include <LuaCpp.hpp>
+
+// System dependencies
+#include <string>
+
 
 class IEScript : public IEAspect {
 private:
@@ -22,35 +32,12 @@ public:
 
     IEScript() = default;
 
-    explicit IEScript(IEFile *initialFile) {
-        file = initialFile;
-    }
+    explicit IEScript(IEFile *initialFile);
 
-    std::string deduceLanguage() {
-        language = std::string{};
-        std::string thisExtension = file->path.substr(file->path.find_last_of('.'));
-        for (uint8_t i = 0; i < languageFileExtensions.size() && language.empty(); ++i) {
-            for (uint8_t j = 0; j < languageFileExtensions[i].size() && language.empty(); ++j) {
-                if (languageFileExtensions[i][j] == thisExtension) {
-                    language = supportedLanguages[i];
-                }
-            }
-        }
-        return language;
-    }
+    std::string deduceLanguage();
 
     /**@todo Add code to compile / pre-process / prepare the program files. The result of such a piece of code should be pointers to executable functions.*/
-    void compileInPlace() {
-        try {
-            luaContext.AddGlobalVariable("i", std::make_shared<LuaCpp::Engine::LuaTNumber>(0));
-            luaContext.CompileString("update", file->read(file->length, 0));
-        }
-        catch (std::runtime_error& e) {
-            printf("%s", e.what());
-        }
-    }
+    void compileInPlace();
 
-    void execute() {
-        luaContext.Run("update");
-    }
+    void execute();
 };
