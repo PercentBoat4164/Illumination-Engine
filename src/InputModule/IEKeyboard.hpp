@@ -12,11 +12,12 @@
 #include <vector>
 #include <any>
 #include <string>
+#include "Core/IEWindowUser.hpp"
 
 /**
  * @brief A class that stores the data related to a key press action.
  */
-struct IeKeyPressDescription {
+struct IEKeyPressDescription {
     uint16_t key;
     uint8_t action;
     uint8_t modifiers;
@@ -29,7 +30,7 @@ struct IeKeyPressDescription {
      * @param initialModifiers=0
      * @returns IeKeyPressDescription
      */
-    IeKeyPressDescription(int initialKey, int initialAction, int initialModifiers=0) {
+    IEKeyPressDescription(int initialKey, int initialAction, int initialModifiers=0) {
         key = initialKey;
         scancode = glfwGetKeyScancode(key);
         action = initialAction;
@@ -40,7 +41,7 @@ struct IeKeyPressDescription {
      * Constructs a KeyPressDescription from a key. Sets action to pressed with no modifiers.
      * @param initialKey
      */
-    explicit IeKeyPressDescription(int initialKey) {
+    explicit IEKeyPressDescription(int initialKey) {
         key = initialKey;
         scancode = glfwGetKeyScancode(key);
         action = GLFW_PRESS;
@@ -52,7 +53,7 @@ struct IeKeyPressDescription {
      * @param other
      * @return true if the values of the object and argument are the same, false if not.
      */
-    bool operator==(const IeKeyPressDescription& other) const {
+    bool operator==(const IEKeyPressDescription& other) const {
         return (this->key == other.key) & (this->scancode == other.scancode) & (this->action == other.action) & (this->modifiers == other.modifiers);
     }
 };
@@ -61,8 +62,8 @@ struct IeKeyPressDescription {
  * @brief The hash method for the IeKeyPressDescription structure.
  * @return A hash value for an IeKeyPressDescription.
  */
-template<> struct [[maybe_unused]] std::hash<IeKeyPressDescription> {
-    std::size_t operator()(const IeKeyPressDescription& k) const {
+template<> struct [[maybe_unused]] std::hash<IEKeyPressDescription> {
+    std::size_t operator()(const IEKeyPressDescription& k) const {
         return ((((std::hash<int>()(k.key) ^ std::hash<int>()(k.scancode) >> 1) << 1) ^ std::hash<int>()(k.action) << 1) << 1) ^
         std::hash<int>()(k.modifiers);
     }
@@ -74,7 +75,7 @@ template<> struct [[maybe_unused]] std::hash<IeKeyPressDescription> {
 class IEKeyboard {
 public:
     void* attachment; // pointer to object for access through the window user pointer
-    IEWindowUserPointer windowUser;
+    IEWindowUser windowUser;
 
     /**
      * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the IeKeyboard object.
@@ -85,7 +86,7 @@ public:
     explicit IEKeyboard(GLFWwindow* initialWindow, void* initialAttachment=nullptr) {
         window = initialWindow;
         attachment = initialAttachment;
-        windowUser = {this, ((IEWindowUserPointer *)glfwGetWindowUserPointer(window))->renderEngine};
+        windowUser = {this, ((IEWindowUser *)glfwGetWindowUserPointer(window))->IERenderEngine};
         glfwSetWindowUserPointer(window, this);
         glfwSetKeyCallback(window, keyCallback);
     }
@@ -102,9 +103,9 @@ public:
      * @brief Handles all the actions indicated by the key presses logged in the queue.
      */
     void handleQueue() {
-        for (const IeKeyPressDescription& i : queue) {
+        for (const IEKeyPressDescription& i : queue) {
             auto element = actionsOptions.find(i);
-            if (element != actionsOptions.end()) { // for each element that has a correlating action
+            if (element != actionsOptions.end()) {  // for each element that has a correlating action
                 element->second.first(window);
                 if (!element->second.second | (i.action == GLFW_RELEASE)) { // remove elements labeled to not repeat or release
                     queue.erase(std::find(queue.begin(), queue.end(), i));
@@ -118,7 +119,7 @@ public:
      * @param keyPressDescription
      * @param action
      */
-    void editActions(const IeKeyPressDescription& keyPressDescription, const std::pair<std::function<void(GLFWwindow*)>, bool>& action) {
+    void editActions(const IEKeyPressDescription& keyPressDescription, const std::pair<std::function<void(GLFWwindow*)>, bool>& action) {
         actionsOptions.erase(keyPressDescription);
         actionsOptions.insert({keyPressDescription, action});
     }
@@ -129,7 +130,7 @@ public:
      * @param action
      */
     void editActions(uint16_t key, const std::pair<std::function<void(GLFWwindow*)>, bool>& action) {
-        IeKeyPressDescription keyPressDescription{key};
+        IEKeyPressDescription keyPressDescription{key};
         actionsOptions.erase(keyPressDescription);
         actionsOptions.insert({keyPressDescription, action});
     }
@@ -142,7 +143,7 @@ public:
      * @param action
      */
     void editActions(uint16_t key, uint16_t keyAction, uint16_t modifiers, const std::pair<std::function<void(GLFWwindow*)>, bool>& action) {
-        IeKeyPressDescription keyPressDescription{key, keyAction, modifiers};
+        IEKeyPressDescription keyPressDescription{key, keyAction, modifiers};
         actionsOptions.erase(keyPressDescription);
         actionsOptions.insert({keyPressDescription, action});
     }
@@ -153,7 +154,7 @@ public:
      * @param action
      * @param repeat
      */
-    void editActions(const IeKeyPressDescription& keyPressDescription, const std::function<void(GLFWwindow*)>& action, bool repeat=true) {
+    void editActions(const IEKeyPressDescription& keyPressDescription, const std::function<void(GLFWwindow*)>& action, bool repeat=true) {
         actionsOptions.erase(keyPressDescription);
         actionsOptions.insert({keyPressDescription, {action, repeat}});
     }
@@ -165,7 +166,7 @@ public:
      * @param repeat
      */
     void editActions(uint16_t key, const std::function<void(GLFWwindow*)>& action, bool repeat=true) {
-        IeKeyPressDescription keyPressDescription{key};
+        IEKeyPressDescription keyPressDescription{key};
         actionsOptions.erase(keyPressDescription);
         actionsOptions.insert({keyPressDescription, {action, repeat}});
     }
@@ -179,7 +180,7 @@ public:
      * @param repeat
      */
     void editActions(uint16_t key, uint16_t keyAction, uint16_t modifiers, const std::function<void(GLFWwindow*)>& action, bool repeat=true) {
-        IeKeyPressDescription keyPressDescription{key, keyAction, modifiers};
+        IEKeyPressDescription keyPressDescription{key, keyAction, modifiers};
         actionsOptions.erase(keyPressDescription);
         actionsOptions.insert({keyPressDescription, {action, repeat}});
     }
@@ -203,9 +204,9 @@ public:
         if (action == GLFW_REPEAT) {
             return;
         }
-        auto keyboard = (IEKeyboard *)((IEWindowUserPointer *)(glfwGetWindowUserPointer(window)))->keyboard; // keyboard connected to the window
-        IeKeyPressDescription thisKeyPress{key, action};
-        IeKeyPressDescription oppositeKeyPress{key, thisKeyPress.action == GLFW_PRESS ? GLFW_RELEASE : GLFW_PRESS};
+        auto keyboard = (IEKeyboard *)((IEWindowUser *)(glfwGetWindowUserPointer(window)))->IEKeyboard; // keyboard connected to the window
+        IEKeyPressDescription thisKeyPress{key, action};
+        IEKeyPressDescription oppositeKeyPress{key, thisKeyPress.action == GLFW_PRESS ? GLFW_RELEASE : GLFW_PRESS};
         auto oppositeKeyPressIterator = std::find(keyboard->queue.begin(), keyboard->queue.end(), oppositeKeyPress);
         if (oppositeKeyPressIterator != keyboard->queue.end()) {
             keyboard->queue.erase(oppositeKeyPressIterator);
@@ -218,6 +219,6 @@ public:
 
 private:
     GLFWwindow* window; // window this keyboard manages
-    std::vector<IeKeyPressDescription> queue{}; // queue of key presses
-    std::unordered_map<IeKeyPressDescription, std::pair<std::function<void(GLFWwindow*)>, bool>> actionsOptions{}; // hash table of key press description to function
+    std::vector<IEKeyPressDescription> queue{}; // queue of key presses
+    std::unordered_map<IEKeyPressDescription, std::pair<std::function<void(GLFWwindow*)>, bool>> actionsOptions{}; // hash table of key press description to function
 };

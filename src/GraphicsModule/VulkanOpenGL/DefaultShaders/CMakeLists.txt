@@ -1,9 +1,0 @@
-# Add all subdirectories
-add_subdirectory(Rasterize)
-add_subdirectory(RayTrace)
-
-add_custom_target(IEGraphicsModuleVulkanOpenGLShaders)  # Wrapper target for all sub-targets
-
-# Add all sub-targets as dependencies
-add_dependencies(IEGraphicsModuleVulkanOpenGLShaders IEGraphicsModuleVulkanOpenGLShadersRasterize)
-add_dependencies(IEGraphicsModuleVulkanOpenGLShaders IEGraphicsModuleVulkanOpenGLShadersRayTrace)
