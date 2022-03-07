@@ -184,6 +184,8 @@ public:
 
     void handleFullscreenSettingsChange();
 
+    static std::string translateVkResultCodes(VkResult result);
+
     void destroy();
 
     ~IERenderEngine();

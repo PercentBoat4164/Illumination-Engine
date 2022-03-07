@@ -25,6 +25,7 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
     int channels{};
     IETexture::CreateInfo textureCreateInfo{
             .format=VK_FORMAT_R8G8B8A8_SRGB,
+            .layout=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             .usage=VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             .allocationUsage=VMA_MEMORY_USAGE_GPU_ONLY,
             .data=stbi_load("res/Models/NoTexture.png", reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha),
@@ -217,6 +218,7 @@ void IERenderable::processNode(aiNode *node, const aiScene *scene) {
                         int channels{};
                         textureCreateInfo.filename = texturePath;
                         textureCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+                        textureCreateInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                         textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                         textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
                         textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha);
