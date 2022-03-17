@@ -24,9 +24,9 @@ class IERenderable;
 #include "Image/IETexture.hpp"
 
 // External dependencies
-#include "vk_mem_alloc.h"
+#include <vk_mem_alloc.h>
 
-#include "VkBootstrap.h"
+#include <VkBootstrap.h>
 
 #include <vulkan/vulkan.h>
 
@@ -201,7 +201,6 @@ public:
     IECommandPool computeCommandPool{};
     float frameTime{};
     int frameNumber{};
-    bool captureInput{};
 
     // Stuff from GraphicsLink
     IESettings settings{};
@@ -234,7 +233,7 @@ private:
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     std::vector<IEFramebuffer> framebuffers{};
-    std::vector<IERenderable *> renderables{};
+    std::vector<IERenderable*> renderables{};
     IEAccelerationStructure topLevelAccelerationStructure{};
     std::vector<std::function<void()>> fullRecreationDeletionQueue{};
     std::vector<std::function<void()>> recreationDeletionQueue{};

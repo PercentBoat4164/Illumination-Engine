@@ -9,15 +9,15 @@ set(ASSIMP_BUILD_SAMPLES OFF)
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_BUILD_ZLIB ON)
 message("Downloading AssImp")
-FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG master GIT_PROGRESS ON)
+FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG v5.2.2)
 
 # Get GLM
 message("Downloading GLM")
-FetchContent_Declare(glm GIT_REPOSITORY https://github.com/g-truc/glm GIT_TAG master GIT_PROGRESS ON)
+FetchContent_Declare(glm GIT_REPOSITORY https://github.com/g-truc/glm GIT_TAG 0.9.9.8)
 
 # Get spdlog
 message("Downloading spdlog")
-FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog GIT_TAG v1.x GIT_PROGRESS ON)
+FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog GIT_TAG v1.9.2)
 
 if (OpenGL_FOUND)
     # Get GLFW
@@ -26,7 +26,7 @@ if (OpenGL_FOUND)
     set(GLFW_INSTALL OFF)
     set(GLFW_BUILD_EXAMPLES OFF)
     message("Downloading GLFW")
-    FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw GIT_TAG master GIT_PROGRESS ON)
+    FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw GIT_TAG 3.3.6)
 
     # Get GLEW
     if (BUILD_SHARED_LIBS)
@@ -36,7 +36,7 @@ if (OpenGL_FOUND)
         set(glew-cmake_BUILD_SHARED OFF)
         set(glew-cmake_BUILD_STATIC ON)
     endif ()
-    message("Downloading GLEW glew-2.2.0")
+    message("Downloading GLEW")
     FetchContent_Declare(glew URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
 
     FetchContent_MakeAvailable(glfw glew)  # Generate all external dependencies which require OpenGL
@@ -50,11 +50,11 @@ endif ()
 if (Vulkan_FOUND)
     # Get vk-bootstrap
     message("Downloading vk-bootstrap")
-    FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG master GIT_PROGRESS ON)
+    FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG v0.5)
 
     # Get VMA
     message("Downloading VMA")
-    FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG master GIT_PROGRESS ON)
+    FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG master)
 
     FetchContent_MakeAvailable(vk-bootstrap vma)  # Generate all external dependencies which require Vulkan
 

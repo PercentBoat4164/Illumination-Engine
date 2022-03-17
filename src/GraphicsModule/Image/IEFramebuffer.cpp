@@ -13,7 +13,7 @@ void IEFramebuffer::copyCreateInfo(IEFramebuffer::CreateInfo *createInfo) {
 
 void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo *createInfo) {
     if (engineLink) {  // Assume that this image is being recreated in a new engine, or created for the first time.
-        destroy();  // Delete anything that was created in the context of the old engine
+        destroy(true);  // Delete anything that was created in the context of the old engine
         linkedRenderEngine = engineLink;
     }
 
@@ -50,7 +50,7 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
     if (msaaSamplesAllowed > VK_SAMPLE_COUNT_1_BIT) {
         colorImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
         deletionQueue.emplace_back([&] {
-            colorImage.destroy();
+            colorImage.destroy(true);
         });
     }
     framebufferImageCreateInfo.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
@@ -59,7 +59,7 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
     framebufferImageCreateInfo.aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
     depthImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
     deletionQueue.emplace_back([&] {
-        depthImage.destroy();
+        depthImage.destroy(true);
     });
     std::vector<VkImageView> framebufferAttachments{msaaSamplesAllowed == VK_SAMPLE_COUNT_1_BIT ? swapchainImageView : colorImage.view, depthImage.view, swapchainImageView};
     VkFramebufferCreateInfo framebufferCreateInfo{

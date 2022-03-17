@@ -7,7 +7,7 @@ class VkVertexInputAttributeDescription;
 
 /* Include classes used as attributes or function arguments. */
 // External dependencies
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
 // System dependencies
 #include <array>

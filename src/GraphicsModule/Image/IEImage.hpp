@@ -6,12 +6,15 @@ class IERenderEngine;
 class IEBuffer;
 
 /* Include classes used as attributes or function arguments. */
+// Internal dependencies
+#include "IEDependency.hpp"
+
 // External dependencies
-#include "vk_mem_alloc.h"
+#include <vk_mem_alloc.h>
 
 #include <vulkan/vulkan.h>
 
-#include "stb_image.h"
+#include <stb_image.h>
 
 // System dependencies
 #include <cstdint>
@@ -20,7 +23,7 @@ class IEBuffer;
 #include <functional>
 
 
-class IEImage {
+class IEImage : public IEDependency {
 protected:
     [[maybe_unused]] [[nodiscard]] uint8_t getHighestMSAASampleCount(uint8_t requested) const ;
 
@@ -58,11 +61,12 @@ public:
 
     IERenderEngine *linkedRenderEngine{};
     std::vector<std::function<void()>> deletionQueue{};
+    std::vector<void*> dependents{};
     VmaAllocation allocation{};
 
     IEImage();
 
-    void destroy();
+    void destroy(bool ignoreDependents) override;
 
     virtual void create(IEImage::CreateInfo *createInfo);
 
@@ -74,5 +78,9 @@ public:
 
     void transitionLayout(VkImageLayout newLayout);
 
-    ~IEImage();
+    void addDependent(void* dependent);
+
+    void removeDependent(void* dependent);
+
+    ~IEImage() override;
 };

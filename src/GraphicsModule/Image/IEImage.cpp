@@ -23,11 +23,14 @@
     return std::max(anisotropyLevel, std::min(properties.limits.maxSamplerAnisotropy, requested));
 }
 
-void IEImage::destroy() {
-    for (std::function<void()> &function: deletionQueue) {
-        function();
+void IEImage::destroy(bool ignoreDependents) {
+    if (hasNoDependents() || ignoreDependents) {
+        removeAllDependents();
+        for (std::function<void()> &function: deletionQueue) {
+            function();
+        }
+        deletionQueue.clear();
     }
-    deletionQueue.clear();
 }
 
 void IEImage::create(IEImage::CreateInfo *createInfo) {
@@ -52,7 +55,7 @@ void IEImage::copyCreateInfo(IEImage::CreateInfo *createInfo) {
 
 void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
     if (engineLink) {  // Assume that this image is being recreated in a new engine, or created for the first time.
-        destroy();  // Delete anything that was created in the context of the old engine
+        destroy(true);  // Delete anything that was created in the context of the old engine
         linkedRenderEngine = engineLink;
     }
 
@@ -148,7 +151,7 @@ void IEImage::toBuffer(const IEBuffer &buffer) const {
     region.imageSubresource.layerCount = 1;
     region.imageOffset = {0, 0, 0};
     region.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
-    vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)[0], image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1, &region);
+    vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1, &region);
 }
 
 void IEImage::transitionLayout(VkImageLayout newLayout) {
@@ -159,13 +162,11 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to transition to an undefined layout (VK_IMAGE_LAYOUT_UNDEFINED)!");
         return;
     }
-    VkImageMemoryBarrier imageMemoryBarrier{
-            .sType=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .oldLayout=imageLayout,
+    IEImageMemoryBarrier imageMemoryBarrier{
             .newLayout=newLayout,
             .srcQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
-            .image=image,
+            .image=this,
             .subresourceRange={
                     .aspectMask=static_cast<VkImageAspectFlags>(newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT),
                     .baseMipLevel=0,
@@ -214,12 +215,25 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to transition with unknown parameters!");
         return;
     }
-    vkCmdPipelineBarrier((linkedRenderEngine->graphicsCommandPool)[0], sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+    linkedRenderEngine->graphicsCommandPool[0].recordPipelineBarrier(sourceStage, destinationStage, 0, {}, {}, {&imageMemoryBarrier});
     imageLayout = newLayout;
 }
 
 IEImage::~IEImage() {
-    destroy();
+    destroy(true);
+}
+
+void IEImage::addDependent(void *dependent) {
+    dependents.push_back(dependent);
+}
+
+void IEImage::removeDependent(void *dependent) {
+    for (int i = 0; i < dependents.size(); ++i) {
+        if (dependents[i] == dependent) {
+            dependents.erase(dependents.begin() + i);
+            return;
+        }
+    }
 }
 
 IEImage::IEImage() = default;

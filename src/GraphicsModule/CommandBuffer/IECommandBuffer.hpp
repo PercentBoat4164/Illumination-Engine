@@ -9,7 +9,7 @@ class IERenderEngine;
 #include <variant>
 #include "IEBuffer.hpp"
 #include "Image/IEImage.hpp"
-#include "IEPipeline.hpp"
+#include "IEDependent.hpp"
 
 
 typedef enum IECommandBufferState {
@@ -21,60 +21,175 @@ typedef enum IECommandBufferState {
     IE_COMMAND_BUFFER_STATE_INVALID = 0x5
 } IECommandBufferState;
 
-class IECommandBuffer {
+
+typedef struct IEImageMemoryBarrier {
+    const void *pNext;
+    VkAccessFlags srcAccessMask;
+    VkAccessFlags dstAccessMask;
+    VkImageLayout newLayout;
+    uint32_t srcQueueFamilyIndex;
+    uint32_t dstQueueFamilyIndex;
+    IEImage *image;
+    VkImageSubresourceRange subresourceRange;
+
+    [[nodiscard]] IEImage *getImage() const {
+        return image;
+    }
+
+    explicit operator VkImageMemoryBarrier() const {
+        return {
+                .sType=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                .pNext=pNext,
+                .srcAccessMask=srcAccessMask,
+                .dstAccessMask=dstAccessMask,
+                .newLayout=newLayout,
+                .srcQueueFamilyIndex=srcQueueFamilyIndex,
+                .dstQueueFamilyIndex=dstQueueFamilyIndex,
+                .image=image->image,
+                .subresourceRange=subresourceRange
+        };
+    }
+
+    explicit operator VkImageMemoryBarrier2() const {
+        return {
+                .sType=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                .pNext=pNext,
+                .srcAccessMask=srcAccessMask,
+                .dstAccessMask=dstAccessMask,
+                .newLayout=newLayout,
+                .srcQueueFamilyIndex=srcQueueFamilyIndex,
+                .dstQueueFamilyIndex=dstQueueFamilyIndex,
+                .image=image->image,
+                .subresourceRange=subresourceRange
+        };
+    }
+} IEImageMemoryBarrier;
+
+
+typedef struct IEBufferMemoryBarrier {
+    const void *pNext;
+    VkAccessFlags srcAccessMask;
+    VkAccessFlags dstAccessMask;
+    uint32_t srcQueueFamilyIndex;
+    uint32_t dstQueueFamilyIndex;
+    IEBuffer *buffer;
+    VkDeviceSize offset;
+    VkDeviceSize size;
+
+    [[nodiscard]] IEBuffer *getBuffer() const {
+        return buffer;
+    };
+
+    explicit operator VkBufferMemoryBarrier() const {
+        return {
+                .sType=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                .pNext=pNext,
+                .srcAccessMask=srcAccessMask,
+                .dstAccessMask=dstAccessMask,
+                .srcQueueFamilyIndex=srcQueueFamilyIndex,
+                .dstQueueFamilyIndex=dstQueueFamilyIndex,
+                .buffer=buffer->buffer,
+                .offset=offset,
+                .size=size
+        };
+    }
+
+    explicit operator VkBufferMemoryBarrier2() const {
+        return {
+                .sType=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
+                .pNext=pNext,
+                .srcAccessMask=srcAccessMask,
+                .dstAccessMask=dstAccessMask,
+                .srcQueueFamilyIndex=srcQueueFamilyIndex,
+                .dstQueueFamilyIndex=dstQueueFamilyIndex,
+                .buffer=buffer->buffer,
+                .offset=offset,
+                .size=size
+        };
+    }
+
+} IEBufferMemoryBarrier;
+
+
+typedef struct IEDependencyInfo {
+    const void *pNext;
+    VkDependencyFlags dependencyFlags;
+    std::vector<VkMemoryBarrier2> memoryBarriers;
+    std::vector<IEBufferMemoryBarrier> bufferMemoryBarriers;
+    std::vector<IEImageMemoryBarrier> imageMemoryBarriers;
+
+    [[nodiscard]] std::vector<IEBuffer *> getBuffers() const {
+        std::vector<IEBuffer *> buffers{};
+        buffers.reserve(bufferMemoryBarriers.size());
+        for (IEBufferMemoryBarrier bufferBarrier : bufferMemoryBarriers) {
+            buffers.push_back(bufferBarrier.buffer);
+        }
+        return buffers;
+    }
+
+    [[nodiscard]] std::vector<IEImage *> getImages() const {
+        std::vector<IEImage *> images{};
+        images.reserve(imageMemoryBarriers.size());
+        for (IEImageMemoryBarrier imageBarrier : imageMemoryBarriers) {
+            images.push_back(imageBarrier.image);
+        }
+        return images;
+    }
+
+    explicit operator VkDependencyInfo() const {
+        std::vector<VkBufferMemoryBarrier2> bufferBarriers{};
+        bufferBarriers.resize(bufferMemoryBarriers.size());
+        for (IEBufferMemoryBarrier bufferBarrier : bufferMemoryBarriers) {
+            bufferBarriers.emplace_back((VkBufferMemoryBarrier2)bufferBarrier);
+        }
+        std::vector<VkImageMemoryBarrier2> imageBarriers{};
+        imageBarriers.resize(imageMemoryBarriers.size());
+        for (IEImageMemoryBarrier imageBarrier : imageMemoryBarriers) {
+            imageBarriers.emplace_back((VkImageMemoryBarrier2)imageBarrier);
+        }
+        return {
+            .sType=VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext=pNext,
+            .dependencyFlags=dependencyFlags,
+            .memoryBarrierCount=static_cast<uint32_t>(memoryBarriers.size()),
+            .pMemoryBarriers=memoryBarriers.data(),
+            .bufferMemoryBarrierCount=static_cast<uint32_t>(bufferMemoryBarriers.size()),
+            .pBufferMemoryBarriers=bufferBarriers.data(),
+            .imageMemoryBarrierCount=static_cast<uint32_t>(imageMemoryBarriers.size()),
+            .pImageMemoryBarriers=imageBarriers.data(),
+        };
+    }
+
+} IEDependencyInfo;
+
+class IECommandBuffer : public IEDependent{
 public:
     VkCommandBuffer commandBuffer{};
     IECommandPool *commandPool;
-    std::vector<std::variant<IEBuffer, IEImage, IEPipeline>> dependencies;
+    std::vector<void*> dependencies;
     IERenderEngine *linkedRenderEngine;
     IECommandBufferState state;
 
-    IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool) {
-        this->linkedRenderEngine = linkedRenderEngine;
-        this->commandPool = commandPool;
-        state = IE_COMMAND_BUFFER_STATE_NONE;
-    }
+    IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool);
 
     /**
      * @brief Allocate this command buffer as a primary command buffer.
      */
     void allocate();
-
     /**
      * @brief Prepare this command buffer for recording.
      */
     void record();
 
-    IEBuffer *addDependency(const IEBuffer &dependency);
+    void free();
 
-    IEImage *addDependency(const IEImage &dependency);
+    void reset();
 
-    IEPipeline *addDependency(const IEPipeline &dependency);
+    void execute();
 
-    void free() {
-        for (std::variant<IEBuffer, IEImage, IEPipeline> dependency: dependencies) {
-            if (IEBuffer *buffer = std::get_if<IEBuffer>(&dependency)) {
-                buffer->destroy();
-            }
-            if (IEImage *image = std::get_if<IEImage>(&dependency)) {
-                image->destroy();
-            }
-            if (IEPipeline *pipeline = std::get_if<IEPipeline>(&dependency)) {
-                pipeline->destroy();
-            }
-        }
-    }
+    void finish();
 
-    void reset() {
+    void recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier> &memoryBarriers, const std::vector<IEBufferMemoryBarrier *> &bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier *> &imageMemoryBarriers);
 
-    }
-
-    // Convenience functions that will prevent the user from writing a bit of boilerplate code for dependencies with vkCmd* commands
-    void recordBindPipeline(VkPipelineBindPoint bindPoint, const IEPipeline &pipeline) {
-        vkCmdBindPipeline(commandBuffer, bindPoint, addDependency(pipeline)->pipeline);
-    }
-
-    void recordCopyBuffer(const IEBuffer &srcBuffer, const IEBuffer &dstBuffer, uint32_t regionCount, const VkBufferCopy *pRegions) {
-        vkCmdCopyBuffer(commandBuffer, addDependency(srcBuffer)->buffer, addDependency(dstBuffer)->buffer, regionCount, pRegions);
-    }
+    void recordPipelineBarrier(const IEDependencyInfo *dependencyInfo) const;
 };

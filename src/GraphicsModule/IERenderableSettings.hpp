@@ -6,7 +6,7 @@ class IEAPI;
 /* Include classes used as attributes or function arguments. */
 // External dependencies
 #define GLEW_IMPLEMENTATION  // Must precede GLEW inclusion.
-#include "GL/glew.h"
+#include <GL/glew.h>
 
 #include <vulkan/vulkan.h>
 
