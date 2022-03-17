@@ -41,16 +41,6 @@ void IECommandBuffer::record() {
 
 }
 
-IEBuffer *IECommandBuffer::addDependency(const IEBuffer &dependency) {
-    dependencies.emplace_back(dependency);
-    return &std::get<IEBuffer>(dependencies[dependencies.size() - 1]);
-}
-
-IEImage *IECommandBuffer::addDependency(const IEImage &dependency) {
-    dependencies.emplace_back(dependency);
-    return &std::get<IEImage>(dependencies[dependencies.size() - 1]);
-}
-
 void IECommandBuffer::free() {
     vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool->commandPool, 1, &commandBuffer);
 }
