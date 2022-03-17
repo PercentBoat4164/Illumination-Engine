@@ -26,9 +26,7 @@ void IECommandBuffer::record() {
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Attempt to record to command buffer before allocating!");
         allocate();
     }
-    else if (state == IE_COMMAND_BUFFER_STATE_RECORDING)
-        return;
-    else if (state > IE_COMMAND_BUFFER_STATE_INITIAL) {
+    if (state > IE_COMMAND_BUFFER_STATE_INITIAL) {
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Attempt to record to command buffer that has already finish recording and has not been reset!");
         reset();
     }
@@ -37,10 +35,20 @@ void IECommandBuffer::record() {
         .flags=0
     };
     VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
-    if (result != VK_SUCCESS)
+    if (result != VK_SUCCESS) {
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failure to properly begin command buffer recording! Error: " + IERenderEngine::translateVkResultCodes(result));
-    else
-        state = IE_COMMAND_BUFFER_STATE_RECORDING;
+    }
+
+}
+
+IEBuffer *IECommandBuffer::addDependency(const IEBuffer &dependency) {
+    dependencies.emplace_back(dependency);
+    return &std::get<IEBuffer>(dependencies[dependencies.size() - 1]);
+}
+
+IEImage *IECommandBuffer::addDependency(const IEImage &dependency) {
+    dependencies.emplace_back(dependency);
+    return &std::get<IEImage>(dependencies[dependencies.size() - 1]);
 }
 
 void IECommandBuffer::free() {
