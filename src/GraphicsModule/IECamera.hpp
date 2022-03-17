@@ -12,8 +12,8 @@ class IERenderEngine;
 // Modular dependencies
 
 // External dependencies
-#include "glm/glm.hpp"
-#include "glm/ext/matrix_transform.hpp"
+#include <glm/glm.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 // System dependencies
 #include <cmath>

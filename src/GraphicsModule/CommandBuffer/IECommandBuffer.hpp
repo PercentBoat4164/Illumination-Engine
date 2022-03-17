@@ -9,7 +9,7 @@ class IERenderEngine;
 #include <variant>
 #include "IEBuffer.hpp"
 #include "Image/IEImage.hpp"
-#include "IEPipeline.hpp"
+#include "IEDependent.hpp"
 
 
 typedef enum IECommandBufferState {
@@ -21,19 +21,15 @@ typedef enum IECommandBufferState {
     IE_COMMAND_BUFFER_STATE_INVALID = 0x5
 } IECommandBufferState;
 
-class IECommandBuffer {
+class IECommandBuffer : public IEDependent{
 public:
     VkCommandBuffer commandBuffer{};
     IECommandPool *commandPool;
-    std::vector<std::variant<IEBuffer, IEImage, IEPipeline>> dependencies;
+    std::vector<void*> dependencies;
     IERenderEngine *linkedRenderEngine;
     IECommandBufferState state;
 
-    IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool) {
-        this->linkedRenderEngine = linkedRenderEngine;
-        this->commandPool = commandPool;
-        state = IE_COMMAND_BUFFER_STATE_NONE;
-    }
+    IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool);
 
     /**
      * @brief Allocate this command buffer as a primary command buffer.
@@ -45,36 +41,15 @@ public:
      */
     void record();
 
-    IEBuffer *addDependency(const IEBuffer &dependency);
+    void free();
 
-    IEImage *addDependency(const IEImage &dependency);
+    void reset();
 
-    IEPipeline *addDependency(const IEPipeline &dependency);
+    void execute();
 
-    void free() {
-        for (std::variant<IEBuffer, IEImage, IEPipeline> dependency: dependencies) {
-            if (IEBuffer *buffer = std::get_if<IEBuffer>(&dependency)) {
-                buffer->destroy();
-            }
-            if (IEImage *image = std::get_if<IEImage>(&dependency)) {
-                image->destroy();
-            }
-            if (IEPipeline *pipeline = std::get_if<IEPipeline>(&dependency)) {
-                pipeline->destroy();
-            }
-        }
-    }
+    void finish();
 
-    void reset() {
+    void recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier> &memoryBarriers, const std::vector<IEBufferMemoryBarrier *> &bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier *> &imageMemoryBarriers);
 
-    }
-
-    // Convenience functions that will prevent the user from writing a bit of boilerplate code for dependencies with vkCmd* commands
-    void recordBindPipeline(VkPipelineBindPoint bindPoint, const IEPipeline &pipeline) {
-        vkCmdBindPipeline(commandBuffer, bindPoint, addDependency(pipeline)->pipeline);
-    }
-
-    void recordCopyBuffer(const IEBuffer &srcBuffer, const IEBuffer &dstBuffer, uint32_t regionCount, const VkBufferCopy *pRegions) {
-        vkCmdCopyBuffer(commandBuffer, addDependency(srcBuffer)->buffer, addDependency(dstBuffer)->buffer, regionCount, pRegions);
-    }
+    void recordPipelineBarrier(const IEDependencyInfo *dependencyInfo) const;
 };

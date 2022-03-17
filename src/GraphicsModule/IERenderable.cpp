@@ -5,20 +5,20 @@
 #include "IERenderEngine.hpp"
 
 /* Include external dependencies. */
-#include "assimp/Importer.hpp"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
-#include "stb_image.h"
+#include <stb_image.h>
 
-#include "glm/detail/type_quat.hpp"
-#include "glm/ext/quaternion_trigonometric.hpp"
-#include "glm/glm.hpp"
+#include <glm/detail/type_quat.hpp>
+#include <glm/ext/quaternion_trigonometric.hpp>
+#include <glm/glm.hpp>
 
 
 IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
     linkedRenderEngine = engineLink;
-    linkedRenderEngine->graphicsCommandPool.recordCommandBuffer(0);
+    linkedRenderEngine->graphicsCommandPool[0].record();
     textures = &linkedRenderEngine->textures;
     modelName = filePath.c_str();
     directory = filePath.substr(0, filePath.find_last_of('/'));
@@ -37,7 +37,7 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
     const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath)); }
     processNode(scene->mRootNode, scene);
-    linkedRenderEngine->graphicsCommandPool.executeCommandBuffer(0);
+    linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
 void IERenderable::destroy() {
@@ -75,7 +75,7 @@ void IERenderable::createModelBuffer() {
     };
     modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
     deletionQueue.emplace_back([&] {
-        modelBuffer.destroy();
+        modelBuffer.destroy(true);
     });
 }
 
@@ -87,7 +87,7 @@ void IERenderable::createVertexBuffer() {
     };
     vertexBuffer.create(linkedRenderEngine, &vertexBufferCreateInfo);
     deletionQueue.emplace_back([&] {
-        vertexBuffer.destroy();
+        vertexBuffer.destroy(true);
     });
 }
 
@@ -112,7 +112,7 @@ void IERenderable::update(const IECamera &camera, float time) {
                 modelMatrix[2][0], modelMatrix[2][1], modelMatrix[2][2], modelMatrix[3][2]
         };
         transformationBuffer.uploadData(&transformationMatrix, sizeof(transformationMatrix));
-        bottomLevelAccelerationStructure.destroy();
+        bottomLevelAccelerationStructure.destroy(true);
         IEAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
         renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
         renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
@@ -132,7 +132,7 @@ void IERenderable::createIndexBuffer() {
     };
     indexBuffer.create(linkedRenderEngine, &indexBufferCreateInfo);
     deletionQueue.emplace_back([&] {
-        indexBuffer.destroy();
+        indexBuffer.destroy(true);
     });
 }
 

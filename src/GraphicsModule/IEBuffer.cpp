@@ -5,11 +5,14 @@
 #include "IERenderEngine.hpp"
 
 
-void IEBuffer::destroy() {
-    if (!created) { return; }
-    for (std::function<void()> &function : deletionQueue) { function(); }
-    deletionQueue.clear();
-    created = false;
+void IEBuffer::destroy(bool ignoreDependents) {
+    if (hasNoDependents() || ignoreDependents) {
+        if (!created) { return; }
+        removeAllDependents();
+        for (std::function<void()> &function: deletionQueue) { function(); }
+        deletionQueue.clear();
+        created = false;
+    }
 }
 
 void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo) {
@@ -61,10 +64,10 @@ void IEBuffer::toImage(IEImage *image, uint32_t width, uint32_t height) {
     if (image->imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         oldLayout = image->imageLayout;
         image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0], buffer, image->image, image->imageLayout, 1, &region);
+        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, buffer, image->image, image->imageLayout, 1, &region);
         image->transitionLayout(oldLayout);
     } else {
-        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0], buffer, image->image, image->imageLayout, 1, &region);
+        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, buffer, image->image, image->imageLayout, 1, &region);
     }
 }
 
@@ -80,13 +83,13 @@ void IEBuffer::toImage(IEImage *image) {
     if (image->imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         oldLayout = image->imageLayout;
         image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0], buffer, image->image, image->imageLayout, 1, &region);
+        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, buffer, image->image, image->imageLayout, 1, &region);
         image->transitionLayout(oldLayout);
     } else {
-        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0], buffer, image->image, image->imageLayout, 1, &region);
+        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, buffer, image->image, image->imageLayout, 1, &region);
     }
 }
 
 IEBuffer::~IEBuffer() {
-    destroy();
+    destroy(true);
 }

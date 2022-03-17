@@ -5,7 +5,7 @@
 #include "IERenderEngine.hpp"
 
 /* Include external dependencies. */
-#include "glm/ext/matrix_clip_space.hpp"
+#include <glm/ext/matrix_clip_space.hpp>
 
 
 void IECamera::create(IERenderEngine *engineLink) {

@@ -24,9 +24,9 @@ class IERenderable;
 #include "Image/IETexture.hpp"
 
 // External dependencies
-#include "vk_mem_alloc.h"
+#include <vk_mem_alloc.h>
 
-#include "VkBootstrap.h"
+#include <VkBootstrap.h>
 
 #include <vulkan/vulkan.h>
 
@@ -234,7 +234,7 @@ private:
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
     std::vector<IEFramebuffer> framebuffers{};
-    std::vector<IERenderable *> renderables{};
+    std::vector<IERenderable*> renderables{};
     IEAccelerationStructure topLevelAccelerationStructure{};
     std::vector<std::function<void()>> fullRecreationDeletionQueue{};
     std::vector<std::function<void()>> recreationDeletionQueue{};

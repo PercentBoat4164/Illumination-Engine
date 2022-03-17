@@ -10,7 +10,7 @@ class IEBuffer;
 // External dependencies
 #include <vulkan/vulkan.h>
 
-#include "stb_image.h"
+#include <stb_image.h>
 
 // System dependencies
 #include <cstdint>

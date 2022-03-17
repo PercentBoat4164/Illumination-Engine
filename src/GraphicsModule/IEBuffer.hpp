@@ -6,18 +6,21 @@ class IEImage;
 class IERenderEngine;
 
 /* Include classes used as attributes or function arguments. */
+// Internal dependencies
+#include "IEDependency.hpp"
+
 // External dependencies
-#include "vk_mem_alloc.h"
+
+#include <vk_mem_alloc.h>
 
 #include <vulkan/vulkan.h>
-
 // System dependencies
 #include <vector>
 #include <cstdint>
 #include <functional>
 
 
-class IEBuffer {
+class IEBuffer : public IEDependency {
 public:
     struct CreateInfo {
         //Only required for IEBuffer
@@ -54,7 +57,7 @@ public:
     CreateInfo createdWith{};
     bool created{false};
 
-    void destroy();
+    void destroy(bool ignoreDependents) override;
 
     virtual void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
@@ -64,7 +67,7 @@ public:
 
     void toImage(IEImage *image);
 
-    virtual ~IEBuffer();
+    ~IEBuffer() override;
 
 protected:
     std::vector<std::function<void()>> deletionQueue{};

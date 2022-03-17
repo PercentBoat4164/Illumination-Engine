@@ -44,7 +44,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Image/IEImage.hpp
         Image/IETexture.cpp
         Image/IETexture.hpp
-        )
+        IEDependency.cpp IEDependency.hpp IEDependent.cpp IEDependent.hpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

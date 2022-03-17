@@ -9,15 +9,15 @@
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION  // Must precede GLEW inclusion.
-#include "GL/glew.h"  // Not required by this file, but must be included before GLFW which is required.
+#include <GL/glew.h>  // Not required by this file, but must be included before GLFW which is required.
 
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
+#include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <stb_image.h>
 
 /* Include system dependencies. */
 #include <filesystem>
@@ -321,13 +321,12 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 
     // Create command pools
     createCommandPools();
-    graphicsCommandPool.addCommandBuffers(swapchain.image_count);
     deletionQueue.insert(deletionQueue.begin(), [&] {
         destroyCommandPools();
     });
 
-    // Create the rend.Pass
-    graphicsCommandPool.recordCommandBuffer(0);
+    // Create the renderPass
+    graphicsCommandPool[0].record();
     IERenderPass::CreateInfo renderPassCreateInfo {
             .msaaSamples=1
     };
@@ -335,15 +334,15 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     deletionQueue.insert(deletionQueue.begin(), [&]{
         renderPass.destroy();
     });
-    graphicsCommandPool.executeCommandBuffer(0);
+    graphicsCommandPool[0].execute();
     camera.create(this);
     IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
     IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, api.name + " v" +api.version.name);
-    deletionQueue.insert(deletionQueue.begin(), [&] { topLevelAccelerationStructure.destroy(); });
+    deletionQueue.insert(deletionQueue.begin(), [&] { topLevelAccelerationStructure.destroy(true); });
 }
 
 void IERenderEngine::loadRenderable(IERenderable *renderable) {
-    graphicsCommandPool.recordCommandBuffer(0);
+    graphicsCommandPool[0].record();
 
     // Create Shaders
     renderable->createShaders(renderable->directory);
@@ -364,7 +363,7 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
 
     // Create pipeline
     renderable->createPipeline();
-    graphicsCommandPool.executeCommandBuffer(0);
+    graphicsCommandPool[0].execute();
 }
 
 bool IERenderEngine::update() {
@@ -388,8 +387,8 @@ bool IERenderEngine::update() {
     }
     imagesInFlight[imageIndex] = inFlightFences[currentFrame];
     VkDeviceSize offsets[] = {0};
-    graphicsCommandPool.resetCommandBuffer((swapchain.image_count - 1 + imageIndex) % swapchain.image_count);
-    graphicsCommandPool.recordCommandBuffer(imageIndex);
+    graphicsCommandPool[(swapchain.image_count - 1 + imageIndex) % swapchain.image_count].reset();
+    graphicsCommandPool[imageIndex].record();
     VkViewport viewport{};
     viewport.x = 0.f;
     viewport.y = 0.f;
@@ -397,18 +396,18 @@ bool IERenderEngine::update() {
     viewport.height = (float)swapchain.extent.height;
     viewport.minDepth = 0.f;
     viewport.maxDepth = 1.f;
-    vkCmdSetViewport(graphicsCommandPool[imageIndex], 0, 1, &viewport);
+    vkCmdSetViewport(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &viewport);
     VkRect2D scissor{};
     scissor.offset = {0, 0};
     scissor.extent = swapchain.extent;
-    vkCmdSetScissor(graphicsCommandPool[imageIndex], 0, 1, &scissor);
+    vkCmdSetScissor(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &scissor);
     VkRenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(framebuffers[imageIndex]);
-    vkCmdBeginRenderPass(graphicsCommandPool[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(graphicsCommandPool[imageIndex].commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     camera.update();
     auto time = static_cast<float>(glfwGetTime());
     for (IERenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera, time); } }
     if (settings.rayTracing) {
-        topLevelAccelerationStructure.destroy();
+        topLevelAccelerationStructure.destroy(true);
         std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
         bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
         for (IERenderable *renderable : renderables) {
@@ -428,15 +427,15 @@ bool IERenderEngine::update() {
             if (settings.rayTracing) {
                 renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2});
             }
-            vkCmdBindVertexBuffers(graphicsCommandPool[imageIndex], 0, 1, &renderable->vertexBuffer.buffer, offsets);
-            vkCmdBindIndexBuffer(graphicsCommandPool[imageIndex], renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdBindPipeline(graphicsCommandPool[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipeline);
-            vkCmdBindDescriptorSets(graphicsCommandPool[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipelineLayout, 0, 1, &renderable->descriptorSet.descriptorSet, 0, nullptr);
-            vkCmdDrawIndexed(graphicsCommandPool[imageIndex], static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
+            vkCmdBindVertexBuffers(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &renderable->vertexBuffer.buffer, offsets);
+            vkCmdBindIndexBuffer(graphicsCommandPool[imageIndex].commandBuffer, renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+            vkCmdBindPipeline(graphicsCommandPool[imageIndex].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipeline);
+            vkCmdBindDescriptorSets(graphicsCommandPool[imageIndex].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipelineLayout, 0, 1, &renderable->descriptorSet.descriptorSet, 0, nullptr);
+            vkCmdDrawIndexed(graphicsCommandPool[imageIndex].commandBuffer, static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
         }
     }
-    vkCmdEndRenderPass(graphicsCommandPool[imageIndex]);
-    if (vkEndCommandBuffer(graphicsCommandPool[imageIndex]) != VK_SUCCESS) {
+    vkCmdEndRenderPass(graphicsCommandPool[imageIndex].commandBuffer);
+    if (vkEndCommandBuffer(graphicsCommandPool[imageIndex].commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record draw command IEBuffer!");
     }
     VkSemaphore waitSemaphores[]{imageAvailableSemaphores[currentFrame]};
@@ -447,7 +446,7 @@ bool IERenderEngine::update() {
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &graphicsCommandPool[imageIndex];
+    submitInfo.pCommandBuffers = &graphicsCommandPool[imageIndex].commandBuffer;
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
     vkResetFences(device.device, 1, &inFlightFences[currentFrame]);
