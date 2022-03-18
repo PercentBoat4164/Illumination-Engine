@@ -136,13 +136,23 @@ typedef struct IEDependencyInfo {
         return images;
     }
 
-    explicit operator VkDependencyInfo() const {
-        std::vector<VkBufferMemoryBarrier2> bufferBarriers{};
+    [[nodiscard]] std::vector<IEDependency *> getDependencies() const {
+        std::vector<IEDependency *> dependencies{};
+        dependencies.reserve(imageMemoryBarriers.size() + bufferMemoryBarriers.size());
+        for (IEImageMemoryBarrier imageBarrier : imageMemoryBarriers) {
+            dependencies.push_back(imageBarrier.image);
+        }
+        for (IEBufferMemoryBarrier bufferBarrier : bufferMemoryBarriers) {
+            dependencies.push_back(bufferBarrier.buffer);
+        }
+        return dependencies;
+    }
+
+    explicit operator VkDependencyInfo() {
         bufferBarriers.resize(bufferMemoryBarriers.size());
         for (IEBufferMemoryBarrier bufferBarrier : bufferMemoryBarriers) {
             bufferBarriers.emplace_back((VkBufferMemoryBarrier2)bufferBarrier);
         }
-        std::vector<VkImageMemoryBarrier2> imageBarriers{};
         imageBarriers.resize(imageMemoryBarriers.size());
         for (IEImageMemoryBarrier imageBarrier : imageMemoryBarriers) {
             imageBarriers.emplace_back((VkImageMemoryBarrier2)imageBarrier);
@@ -160,6 +170,9 @@ typedef struct IEDependencyInfo {
         };
     }
 
+private:
+    std::vector<VkBufferMemoryBarrier2> bufferBarriers{};
+    std::vector<VkImageMemoryBarrier2> imageBarriers{};
 } IEDependencyInfo;
 
 class IECommandBuffer : public IEDependent{
@@ -189,7 +202,7 @@ public:
 
     void finish();
 
-    void recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier> &memoryBarriers, const std::vector<IEBufferMemoryBarrier *> &bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier *> &imageMemoryBarriers);
+    void recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier> &memoryBarriers, const std::vector<IEBufferMemoryBarrier> &bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier> &imageMemoryBarriers);
 
-    void recordPipelineBarrier(const IEDependencyInfo *dependencyInfo) const;
+    void recordPipelineBarrier(const IEDependencyInfo *dependencyInfo);
 };

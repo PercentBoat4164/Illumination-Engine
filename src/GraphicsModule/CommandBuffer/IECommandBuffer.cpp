@@ -80,22 +80,23 @@ void IECommandBuffer::execute() {
     state = IE_COMMAND_BUFFER_STATE_PENDING;
 }
 
-void IECommandBuffer::recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier>& memoryBarriers, const std::vector<IEBufferMemoryBarrier*>& bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier*> &imageMemoryBarriers) {
+void IECommandBuffer::recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier>& memoryBarriers, const std::vector<IEBufferMemoryBarrier>& bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier> &imageMemoryBarriers) {
     std::vector<VkBufferMemoryBarrier> bufferBarriers{};
     bufferBarriers.reserve(bufferMemoryBarriers.size());
-    for (IEBufferMemoryBarrier *bufferMemoryBarrier : bufferMemoryBarriers) {
-        addDependency(bufferMemoryBarrier->getBuffer());
-        bufferBarriers.push_back(*(VkBufferMemoryBarrier*)bufferMemoryBarrier);
+    for (IEBufferMemoryBarrier bufferMemoryBarrier : bufferMemoryBarriers) {
+        addDependency(bufferMemoryBarrier.getBuffer());
+        bufferBarriers.push_back((VkBufferMemoryBarrier)bufferMemoryBarrier);
     }
     std::vector<VkImageMemoryBarrier> imageBarriers{};
     imageBarriers.reserve(imageMemoryBarriers.size());
-    for (IEImageMemoryBarrier *imageMemoryBarrier : imageMemoryBarriers) {
-        addDependency(imageMemoryBarrier->getImage());
-        imageBarriers.push_back(*(VkImageMemoryBarrier*)imageMemoryBarrier);
+    for (IEImageMemoryBarrier imageMemoryBarrier : imageMemoryBarriers) {
+        addDependency(imageMemoryBarrier.getImage());
+        imageBarriers.push_back((VkImageMemoryBarrier)imageMemoryBarrier);
     }
     vkCmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, dependencyFlags, memoryBarriers.size(), memoryBarriers.data(), bufferBarriers.size(), bufferBarriers.data(), imageBarriers.size(), imageBarriers.data());
 }
 
-void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyInfo) const {
+void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyInfo) {
+    addDependencies(dependencyInfo->getDependencies());
     vkCmdPipelineBarrier2(commandBuffer, (const VkDependencyInfo *)dependencyInfo);
 }

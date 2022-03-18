@@ -215,7 +215,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to transition with unknown parameters!");
         return;
     }
-    linkedRenderEngine->graphicsCommandPool[0].recordPipelineBarrier(sourceStage, destinationStage, 0, {}, {}, {&imageMemoryBarrier});
+    linkedRenderEngine->graphicsCommandPool[0].recordPipelineBarrier(sourceStage, destinationStage, 0, {}, {}, {imageMemoryBarrier});
     imageLayout = newLayout;
 }
 

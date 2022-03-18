@@ -12,6 +12,12 @@ void IEDependent::addDependency(IEDependency *dependency) {
     }
 }
 
+void IEDependent::addDependencies(const std::vector<IEDependency *>& dependencies) {
+    for (IEDependency *dependency : dependencies) {
+        addDependency(dependency);
+    }
+}
+
 bool IEDependent::isDependentOn(IEDependency *dependency) {
     return std::any_of(dependencies.begin(), dependencies.end(), [dependency](IEDependency *thisDependency) { return thisDependency == dependency; });
 }
