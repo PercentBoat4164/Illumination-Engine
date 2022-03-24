@@ -17,7 +17,7 @@ To begin using this engine, you will need a few packages.
 
 Here is a list of a few packages that you will need to download:
 
-### - Linux:
+### - Linux
 
 Required: g++-11, libglu1-mesa-dev, mesa-common-dev, libxrandr-dev, libxinerama-dev, libxcursor-dev, libxi-dev
 
@@ -39,7 +39,7 @@ If you are not using CLion or another IDE with CMake bundled, you will need to i
 
 Those are the packages that Linux users will need to download to compile Illumination Engine.
 
-### - Windows:
+### - Windows
 
 Required: [Vulkan](https://vulkan.lunarg.com/sdk/home)
 
