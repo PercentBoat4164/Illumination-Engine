@@ -186,6 +186,22 @@ public:
 
     static std::string translateVkResultCodes(VkResult result);
 
+    IEBuffer *createGlobalBuffer(IEBuffer::CreateInfo *createInfo) {
+        globalBuffers.emplace_back(this, createInfo);
+        return &globalBuffers[globalBuffers.size()];
+    }
+
+    IEBuffer *registerGlobalBuffer(IEBuffer buffer) {
+        globalBuffers.push_back(buffer);
+        buffer.destroy(false);
+        return &globalBuffers[globalBuffers.size()];
+    }
+
+    IEImage *createGlobalImage(IEImage::CreateInfo *createInfo) {
+        globalImages.emplace_back(this, createInfo);
+        return &globalImages[globalImages.size()];
+    }
+
     void destroy();
 
     ~IERenderEngine();
@@ -208,7 +224,7 @@ public:
     vkb::Device device{};
     vkb::Swapchain swapchain{};
     vkb::Instance instance{};
-    vkb::detail::Result<vkb::SystemInfo> systemInfo = vkb::SystemInfo::get_system_info();
+    vkb::detail::Result<vkb::SystemInfo> systemInfo{vkb::SystemInfo::get_system_info()};
     VkSurfaceKHR surface{};
     VmaAllocator allocator{};
     VkQueue graphicsQueue{};
@@ -216,6 +232,8 @@ public:
     VkQueue transferQueue{};
     VkQueue computeQueue{};
     ExtensionAndFeatureInfo extensionAndFeatureInfo{};
+    std::vector<IEBuffer> globalBuffers{};
+    std::vector<IEImage> globalImages{};
     std::vector<VkImageView> swapchainImageViews{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
     PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{};

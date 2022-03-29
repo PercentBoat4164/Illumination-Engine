@@ -12,8 +12,8 @@ void IEDependent::addDependency(IEDependency *dependency) {
     }
 }
 
-void IEDependent::addDependencies(const std::vector<IEDependency *>& dependencies) {
-    for (IEDependency *dependency : dependencies) {
+void IEDependent::addDependencies(const std::vector<IEDependency *>& newDependencies) {
+    for (IEDependency *dependency : newDependencies) {
         addDependency(dependency);
     }
 }

@@ -236,4 +236,100 @@ void IEImage::removeDependent(void *dependent) {
     }
 }
 
+IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
+    if (engineLink) {  // Assume that this image is being recreated in a new engine, or created for the first time.
+        destroy(true);  // Delete anything that was created in the context of the old engine
+        linkedRenderEngine = engineLink;
+    }
+
+    // Copy createInfo data into this image
+    imageFormat = createInfo->format;
+    imageLayout = createInfo->layout;
+    imageType = createInfo->type;
+    imageUsage = createInfo->usage;
+    imageFlags = createInfo->flags;
+    imageAspect = createInfo->aspect;
+    allocationUsage = createInfo->allocationUsage;
+    width = createInfo->width;
+    height = createInfo->height;
+    dataSource = createInfo->dataSource;
+    data = createInfo->data;
+    VkImageLayout desiredLayout = imageLayout;
+    imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    // Set up image create info.
+    VkImageCreateInfo imageCreateInfo{
+            .sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .imageType=imageType,
+            .format=imageFormat,
+            .extent=VkExtent3D{
+                    .width=width,
+                    .height=height,
+                    .depth=1
+            },
+            .mipLevels=1, // mipLevels, Unused due to no implementation of mip-mapping support yet.
+            .arrayLayers=1,
+            .samples=static_cast<VkSampleCountFlagBits>(1),
+            .tiling=imageMemoryArrangement,
+            .usage=imageUsage,
+            .sharingMode=VK_SHARING_MODE_EXCLUSIVE,
+            .initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,
+    };
+
+    // Set up allocation create info
+    VmaAllocationCreateInfo allocationCreateInfo{
+            .usage=allocationUsage,
+    };
+
+    if (height == 0) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image height is zero! This may cause Vulkan to fail to create an image.");
+    }
+    if (width == 0) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image width is zero! This may cause Vulkan to fail to create an image.");
+    }
+
+    // Create image
+    if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
+    }
+    deletionQueue.emplace_back([&] {
+        vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
+    });
+
+    // Set up image view create info
+    VkImageViewCreateInfo imageViewCreateInfo{
+            .sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .image=image,
+            .viewType=VK_IMAGE_VIEW_TYPE_2D, /**@todo Add support for more than just 2D images.*/
+            .format=imageFormat,
+            .components=VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},  // Unused. All components are mapped to default data.
+            .subresourceRange=VkImageSubresourceRange{
+                    .aspectMask=imageAspect,
+                    .baseMipLevel=0,
+                    .levelCount=1,  // Unused. Mip-mapping is not yet implemented.
+                    .baseArrayLayer=0,
+                    .layerCount=1,
+            },
+    };
+
+    // Create image view
+    if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create texture image view!");
+    }
+    deletionQueue.emplace_back([&] {
+        vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
+    });
+
+    // Upload data if provided
+    if (dataSource != nullptr) {
+        transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        dataSource->toImage(this, width, height);
+    }
+
+    // Set transition to requested layout from undefined or dst_optimal.
+    if (imageLayout != desiredLayout) {
+        transitionLayout(desiredLayout);
+    }
+}
+
 IEImage::IEImage() = default;

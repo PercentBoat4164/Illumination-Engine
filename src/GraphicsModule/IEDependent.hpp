@@ -5,12 +5,13 @@ class IEDependency;
 #include <vector>
 
 class IEDependent {
-    std::vector<IEDependency*> dependencies{};
 
+protected:
+    std::vector<IEDependency*> dependencies{};
 public:
     void addDependency(IEDependency *dependency);
 
-    void addDependencies(const std::vector<IEDependency *>& dependencies);
+    void addDependencies(const std::vector<IEDependency *>& newDependencies);
 
     bool isDependentOn(IEDependency *dependency);
 

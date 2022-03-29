@@ -29,12 +29,6 @@ void IEDependency::removeDependent(IEDependent *dependent) {
         dependent->~IEDependent();
 }
 
-void IEDependency::destroy(bool ignoreDependents) {
-    if (hasNoDependents()) {
-        IEDependency::~IEDependency();
-    }
-}
-
 void IEDependency::removeAllDependents() {
     for (IEDependent *dependent : dependents) {
         dependent->removeDependency(this);

@@ -7,9 +7,13 @@
 
 void IEBuffer::destroy(bool ignoreDependents) {
     if (hasNoDependents() || ignoreDependents) {
-        if (!created) { return; }
+        if (!created) {
+            return;
+        }
         removeAllDependents();
-        for (std::function<void()> &function: deletionQueue) { function(); }
+        for (std::function<void()> &function: deletionQueue) {
+            function();
+        }
         deletionQueue.clear();
         created = false;
     }
@@ -31,7 +35,9 @@ void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createIn
     }
     deletionQueue.emplace_back([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
     if (createdWith.data != nullptr) {
-        if (createdWith.sizeOfData > createdWith.size) { throw std::runtime_error("IEBuffer::CreateInfo::sizeOfData must not be greater than IEBuffer::CreateInfo::bufferSize."); }
+        if (createdWith.sizeOfData > createdWith.size) {
+            throw std::runtime_error("IEBuffer::CreateInfo::sizeOfData must not be greater than IEBuffer::CreateInfo::bufferSize.");
+        }
         vmaMapMemory(linkedRenderEngine->allocator, allocation, &data);
         memcpy(data, createdWith.data, createdWith.sizeOfData);
         vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
@@ -91,5 +97,38 @@ void IEBuffer::toImage(IEImage *image) {
 }
 
 IEBuffer::~IEBuffer() {
-    destroy(true);
+    destroy(false);
 }
+
+IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo) {
+    linkedRenderEngine = engineLink;
+    createdWith = *createInfo;
+    VkBufferCreateInfo bufferCreateInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    bufferCreateInfo.size = createdWith.size;
+    bufferCreateInfo.usage = createdWith.usage;
+    VmaAllocationCreateInfo allocationCreateInfo{};
+    allocationCreateInfo.usage = createdWith.allocationUsage;
+    if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+        allocationCreateInfo.preferredFlags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+    }
+    if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create IEBuffer!");
+    }
+    deletionQueue.emplace_back([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
+    if (createdWith.data != nullptr) {
+        if (createdWith.sizeOfData > createdWith.size) {
+            throw std::runtime_error("IEBuffer::CreateInfo::sizeOfData must not be greater than IEBuffer::CreateInfo::bufferSize.");
+        }
+        vmaMapMemory(linkedRenderEngine->allocator, allocation, &data);
+        memcpy(data, createdWith.data, createdWith.sizeOfData);
+        vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
+    }
+    if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+        VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
+        bufferDeviceAddressInfo.buffer = buffer;
+        deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
+    }
+    created = true;
+}
+
+IEBuffer::IEBuffer() = default;

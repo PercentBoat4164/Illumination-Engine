@@ -18,7 +18,5 @@ public:
 
     bool hasNoDependents();
 
-    virtual void destroy(bool ignoreDependents);
-
     virtual ~IEDependency() = 0;
 };

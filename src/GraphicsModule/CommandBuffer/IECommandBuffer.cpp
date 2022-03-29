@@ -56,17 +56,19 @@ IECommandBuffer::IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPo
 }
 
 void IECommandBuffer::reset() {
-    if (state >= IE_COMMAND_BUFFER_STATE_PENDING) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to reset a command buffer that is pending or invalid!");
+    while (state == IE_COMMAND_BUFFER_STATE_PENDING) {}
+    if (state == IE_COMMAND_BUFFER_STATE_INVALID) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to reset a command buffer that is invalid!");
     }
     vkResetCommandBuffer(commandBuffer, 0);
     state = IE_COMMAND_BUFFER_STATE_INITIAL;
 }
 
 void IECommandBuffer::finish() {
-    if (state == IE_COMMAND_BUFFER_STATE_RECORDING) {
-        vkEndCommandBuffer(commandBuffer);
+    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to finish a command buffer that was not recording.");
     }
+    vkEndCommandBuffer(commandBuffer);
     state = IE_COMMAND_BUFFER_STATE_EXECUTABLE;
 }
 
@@ -128,4 +130,12 @@ void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyIn
     }
     addDependencies(dependencyInfo->getDependencies());
     vkCmdPipelineBarrier2(commandBuffer, (const VkDependencyInfo *)dependencyInfo);
+}
+
+void IECommandBuffer::addImage(IEImage *image) {
+    dependencies.emplace_back(image);
+}
+
+void IECommandBuffer::addBuffer(IEBuffer *buffer) {
+    dependencies.emplace_back(buffer);
 }

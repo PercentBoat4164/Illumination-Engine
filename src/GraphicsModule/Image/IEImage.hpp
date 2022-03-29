@@ -66,7 +66,9 @@ public:
 
     IEImage();
 
-    void destroy(bool ignoreDependents) override;
+    IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo);
+
+    void destroy(bool ignoreDependents);
 
     virtual void create(IEImage::CreateInfo *createInfo);
 

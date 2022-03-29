@@ -57,7 +57,11 @@ public:
     CreateInfo createdWith{};
     bool created{false};
 
-    void destroy(bool ignoreDependents) override;
+    void destroy(bool ignoreDependents);
+
+    IEBuffer();
+
+    IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
 
     virtual void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 

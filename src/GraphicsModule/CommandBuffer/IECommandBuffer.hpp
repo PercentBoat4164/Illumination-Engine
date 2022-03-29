@@ -175,21 +175,25 @@ private:
     std::vector<VkImageMemoryBarrier2> imageBarriers{};
 } IEDependencyInfo;
 
-class IECommandBuffer : public IEDependent{
+class IECommandBuffer : public IEDependent {
 public:
     VkCommandBuffer commandBuffer{};
     IECommandPool *commandPool;
-    std::vector<void*> dependencies;
     IERenderEngine *linkedRenderEngine;
     IECommandBufferState state;
     bool oneTimeSubmission{false};
 
     IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool);
 
+    void addImage(IEImage *image);
+
+    void addBuffer(IEBuffer *buffer);
+
     /**
      * @brief Allocate this command buffer as a primary command buffer.
      */
     void allocate();
+
     /**
      * @brief Prepare this command buffer for recording.
      */
