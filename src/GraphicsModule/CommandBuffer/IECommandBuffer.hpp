@@ -182,6 +182,7 @@ public:
     std::vector<void*> dependencies;
     IERenderEngine *linkedRenderEngine;
     IECommandBufferState state;
+    bool oneTimeSubmission{false};
 
     IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool);
 
@@ -192,7 +193,7 @@ public:
     /**
      * @brief Prepare this command buffer for recording.
      */
-    void record();
+    void record(bool oneTimeSubmit=false);
 
     void free();
 

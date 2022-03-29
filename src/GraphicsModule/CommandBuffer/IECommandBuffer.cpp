@@ -1,3 +1,4 @@
+#include <thread>
 #include "IECommandBuffer.hpp"
 
 #include "IERenderEngine.hpp"
@@ -21,28 +22,31 @@ void IECommandBuffer::allocate() {
     }
 }
 
-void IECommandBuffer::record() {
+void IECommandBuffer::record(bool oneTimeSubmit) {
+    oneTimeSubmission = oneTimeSubmit;
+    if (state == IE_COMMAND_BUFFER_STATE_RECORDING) {
+        return;
+    }
     if (state == IE_COMMAND_BUFFER_STATE_NONE) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Attempt to record to command buffer before allocating!");
         allocate();
     }
-    if (state > IE_COMMAND_BUFFER_STATE_INITIAL) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Attempt to record to command buffer that has already finish recording and has not been reset!");
+    if (state >= IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
         reset();
     }
     VkCommandBufferBeginInfo beginInfo {
         .sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags=0
+        .flags=static_cast<VkCommandBufferUsageFlags>(oneTimeSubmission ? VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : 0),
     };
     VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
     if (result != VK_SUCCESS) {
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failure to properly begin command buffer recording! Error: " + IERenderEngine::translateVkResultCodes(result));
     }
-
+    state = IE_COMMAND_BUFFER_STATE_RECORDING;
 }
 
 void IECommandBuffer::free() {
     vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool->commandPool, 1, &commandBuffer);
+    state = IE_COMMAND_BUFFER_STATE_NONE;
 }
 
 IECommandBuffer::IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool) {
@@ -52,6 +56,9 @@ IECommandBuffer::IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPo
 }
 
 void IECommandBuffer::reset() {
+    if (state >= IE_COMMAND_BUFFER_STATE_PENDING) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to reset a command buffer that is pending or invalid!");
+    }
     vkResetCommandBuffer(commandBuffer, 0);
     state = IE_COMMAND_BUFFER_STATE_INITIAL;
 }
@@ -68,19 +75,35 @@ void IECommandBuffer::execute() {
         finish();
     }
     else if (state != IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to execute a command buffer that is not executable");
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to execute a command buffer that is not executable!");
     }
     VkSubmitInfo submitInfo {
-        .sType=VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .commandBufferCount=1,
-        .pCommandBuffers=&commandBuffer
+            .sType=VK_STRUCTURE_TYPE_SUBMIT_INFO,
+            .commandBufferCount=1,
+            .pCommandBuffers=&commandBuffer
     };
-    vkQueueWaitIdle(commandPool->queue);
-    vkQueueSubmit(commandPool->queue, 1, &submitInfo, VK_NULL_HANDLE);
+    VkFence fence;
+    VkFenceCreateInfo fenceCreateInfo {
+            .sType=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+    };
+    vkCreateFence(linkedRenderEngine->device.device, &fenceCreateInfo, nullptr, &fence);
+    vkQueueSubmit(commandPool->queue, 1, &submitInfo, fence);
     state = IE_COMMAND_BUFFER_STATE_PENDING;
+    new std::thread{[=] {
+        vkWaitForFences(linkedRenderEngine->device.device, 1, &fence, VK_TRUE, UINT64_MAX);
+        vkDestroyFence(linkedRenderEngine->device.device, fence, nullptr);
+        state = oneTimeSubmission ? IE_COMMAND_BUFFER_STATE_INVALID : IE_COMMAND_BUFFER_STATE_EXECUTABLE;
+        oneTimeSubmission = false;
+    }};
 }
 
 void IECommandBuffer::recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier>& memoryBarriers, const std::vector<IEBufferMemoryBarrier>& bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier> &imageMemoryBarriers) {
+    if (state == IE_COMMAND_BUFFER_STATE_INITIAL) {
+        record();
+    }
+    else if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to record a pipeline barrier on a command buffer that is not recording!");
+    }
     std::vector<VkBufferMemoryBarrier> bufferBarriers{};
     bufferBarriers.reserve(bufferMemoryBarriers.size());
     for (IEBufferMemoryBarrier bufferMemoryBarrier : bufferMemoryBarriers) {
@@ -97,6 +120,12 @@ void IECommandBuffer::recordPipelineBarrier(VkPipelineStageFlags srcStageMask, V
 }
 
 void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyInfo) {
+    if (state == IE_COMMAND_BUFFER_STATE_INITIAL) {
+        record();
+    }
+    else if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to record a pipeline barrier on a command buffer that is not recording!");
+    }
     addDependencies(dependencyInfo->getDependencies());
     vkCmdPipelineBarrier2(commandBuffer, (const VkDependencyInfo *)dependencyInfo);
 }

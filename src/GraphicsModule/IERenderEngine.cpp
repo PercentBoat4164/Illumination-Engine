@@ -207,7 +207,7 @@ void IERenderEngine::createCommandPools() {
     }
     if (presentQueue) {
         commandPoolCreateInfo.commandQueue = vkb::QueueType::present;
-        graphicsCommandPool.create(this, &commandPoolCreateInfo);
+        presentCommandPool.create(this, &commandPoolCreateInfo);
     }
     vkb::detail::Result<VkQueue> transferQueueDetails = device.get_queue(vkb::QueueType::transfer);
     if (transferQueueDetails.has_value()) {
@@ -215,7 +215,7 @@ void IERenderEngine::createCommandPools() {
     }
     if (transferQueue) {
         commandPoolCreateInfo.commandQueue = vkb::QueueType::transfer;
-        graphicsCommandPool.create(this, &commandPoolCreateInfo);
+        transferCommandPool.create(this, &commandPoolCreateInfo);
     }
     vkb::detail::Result<VkQueue> computeQueueDetails = device.get_queue(vkb::QueueType::compute);
     if (computeQueueDetails.has_value()) {
@@ -223,7 +223,7 @@ void IERenderEngine::createCommandPools() {
     }
     if (computeQueue) {
         commandPoolCreateInfo.commandQueue = vkb::QueueType::compute;
-        graphicsCommandPool.create(this, &commandPoolCreateInfo);
+        computeCommandPool.create(this, &commandPoolCreateInfo);
     }
 }
 
