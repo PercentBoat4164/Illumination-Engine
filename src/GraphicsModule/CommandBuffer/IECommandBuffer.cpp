@@ -23,6 +23,7 @@ void IECommandBuffer::allocate() {
 }
 
 void IECommandBuffer::record(bool oneTimeSubmit) {
+    wait();
     oneTimeSubmission = oneTimeSubmit;
     if (state == IE_COMMAND_BUFFER_STATE_RECORDING) {
         return;
@@ -45,6 +46,7 @@ void IECommandBuffer::record(bool oneTimeSubmit) {
 }
 
 void IECommandBuffer::free() {
+    wait();
     vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool->commandPool, 1, &commandBuffer);
     state = IE_COMMAND_BUFFER_STATE_NONE;
 }
@@ -56,6 +58,7 @@ IECommandBuffer::IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPo
 }
 
 void IECommandBuffer::reset() {
+    wait();
     while (state == IE_COMMAND_BUFFER_STATE_PENDING) {}
     if (state == IE_COMMAND_BUFFER_STATE_INVALID) {
         IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to reset a command buffer that is invalid!");
@@ -73,6 +76,7 @@ void IECommandBuffer::finish() {
 }
 
 void IECommandBuffer::execute() {
+    wait();
     if (state == IE_COMMAND_BUFFER_STATE_RECORDING) {
         finish();
     }
@@ -100,11 +104,8 @@ void IECommandBuffer::execute() {
 }
 
 void IECommandBuffer::recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier>& memoryBarriers, const std::vector<IEBufferMemoryBarrier>& bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier> &imageMemoryBarriers) {
-    if (state == IE_COMMAND_BUFFER_STATE_INITIAL) {
+    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record();
-    }
-    else if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to record a pipeline barrier on a command buffer that is not recording!");
     }
     std::vector<VkBufferMemoryBarrier> bufferBarriers{};
     bufferBarriers.reserve(bufferMemoryBarriers.size());
@@ -132,10 +133,6 @@ void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyIn
     vkCmdPipelineBarrier2(commandBuffer, (const VkDependencyInfo *)dependencyInfo);
 }
 
-void IECommandBuffer::addImage(IEImage *image) {
-    dependencies.emplace_back(image);
-}
-
-void IECommandBuffer::addBuffer(IEBuffer *buffer) {
-    dependencies.emplace_back(buffer);
+void IECommandBuffer::wait() const {
+    while (state == IE_COMMAND_BUFFER_STATE_PENDING) {}
 }

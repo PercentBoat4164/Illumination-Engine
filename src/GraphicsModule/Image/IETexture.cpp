@@ -158,8 +158,10 @@ void IETexture::upload(void *data) {
     scratchBufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo);
     scratchBuffer.uploadData(data, width * height * 4);
+    linkedRenderEngine->graphicsCommandPool[0].record();
     transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     scratchBuffer.toImage(this);
+    linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
 void IETexture::upload(IEBuffer *data) {

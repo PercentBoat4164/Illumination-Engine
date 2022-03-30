@@ -52,7 +52,7 @@ void IERenderable::destroy() {
 }
 
 void IERenderable::createShaders(const std::string &shaderDirectory) {
-    IEShader shader = IEShader{};
+    IEShader shader{};
     IEShader::CreateInfo shaderCreateInfo{.filename="shaders/Rasterize/fragmentShader.frag.spv"};
     shader.create(linkedRenderEngine, &shaderCreateInfo);
     shaders.push_back(shader);

@@ -185,9 +185,7 @@ public:
 
     IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool);
 
-    void addImage(IEImage *image);
-
-    void addBuffer(IEBuffer *buffer);
+    void wait() const;
 
     /**
      * @brief Allocate this command buffer as a primary command buffer.
