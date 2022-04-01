@@ -4,10 +4,10 @@ add_subdirectory(Shaders)
 set(IEGraphicsModuleSourceFiles  # Gather sources
         IEAPI.cpp
         IEAPI.hpp
-        IEAccelerationStructure.cpp
-        IEAccelerationStructure.hpp
-        IEBuffer.cpp
-        IEBuffer.hpp
+        Buffer/IEAccelerationStructure.cpp
+        Buffer/IEAccelerationStructure.hpp
+        Buffer/IEBuffer.cpp
+        Buffer/IEBuffer.hpp
         IECamera.cpp
         IECamera.hpp
         IEDescriptorSet.cpp

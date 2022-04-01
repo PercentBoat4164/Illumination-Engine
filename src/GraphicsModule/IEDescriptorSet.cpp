@@ -2,8 +2,8 @@
 #include "IEDescriptorSet.hpp"
 
 /* Include dependencies within this module. */
-#include "IEAccelerationStructure.hpp"
-#include "IEBuffer.hpp"
+#include "GraphicsModule/Buffer/IEAccelerationStructure.hpp"
+#include "GraphicsModule/Buffer/IEBuffer.hpp"
 #include "IERenderEngine.hpp"
 
 #include "GraphicsModule/Image/IEImage.hpp"

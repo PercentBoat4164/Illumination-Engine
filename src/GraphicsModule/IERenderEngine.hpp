@@ -14,11 +14,13 @@ class IERenderable;
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEAPI.hpp"
-#include "IEAccelerationStructure.hpp"
 #include "IECamera.hpp"
-#include "CommandBuffer/IECommandPool.hpp"
 #include "IERenderPass.hpp"
 #include "IESettings.hpp"
+
+#include "Buffer/IEAccelerationStructure.hpp"
+
+#include "CommandBuffer/IECommandPool.hpp"
 
 #include "Image/IEFramebuffer.hpp"
 #include "Image/IETexture.hpp"
@@ -142,25 +144,32 @@ public:
         std::unordered_map<std::string, std::vector<std::vector<const char *>>> engineFeatureExtensionRequirementQueries {
                 {  // ray query ray tracing extensions
                         IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, {
-                        {  // 1.0
+                                {  // 1.0
 
-                        },
-                        {  // 1.1
+                                },
+                                {  // 1.1
 
+                                },
+                                {  // 1.2
+                                        VK_KHR_DEVICE_GROUP_EXTENSION_NAME,
+                                        VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                                        VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+                                        VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+                                        VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+                                        VK_KHR_RAY_QUERY_EXTENSION_NAME,
+                                        VK_KHR_SPIRV_1_4_EXTENSION_NAME
+                                },
+                                {  // 1.3
+                                        VK_KHR_DEVICE_GROUP_EXTENSION_NAME,
+                                        VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                                        VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+                                        VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+                                        VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+                                        VK_KHR_RAY_QUERY_EXTENSION_NAME,
+                                        VK_KHR_SPIRV_1_4_EXTENSION_NAME
+                                }
                         },
-                        {  // 1.2
-                                VK_KHR_DEVICE_GROUP_EXTENSION_NAME,
-                                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-                                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-                                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-                                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-                                VK_KHR_RAY_QUERY_EXTENSION_NAME,
-                                VK_KHR_SPIRV_1_4_EXTENSION_NAME
-                        },
-                        {  // 1.3
 
-                        }
-                }
                 }
         };
 

@@ -2,8 +2,8 @@
 #include "IETexture.hpp"
 
 /* Include dependencies within this module. */
-#include "GraphicsModule/IEBuffer.hpp"
-#include "GraphicsModule/IERenderEngine.hpp"
+#include "Buffer/IEBuffer.hpp"
+#include "IERenderEngine.hpp"
 
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"

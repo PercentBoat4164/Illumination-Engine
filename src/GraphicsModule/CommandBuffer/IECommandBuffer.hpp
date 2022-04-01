@@ -7,7 +7,7 @@ class IERenderEngine;
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <variant>
-#include "IEBuffer.hpp"
+#include "Buffer/IEBuffer.hpp"
 #include "Image/IEImage.hpp"
 #include "IEDependent.hpp"
 

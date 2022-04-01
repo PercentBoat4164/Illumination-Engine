@@ -140,7 +140,7 @@ void IECommandBuffer::recordCopyBufferToImage(IEBuffer *buffer, IEImage *image, 
 
 void IECommandBuffer::recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo) {
     addDependencies(copyInfo->getDependencies());
-    vkCmdCopyBufferToImage2(commandBuffer, (const VkCopyBufferToImageInfo2 *) copyInfo);
+    vkCmdCopyBufferToImage2(commandBuffer, (const VkCopyBufferToImageInfo2 *)copyInfo);
 }
 
 void IECommandBuffer::wait() {
