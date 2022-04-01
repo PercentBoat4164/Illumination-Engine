@@ -8,15 +8,15 @@ set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 set(ASSIMP_BUILD_SAMPLES OFF)
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_BUILD_ZLIB ON)
-message("Downloading AssImp")
+message("Downloading AssImp v5.2.2")
 FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG v5.2.2)
 
 # Get GLM
-message("Downloading GLM")
+message("Downloading GLM 0.9.9.8")
 FetchContent_Declare(glm GIT_REPOSITORY https://github.com/g-truc/glm GIT_TAG 0.9.9.8)
 
 # Get spdlog
-message("Downloading spdlog")
+message("Downloading spdlog  v1.9.2")
 FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog GIT_TAG v1.9.2)
 
 if (OpenGL_FOUND)
@@ -25,7 +25,7 @@ if (OpenGL_FOUND)
     set(GLFW_BUILD_TESTS OFF)
     set(GLFW_INSTALL OFF)
     set(GLFW_BUILD_EXAMPLES OFF)
-    message("Downloading GLFW")
+    message("Downloading GLFW  3.3.6")
     FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw GIT_TAG 3.3.6)
 
     # Get GLEW
@@ -36,7 +36,7 @@ if (OpenGL_FOUND)
         set(glew-cmake_BUILD_SHARED OFF)
         set(glew-cmake_BUILD_STATIC ON)
     endif ()
-    message("Downloading GLEW")
+    message("Downloading GLEW glew-2.2.0")
     FetchContent_Declare(glew URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
 
     FetchContent_MakeAvailable(glfw glew)  # Generate all external dependencies which require OpenGL
@@ -48,13 +48,13 @@ if (OpenGL_FOUND)
 endif ()
 
 if (Vulkan_FOUND)
-    # Get vk-bootstrap
-    message("Downloading vk-bootstrap")
+    #Get vk-bootstrap
+    message("Downloading vk-bootstrap v0.5")
     FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG v0.5)
 
-    # Get VMA
-    message("Downloading VMA")
-    FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG master)
+    #Get VMA
+    message("Downloading VMA v2.3.0+vs2017")
+    FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG v2.3.0+vs2017)
 
     FetchContent_MakeAvailable(vk-bootstrap vma)  # Generate all external dependencies which require Vulkan
 

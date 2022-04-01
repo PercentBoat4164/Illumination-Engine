@@ -1,6 +1,7 @@
 set(IEFileSystemModuleSourceFiles  # Gather sources
         IEFileSystem.hpp
         IEFile.hpp
+        IEDirectory.hpp
         )
 
 # Create and define properties for the library

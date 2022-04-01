@@ -2,7 +2,5 @@
 # CLion
 /*-build*
 /.idea
-# Dependencies extracted from deps/otherSources.tar.xz
-/deps
 # Ignore pre-compiled shaders
 /res/Shaders/*/*.spv
