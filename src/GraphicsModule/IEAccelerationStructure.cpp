@@ -64,7 +64,10 @@ void IEAccelerationStructure::create(IERenderEngine *renderEngineLink, CreateInf
     if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
         throw std::runtime_error("failed to create acceleration structure!");
     }
-    deletionQueue.emplace_back([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
+    deletionQueue.emplace_back([&] {
+        wait();
+        vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation);
+    });
     VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR};
     accelerationStructureCreateInfo.buffer = buffer;
     accelerationStructureCreateInfo.size = createdWith.size;

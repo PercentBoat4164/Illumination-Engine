@@ -5,6 +5,7 @@ class IEDependent;
 #include <vector>
 
 class IEDependency {
+protected:
     std::vector<IEDependent*> dependents{};
 
 public:
@@ -19,4 +20,6 @@ public:
     bool hasNoDependents();
 
     virtual ~IEDependency() = 0;
+
+    void wait();
 };

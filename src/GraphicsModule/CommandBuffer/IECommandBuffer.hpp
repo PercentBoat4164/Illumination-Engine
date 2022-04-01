@@ -110,7 +110,6 @@ typedef struct IEBufferMemoryBarrier {
 
 } IEBufferMemoryBarrier;
 
-
 typedef struct IEDependencyInfo {
     const void *pNext;
     VkDependencyFlags dependencyFlags;
@@ -175,6 +174,36 @@ private:
     std::vector<VkImageMemoryBarrier2> imageBarriers{};
 } IEDependencyInfo;
 
+typedef struct IECopyBufferToImageInfo {
+    const void *pNext;
+    IEBuffer *srcBuffer;
+    IEImage *dstImage;
+    std::vector<VkBufferImageCopy2> regions;
+
+    [[nodiscard]] std::vector<IEImage *> getImages() const {
+        return {dstImage};
+    }
+
+    [[nodiscard]] std::vector<IEBuffer *> getBuffers() const {
+        return {srcBuffer};
+    }
+
+    [[nodiscard]] std::vector<IEDependency *> getDependencies() const {
+        return {dstImage, srcBuffer};
+    }
+
+    explicit operator VkCopyBufferToImageInfo2() const {
+        return {
+                .sType=VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
+                .pNext=pNext,
+                .srcBuffer=srcBuffer->buffer,
+                .dstImage=dstImage->image,
+                .regionCount=static_cast<uint32_t>(regions.size()),
+                .pRegions=regions.data()
+        };
+    }
+} IECopyBufferToImageInfo;
+
 class IECommandBuffer : public IEDependent {
 public:
     VkCommandBuffer commandBuffer{};
@@ -185,7 +214,7 @@ public:
 
     IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool);
 
-    void wait() const;
+    void wait() override;
 
     /**
      * @brief Allocate this command buffer as a primary command buffer.
@@ -208,4 +237,8 @@ public:
     void recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier> &memoryBarriers, const std::vector<IEBufferMemoryBarrier> &bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier> &imageMemoryBarriers);
 
     void recordPipelineBarrier(const IEDependencyInfo *dependencyInfo);
+
+    void recordCopyBufferToImage(IEBuffer *buffer, IEImage *image, std::vector<VkBufferImageCopy> regions);
+
+    void recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo);
 };

@@ -8,7 +8,10 @@ class IEDependent {
 
 protected:
     std::vector<IEDependency*> dependencies{};
+
 public:
+    virtual ~IEDependent() = default;
+
     void addDependency(IEDependency *dependency);
 
     void addDependencies(const std::vector<IEDependency *>& newDependencies);
@@ -18,4 +21,6 @@ public:
     void removeDependency(IEDependency *dependency);
 
     bool hasNoDependencies();
+
+    virtual void wait() = 0;
 };

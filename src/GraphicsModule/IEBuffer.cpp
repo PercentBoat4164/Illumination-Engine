@@ -10,10 +10,11 @@ void IEBuffer::destroy(bool ignoreDependents) {
         if (!created) {
             return;
         }
-        removeAllDependents();
+        wait();
         for (std::function<void()> &function: deletionQueue) {
             function();
         }
+        removeAllDependents();
         deletionQueue.clear();
         created = false;
     }
@@ -33,7 +34,9 @@ void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createIn
     if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
         throw std::runtime_error("failed to create IEBuffer!");
     }
-    deletionQueue.emplace_back([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
+    deletionQueue.emplace_back([&] {
+        vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation);
+    });
     if (createdWith.data != nullptr) {
         if (createdWith.sizeOfData > createdWith.size) {
             throw std::runtime_error("IEBuffer::CreateInfo::sizeOfData must not be greater than IEBuffer::CreateInfo::bufferSize.");
@@ -89,10 +92,10 @@ void IEBuffer::toImage(IEImage *image) {
     if (image->imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         oldLayout = image->imageLayout;
         image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, buffer, image->image, image->imageLayout, 1, &region);
+        linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(this, image, {region});
         image->transitionLayout(oldLayout);
     } else {
-        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, buffer, image->image, image->imageLayout, 1, &region);
+        linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(this, image, {region});
     }
 }
 
@@ -114,7 +117,9 @@ IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo)
     if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
         throw std::runtime_error("failed to create IEBuffer!");
     }
-    deletionQueue.emplace_back([&] { vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation); });
+    deletionQueue.emplace_back([&] {
+        vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation);
+    });
     if (createdWith.data != nullptr) {
         if (createdWith.sizeOfData > createdWith.size) {
             throw std::runtime_error("IEBuffer::CreateInfo::sizeOfData must not be greater than IEBuffer::CreateInfo::bufferSize.");

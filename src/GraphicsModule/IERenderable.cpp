@@ -198,7 +198,7 @@ void IERenderable::processNode(aiNode *node, const aiScene *scene) {
             for (std::pair<uint32_t *, aiTextureType> textureType : textureTypes) {
                 if (scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) > 0) {
                     textures->reserve(scene->mMaterials[scene->mMeshes[node->mMeshes[i]]->mMaterialIndex]->GetTextureCount(textureType.second) + textures->size());
-                    IETexture temporaryTexture{};
+                    auto *temporaryTexture = new IETexture{};
                     IETexture::CreateInfo textureCreateInfo{};
                     bool textureAlreadyLoaded{false};
                     aiString filename;
@@ -223,8 +223,10 @@ void IERenderable::processNode(aiNode *node, const aiScene *scene) {
                         textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
                         textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha);
                         if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
-                        temporaryTexture.create(linkedRenderEngine, &textureCreateInfo);
-                        textures->push_back(temporaryTexture);
+                        textures->push_back(*temporaryTexture);
+                        (*textures)[textures->size() - 1].create(linkedRenderEngine, &textureCreateInfo);
+                        linkedRenderEngine->graphicsCommandPool[0].execute();
+                        delete temporaryTexture;
                         *textureType.first = textures->size() - 1;
                     }
                 }

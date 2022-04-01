@@ -133,6 +133,16 @@ void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyIn
     vkCmdPipelineBarrier2(commandBuffer, (const VkDependencyInfo *)dependencyInfo);
 }
 
-void IECommandBuffer::wait() const {
+void IECommandBuffer::recordCopyBufferToImage(IEBuffer *buffer, IEImage *image, std::vector<VkBufferImageCopy> regions) {
+    addDependencies({image, buffer});
+    vkCmdCopyBufferToImage(commandBuffer, buffer->buffer, image->image, image->imageLayout, regions.size(), regions.data());
+}
+
+void IECommandBuffer::recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo) {
+    addDependencies(copyInfo->getDependencies());
+    vkCmdCopyBufferToImage2(commandBuffer, (const VkCopyBufferToImageInfo2 *) copyInfo);
+}
+
+void IECommandBuffer::wait() {
     while (state == IE_COMMAND_BUFFER_STATE_PENDING) {}
 }

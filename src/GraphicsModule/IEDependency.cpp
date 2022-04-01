@@ -35,4 +35,10 @@ void IEDependency::removeAllDependents() {
     }
 }
 
+void IEDependency::wait() {
+    for (IEDependent *dependent : dependents) {
+        dependent->wait();
+    }
+}
+
 IEDependency::~IEDependency() = default;

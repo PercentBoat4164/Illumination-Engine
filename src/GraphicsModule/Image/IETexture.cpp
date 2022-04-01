@@ -148,6 +148,7 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
     if (imageLayout != desiredLayout) {
         transitionLayout(desiredLayout);
     }
+    linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
 void IETexture::upload(void *data) {
