@@ -45,7 +45,7 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
             .height=height,
     };
 
-    uint8_t msaaSamplesAllowed = getHighestMSAASampleCount(linkedRenderEngine->settings.msaaSamples);
+    uint8_t msaaSamplesAllowed = getHighestMSAASampleCount(linkedRenderEngine->settings->msaaSamples);
 
     if (msaaSamplesAllowed > VK_SAMPLE_COUNT_1_BIT) {
         colorImage.create(linkedRenderEngine, &framebufferImageCreateInfo);

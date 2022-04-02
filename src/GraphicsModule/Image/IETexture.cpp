@@ -111,7 +111,7 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
             .addressModeU=VK_SAMPLER_ADDRESS_MODE_REPEAT,
             .addressModeV=VK_SAMPLER_ADDRESS_MODE_REPEAT,
             .addressModeW=VK_SAMPLER_ADDRESS_MODE_REPEAT,
-            .mipLodBias=linkedRenderEngine->settings.mipMapLevel,
+            .mipLodBias=linkedRenderEngine->settings->mipMapLevel,
 //                .anisotropyEnable=linkedRenderEngine->settings.anisotropicFilterLevel > 0,
 //                .maxAnisotropy=anisotropyLevel,
             .compareEnable=VK_FALSE,
@@ -135,7 +135,7 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
 
     // Upload data if provided
     if (data != nullptr && dataSource != nullptr) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create image with raw and buffered data!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create image with raw and buffered data!");
     }
     if (data != nullptr) {
         upload(data);

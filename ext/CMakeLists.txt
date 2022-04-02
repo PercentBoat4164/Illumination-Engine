@@ -48,13 +48,13 @@ if (OpenGL_FOUND)
 endif ()
 
 if (Vulkan_FOUND)
-    #Get vk-bootstrap
+    # Get vk-bootstrap
     message("Downloading vk-bootstrap v0.5")
     FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG v0.5)
 
-    #Get VMA
-    message("Downloading VMA v2.3.0+vs2017")
-    FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG v2.3.0+vs2017)
+    # Get VMA from master because latest release was from 2017. Master is generally considered stable.
+    message("Downloading VMA from master")
+    FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG master)
 
     FetchContent_MakeAvailable(vk-bootstrap vma)  # Generate all external dependencies which require Vulkan
 

@@ -10,6 +10,8 @@
 // Internal dependencies
 #include "IEVersion.hpp"
 
+#include "Core/LogModule/IELogger.hpp"
+
 // External dependencies
 #include <vulkan/vulkan.h>
 
@@ -20,6 +22,7 @@
 
 class IESettings {
 public:
+    IELogger logger{ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME, ILLUMINATION_ENGINE_DEFAULT_LOG_FILENAME};
     bool rayTracing{false};
     std::string applicationName{"Illumination Engine"};
     IEVersion applicationVersion{0, 0, 1};

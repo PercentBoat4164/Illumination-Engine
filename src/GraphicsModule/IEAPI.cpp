@@ -51,7 +51,7 @@ IEVersion IEAPI::getHighestSupportedVersion(IERenderEngine *linkedRenderEngine) 
         else if (GLEW_VERSION_1_2) { temporaryVersion = IEVersion{"1.2.0"}; }
         else if (GLEW_VERSION_1_1) { temporaryVersion = IEVersion{"1.1.0"}; }
         // If none of these is active then GLEW something is wrong.
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "No OpenGL version was found!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "No OpenGL version was found!");
     }
     #endif
     return temporaryVersion;

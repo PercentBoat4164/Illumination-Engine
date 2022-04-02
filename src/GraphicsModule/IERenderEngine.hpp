@@ -183,7 +183,7 @@ public:
         bool variableDescriptorCountSupportQuery() const;
     };
 
-    explicit IERenderEngine(IESettings* settings=nullptr);
+    explicit IERenderEngine(IESettings *settings = new IESettings{});
 
     void loadRenderable(IERenderable* renderable);
 
@@ -228,7 +228,7 @@ public:
     int frameNumber{};
 
     // Stuff from GraphicsLink
-    IESettings settings{};
+    IESettings *settings;
     IEAPI api;
     vkb::Device device{};
     vkb::Swapchain swapchain{};

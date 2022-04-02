@@ -31,8 +31,8 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     builder.set_engine_version(ILLUMINATION_ENGINE_VERSION_MAJOR, ILLUMINATION_ENGINE_VERSION_MINOR, ILLUMINATION_ENGINE_VERSION_PATCH);
 
     // Set application properties
-    builder.set_app_name(settings.applicationName.c_str());
-    builder.set_app_version(settings.applicationVersion.number);
+    builder.set_app_name(settings->applicationName.c_str());
+    builder.set_app_version(settings->applicationVersion.number);
 
     // If debugging and components are available, add validation layers and a debug messenger
     #ifndef NDEBUG
@@ -47,7 +47,7 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     // Build the instance and check for errors.
     vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
     if (!instanceBuilder) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message());
+        settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message());
     }
     deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_instance(instance); });
     instance = instanceBuilder.value();
@@ -58,7 +58,7 @@ GLFWwindow *IERenderEngine::createWindow() const {
     // Specify all window hints for the window
     /**@todo Optional - Make a convenient way to change these programmatically based on some settings.*/
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow* pWindow = glfwCreateWindow(settings.defaultWindowResolution[0], settings.defaultWindowResolution[1], settings.applicationName.c_str(), settings.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+    GLFWwindow* pWindow = glfwCreateWindow(settings->defaultWindowResolution[0], settings->defaultWindowResolution[1], settings->applicationName.c_str(), settings->fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     return pWindow;
 }
 
@@ -72,7 +72,7 @@ void IERenderEngine::setWindowIcons(const std::string &path) const {
         if (path.find(filename) >= 0) {  // if filename to look for is in path
             stbi_uc* pixels = stbi_load(file.path().c_str(), &width, &height, &channels, STBI_rgb_alpha);  // Load image from disk
             if (!pixels) {
-                IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to load icon " + file.path().generic_string() + ". Is this file an image?");
+                settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to load icon " + file.path().generic_string() + ". Is this file an image?");
             }
             icons.push_back(GLFWimage{.width=width, .height=height, .pixels=pixels});  // Generate image
         }
@@ -85,7 +85,7 @@ void IERenderEngine::setWindowIcons(const std::string &path) const {
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
     if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create window surface!");
+        settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create window surface!");
     }
     deletionQueue.insert(deletionQueue.begin(), [&] {
         vkb::destroy_surface(instance.instance, surface);
@@ -117,7 +117,7 @@ vkb::Device IERenderEngine::setUpDevice(std::vector<std::vector<const char *>> *
     vkb::detail::Result<vkb::Device> logicalDevice = logicalDeviceBuilder.build();
     if (!logicalDevice) {
         // Failed? Report the error.
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan device! Error: " + logicalDevice.error().message());
+        settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create Vulkan device! Error: " + logicalDevice.error().message());
     }
 
     // get the device and add its destruction to the deletion queue.
@@ -134,7 +134,7 @@ VmaAllocator IERenderEngine::setUpGPUMemoryAllocator() {
             .device = device.device,
             .instance = instance.instance,
     };
-    if (settings.rayTracing) {
+    if (settings->rayTracing) {
         allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
     }
 //    allocatorInfo.vulkanApiVersion = api.version.number;
@@ -148,8 +148,8 @@ VmaAllocator IERenderEngine::setUpGPUMemoryAllocator() {
 vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
     // Create swapchain builder
     vkb::SwapchainBuilder swapchainBuilder{device};
-    swapchainBuilder.set_desired_present_mode(settings.vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
-            .set_desired_extent(settings.resolution[0], settings.resolution[1])
+    swapchainBuilder.set_desired_present_mode(settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
+            .set_desired_extent(settings->resolution[0], settings->resolution[1])
             .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})  // This may have to change in the event that HDR is to be supported.
             .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     if (useOldSwapchain) {  // Use the old swapchain if it exists and that was requested.
@@ -158,7 +158,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
     vkb::detail::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
     if (!thisSwapchain) {
         // Failure! Log it then continue without deleting the old swapchain.
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create swapchain! Error: " + thisSwapchain.error().message());
+        settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create swapchain! Error: " + thisSwapchain.error().message());
     }
     else {
         // Success! Delete the old swapchain and images and replace them with the new ones.
@@ -264,9 +264,7 @@ void IERenderEngine::destroyCommandPools() {
 }
 
 IERenderEngine::IERenderEngine(IESettings *settings) {
-    if (!settings) {
-        settings = new IESettings{};
-    }
+    this->settings = settings;
 
     // Create a Vulkan instance
     createVulkanInstance();
@@ -336,8 +334,8 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     });
     graphicsCommandPool[0].execute();
     camera.create(this);
-    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
-    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, api.name + " v" +api.version.name);
+    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
+    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, api.name + " v" +api.version.name);
     deletionQueue.insert(deletionQueue.begin(), [&] { topLevelAccelerationStructure.destroy(true); });
 }
 
@@ -406,12 +404,12 @@ bool IERenderEngine::update() {
     camera.update();
     auto time = static_cast<float>(glfwGetTime());
     for (IERenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera, time); } }
-    if (settings.rayTracing) {
+    if (settings->rayTracing) {
         topLevelAccelerationStructure.destroy(true);
         std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
         bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
         for (IERenderable *renderable : renderables) {
-            if (renderable->render & settings.rayTracing) {
+            if (renderable->render & settings->rayTracing) {
                 bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress);
             }
         }
@@ -424,7 +422,7 @@ bool IERenderEngine::update() {
     }
     for (IERenderable *renderable : renderables) {
         if (renderable->render) {
-            if (settings.rayTracing) {
+            if (settings->rayTracing) {
                 renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2});
             }
             vkCmdBindVertexBuffers(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &renderable->vertexBuffer.buffer, offsets);
@@ -475,7 +473,7 @@ bool IERenderEngine::update() {
         throw std::runtime_error("failed to present swapchain image!");
     }
     currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
-    IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(1/frameTime));
+    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(1/frameTime));
     return glfwWindowShouldClose(window) != 1;
 }
 
@@ -486,8 +484,8 @@ void IERenderEngine::reloadRenderables() {
 }
 
 void IERenderEngine::handleFullscreenSettingsChange() {
-    if (settings.fullscreen) {
-        glfwGetWindowPos(window, &settings.windowPosition[0], &settings.windowPosition[1]);
+    if (settings->fullscreen) {
+        glfwGetWindowPos(window, &settings->windowPosition[0], &settings->windowPosition[1]);
         int monitorCount{}, i, windowX{}, windowY{}, windowWidth{}, windowHeight{}, monitorX{}, monitorY{}, monitorWidth, monitorHeight, bestMonitorWidth{}, bestMonitorHeight{}, bestMonitorRefreshRate{}, overlap, bestOverlap{0};
         GLFWmonitor **monitors;
         const GLFWvidmode *mode;
@@ -509,8 +507,8 @@ void IERenderEngine::handleFullscreenSettingsChange() {
             }
         }
         glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
-    } else { glfwSetWindowMonitor(window, nullptr, settings.windowPosition[0], settings.windowPosition[1], static_cast<int>(settings.defaultWindowResolution[0]), static_cast<int>(settings.defaultWindowResolution[1]), static_cast<int>(settings.refreshRate)); }
-    glfwSetWindowTitle(window, settings.applicationName.c_str());
+    } else { glfwSetWindowMonitor(window, nullptr, settings->windowPosition[0], settings->windowPosition[1], static_cast<int>(settings->defaultWindowResolution[0]), static_cast<int>(settings->defaultWindowResolution[1]), static_cast<int>(settings->refreshRate)); }
+    glfwSetWindowTitle(window, settings->applicationName.c_str());
 }
 
 void IERenderEngine::destroy() {
@@ -541,8 +539,8 @@ IERenderEngine::~IERenderEngine() {
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
     auto vulkanRenderEngine = (IERenderEngine *)glfwGetWindowUserPointer(pWindow);
     vulkanRenderEngine->framebufferResized = true;
-    vulkanRenderEngine->settings.resolution[0] = width;
-    vulkanRenderEngine->settings.resolution[1] = height;
+    vulkanRenderEngine->settings->resolution[0] = width;
+    vulkanRenderEngine->settings->resolution[1] = height;
 }
 
 std::string IERenderEngine::translateVkResultCodes(VkResult result) {

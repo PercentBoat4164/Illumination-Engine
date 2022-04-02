@@ -13,7 +13,7 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
     linkedRenderEngine = engineLink;
 
     // Generate attachment descriptions
-    uint8_t thisAttachmentMsaaSampleCount = std::max(static_cast<uint8_t>(1), std::min(linkedRenderEngine->settings.msaaSamples, createdWith.msaaSamples));
+    uint8_t thisAttachmentMsaaSampleCount = std::max(static_cast<uint8_t>(1), std::min(linkedRenderEngine->settings->msaaSamples, createdWith.msaaSamples));
 
     VkAttachmentDescription colorAttachmentDescription{
             .format=linkedRenderEngine->swapchain.image_format,
@@ -89,7 +89,7 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
             .pDependencies=&subpassDependency
     };
     if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create render pass!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create render pass!");
     }
     deletionQueue.emplace_back([&] {
         vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr);
@@ -115,7 +115,7 @@ VkRenderPassBeginInfo IERenderPass::beginRenderPass(const IEFramebuffer &framebu
                     .offset = {0, 0},
                     .extent = linkedRenderEngine->swapchain.extent,
             },
-            .clearValueCount = static_cast<uint32_t>(linkedRenderEngine->settings.msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3),
+            .clearValueCount = static_cast<uint32_t>(linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3),
             .pClearValues = framebuffer.clearValues.data(),
     };
     return renderPassBeginInfo;

@@ -105,7 +105,7 @@ void IERenderable::update(const IECamera &camera, float time) {
     uniformBufferObject.position = camera.position;
     uniformBufferObject.time = time;
     modelBuffer.uploadData(&uniformBufferObject, sizeof(uniformBufferObject));
-    if (linkedRenderEngine->settings.rayTracing) {
+    if (linkedRenderEngine->settings->rayTracing) {
         transformationMatrix = {
                 modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2], modelMatrix[3][0],
                 modelMatrix[1][0], modelMatrix[1][1], modelMatrix[1][2], modelMatrix[3][1],

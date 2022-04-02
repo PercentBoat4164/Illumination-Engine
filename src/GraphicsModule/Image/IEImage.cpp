@@ -13,7 +13,7 @@
     uint8_t count = 1;
     VkImageFormatProperties properties{};
     vkGetPhysicalDeviceImageFormatProperties(linkedRenderEngine->device.physical_device, imageFormat, imageType, imageMemoryArrangement, imageUsage, imageFlags, &properties);
-    return std::max(count, std::min(static_cast<uint8_t>(properties.sampleCounts), std::min(requested, linkedRenderEngine->settings.msaaSamples)));
+    return std::max(count, std::min(static_cast<uint8_t>(properties.sampleCounts), std::min(requested, linkedRenderEngine->settings->msaaSamples)));
 }
 
 [[maybe_unused]] [[nodiscard]] float IEImage::getHighestAnisotropyLevel(float requested) const {
@@ -35,7 +35,7 @@ void IEImage::destroy(bool ignoreDependents) {
 
 void IEImage::create(IEImage::CreateInfo *createInfo) {
     if (!linkedRenderEngine) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create an image without a render engine!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create an image without a render engine!");
     }
 }
 
@@ -90,15 +90,15 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
     };
 
     if (height == 0) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image height is zero! This may cause Vulkan to fail to create an image.");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image height is zero! This may cause Vulkan to fail to create an image.");
     }
     if (width == 0) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image width is zero! This may cause Vulkan to fail to create an image.");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image width is zero! This may cause Vulkan to fail to create an image.");
     }
 
     // Create image
     if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
     }
     deletionQueue.emplace_back([&] {
         vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
@@ -159,7 +159,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
         return;
     }
     if (newLayout == VK_IMAGE_LAYOUT_UNDEFINED) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to transition to an undefined layout (VK_IMAGE_LAYOUT_UNDEFINED)!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to transition to an undefined layout (VK_IMAGE_LAYOUT_UNDEFINED)!");
         return;
     }
     IEImageMemoryBarrier imageMemoryBarrier{
@@ -212,7 +212,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
         sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     } else {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to transition with unknown parameters!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to transition with unknown parameters!");
         return;
     }
     linkedRenderEngine->graphicsCommandPool[0].recordPipelineBarrier(sourceStage, destinationStage, 0, {}, {}, {imageMemoryBarrier});
@@ -282,15 +282,15 @@ IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
     };
 
     if (height == 0) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image height is zero! This may cause Vulkan to fail to create an image.");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image height is zero! This may cause Vulkan to fail to create an image.");
     }
     if (width == 0) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image width is zero! This may cause Vulkan to fail to create an image.");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Image width is zero! This may cause Vulkan to fail to create an image.");
     }
 
     // Create image
     if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
     }
     deletionQueue.emplace_back([&] {
         vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);

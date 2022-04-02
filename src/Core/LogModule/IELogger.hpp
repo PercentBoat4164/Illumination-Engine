@@ -40,7 +40,7 @@ public:
         logger = spdlog::basic_logger_mt(name, path, true);
     }
 
-    void log(spdlog::level::level_enum level, const std::string& msg) {
+    void log(spdlog::level::level_enum level, const std::string& msg) const {
         logger->log(level, msg);
     }
 

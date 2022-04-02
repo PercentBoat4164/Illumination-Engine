@@ -18,7 +18,7 @@ void IECommandPool::create(IERenderEngine *engineLink, IECommandPool::CreateInfo
         .queueFamilyIndex=linkedRenderEngine->device.get_queue_index(createInfo->commandQueue).value()
     };
     if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create command pool!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create command pool!");
     }
 
 }
@@ -28,7 +28,7 @@ const IECommandBuffer &IECommandPool::operator[](uint32_t index) const {
         return commandBuffers[index];
     }
     else {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
         return commandBuffers[commandBuffers.size() - 1];
     }
 }
@@ -41,7 +41,7 @@ IECommandBuffer &IECommandPool::operator[](uint32_t index) {
         return commandBuffers[index];
     }
     else {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
         return commandBuffers[commandBuffers.size() - 1];
     }
 }

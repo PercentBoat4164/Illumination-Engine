@@ -18,6 +18,7 @@ class IERenderEngine;
 #include <string>
 #include <vector>
 #include <functional>
+#include "Core/FileSystemModule/IEFile.hpp"
 
 
 class IEShader {
@@ -40,4 +41,6 @@ public:
     ~IEShader();
 
     void compile(const std::string& input, std::string output = "") const;
+
+    void create(IERenderEngine *renderEngineLink, IEFile *file);
 };

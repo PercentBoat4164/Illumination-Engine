@@ -14,7 +14,7 @@ void IECommandBuffer::allocate() {
     };
     VkResult result = vkAllocateCommandBuffers(linkedRenderEngine->device.device, &allocateInfo, &commandBuffer);
     if (result != VK_SUCCESS) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failure to properly allocate command buffers! Error: " + IERenderEngine::translateVkResultCodes(result));
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failure to properly allocate command buffers! Error: " + IERenderEngine::translateVkResultCodes(result));
         free();
     }
     else {
@@ -40,7 +40,7 @@ void IECommandBuffer::record(bool oneTimeSubmit) {
     };
     VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
     if (result != VK_SUCCESS) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failure to properly begin command buffer recording! Error: " + IERenderEngine::translateVkResultCodes(result));
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failure to properly begin command buffer recording! Error: " + IERenderEngine::translateVkResultCodes(result));
     }
     state = IE_COMMAND_BUFFER_STATE_RECORDING;
 }
@@ -61,7 +61,7 @@ void IECommandBuffer::reset() {
     wait();
     while (state == IE_COMMAND_BUFFER_STATE_PENDING) {}
     if (state == IE_COMMAND_BUFFER_STATE_INVALID) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to reset a command buffer that is invalid!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to reset a command buffer that is invalid!");
     }
     vkResetCommandBuffer(commandBuffer, 0);
     state = IE_COMMAND_BUFFER_STATE_INITIAL;
@@ -69,7 +69,7 @@ void IECommandBuffer::reset() {
 
 void IECommandBuffer::finish() {
     if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to finish a command buffer that was not recording.");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to finish a command buffer that was not recording.");
     }
     vkEndCommandBuffer(commandBuffer);
     state = IE_COMMAND_BUFFER_STATE_EXECUTABLE;
@@ -81,7 +81,7 @@ void IECommandBuffer::execute() {
         finish();
     }
     else if (state != IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to execute a command buffer that is not executable!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to execute a command buffer that is not executable!");
     }
     VkSubmitInfo submitInfo {
             .sType=VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -127,7 +127,7 @@ void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyIn
         record();
     }
     else if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to record a pipeline barrier on a command buffer that is not recording!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to record a pipeline barrier on a command buffer that is not recording!");
     }
     addDependencies(dependencyInfo->getDependencies());
     vkCmdPipelineBarrier2(commandBuffer, (const VkDependencyInfo *)dependencyInfo);

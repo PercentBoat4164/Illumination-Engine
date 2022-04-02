@@ -4,9 +4,9 @@
 /* Include dependencies within this module. */
 #include "IERenderEngine.hpp"
 
-/* Include system dependencies. */
-#include <fstream>
 
+/* Include dependencies from Core. */
+#include "Core/FileSystemModule/IEFile.hpp"
 
 void IEShader::destroy() {
     for (const std::function<void()>& function : deletionQueue) {
@@ -15,10 +15,14 @@ void IEShader::destroy() {
     deletionQueue.clear();
 }
 
+void IEShader::create(IERenderEngine *renderEngineLink, IEFile *file) {
+
+}
+
 void IEShader::create(IERenderEngine *renderEngineLink, IEShader::CreateInfo *createInfo) {
     linkedRenderEngine = renderEngineLink;
     createdWith = *createInfo;
-    std::string replaceWith = linkedRenderEngine->settings.rayTracing ? "RayTrace" : "Rasterize";
+    std::string replaceWith = linkedRenderEngine->settings->rayTracing ? "RayTrace" : "Rasterize";
     size_t pos = createdWith.filename.find('*');
     while(pos != std::string::npos) {
         createdWith.filename.replace(pos, 1, replaceWith);
@@ -56,7 +60,7 @@ void IEShader::compile(const std::string &input, std::string output) const {
     if (!rawFile.is_open()) { throw std::runtime_error("failed to open file: " + input); }
     rawFile.close();
     if (output.empty()) { output = input + ".spv"; }
-    if (linkedRenderEngine->settings.rayTracing) {
+    if (linkedRenderEngine->settings->rayTracing) {
         if (system((GLSLC + input + " -o " + output + " --target-env=vulkan1.2").c_str()) != 0) { throw std::runtime_error("failed to compile shaders: " + input); }
     }
     else {

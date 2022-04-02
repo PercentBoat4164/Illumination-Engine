@@ -25,7 +25,7 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
     pipelineLayoutCreateInfo.setLayoutCount = 1;
     pipelineLayoutCreateInfo.pSetLayouts = &createdWith.descriptorSet->descriptorSetLayout;
     if (vkCreatePipelineLayout(linkedRenderEngine->device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to create pipeline layout!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to create pipeline layout!");
     }
     #ifndef NDEBUG
     created.pipelineLayout = true;
@@ -48,7 +48,7 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
         shaderModuleCreateInfo.codeSize = createdWith.shaders->at(i).data.size();
         shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(createdWith.shaders->at(i).data.data());
         if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-            IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create shader module!");
+            linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create shader module!");
         }
         VkPipelineShaderStageCreateInfo shaderStageInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
         shaderStageInfo.module = shaderModule;
@@ -92,10 +92,10 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
     rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
     VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
     if (linkedRenderEngine->device.physical_device.features.sampleRateShading) {
-        multisampleStateCreateInfo.sampleShadingEnable = linkedRenderEngine->settings.msaaSamples >= VK_SAMPLE_COUNT_1_BIT ? VK_TRUE : VK_FALSE;
+        multisampleStateCreateInfo.sampleShadingEnable = linkedRenderEngine->settings->msaaSamples >= VK_SAMPLE_COUNT_1_BIT ? VK_TRUE : VK_FALSE;
         multisampleStateCreateInfo.minSampleShading = 1.0f;
     }
-    multisampleStateCreateInfo.rasterizationSamples = static_cast<VkSampleCountFlagBits>(linkedRenderEngine->settings.msaaSamples);
+    multisampleStateCreateInfo.rasterizationSamples = static_cast<VkSampleCountFlagBits>(linkedRenderEngine->settings->msaaSamples);
     VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
     pipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
     pipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
@@ -105,7 +105,7 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
     pipelineDepthStencilStateCreateInfo.back.compareOp = VK_COMPARE_OP_ALWAYS;
     VkPipelineColorBlendAttachmentState colorBlendAttachmentState{};
     colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachmentState.blendEnable = linkedRenderEngine->settings.rayTracing ? VK_FALSE : VK_TRUE;
+    colorBlendAttachmentState.blendEnable = linkedRenderEngine->settings->rayTracing ? VK_FALSE : VK_TRUE;
     colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
@@ -135,7 +135,7 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
     pipelineCreateInfo.renderPass = createdWith.renderPass->renderPass;
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     if (vkCreateGraphicsPipelines(linkedRenderEngine->device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) {
-        IELogger::logDefault(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create pipeline!");
+        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create pipeline!");
     }
     for (VkPipelineShaderStageCreateInfo shader : shaders) {
         vkDestroyShaderModule(linkedRenderEngine->device.device, shader.module, nullptr);
