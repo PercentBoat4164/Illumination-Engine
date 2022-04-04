@@ -6,6 +6,8 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
+#include <regex>
+#include <iostream>
 
 class IEFile {
 public:
@@ -38,13 +40,13 @@ public:
         if (file.is_open()) {
             return;
         }
-        file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::ate);
+        file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::ate | std::ios_base::binary);
         if (!file.is_open()) {
-            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
+            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
         }
         if (!file.is_open()) {
             createDirectory();
-            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
+            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
         }
         length = file.tellg();
     }
@@ -135,6 +137,18 @@ public:
         // Write the read data back to the file
         length = 0;  // Set length to zero so that it will be updated properly in the overwrite function
         overwrite(bytes, startPosition);
+    }
+
+    std::vector<std::string> extensions() const {
+        std::string temporaryPath = path.substr(path.find_last_of('/') + 1);
+        std::vector<std::string> result;
+        std::regex rgx("[.]");
+        std::sregex_token_iterator iter(temporaryPath.begin(), temporaryPath.end(), rgx, -1);
+        std::sregex_token_iterator end;
+        for (++iter; iter != end; ++iter) {
+            result.push_back(*iter);
+        }
+        return result;
     }
 
     ~IEFile() {

@@ -23,20 +23,14 @@ class IERenderEngine;
 
 class IEShader {
 public:
-    struct CreateInfo {
-        std::string filename{};
-    };
-
     std::vector<char> data{};
     std::vector<std::function<void()>> deletionQueue{};
     VkShaderModule module{};
     IERenderEngine *linkedRenderEngine{};
-    CreateInfo createdWith{};
+    IEFile *file;
     bool compiled{false};
 
     void destroy();
-
-    void create(IERenderEngine *renderEngineLink, CreateInfo *createInfo);
 
     ~IEShader();
 

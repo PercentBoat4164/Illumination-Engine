@@ -70,7 +70,6 @@ public:
     IERenderEngine *linkedRenderEngine{};
     IEUniformBufferObject uniformBufferObject{};
     std::vector<IETexture>* textures;
-    std::vector<IEShader::CreateInfo> shaderCreateInfos{};
     std::vector<IEShader> shaders{};
     glm::vec3 position{};
     glm::vec3 rotation{};

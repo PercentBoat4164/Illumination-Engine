@@ -53,12 +53,9 @@ void IERenderable::destroy() {
 
 void IERenderable::createShaders(const std::string &shaderDirectory) {
     IEShader shader{};
-    IEShader::CreateInfo shaderCreateInfo{.filename="shaders/Rasterize/fragmentShader.frag.spv"};
-    shader.create(linkedRenderEngine, &shaderCreateInfo);
+    shader.create(linkedRenderEngine, new IEFile("shaders/Rasterize/fragmentShader.frag.spv"));
     shaders.push_back(shader);
-    shader = IEShader{};
-    shaderCreateInfo.filename="shaders/Rasterize/vertexShader.vert.spv";
-    shader.create(linkedRenderEngine, &shaderCreateInfo);
+    shader.create(linkedRenderEngine, new IEFile("shaders/Rasterize/vertexShader.vert.spv"));
     shaders.push_back(shader);
     deletionQueue.emplace_back([&] {
         for (IEShader shader : shaders) {
@@ -236,14 +233,5 @@ void IERenderable::processNode(aiNode *node, const aiScene *scene) {
     /**@todo DON'T DO THIS! THIS IS TERRIBLE! ... I think.*/
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
         processNode(node->mChildren[i], scene);
-    }
-}
-
-void IERenderable::loadShaders(const std::vector<const char *> &filenames) {
-    shaderCreateInfos.clear();
-    shaderCreateInfos.reserve(filenames.size());
-    for (const char *filename : filenames) {
-        IEShader::CreateInfo shaderCreateInfo {filename};
-        shaderCreateInfos.push_back(shaderCreateInfo);
     }
 }
