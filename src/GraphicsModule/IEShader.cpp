@@ -15,7 +15,7 @@ void IEShader::destroy() {
     deletionQueue.clear();
 }
 
-void IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
+IEShader IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
     file = shaderFile;
     linkedRenderEngine = renderEngineLink;
     std::vector<std::string> extensions = file->extensions();
@@ -28,7 +28,7 @@ void IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
     file->close();
     VkShaderModuleCreateInfo shaderModuleCreateInfo{
         .sType=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .codeSize=static_cast<size_t>(fileContents.size() * 4),
+        .codeSize=static_cast<size_t>(file->length),
         .pCode=reinterpret_cast<const uint32_t *>(fileContents.data()),
     };
     VkResult result = vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &module);
@@ -40,6 +40,7 @@ void IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
             vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
         });
     }
+    return *this;
 }
 
 //void IEShader::create(IERenderEngine *renderEngineLink, IEShader::CreateInfo *createInfo) {

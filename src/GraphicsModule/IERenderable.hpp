@@ -55,8 +55,6 @@ public:
 
     void destroy();
 
-    void createShaders(const std::string& shaderDirectory);
-
     void createModelBuffer();
 
     void createVertexBuffer();
@@ -87,10 +85,13 @@ public:
 
     void createPipeline();
 
+    void createShaders();
+
 private:
     /**@todo Write this better.*/
     void processNode(aiNode *node, const aiScene *scene);
 
     /**@todo Make this auto-detect shader stage.*/
     void loadShaders(const std::vector<const char *> &filenames);
+
 };

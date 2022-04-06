@@ -335,15 +335,17 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     graphicsCommandPool[0].execute();
     camera.create(this);
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
-    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, api.name + " v" +api.version.name);
-    deletionQueue.insert(deletionQueue.begin(), [&] { topLevelAccelerationStructure.destroy(true); });
+    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, api.name + " v" + api.version.name);
+    deletionQueue.insert(deletionQueue.begin(), [&] {
+        topLevelAccelerationStructure.destroy(true);
+    });
 }
 
 void IERenderEngine::loadRenderable(IERenderable *renderable) {
     graphicsCommandPool[0].record();
 
     // Create Shaders
-    renderable->createShaders(renderable->directory);
+    renderable->createShaders();
 
     // Create model buffer
     renderable->createModelBuffer();

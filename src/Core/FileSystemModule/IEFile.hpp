@@ -36,19 +36,23 @@ public:
         std::filesystem::create_directory(thisDirectory);
     }
 
-    void open() {
+    bool open() {
         if (file.is_open()) {
-            return;
+            return true;
         }
         file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::ate | std::ios_base::binary);
         if (!file.is_open()) {
-            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
         }
         if (!file.is_open()) {
             createDirectory();
-            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
         }
-        length = file.tellg();
+        if (file.is_open()) {
+            length = file.tellg();
+            return true;
+        }
+        return false;
     }
 
     void close() {
@@ -72,9 +76,7 @@ public:
         file.read(bytes, numBytes);
 
         // Convert to string
-        std::string contents(bytes);
-        contents.resize(numBytes);  // This is required as two extra bytes are appended to the end of the string during conversion.
-        return contents;
+        return std::string{bytes, bytes + length};
     }
 
     void insert(const std::string& data, std::streamsize startPosition=-1) {

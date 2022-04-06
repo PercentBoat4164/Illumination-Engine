@@ -36,5 +36,5 @@ public:
 
     void compile(const std::string& input, std::string output = "") const;
 
-    void create(IERenderEngine *renderEngineLink, IEFile *file);
+    IEShader create(IERenderEngine *renderEngineLink, IEFile *shaderFile);
 };
