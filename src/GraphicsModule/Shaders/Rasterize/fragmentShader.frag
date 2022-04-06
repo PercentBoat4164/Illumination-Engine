@@ -11,7 +11,7 @@ layout(binding = 0) uniform CameraData {
 } cameraData;
 
 layout(binding = 1) uniform sampler2D diffuseTexture;
-layout(binding = 2) uniform sampler2D specularTexture;
+//layout(binding = 2) uniform sampler2D specularTexture;
 
 layout(location = 0) in vec2 fragmentTextureCoordinates;
 layout(location = 1) in vec3 interpolatedNormal;
@@ -37,6 +37,8 @@ void main() {
     vec3 diffuse = vec3(texture(diffuseTexture, fragmentTextureCoordinates)) * max(dot(normalizedInterpolatedNormal, lightDirection), 0.0f) * lightColor * lightIntensityAfterAttenuation;
     vec3 ambient = ambientStrength * lightColor;
     vec3 viewDirection = normalize(cameraData.position - fragmentPosition);
-    vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
-    fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f));
+//    vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
+//    fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f));
+    fragmentColor = aces(vec4((ambient + diffuse), 1.0f));
+
 }

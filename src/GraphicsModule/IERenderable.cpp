@@ -137,9 +137,9 @@ void IERenderable::createIndexBuffer() {
 
 void IERenderable::createDescriptorSet() {
     IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
-            .poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}},
-            .shaderStages={static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT), VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT},
-            .data={&modelBuffer, &(*textures)[diffuseTexture], &(*textures)[specularTexture]}
+            .poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}},
+            .shaderStages={static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT), VK_SHADER_STAGE_FRAGMENT_BIT},
+            .data={&modelBuffer, &(*textures)[diffuseTexture]}
     };
     descriptorSet.create(linkedRenderEngine, &descriptorSetCreateInfo);
     deletionQueue.emplace_back([&] {
