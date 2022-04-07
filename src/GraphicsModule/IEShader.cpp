@@ -36,42 +36,11 @@ void IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
     }
     else {
         deletionQueue.emplace_back([&] {
-            vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
+            vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);\
+            module = VK_NULL_HANDLE;
         });
     }
 }
-
-//void IEShader::create(IERenderEngine *renderEngineLink, IEShader::CreateInfo *createInfo) {
-//    linkedRenderEngine = renderEngineLink;
-//    createdWith = *createInfo;
-//    std::string replaceWith = linkedRenderEngine->settings->rayTracing ? "RayTrace" : "Rasterize";
-//    size_t pos = createdWith.filename.find('*');
-//    while(pos != std::string::npos) {
-//        createdWith.filename.replace(pos, 1, replaceWith);
-//        pos = createdWith.filename.find('*', pos + replaceWith.size());
-//    }
-//    replaceWith.~basic_string();
-//    data.clear();
-//    //compile(createdWith.filename);
-//    compiled = true;
-//    std::string compiledFileName = createdWith.filename;// + ".spv";
-//    std::ifstream compiledFile(compiledFileName, std::ios::ate | std::ios::binary);
-//    if (!compiledFile.is_open()) { throw std::runtime_error("failed to open file: " + compiledFileName); }
-//    long fileSize = compiledFile.tellg();
-//    data.resize(fileSize);
-//    compiledFile.seekg(0);
-//    compiledFile.read(data.data(), fileSize);
-//    compiledFile.close();
-//    VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
-//    shaderModuleCreateInfo.codeSize = data.size();
-//    shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(data.data());
-//    if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &module) != VK_SUCCESS) { throw std::runtime_error("failed to create shader module!"); }
-//    deletionQueue.emplace_back([&] {
-//        if (module) {
-//            vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
-//        }
-//    });
-//}
 
 IEShader::~IEShader() {
     destroy();

@@ -13,7 +13,7 @@ public:
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
     std::string filename{};
 
-    std::vector<void*> aspects{};
+    std::vector<IEAspect *> aspects{};
 
     void addAspect(IEAspect* aspect) {
         aspects.emplace_back(aspect);

@@ -12,4 +12,10 @@ int main() {
     renderEngine.loadRenderable(&cube);
     IEAsset asset{};
     asset.addAspect(&cube);
+    asset.scale = {1.0, 1.0, 1.0};
+    cube.scale = {1.0, 1.0, 1.0};
+    while (renderEngine.update()) {
+        glfwPollEvents();
+        keyboard.handleQueue();
+    }
 }
