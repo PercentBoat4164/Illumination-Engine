@@ -52,15 +52,13 @@ void IERenderable::destroy() {
 }
 
 void IERenderable::createShaders() {
-    std::vector<std::string> shaderFileNames = {"shaders/Rasterize/fragmentShader.frag.spv", "shaders/Rasterize/vertexShader.vert.spv"};
+    std::vector<std::string> shaderFileNames = {"shaders/Rasterize/vertexShader.vert.spv", "shaders/Rasterize/fragmentShader.frag.spv"};
     shaders.resize(shaderFileNames.size());
     for (int i = 0; i < shaders.size(); ++i) {
-        auto *shader = new IEShader{};
-        shader->create(linkedRenderEngine, new IEFile(shaderFileNames[i]));
-        shaders[i] = *shader;
+        shaders[i].create(linkedRenderEngine, new IEFile(shaderFileNames[i]));
     }
     deletionQueue.emplace_back([this] {
-        for (IEShader shader : shaders) {
+        for (IEShader &shader : shaders) {
             shader.destroy();
         }
     });

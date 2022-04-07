@@ -15,14 +15,13 @@ void IEShader::destroy() {
     deletionQueue.clear();
 }
 
-IEShader IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
+void IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
     file = shaderFile;
     linkedRenderEngine = renderEngineLink;
     std::vector<std::string> extensions = file->extensions();
     if (std::find(extensions.begin(), extensions.end(), "spv") == extensions.end()) {
         compile(file->path, file->path + ".spv");
     }
-    compiled = true;
     file->open();
     std::string fileContents = file->read(file->length, 0);
     file->close();
@@ -40,7 +39,6 @@ IEShader IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) 
             vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
         });
     }
-    return *this;
 }
 
 //void IEShader::create(IERenderEngine *renderEngineLink, IEShader::CreateInfo *createInfo) {

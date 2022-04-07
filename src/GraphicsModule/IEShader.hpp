@@ -28,7 +28,6 @@ public:
     VkShaderModule module{};
     IERenderEngine *linkedRenderEngine{};
     IEFile *file;
-    bool compiled{false};
 
     void destroy();
 
@@ -36,5 +35,5 @@ public:
 
     void compile(const std::string& input, std::string output = "") const;
 
-    IEShader create(IERenderEngine *renderEngineLink, IEFile *shaderFile);
+    void create(IERenderEngine *renderEngineLink, IEFile *shaderFile);
 };

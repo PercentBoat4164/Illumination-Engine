@@ -43,15 +43,8 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
     //prepare shaders
     std::vector<VkPipelineShaderStageCreateInfo> shaders{};
     for (uint32_t i = 0; i < createdWith.shaders->size(); i++) {
-        VkShaderModule shaderModule;
-        VkShaderModuleCreateInfo shaderModuleCreateInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
-        shaderModuleCreateInfo.codeSize = createdWith.shaders->at(i).data.size();
-        shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t *>(createdWith.shaders->at(i).data.data());
-        if (vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-            linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create shader module!");
-        }
         VkPipelineShaderStageCreateInfo shaderStageInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
-        shaderStageInfo.module = shaderModule;
+        shaderStageInfo.module = (*createdWith.shaders)[i].module;
         shaderStageInfo.pName = "main";
         shaderStageInfo.stage = i % 2 ? VK_SHADER_STAGE_FRAGMENT_BIT : VK_SHADER_STAGE_VERTEX_BIT;
         shaders.push_back(shaderStageInfo);
