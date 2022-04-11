@@ -106,17 +106,16 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
     }
 }
 
-VkRenderPassBeginInfo IERenderPass::beginRenderPass(const IEFramebuffer &framebuffer) {
-    VkRenderPassBeginInfo renderPassBeginInfo{
-            .sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .renderPass = renderPass,
-            .framebuffer = framebuffer.framebuffer,
+IERenderPassBeginInfo IERenderPass::beginRenderPass(uint32_t framebufferIndex) {
+    IERenderPassBeginInfo renderPassBeginInfo{
+            .renderPass = this,
+            .framebuffer = &framebuffers[framebufferIndex],
             .renderArea{
                     .offset = {0, 0},
                     .extent = linkedRenderEngine->swapchain.extent,
             },
-            .clearValueCount = static_cast<uint32_t>(linkedRenderEngine->settings->msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3),
-            .pClearValues = framebuffer.clearValues.data(),
+            .clearValueCount = static_cast<uint32_t>(framebuffers[framebufferIndex].clearValues.size()),
+            .pClearValues = framebuffers[framebufferIndex].clearValues.data(),
     };
     return renderPassBeginInfo;
 }

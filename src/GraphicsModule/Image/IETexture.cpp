@@ -24,10 +24,7 @@ void IETexture::copyCreateInfo(IETexture::CreateInfo *createInfo) {
 }
 
 void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *createInfo) {
-    if (engineLink) {  // Assume that this image is being recreated in a new engine, or created for the first time.
-        destroy(true);  // Delete anything that was created in the context of the old engine
-        linkedRenderEngine = engineLink;
-    }
+    linkedRenderEngine = engineLink;
 
     copyCreateInfo(createInfo);
 

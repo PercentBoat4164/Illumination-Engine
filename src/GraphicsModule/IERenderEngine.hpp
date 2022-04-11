@@ -24,6 +24,7 @@ class IERenderable;
 
 #include "Image/IEFramebuffer.hpp"
 #include "Image/IETexture.hpp"
+#include "Core/AssetModule/IEAsset.hpp"
 
 // External dependencies
 #include <vk_mem_alloc.h>
@@ -253,13 +254,14 @@ public:
     PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
 
 
+    void addAsset(IEAsset *asset);
+
 private:
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
     std::vector<VkFence> inFlightFences{};
     std::vector<VkFence> imagesInFlight{};
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
-    std::vector<IEFramebuffer> framebuffers{};
     std::vector<IERenderable*> renderables{};
     IEAccelerationStructure topLevelAccelerationStructure{};
     std::vector<std::function<void()>> fullRecreationDeletionQueue{};
@@ -270,4 +272,5 @@ private:
     float previousTime{};
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height);
+
 };

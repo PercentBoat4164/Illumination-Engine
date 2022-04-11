@@ -15,9 +15,9 @@
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/glm.hpp>
 
-
 IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
     linkedRenderEngine = engineLink;
+    childType = IE_CHILD_TYPE_RENDERABLE;
     linkedRenderEngine->graphicsCommandPool[0].record();
     textures = &linkedRenderEngine->textures;
     modelName = filePath.c_str();
@@ -80,7 +80,9 @@ void IERenderable::createVertexBuffer() {
     IEBuffer::CreateInfo vertexBufferCreateInfo{
             .size=sizeof(vertices[0]) * vertices.size(),
             .usage=VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
+            .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
+            .data=vertices.data(),
+            .sizeOfData=static_cast<uint32_t>(vertices.size() * sizeof(vertices[0])),
     };
     vertexBuffer.create(linkedRenderEngine, &vertexBufferCreateInfo);
     deletionQueue.emplace_back([&] {
@@ -123,9 +125,11 @@ void IERenderable::update(const IECamera &camera, float time) {
 
 void IERenderable::createIndexBuffer() {
     IEBuffer::CreateInfo indexBufferCreateInfo{
-            .size=sizeof(vertices[0]) * vertices.size(),
-            .usage=VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
+            .size=sizeof(indices[0]) * indices.size(),
+            .usage=VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+            .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
+            .data=indices.data(),
+            .sizeOfData=static_cast<uint32_t>(indices.size() * sizeof(indices[0])),
     };
     indexBuffer.create(linkedRenderEngine, &indexBufferCreateInfo);
     deletionQueue.emplace_back([&] {

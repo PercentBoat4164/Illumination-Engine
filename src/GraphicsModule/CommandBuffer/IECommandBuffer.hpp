@@ -9,7 +9,9 @@ class IERenderEngine;
 #include <variant>
 #include "Buffer/IEBuffer.hpp"
 #include "Image/IEImage.hpp"
+#include "IERenderPass.hpp"
 #include "IEDependent.hpp"
+#include "IEPipeline.hpp"
 
 
 typedef enum IECommandBufferState {
@@ -21,188 +23,6 @@ typedef enum IECommandBufferState {
     IE_COMMAND_BUFFER_STATE_INVALID = 0x5
 } IECommandBufferState;
 
-
-typedef struct IEImageMemoryBarrier {
-    const void *pNext;
-    VkAccessFlags srcAccessMask;
-    VkAccessFlags dstAccessMask;
-    VkImageLayout newLayout;
-    uint32_t srcQueueFamilyIndex;
-    uint32_t dstQueueFamilyIndex;
-    IEImage *image;
-    VkImageSubresourceRange subresourceRange;
-
-    [[nodiscard]] IEImage *getImage() const {
-        return image;
-    }
-
-    explicit operator VkImageMemoryBarrier() const {
-        return {
-                .sType=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                .pNext=pNext,
-                .srcAccessMask=srcAccessMask,
-                .dstAccessMask=dstAccessMask,
-                .newLayout=newLayout,
-                .srcQueueFamilyIndex=srcQueueFamilyIndex,
-                .dstQueueFamilyIndex=dstQueueFamilyIndex,
-                .image=image->image,
-                .subresourceRange=subresourceRange
-        };
-    }
-
-    explicit operator VkImageMemoryBarrier2() const {
-        return {
-                .sType=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                .pNext=pNext,
-                .srcAccessMask=srcAccessMask,
-                .dstAccessMask=dstAccessMask,
-                .newLayout=newLayout,
-                .srcQueueFamilyIndex=srcQueueFamilyIndex,
-                .dstQueueFamilyIndex=dstQueueFamilyIndex,
-                .image=image->image,
-                .subresourceRange=subresourceRange
-        };
-    }
-} IEImageMemoryBarrier;
-
-
-typedef struct IEBufferMemoryBarrier {
-    const void *pNext;
-    VkAccessFlags srcAccessMask;
-    VkAccessFlags dstAccessMask;
-    uint32_t srcQueueFamilyIndex;
-    uint32_t dstQueueFamilyIndex;
-    IEBuffer *buffer;
-    VkDeviceSize offset;
-    VkDeviceSize size;
-
-    [[nodiscard]] IEBuffer *getBuffer() const {
-        return buffer;
-    };
-
-    explicit operator VkBufferMemoryBarrier() const {
-        return {
-                .sType=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-                .pNext=pNext,
-                .srcAccessMask=srcAccessMask,
-                .dstAccessMask=dstAccessMask,
-                .srcQueueFamilyIndex=srcQueueFamilyIndex,
-                .dstQueueFamilyIndex=dstQueueFamilyIndex,
-                .buffer=buffer->buffer,
-                .offset=offset,
-                .size=size
-        };
-    }
-
-    explicit operator VkBufferMemoryBarrier2() const {
-        return {
-                .sType=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
-                .pNext=pNext,
-                .srcAccessMask=srcAccessMask,
-                .dstAccessMask=dstAccessMask,
-                .srcQueueFamilyIndex=srcQueueFamilyIndex,
-                .dstQueueFamilyIndex=dstQueueFamilyIndex,
-                .buffer=buffer->buffer,
-                .offset=offset,
-                .size=size
-        };
-    }
-
-} IEBufferMemoryBarrier;
-
-typedef struct IEDependencyInfo {
-    const void *pNext;
-    VkDependencyFlags dependencyFlags;
-    std::vector<VkMemoryBarrier2> memoryBarriers;
-    std::vector<IEBufferMemoryBarrier> bufferMemoryBarriers;
-    std::vector<IEImageMemoryBarrier> imageMemoryBarriers;
-
-    [[nodiscard]] std::vector<IEBuffer *> getBuffers() const {
-        std::vector<IEBuffer *> buffers{};
-        buffers.reserve(bufferMemoryBarriers.size());
-        for (IEBufferMemoryBarrier bufferBarrier : bufferMemoryBarriers) {
-            buffers.push_back(bufferBarrier.buffer);
-        }
-        return buffers;
-    }
-
-    [[nodiscard]] std::vector<IEImage *> getImages() const {
-        std::vector<IEImage *> images{};
-        images.reserve(imageMemoryBarriers.size());
-        for (IEImageMemoryBarrier imageBarrier : imageMemoryBarriers) {
-            images.push_back(imageBarrier.image);
-        }
-        return images;
-    }
-
-    [[nodiscard]] std::vector<IEDependency *> getDependencies() const {
-        std::vector<IEDependency *> dependencies{};
-        dependencies.reserve(imageMemoryBarriers.size() + bufferMemoryBarriers.size());
-        for (IEImageMemoryBarrier imageBarrier : imageMemoryBarriers) {
-            dependencies.push_back(imageBarrier.image);
-        }
-        for (IEBufferMemoryBarrier bufferBarrier : bufferMemoryBarriers) {
-            dependencies.push_back(bufferBarrier.buffer);
-        }
-        return dependencies;
-    }
-
-    explicit operator VkDependencyInfo() {
-        bufferBarriers.resize(bufferMemoryBarriers.size());
-        for (IEBufferMemoryBarrier bufferBarrier : bufferMemoryBarriers) {
-            bufferBarriers.emplace_back((VkBufferMemoryBarrier2)bufferBarrier);
-        }
-        imageBarriers.resize(imageMemoryBarriers.size());
-        for (IEImageMemoryBarrier imageBarrier : imageMemoryBarriers) {
-            imageBarriers.emplace_back((VkImageMemoryBarrier2)imageBarrier);
-        }
-        return {
-            .sType=VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-            .pNext=pNext,
-            .dependencyFlags=dependencyFlags,
-            .memoryBarrierCount=static_cast<uint32_t>(memoryBarriers.size()),
-            .pMemoryBarriers=memoryBarriers.data(),
-            .bufferMemoryBarrierCount=static_cast<uint32_t>(bufferMemoryBarriers.size()),
-            .pBufferMemoryBarriers=bufferBarriers.data(),
-            .imageMemoryBarrierCount=static_cast<uint32_t>(imageMemoryBarriers.size()),
-            .pImageMemoryBarriers=imageBarriers.data(),
-        };
-    }
-
-private:
-    std::vector<VkBufferMemoryBarrier2> bufferBarriers{};
-    std::vector<VkImageMemoryBarrier2> imageBarriers{};
-} IEDependencyInfo;
-
-typedef struct IECopyBufferToImageInfo {
-    const void *pNext;
-    IEBuffer *srcBuffer;
-    IEImage *dstImage;
-    std::vector<VkBufferImageCopy2> regions;
-
-    [[nodiscard]] std::vector<IEImage *> getImages() const {
-        return {dstImage};
-    }
-
-    [[nodiscard]] std::vector<IEBuffer *> getBuffers() const {
-        return {srcBuffer};
-    }
-
-    [[nodiscard]] std::vector<IEDependency *> getDependencies() const {
-        return {dstImage, srcBuffer};
-    }
-
-    explicit operator VkCopyBufferToImageInfo2() const {
-        return {
-                .sType=VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
-                .pNext=pNext,
-                .srcBuffer=srcBuffer->buffer,
-                .dstImage=dstImage->image,
-                .regionCount=static_cast<uint32_t>(regions.size()),
-                .pRegions=regions.data()
-        };
-    }
-} IECopyBufferToImageInfo;
 
 class IECommandBuffer : public IEDependent {
 public:
@@ -241,4 +61,24 @@ public:
     void recordCopyBufferToImage(IEBuffer *buffer, IEImage *image, std::vector<VkBufferImageCopy> regions);
 
     void recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo);
+
+    void recordBindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount, const std::vector<IEBuffer *>& buffers, VkDeviceSize *pOffsets);
+
+    void recordBindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount, const std::vector<IEBuffer *> &buffers, VkDeviceSize *pOffsets, VkDeviceSize *pSizes, VkDeviceSize *pStrides);
+
+    void recordBindPipeline(VkPipelineBindPoint pipelineBindPoint, IEPipeline *pipeline);
+
+    void recordBindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, IEPipeline *pipeline, uint32_t firstSet, const std::vector<IEDescriptorSet *> &descriptorSets, std::vector<uint32_t> dynamicOffsets);
+
+    void recordDrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
+
+    void recordBindIndexBuffer(IEBuffer *buffer, uint32_t offset, VkIndexType indexType);
+
+    void recordBeginRenderPass(IERenderPassBeginInfo *pRenderPassBegin, VkSubpassContents contents);
+
+    void recordSetViewport(uint32_t firstViewPort, uint32_t viewPortCount, const VkViewport *pViewPorts);
+
+    void recordSetScissor(uint32_t firstScissor, uint32_t scissorCount, const VkRect2D *pScissors);
+
+    void recordEndRenderPass();
 };

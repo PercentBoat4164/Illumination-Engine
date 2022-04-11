@@ -5,11 +5,11 @@
 #include <vulkan/vulkan.h>
 
 VkVertexInputBindingDescription IEVertex::getBindingDescription() {
-    VkVertexInputBindingDescription bindingDescription{};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(IEVertex);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return bindingDescription;
+    return {
+        .binding=0,
+        .stride=sizeof(IEVertex),
+        .inputRate=VK_VERTEX_INPUT_RATE_VERTEX
+    };
 }
 
 std::array<VkVertexInputAttributeDescription, 4> IEVertex::getAttributeDescriptions() {

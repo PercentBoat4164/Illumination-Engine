@@ -10,6 +10,9 @@ class IEImage;
 class IERenderEngine;
 
 /* Include classes used as attributes or function arguments. */
+// Internal dependencies
+#include "IEDependency.hpp"
+
 // External dependencies
 #include <vulkan/vulkan.h>
 
@@ -21,7 +24,7 @@ class IERenderEngine;
 #include <vector>
 
 
-class IEDescriptorSet {
+class IEDescriptorSet : public IEDependency{
 public:
     struct CreateInfo {
         //Required

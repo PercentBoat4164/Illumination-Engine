@@ -6,6 +6,7 @@ class IERenderEngine;
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "GraphicsModule/Image/IEFramebuffer.hpp"
+#include "CommandBuffer/IECommandBuffer.hpp"
 
 // External dependencies
 #include <vulkan/vulkan.h>
@@ -18,7 +19,7 @@ class IERenderEngine;
 
 class IERenderEngine;
 
-class IERenderPass {
+class IERenderPass : public IEDependency{
 public:
     struct CreateInfo {
         uint8_t msaaSamples{1};
@@ -29,11 +30,11 @@ public:
 
     void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-    VkRenderPassBeginInfo beginRenderPass(const IEFramebuffer &framebuffer);
+    IERenderPassBeginInfo beginRenderPass(uint32_t framebufferIndex);
 
     void destroy();
 
-    ~IERenderPass();
+    ~IERenderPass() override;
 
 private:
     std::vector<std::function<void()>> deletionQueue{};

@@ -10,6 +10,7 @@ class IERenderPass;
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEShader.hpp"
+#include "IEDependency.hpp"
 
 // External dependencies
 #include <vulkan/vulkan.h>
@@ -19,7 +20,7 @@ class IERenderPass;
 #include <vector>
 
 
-class IEPipeline {
+class IEPipeline : public IEDependency {
 public:
     struct CreateInfo {
         //Required
@@ -42,7 +43,7 @@ public:
 
     void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-    ~IEPipeline();
+    ~IEPipeline() override;
 
 private:
     IERenderEngine *linkedRenderEngine{};

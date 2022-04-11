@@ -6,6 +6,7 @@
 
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"
+#include "Core/AssetModule/IEAsset.hpp"
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION  // Must precede GLEW inclusion.
@@ -341,6 +342,14 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     });
 }
 
+void IERenderEngine::addAsset(IEAsset *asset) {
+    for (IEAspect *aspect : asset->aspects) {
+        if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
+            loadRenderable((IERenderable*) aspect);
+        }
+    }
+}
+
 void IERenderEngine::loadRenderable(IERenderable *renderable) {
     graphicsCommandPool[0].record();
 
@@ -363,7 +372,10 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
 
     // Create pipeline
     renderable->createPipeline();
+
     graphicsCommandPool[0].execute();
+    renderables.push_back(renderable);
+    graphicsCommandPool[0].reset();
 }
 
 bool IERenderEngine::update() {
@@ -387,8 +399,8 @@ bool IERenderEngine::update() {
     }
     imagesInFlight[imageIndex] = inFlightFences[currentFrame];
     VkDeviceSize offsets[] = {0};
-    graphicsCommandPool[(swapchain.image_count - 1 + imageIndex) % swapchain.image_count].reset();
-    graphicsCommandPool[imageIndex].record();
+//    graphicsCommandPool[(swapchain.image_count - 1 + imageIndex) % swapchain.image_count].reset();
+//    graphicsCommandPool[imageIndex].record();
     VkViewport viewport{};
     viewport.x = 0.f;
     viewport.y = 0.f;
@@ -396,13 +408,15 @@ bool IERenderEngine::update() {
     viewport.height = (float)swapchain.extent.height;
     viewport.minDepth = 0.f;
     viewport.maxDepth = 1.f;
-    vkCmdSetViewport(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &viewport);
+    graphicsCommandPool[imageIndex].recordSetViewport(0, 1, &viewport);
+//    vkCmdSetViewport(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &viewport);
     VkRect2D scissor{};
     scissor.offset = {0, 0};
     scissor.extent = swapchain.extent;
-    vkCmdSetScissor(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &scissor);
-    VkRenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(framebuffers[imageIndex]);
-    vkCmdBeginRenderPass(graphicsCommandPool[imageIndex].commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+//    vkCmdSetScissor(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &scissor);
+    graphicsCommandPool[imageIndex].recordSetScissor(0, 1, &scissor);
+    IERenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(imageIndex);
+    graphicsCommandPool[imageIndex].recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     camera.update();
     auto time = static_cast<float>(glfwGetTime());
     for (IERenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera, time); } }
@@ -427,37 +441,26 @@ bool IERenderEngine::update() {
             if (settings->rayTracing) {
                 renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2});
             }
-            vkCmdBindVertexBuffers(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &renderable->vertexBuffer.buffer, offsets);
-            vkCmdBindIndexBuffer(graphicsCommandPool[imageIndex].commandBuffer, renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdBindPipeline(graphicsCommandPool[imageIndex].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipeline);
-            vkCmdBindDescriptorSets(graphicsCommandPool[imageIndex].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipelineLayout, 0, 1, &renderable->descriptorSet.descriptorSet, 0, nullptr);
-            vkCmdDrawIndexed(graphicsCommandPool[imageIndex].commandBuffer, static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
+            graphicsCommandPool[imageIndex].recordBindVertexBuffers(0, 1, {&renderable->vertexBuffer}, offsets);
+            graphicsCommandPool[imageIndex].recordBindIndexBuffer(&renderable->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+            graphicsCommandPool[imageIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline);
+            graphicsCommandPool[imageIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline, 0, {&renderable->descriptorSet}, {});
+            graphicsCommandPool[imageIndex].recordDrawIndexed(renderable->indices.size(), 1, 0, 0, 0);
+//            vkCmdBindVertexBuffers(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &renderable->vertexBuffer.buffer, offsets);
+//            vkCmdBindIndexBuffer(graphicsCommandPool[imageIndex].commandBuffer, renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+//            vkCmdBindPipeline(graphicsCommandPool[imageIndex].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipeline);
+//            vkCmdBindDescriptorSets(graphicsCommandPool[imageIndex].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipelineLayout, 0, 1, &renderable->descriptorSet.descriptorSet, 0, nullptr);
+//            vkCmdDrawIndexed(graphicsCommandPool[imageIndex].commandBuffer, static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
         }
     }
-    vkCmdEndRenderPass(graphicsCommandPool[imageIndex].commandBuffer);
-    if (vkEndCommandBuffer(graphicsCommandPool[imageIndex].commandBuffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to record draw command IEBuffer!");
-    }
-    VkSemaphore waitSemaphores[]{imageAvailableSemaphores[currentFrame]};
-    VkSemaphore signalSemaphores[]{renderFinishedSemaphores[currentFrame]};
-    VkPipelineStageFlags waitStages[]{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &graphicsCommandPool[imageIndex].commandBuffer;
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
-    vkResetFences(device.device, 1, &inFlightFences[currentFrame]);
-    VkResult test = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
-    if (test != VK_SUCCESS) {
-        throw std::runtime_error("failed to submit draw command IEBuffer!");
-    }
+    graphicsCommandPool[imageIndex].recordEndRenderPass();
+//    vkCmdEndRenderPass(graphicsCommandPool[imageIndex].commandBuffer);
+    graphicsCommandPool[imageIndex].execute();
+    graphicsCommandPool[imageIndex].wait();
     VkSwapchainKHR swapchains[]{swapchain.swapchain};
     VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
+    presentInfo.waitSemaphoreCount = 0;
+    presentInfo.pWaitSemaphores = nullptr;
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapchains;
     presentInfo.pImageIndices = &imageIndex;
@@ -476,6 +479,7 @@ bool IERenderEngine::update() {
     }
     currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(1/frameTime));
+    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(frameNumber));
     return glfwWindowShouldClose(window) != 1;
 }
 
@@ -517,9 +521,6 @@ void IERenderEngine::destroy() {
     destroySyncObjects();
     destroySwapchain();
     destroyCommandPools();
-//        for (IETexture& texture : textures) {
-//            texture.destroy();
-//        }
     for (IERenderable* renderable : renderables) {
         renderable->destroy();
     }

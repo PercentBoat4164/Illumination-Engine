@@ -29,6 +29,8 @@ class IECamera;
 #include <string>
 #include <functional>
 
+#define IE_CHILD_TYPE_RENDERABLE "Renderable"
+
 
 class IERenderable : public IEAspect {
 public:
