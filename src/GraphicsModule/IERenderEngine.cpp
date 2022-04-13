@@ -345,7 +345,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 void IERenderEngine::addAsset(IEAsset *asset) {
     for (IEAspect *aspect : asset->aspects) {
         if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
-            loadRenderable((IERenderable*) aspect);
+            loadRenderable((IERenderable*)aspect);
         }
     }
 }
@@ -399,8 +399,6 @@ bool IERenderEngine::update() {
     }
     imagesInFlight[imageIndex] = inFlightFences[currentFrame];
     VkDeviceSize offsets[] = {0};
-//    graphicsCommandPool[(swapchain.image_count - 1 + imageIndex) % swapchain.image_count].reset();
-//    graphicsCommandPool[imageIndex].record();
     VkViewport viewport{};
     viewport.x = 0.f;
     viewport.y = 0.f;
@@ -409,11 +407,9 @@ bool IERenderEngine::update() {
     viewport.minDepth = 0.f;
     viewport.maxDepth = 1.f;
     graphicsCommandPool[imageIndex].recordSetViewport(0, 1, &viewport);
-//    vkCmdSetViewport(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &viewport);
     VkRect2D scissor{};
     scissor.offset = {0, 0};
     scissor.extent = swapchain.extent;
-//    vkCmdSetScissor(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &scissor);
     graphicsCommandPool[imageIndex].recordSetScissor(0, 1, &scissor);
     IERenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(imageIndex);
     graphicsCommandPool[imageIndex].recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -445,16 +441,9 @@ bool IERenderEngine::update() {
             graphicsCommandPool[imageIndex].recordBindIndexBuffer(&renderable->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
             graphicsCommandPool[imageIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline);
             graphicsCommandPool[imageIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline, 0, {&renderable->descriptorSet}, {});
-            graphicsCommandPool[imageIndex].recordDrawIndexed(renderable->indices.size(), 1, 0, 0, 0);
-//            vkCmdBindVertexBuffers(graphicsCommandPool[imageIndex].commandBuffer, 0, 1, &renderable->vertexBuffer.buffer, offsets);
-//            vkCmdBindIndexBuffer(graphicsCommandPool[imageIndex].commandBuffer, renderable->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-//            vkCmdBindPipeline(graphicsCommandPool[imageIndex].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipeline);
-//            vkCmdBindDescriptorSets(graphicsCommandPool[imageIndex].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderable->pipeline.pipelineLayout, 0, 1, &renderable->descriptorSet.descriptorSet, 0, nullptr);
-//            vkCmdDrawIndexed(graphicsCommandPool[imageIndex].commandBuffer, static_cast<uint32_t>(renderable->indices.size()), 1, 0, 0, 0);
         }
     }
     graphicsCommandPool[imageIndex].recordEndRenderPass();
-//    vkCmdEndRenderPass(graphicsCommandPool[imageIndex].commandBuffer);
     graphicsCommandPool[imageIndex].execute();
     graphicsCommandPool[imageIndex].wait();
     VkSwapchainKHR swapchains[]{swapchain.swapchain};
@@ -520,7 +509,6 @@ void IERenderEngine::handleFullscreenSettingsChange() {
 void IERenderEngine::destroy() {
     destroySyncObjects();
     destroySwapchain();
-    destroyCommandPools();
     for (IERenderable* renderable : renderables) {
         renderable->destroy();
     }

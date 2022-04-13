@@ -290,3 +290,12 @@ void IECommandBuffer::recordEndRenderPass() {
 void IECommandBuffer::wait() {
     while (state == IE_COMMAND_BUFFER_STATE_PENDING) {}
 }
+
+void IECommandBuffer::destroy() {
+    free();
+    removeAllDependencies();
+}
+
+IECommandBuffer::~IECommandBuffer() {
+    destroy();
+}

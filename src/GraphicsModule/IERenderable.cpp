@@ -31,24 +31,24 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
             .data=stbi_load("res/Models/NoTexture.png", reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha),
             .filename=std::string("res/Models/NoTexture.png"),
     };
-    if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
+    if (!textureCreateInfo.data) {
+        throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename);
+    }
     (*textures)[0].create(linkedRenderEngine, &textureCreateInfo);
     Assimp::Importer importer{};
     const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath)); }
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath));
+    }
     processNode(scene->mRootNode, scene);
     linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
 void IERenderable::destroy() {
-    if (!created) {
-        return;
-    }
     for (const std::function<void()> &function : deletionQueue) {
         function();
     }
     deletionQueue.clear();
-    created = false;
 }
 
 void IERenderable::createShaders() {
@@ -57,7 +57,7 @@ void IERenderable::createShaders() {
     for (int i = 0; i < shaders.size(); ++i) {
         shaders[i].create(linkedRenderEngine, new IEFile(shaderFileNames[i]));
     }
-    deletionQueue.emplace_back([this] {
+    deletionQueue.emplace_back([&] {
         for (IEShader &shader : shaders) {
             shader.destroy();
         }

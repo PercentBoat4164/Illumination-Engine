@@ -37,7 +37,6 @@ void IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
     else {
         deletionQueue.emplace_back([&] {
             vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);\
-            module = VK_NULL_HANDLE;
         });
     }
 }
@@ -52,7 +51,9 @@ void IEShader::compile(const std::string &input, std::string output) const {
         throw std::runtime_error("failed to open file: " + input);
     }
     rawFile.close();
-    if (output.empty()) { output = input + ".spv"; }
+    if (output.empty()) {
+        output = input + ".spv";
+    }
     if (linkedRenderEngine->settings->rayTracing) {
         if (system((GLSLC + input + " -o " + output + " --target-env=vulkan1.2").c_str()) != 0) {
             throw std::runtime_error("failed to compile shaders: " + input);

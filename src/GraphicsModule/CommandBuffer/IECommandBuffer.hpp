@@ -81,4 +81,8 @@ public:
     void recordSetScissor(uint32_t firstScissor, uint32_t scissorCount, const VkRect2D *pScissors);
 
     void recordEndRenderPass();
+
+    void destroy();
+
+    ~IECommandBuffer() override;
 };

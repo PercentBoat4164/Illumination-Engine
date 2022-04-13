@@ -20,6 +20,8 @@ public:
 
     void removeDependency(IEDependency *dependency);
 
+    void removeAllDependencies();
+
     bool hasNoDependencies();
 
     virtual void wait() = 0;

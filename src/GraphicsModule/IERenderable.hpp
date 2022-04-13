@@ -75,7 +75,6 @@ public:
     glm::vec3 rotation{};
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
     bool render{true};
-    bool created{false};
     std::string directory{};
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 

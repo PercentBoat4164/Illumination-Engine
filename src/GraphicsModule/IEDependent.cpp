@@ -32,3 +32,12 @@ void IEDependent::removeDependency(IEDependency *dependency) {
         dependency->~IEDependency();
     }
 }
+
+void IEDependent::removeAllDependencies() {
+    for (IEDependency *dependency : dependencies) {
+        if (dependency->hasNoDependents()) {
+            dependency->~IEDependency();
+        }
+    }
+    dependencies.clear();
+}
