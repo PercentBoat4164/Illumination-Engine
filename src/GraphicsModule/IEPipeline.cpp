@@ -20,7 +20,7 @@ void IEPipeline::destroy() {
 void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *createInfo) {
     linkedRenderEngine = engineLink;
     createdWith = *createInfo;
-    //Create pipelineLayout
+    // Create pipelineLayout
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
     pipelineLayoutCreateInfo.setLayoutCount = 1;
     pipelineLayoutCreateInfo.pSetLayouts = &createdWith.descriptorSet->descriptorSetLayout;
@@ -40,7 +40,7 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
         }
         #endif
     });
-    //prepare shaders
+    // prepare shaders
     std::vector<VkPipelineShaderStageCreateInfo> shaders{};
     for (uint32_t i = 0; i < createdWith.shaders->size(); i++) {
         VkPipelineShaderStageCreateInfo shaderStageInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
@@ -49,7 +49,7 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
         shaderStageInfo.stage = i % 2 ? VK_SHADER_STAGE_FRAGMENT_BIT : VK_SHADER_STAGE_VERTEX_BIT;
         shaders.push_back(shaderStageInfo);
     }
-    //create graphics pipeline
+    // create graphics pipeline
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
     VkVertexInputBindingDescription bindingDescription = IEVertex::getBindingDescription();
     std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = IEVertex::getAttributeDescriptions();

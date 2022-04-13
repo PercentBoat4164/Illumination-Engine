@@ -48,6 +48,8 @@ void IEDependency::wait() {
     }
 }
 
+IEDependency::~IEDependency() = default;
+
 std::vector<IEImage *> IEImageMemoryBarrier::getImages() const {
     return {image};
 }

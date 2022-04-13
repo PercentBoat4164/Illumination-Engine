@@ -36,7 +36,7 @@ void IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
     }
     else {
         deletionQueue.emplace_back([&] {
-            vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);\
+            vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
         });
     }
 }

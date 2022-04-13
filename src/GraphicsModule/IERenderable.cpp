@@ -58,9 +58,9 @@ void IERenderable::createShaders() {
         shaders[i].create(linkedRenderEngine, new IEFile(shaderFileNames[i]));
     }
     deletionQueue.emplace_back([&] {
-        for (IEShader &shader : shaders) {
-            shader.destroy();
-        }
+//        for (IEShader &shader : shaders) {
+//            shader.destroy();
+//        }
     });
 }
 

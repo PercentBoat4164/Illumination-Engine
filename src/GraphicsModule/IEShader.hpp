@@ -23,10 +23,10 @@ class IERenderEngine;
 
 class IEShader {
 public:
-    std::vector<char> data{};
-    std::vector<std::function<void()>> deletionQueue{};
-    VkShaderModule module{};
-    IERenderEngine *linkedRenderEngine{};
+    std::vector<char> data;
+    std::vector<std::function<void()>> deletionQueue;
+    VkShaderModule module;
+    IERenderEngine *linkedRenderEngine;
     IEFile *file;
 
     void destroy();

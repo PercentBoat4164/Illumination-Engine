@@ -32,7 +32,7 @@ public:
 
     bool hasNoDependents();
 
-    virtual ~IEDependency() = default;
+    virtual ~IEDependency();
 
     void wait();
 };

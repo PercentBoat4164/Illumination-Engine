@@ -353,9 +353,6 @@ void IERenderEngine::addAsset(IEAsset *asset) {
 void IERenderEngine::loadRenderable(IERenderable *renderable) {
     graphicsCommandPool[0].record();
 
-    // Create Shaders
-    renderable->createShaders();
-
     // Create model buffer
     renderable->createModelBuffer();
 
@@ -369,6 +366,9 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
 
     // Create descriptor set
     renderable->createDescriptorSet();
+
+    // Create shaders
+    renderable->createShaders();
 
     // Create pipeline
     renderable->createPipeline();
