@@ -16,12 +16,16 @@ class IERenderPass;
 
 #include <vector>
 #include <vulkan/vulkan.h>
+#include <string>
+
 
 class IEDependency {
 protected:
-    std::vector<IEDependent*> dependents{};
-
 public:
+
+    std::vector<IEDependent*> dependents{};
+    std::string type;
+
     void addDependent(IEDependent *dependent);
 
     bool isDependencyOf(IEDependent *dependent);
@@ -30,9 +34,11 @@ public:
 
     void removeAllDependents();
 
-    bool hasNoDependents();
+    bool hasNoDependents() const;
 
     virtual ~IEDependency();
+
+    virtual void destroy();
 
     void wait();
 };

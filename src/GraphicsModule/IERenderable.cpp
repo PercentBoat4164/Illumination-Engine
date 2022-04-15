@@ -72,7 +72,7 @@ void IERenderable::createModelBuffer() {
     };
     modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
     deletionQueue.emplace_back([&] {
-        modelBuffer.destroy(true);
+        modelBuffer.destroy();
     });
 }
 
@@ -86,7 +86,7 @@ void IERenderable::createVertexBuffer() {
     };
     vertexBuffer.create(linkedRenderEngine, &vertexBufferCreateInfo);
     deletionQueue.emplace_back([&] {
-        vertexBuffer.destroy(true);
+        vertexBuffer.destroy();
     });
 }
 
@@ -96,7 +96,7 @@ IERenderable::~IERenderable() {
 
 void IERenderable::update(const IECamera &camera, float time) {
     glm::quat quaternion = glm::quat(glm::radians(rotation));
-    glm::mat4 modelMatrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
+    glm::mat4 modelMatrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0F), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
     uniformBufferObject.viewModelMatrix = camera.viewMatrix;
     uniformBufferObject.modelMatrix = modelMatrix;
     uniformBufferObject.projectionMatrix = camera.projectionMatrix;
@@ -111,7 +111,7 @@ void IERenderable::update(const IECamera &camera, float time) {
                 modelMatrix[2][0], modelMatrix[2][1], modelMatrix[2][2], modelMatrix[3][2]
         };
         transformationBuffer.uploadData(&transformationMatrix, sizeof(transformationMatrix));
-        bottomLevelAccelerationStructure.destroy(true);
+        bottomLevelAccelerationStructure.destroy();
         IEAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
         renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
         renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
@@ -133,7 +133,7 @@ void IERenderable::createIndexBuffer() {
     };
     indexBuffer.create(linkedRenderEngine, &indexBufferCreateInfo);
     deletionQueue.emplace_back([&] {
-        indexBuffer.destroy(true);
+        indexBuffer.destroy();
     });
 }
 

@@ -17,25 +17,19 @@
 }
 
 [[maybe_unused]] [[nodiscard]] float IEImage::getHighestAnisotropyLevel(float requested) const {
-    float anisotropyLevel = 1.0f;
+    float anisotropyLevel = 1.0F;
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(linkedRenderEngine->device.physical_device, &properties);
     return std::max(anisotropyLevel, std::min(properties.limits.maxSamplerAnisotropy, requested));
 }
 
-void IEImage::destroy(bool ignoreDependents) {
-    if (hasNoDependents() || ignoreDependents) {
+void IEImage::destroy() {
+    if (hasNoDependents()) {
         removeAllDependents();
         for (std::function<void()> &function: deletionQueue) {
             function();
         }
         deletionQueue.clear();
-    }
-}
-
-void IEImage::create(IEImage::CreateInfo *createInfo) {
-    if (!linkedRenderEngine) {
-        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create an image without a render engine!");
     }
 }
 
@@ -217,7 +211,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 }
 
 IEImage::~IEImage() {
-    destroy(true);
+    destroy();
 }
 
 void IEImage::addDependent(void *dependent) {
@@ -234,23 +228,10 @@ void IEImage::removeDependent(void *dependent) {
 }
 
 IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
-    if (engineLink) {  // Assume that this image is being recreated in a new engine, or created for the first time.
-        destroy(true);  // Delete anything that was created in the context of the old engine
-        linkedRenderEngine = engineLink;
-    }
+    linkedRenderEngine = engineLink;
 
     // Copy createInfo data into this image
-    imageFormat = createInfo->format;
-    imageLayout = createInfo->layout;
-    imageType = createInfo->type;
-    imageUsage = createInfo->usage;
-    imageFlags = createInfo->flags;
-    imageAspect = createInfo->aspect;
-    allocationUsage = createInfo->allocationUsage;
-    width = createInfo->width;
-    height = createInfo->height;
-    dataSource = createInfo->dataSource;
-    data = createInfo->data;
+    copyCreateInfo(createInfo);
     VkImageLayout desiredLayout = imageLayout;
     imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 

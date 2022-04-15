@@ -57,7 +57,7 @@ public:
     CreateInfo createdWith{};
     bool created{false};
 
-    void destroy(bool ignoreDependents);
+    void destroy() final;
 
     IEBuffer();
 

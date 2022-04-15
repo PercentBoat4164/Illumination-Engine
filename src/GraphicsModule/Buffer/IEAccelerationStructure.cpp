@@ -88,9 +88,11 @@ void IEAccelerationStructure::create(IERenderEngine *renderEngineLink, CreateInf
     accelerationStructureBuildRangeInfo.primitiveCount = createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR ? createdWith.primitiveCount : count;
     std::vector<VkAccelerationStructureBuildRangeInfoKHR *> pAccelerationStructureBuildRangeInfo{&accelerationStructureBuildRangeInfo};
     linkedRenderEngine->vkCmdBuildAccelerationStructuresKHR(linkedRenderEngine->graphicsCommandPool[0].commandBuffer, 1, &accelerationStructureBuildGeometryInfo, pAccelerationStructureBuildRangeInfo.data());
-    scratchBuffer.destroy(true);
+    scratchBuffer.destroy();
     if (createdWith.type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR) {
-        instancesBuffer.destroy(true);
+        instancesBuffer.destroy();
     }
     created = true;
 }
+
+IEAccelerationStructure::IEAccelerationStructure() = default;

@@ -22,12 +22,11 @@ class IEBuffer;
 #include <vector>
 #include <functional>
 
-
 class IEImage : public IEDependency {
 protected:
-    [[maybe_unused]] [[nodiscard]] uint8_t getHighestMSAASampleCount(uint8_t requested) const ;
+    [[maybe_unused]] [[nodiscard]] uint8_t getHighestMSAASampleCount(uint8_t requested) const;
 
-    [[maybe_unused]] [[nodiscard]] float getHighestAnisotropyLevel(float requested) const ;
+    [[maybe_unused]] [[nodiscard]] float getHighestAnisotropyLevel(float requested) const;
 
 public:
     struct CreateInfo {
@@ -68,11 +67,7 @@ public:
 
     IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo);
 
-    void destroy(bool ignoreDependents);
-
-    virtual void create(IEImage::CreateInfo *createInfo);
-
-    virtual void copyCreateInfo(IEImage::CreateInfo *createInfo);
+    virtual void copyCreateInfo(IEImage::CreateInfo *createInfo) final;
 
     virtual void create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo);
 
@@ -85,4 +80,6 @@ public:
     void removeDependent(void* dependent);
 
     ~IEImage() override;
+
+    void destroy() final;
 };

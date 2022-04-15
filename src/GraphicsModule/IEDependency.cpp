@@ -22,17 +22,14 @@ bool IEDependency::isDependencyOf(IEDependent *dependent) {
     return std::any_of(dependents.begin(), dependents.end(), [dependent](IEDependent *thisDependent) { return thisDependent == dependent; });
 }
 
-bool IEDependency::hasNoDependents() {
+bool IEDependency::hasNoDependents() const {
     return dependents.empty();
 }
 
 void IEDependency::removeDependent(IEDependent *dependent) {
+    dependents.erase(std::remove(dependents.begin(), dependents.end(), dependent), dependents.end());
     if (dependent->isDependentOn(this)) {
         dependent->removeDependency(this);
-    }
-    dependents.erase(std::find(dependents.begin(), dependents.end(), dependent));
-    if (dependent->hasNoDependencies()) {
-        dependent->~IEDependent();
     }
 }
 
@@ -48,7 +45,13 @@ void IEDependency::wait() {
     }
 }
 
-IEDependency::~IEDependency() = default;
+void IEDependency::destroy() {
+    removeAllDependents();
+}
+
+IEDependency::~IEDependency() {
+    destroy();
+}
 
 std::vector<IEImage *> IEImageMemoryBarrier::getImages() const {
     return {image};

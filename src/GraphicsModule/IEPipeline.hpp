@@ -39,7 +39,7 @@ public:
     CreateInfo createdWith{};
     VkPipeline pipeline{};
 
-    void destroy();
+    void destroy() final;
 
     void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 

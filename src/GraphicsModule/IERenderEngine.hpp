@@ -203,7 +203,7 @@ public:
 
     IEBuffer *registerGlobalBuffer(IEBuffer buffer) {
         globalBuffers.push_back(buffer);
-        buffer.destroy(false);
+        buffer.destroy();
         return &globalBuffers[globalBuffers.size()];
     }
 

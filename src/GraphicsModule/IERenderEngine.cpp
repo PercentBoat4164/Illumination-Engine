@@ -64,7 +64,9 @@ GLFWwindow *IERenderEngine::createWindow() const {
 }
 
 void IERenderEngine::setWindowIcons(const std::string &path) const {
-    int width, height, channels;
+    int width;
+    int height;
+    int channels;
     std::vector<GLFWimage> icons{};
     std::string filename = path.substr(path.find_last_of('/'));  // filename component of path
 
@@ -72,7 +74,7 @@ void IERenderEngine::setWindowIcons(const std::string &path) const {
     for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(path)) {
         if (path.find(filename) >= 0) {  // if filename to look for is in path
             stbi_uc* pixels = stbi_load(file.path().c_str(), &width, &height, &channels, STBI_rgb_alpha);  // Load image from disk
-            if (!pixels) {
+            if (pixels == nullptr) {
                 settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to load icon " + file.path().generic_string() + ". Is this file an image?");
             }
             icons.push_back(GLFWimage{.width=width, .height=height, .pixels=pixels});  // Generate image
@@ -198,7 +200,7 @@ void IERenderEngine::createCommandPools() {
     if (graphicsQueueDetails.has_value()) {
         graphicsQueue = graphicsQueueDetails.value();
     }
-    if (graphicsQueue) {
+    if (graphicsQueue != nullptr) {
         commandPoolCreateInfo.commandQueue = vkb::QueueType::graphics;
         graphicsCommandPool.create(this, &commandPoolCreateInfo);
     }
@@ -206,7 +208,7 @@ void IERenderEngine::createCommandPools() {
     if (presentQueueDetails.has_value()) {
         presentQueue = presentQueueDetails.value();
     }
-    if (presentQueue) {
+    if (presentQueue != nullptr) {
         commandPoolCreateInfo.commandQueue = vkb::QueueType::present;
         presentCommandPool.create(this, &commandPoolCreateInfo);
     }
@@ -214,7 +216,7 @@ void IERenderEngine::createCommandPools() {
     if (transferQueueDetails.has_value()) {
         transferQueue = transferQueueDetails.value();
     }
-    if (transferQueue) {
+    if (transferQueue != nullptr) {
         commandPoolCreateInfo.commandQueue = vkb::QueueType::transfer;
         transferCommandPool.create(this, &commandPoolCreateInfo);
     }
@@ -222,7 +224,7 @@ void IERenderEngine::createCommandPools() {
     if (computeQueueDetails.has_value()) {
         computeQueue = computeQueueDetails.value();
     }
-    if (computeQueue) {
+    if (computeQueue != nullptr) {
         commandPoolCreateInfo.commandQueue = vkb::QueueType::compute;
         computeCommandPool.create(this, &commandPoolCreateInfo);
     }
@@ -338,7 +340,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, api.name + " v" + api.version.name);
     deletionQueue.insert(deletionQueue.begin(), [&] {
-        topLevelAccelerationStructure.destroy(true);
+        topLevelAccelerationStructure.destroy();
     });
 }
 
@@ -391,7 +393,8 @@ bool IERenderEngine::update() {
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         /**@todo Handle window resize*/
         return glfwWindowShouldClose(window) != 1;
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+    }
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swapchain image!");
     }
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
@@ -400,12 +403,12 @@ bool IERenderEngine::update() {
     imagesInFlight[imageIndex] = inFlightFences[currentFrame];
     VkDeviceSize offsets[] = {0};
     VkViewport viewport{};
-    viewport.x = 0.f;
-    viewport.y = 0.f;
+    viewport.x = 0.0F;
+    viewport.y = 0.0F;
     viewport.width = (float)swapchain.extent.width;
     viewport.height = (float)swapchain.extent.height;
-    viewport.minDepth = 0.f;
-    viewport.maxDepth = 1.f;
+    viewport.minDepth = 0.0F;
+    viewport.maxDepth = 1.0F;
     graphicsCommandPool[imageIndex].recordSetViewport(0, 1, &viewport);
     VkRect2D scissor{};
     scissor.offset = {0, 0};
@@ -415,13 +418,17 @@ bool IERenderEngine::update() {
     graphicsCommandPool[imageIndex].recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     camera.update();
     auto time = static_cast<float>(glfwGetTime());
-    for (IERenderable *renderable : renderables) { if (renderable->render) { renderable->update(camera, time); } }
+    for (IERenderable *renderable : renderables) {
+        if (renderable->render) {
+            renderable->update(camera, time);
+        }
+    }
     if (settings->rayTracing) {
-        topLevelAccelerationStructure.destroy(true);
+        topLevelAccelerationStructure.destroy();
         std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
         bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
         for (IERenderable *renderable : renderables) {
-            if (renderable->render & settings->rayTracing) {
+            if (renderable->render && settings->rayTracing) {
                 bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress);
             }
         }
@@ -480,14 +487,27 @@ void IERenderEngine::reloadRenderables() {
 
 void IERenderEngine::handleFullscreenSettingsChange() {
     if (settings->fullscreen) {
-        glfwGetWindowPos(window, &settings->windowPosition[0], &settings->windowPosition[1]);
-        int monitorCount{}, i, windowX{}, windowY{}, windowWidth{}, windowHeight{}, monitorX{}, monitorY{}, monitorWidth, monitorHeight, bestMonitorWidth{}, bestMonitorHeight{}, bestMonitorRefreshRate{}, overlap, bestOverlap{0};
+        glfwGetWindowPos(window, settings->windowPosition.data(), &settings->windowPosition[1]);
+        int monitorCount{};
+        int windowX{};
+        int windowY{};
+        int windowWidth{};
+        int windowHeight{};
+        int monitorX{};
+        int monitorY{};
+        int monitorWidth;
+        int monitorHeight;
+        int bestMonitorWidth{};
+        int bestMonitorHeight{};
+        int bestMonitorRefreshRate{};
+        int overlap;
+        int bestOverlap{0};
         GLFWmonitor **monitors;
         const GLFWvidmode *mode;
         glfwGetWindowPos(window, &windowX, &windowY);
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
         monitors = glfwGetMonitors(&monitorCount);
-        for (i = 0; i < monitorCount; i++) {
+        for (int i = 0; i < monitorCount; i++) {
             mode = glfwGetVideoMode(monitors[i]);
             glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
             monitorWidth = mode->width;
@@ -528,7 +548,7 @@ IERenderEngine::~IERenderEngine() {
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-    auto vulkanRenderEngine = (IERenderEngine *)glfwGetWindowUserPointer(pWindow);
+    auto *vulkanRenderEngine = (IERenderEngine *)glfwGetWindowUserPointer(pWindow);
     vulkanRenderEngine->framebufferResized = true;
     vulkanRenderEngine->settings->resolution[0] = width;
     vulkanRenderEngine->settings->resolution[1] = height;
@@ -646,9 +666,9 @@ IERenderEngine::ExtensionAndFeatureInfo::ExtensionAndFeatureInfo() {
 }
 
 bool IERenderEngine::ExtensionAndFeatureInfo::rayTracingWithRayQuerySupportQuery() const {
-    return bufferDeviceAddressFeatures.bufferDeviceAddress & accelerationStructureFeatures.accelerationStructure & rayQueryFeatures.rayQuery & rayTracingPipelineFeatures.rayTracingPipeline;
+    return (bufferDeviceAddressFeatures.bufferDeviceAddress & accelerationStructureFeatures.accelerationStructure & rayQueryFeatures.rayQuery & rayTracingPipelineFeatures.rayTracingPipeline) != 0U;
 }
 
 bool IERenderEngine::ExtensionAndFeatureInfo::variableDescriptorCountSupportQuery() const {
-    return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount;
+    return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount != 0U;
 }

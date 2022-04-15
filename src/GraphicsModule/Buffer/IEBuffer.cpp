@@ -5,8 +5,8 @@
 #include "IERenderEngine.hpp"
 
 
-void IEBuffer::destroy(bool ignoreDependents) {
-    if (hasNoDependents() || ignoreDependents) {
+void IEBuffer::destroy() {
+    if (hasNoDependents()) {
         if (!created) {
             return;
         }
@@ -28,7 +28,7 @@ void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createIn
     bufferCreateInfo.usage = createdWith.usage;
     VmaAllocationCreateInfo allocationCreateInfo{};
     allocationCreateInfo.usage = createdWith.allocationUsage;
-    if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+    if ((createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U) {
         allocationCreateInfo.preferredFlags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
     }
     if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
@@ -45,7 +45,7 @@ void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createIn
         memcpy(data, createdWith.data, createdWith.sizeOfData);
         vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
     }
-    if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+    if ((createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U) {
         VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
         bufferDeviceAddressInfo.buffer = buffer;
         deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
@@ -100,7 +100,7 @@ void IEBuffer::toImage(IEImage *image) {
 }
 
 IEBuffer::~IEBuffer() {
-    destroy(false);
+    destroy();
 }
 
 IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo) {
@@ -111,7 +111,7 @@ IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo)
     bufferCreateInfo.usage = createdWith.usage;
     VmaAllocationCreateInfo allocationCreateInfo{};
     allocationCreateInfo.usage = createdWith.allocationUsage;
-    if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+    if ((createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U) {
         allocationCreateInfo.preferredFlags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
     }
     if (vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
@@ -128,7 +128,7 @@ IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo)
         memcpy(data, createdWith.data, createdWith.sizeOfData);
         vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
     }
-    if (createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+    if ((createdWith.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U) {
         VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
         bufferDeviceAddressInfo.buffer = buffer;
         deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);

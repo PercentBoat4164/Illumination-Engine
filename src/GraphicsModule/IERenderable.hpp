@@ -91,8 +91,4 @@ public:
 private:
     /**@todo Write this better.*/
     void processNode(aiNode *node, const aiScene *scene);
-
-    /**@todo Make this auto-detect shader stage.*/
-    void loadShaders(const std::vector<const char *> &filenames);
-
 };

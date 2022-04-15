@@ -54,7 +54,7 @@ struct IEKeyPressDescription {
      * @return true if the values of the object and argument are the same, false if not.
      */
     bool operator==(const IEKeyPressDescription& other) const {
-        return (this->key == other.key) & (this->scancode == other.scancode) & (this->action == other.action) & (this->modifiers == other.modifiers);
+        return static_cast<int>((this->key == other.key) & static_cast<int>(this->scancode == other.scancode) & static_cast<int>(this->action == other.action) & static_cast<int>(this->modifiers == other.modifiers)) != 0;
     }
 };
 
@@ -107,7 +107,7 @@ public:
             auto element = actionsOptions.find(i);
             if (element != actionsOptions.end()) {  // for each element that has a correlating action
                 element->second.first(window);
-                if (!element->second.second | (i.action == GLFW_RELEASE)) { // remove elements labeled to not repeat or release
+                if (static_cast<int>((!element->second.second) | static_cast<int>(i.action == GLFW_RELEASE)) != 0) { // remove elements labeled to not repeat or release
                     queue.erase(std::find(queue.begin(), queue.end(), i));
                 }
             }

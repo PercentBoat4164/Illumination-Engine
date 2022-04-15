@@ -27,30 +27,27 @@ const IECommandBuffer &IECommandPool::operator[](uint32_t index) const {
     if (index <= commandBuffers.size()) {
         return commandBuffers[index];
     }
-    else {
-        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
-        return commandBuffers[commandBuffers.size() - 1];
-    }
+    linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
+    return commandBuffers[commandBuffers.size() - 1];
+
 }
 
 IECommandBuffer &IECommandPool::operator[](uint32_t index) {
     if (index <= commandBuffers.size()) {
         if (index == commandBuffers.size()) {
-            commandBuffers.emplace_back(IECommandBuffer(linkedRenderEngine, this));
+            commandBuffers.emplace_back(linkedRenderEngine, this);
         }
         return commandBuffers[index];
     }
-    else {
-        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
-        return commandBuffers[commandBuffers.size() - 1];
-    }
+    linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
+    return commandBuffers[commandBuffers.size() - 1];
 }
 
 void IECommandPool::destroy() {
     for (IECommandBuffer commandBuffer : commandBuffers) {
         commandBuffer.~IECommandBuffer();
     }
-    if (commandPool) {
+    if (commandPool != nullptr) {
         vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr);
     }
 }

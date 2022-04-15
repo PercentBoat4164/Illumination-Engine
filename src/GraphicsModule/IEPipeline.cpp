@@ -46,7 +46,7 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
         VkPipelineShaderStageCreateInfo shaderStageInfo{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
         shaderStageInfo.module = (*createdWith.shaders)[i].module;
         shaderStageInfo.pName = "main";
-        shaderStageInfo.stage = i % 2 ? VK_SHADER_STAGE_FRAGMENT_BIT : VK_SHADER_STAGE_VERTEX_BIT;
+        shaderStageInfo.stage = (i % 2) != 0U ? VK_SHADER_STAGE_FRAGMENT_BIT : VK_SHADER_STAGE_VERTEX_BIT;
         shaders.push_back(shaderStageInfo);
     }
     // create graphics pipeline
@@ -61,12 +61,12 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
     inputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
     VkViewport viewport{};
-    viewport.x = 0.f;
-    viewport.y = 0.f;
+    viewport.x = 0.0F;
+    viewport.y = 0.0F;
     viewport.width = (float)linkedRenderEngine->swapchain.extent.width;
     viewport.height = (float)linkedRenderEngine->swapchain.extent.height;
-    viewport.minDepth = 0.f;
-    viewport.maxDepth = 1.f;
+    viewport.minDepth = 0.0F;
+    viewport.maxDepth = 1.0F;
     VkRect2D scissor{};
     scissor.offset = {0, 0};
     scissor.extent = linkedRenderEngine->swapchain.extent;
@@ -79,14 +79,14 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
     rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
     rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
     rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL; //Controls fill mode (e.g. wireframe mode)
-    rasterizationStateCreateInfo.lineWidth = 1.0f;
+    rasterizationStateCreateInfo.lineWidth = 1.0F;
     rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
     rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
     VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
-    if (linkedRenderEngine->device.physical_device.features.sampleRateShading) {
+    if (linkedRenderEngine->device.physical_device.features.sampleRateShading != 0U) {
         multisampleStateCreateInfo.sampleShadingEnable = linkedRenderEngine->settings->msaaSamples >= VK_SAMPLE_COUNT_1_BIT ? VK_TRUE : VK_FALSE;
-        multisampleStateCreateInfo.minSampleShading = 1.0f;
+        multisampleStateCreateInfo.minSampleShading = 1.0F;
     }
     multisampleStateCreateInfo.rasterizationSamples = static_cast<VkSampleCountFlagBits>(linkedRenderEngine->settings->msaaSamples);
     VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
@@ -129,9 +129,6 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     if (vkCreateGraphicsPipelines(linkedRenderEngine->device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create pipeline!");
-    }
-    for (VkPipelineShaderStageCreateInfo shader : shaders) {
-        vkDestroyShaderModule(linkedRenderEngine->device.device, shader.module, nullptr);
     }
     deletionQueue.emplace_back([&] {
         vkDestroyPipeline(linkedRenderEngine->device.device, pipeline, nullptr);

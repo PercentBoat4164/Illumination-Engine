@@ -15,5 +15,7 @@ class IEAccelerationStructure : public IEBuffer {
 public:
     VkAccelerationStructureKHR accelerationStructure{};
 
+    IEAccelerationStructure();
+
     void create(IERenderEngine *renderEngineLink, CreateInfo *createInfo) override;
 };

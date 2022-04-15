@@ -14,8 +14,8 @@ int main() {
     renderEngine.addAsset(&asset);
     asset.scale = {1.0, 1.0, 1.0};
     cube.scale = {1.0, 1.0, 1.0};
-//    while (renderEngine.update()) {
-//        glfwPollEvents();
-//        keyboard.handleQueue();
-//    }
+    while (renderEngine.update()) {
+        glfwPollEvents();
+        keyboard.handleQueue();
+    }
 }

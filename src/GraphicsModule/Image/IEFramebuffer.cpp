@@ -28,7 +28,7 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
         throw std::runtime_error("IEFramebuffer::CreateInfo::renderPass cannot be a nullptr!");
     }
     clearValues[0].color = VkClearColorValue{defaultColor[0], defaultColor[1], defaultColor[2], defaultColor[3]};
-    clearValues[1].depthStencil = {1.0f, 0};
+    clearValues[1].depthStencil = {1.0F, 0};
     clearValues[2].color = clearValues[0].color;
 
     // Create framebuffer images
@@ -47,7 +47,7 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
     if (msaaSamplesAllowed > VK_SAMPLE_COUNT_1_BIT) {
         colorImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
         deletionQueue.emplace_back([&] {
-            colorImage.destroy(true);
+            colorImage.destroy();
         });
     }
     framebufferImageCreateInfo.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
@@ -56,7 +56,7 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
     framebufferImageCreateInfo.aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
     depthImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
     deletionQueue.emplace_back([&] {
-        depthImage.destroy(true);
+        depthImage.destroy();
     });
     std::vector<VkImageView> framebufferAttachments{msaaSamplesAllowed == VK_SAMPLE_COUNT_1_BIT ? swapchainImageView : colorImage.view, depthImage.view, swapchainImageView};
     VkFramebufferCreateInfo framebufferCreateInfo{

@@ -22,22 +22,28 @@ bool IEDependent::isDependentOn(IEDependency *dependency) {
     return std::any_of(dependencies.begin(), dependencies.end(), [dependency](IEDependency *thisDependency) { return thisDependency == dependency; });
 }
 
-bool IEDependent::hasNoDependencies() {
+bool IEDependent::hasNoDependencies() const {
     return dependencies.empty();
 }
 
 void IEDependent::removeDependency(IEDependency *dependency) {
-    dependencies.erase(std::find(dependencies.begin(), dependencies.end(), dependency));
-    if (dependency->hasNoDependents()) {
-        dependency->~IEDependency();
+    dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), dependency), dependencies.end());
+    if (dependency->isDependencyOf(this)) {
+        dependency->removeDependent(this);
     }
 }
 
 void IEDependent::removeAllDependencies() {
     for (IEDependency *dependency : dependencies) {
-        if (dependency->hasNoDependents()) {
-            dependency->~IEDependency();
-        }
+        dependency->removeDependent(this);
     }
     dependencies.clear();
+}
+
+void IEDependent::destroy() {
+    removeAllDependencies();
+}
+
+IEDependent::~IEDependent() {
+    destroy();
 }
