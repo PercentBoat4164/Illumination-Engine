@@ -214,19 +214,6 @@ IEImage::~IEImage() {
     destroy();
 }
 
-void IEImage::addDependent(void *dependent) {
-    dependents.push_back(dependent);
-}
-
-void IEImage::removeDependent(void *dependent) {
-    for (int i = 0; i < dependents.size(); ++i) {
-        if (dependents[i] == dependent) {
-            dependents.erase(dependents.begin() + i);
-            return;
-        }
-    }
-}
-
 IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
     linkedRenderEngine = engineLink;
 

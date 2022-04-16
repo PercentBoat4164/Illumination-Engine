@@ -145,7 +145,7 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
     if (imageLayout != desiredLayout) {
         transitionLayout(desiredLayout);
     }
-    linkedRenderEngine->graphicsCommandPool[0].execute();
+    linkedRenderEngine->graphicsCommandPool[0].execute(nullptr);
 }
 
 void IETexture::upload(void *data) {
@@ -159,7 +159,7 @@ void IETexture::upload(void *data) {
     linkedRenderEngine->graphicsCommandPool[0].record();
     transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     scratchBuffer.toImage(this);
-    linkedRenderEngine->graphicsCommandPool[0].execute();
+    linkedRenderEngine->graphicsCommandPool[0].execute(nullptr);
 }
 
 void IETexture::upload(IEBuffer *data) {

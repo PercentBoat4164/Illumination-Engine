@@ -56,7 +56,7 @@ public:
 
     void reset();
 
-    void execute();
+    void execute(VkSemaphore input=nullptr, VkSemaphore output=nullptr, VkFence fence=nullptr);
 
     void finish();
 

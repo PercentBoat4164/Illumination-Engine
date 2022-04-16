@@ -79,30 +79,46 @@ void IECommandBuffer::finish() {
     state = IE_COMMAND_BUFFER_STATE_EXECUTABLE;
 }
 
-void IECommandBuffer::execute() {
+void IECommandBuffer::execute(VkSemaphore input, VkSemaphore output, VkFence fence) {
     wait();
-    if (state == IE_COMMAND_BUFFER_STATE_RECORDING) {
-        finish();
-    }
-    else if (state != IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
-        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to execute a command buffer that is not executable!");
-    }
-    VkSubmitInfo submitInfo {
-            .sType=VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .commandBufferCount=1,
-            .pCommandBuffers=&commandBuffer
-    };
-    VkFence fence;
-    VkFenceCreateInfo fenceCreateInfo {
-            .sType=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
-    };
-    vkCreateFence(linkedRenderEngine->device.device, &fenceCreateInfo, nullptr, &fence);
-    vkQueueSubmit(commandPool->queue, 1, &submitInfo, fence);
-    state = IE_COMMAND_BUFFER_STATE_PENDING;
-    vkWaitForFences(linkedRenderEngine->device.device, 1, &fence, VK_TRUE, UINT64_MAX);
-    state = oneTimeSubmission ? IE_COMMAND_BUFFER_STATE_INVALID : IE_COMMAND_BUFFER_STATE_EXECUTABLE;
-    vkDestroyFence(linkedRenderEngine->device.device, fence, nullptr);
-    oneTimeSubmission = false;
+//    new std::thread {[&] {
+            if (state == IE_COMMAND_BUFFER_STATE_RECORDING) {
+                finish();
+            }
+            else if (state != IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
+                linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to execute a command buffer that is not recording or executable!");
+            }
+            VkSubmitInfo submitInfo {
+                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                .waitSemaphoreCount = input != nullptr,
+                .pWaitSemaphores = &input,
+                .pWaitDstStageMask = new VkPipelineStageFlags{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
+                .commandBufferCount = 1,
+                .pCommandBuffers = &commandBuffer,
+                .signalSemaphoreCount = output != nullptr,
+                .pSignalSemaphores = &output,
+            };
+            bool fenceWasNullptr = false;
+            if (fence == nullptr) {
+                fenceWasNullptr = true;
+                VkFenceCreateInfo fenceCreateInfo{
+                        .sType=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+                };
+                vkCreateFence(linkedRenderEngine->device.device, &fenceCreateInfo, nullptr, &fence);
+            }
+            vkResetFences(linkedRenderEngine->device.device, 1, &fence);
+            VkResult result = vkQueueSubmit(commandPool->queue, 1, &submitInfo, fence);
+            if (result != VK_SUCCESS) {
+                linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to submit command buffer! Error: " + IERenderEngine::translateVkResultCodes(result));
+            }
+            state = IE_COMMAND_BUFFER_STATE_PENDING;
+            vkWaitForFences(linkedRenderEngine->device.device, 1, &fence, VK_TRUE, UINT64_MAX);
+            state = oneTimeSubmission ? IE_COMMAND_BUFFER_STATE_INVALID : IE_COMMAND_BUFFER_STATE_EXECUTABLE;
+            if (fenceWasNullptr) {
+                vkDestroyFence(linkedRenderEngine->device.device, fence, nullptr);
+            }
+            oneTimeSubmission = false;
+//    }};
 }
 
 void IECommandBuffer::recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier>& memoryBarriers, const std::vector<IEBufferMemoryBarrier>& bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier> &imageMemoryBarriers) {

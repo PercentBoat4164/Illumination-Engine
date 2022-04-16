@@ -47,12 +47,10 @@ IECommandBuffer &IECommandPool::operator[](uint32_t index) {
 }
 
 void IECommandPool::destroy() {
-    for (IECommandBuffer commandBuffer : commandBuffers) {
+    for (IECommandBuffer &commandBuffer : commandBuffers) {
         commandBuffer.~IECommandBuffer();
     }
-    if (commandPool != nullptr) {
-        vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr);
-    }
+    vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr);
 }
 
 IECommandPool::~IECommandPool() {

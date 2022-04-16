@@ -216,21 +216,17 @@ public:
 
     ~IERenderEngine();
 
-    GLFWmonitor *monitor{};
-    GLFWwindow *window{};
     IECamera camera{};
     IERenderPass renderPass{};
-    std::vector<IETexture> textures{1};
+    IESettings *settings;
     IECommandPool graphicsCommandPool{};
     IECommandPool presentCommandPool{};
     IECommandPool transferCommandPool{};
     IECommandPool computeCommandPool{};
-    float frameTime{};
-    int frameNumber{};
-
-    // Stuff from GraphicsLink
-    IESettings *settings;
     IEAPI api;
+    ExtensionAndFeatureInfo extensionAndFeatureInfo{};
+    GLFWmonitor *monitor{};
+    GLFWwindow *window{};
     vkb::Device device{};
     vkb::Swapchain swapchain{};
     vkb::Instance instance{};
@@ -241,10 +237,6 @@ public:
     VkQueue presentQueue{};
     VkQueue transferQueue{};
     VkQueue computeQueue{};
-    ExtensionAndFeatureInfo extensionAndFeatureInfo{};
-    std::vector<IEBuffer> globalBuffers{};
-    std::vector<IEImage> globalImages{};
-    std::vector<VkImageView> swapchainImageViews{};
     PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddressKHR{};
     PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{};
     PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR{};
@@ -252,7 +244,12 @@ public:
     PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR{};
     PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR{};
     PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
-
+    std::vector<IETexture> textures{1};
+    std::vector<IEBuffer> globalBuffers{};
+    std::vector<IEImage> globalImages{};
+    std::vector<VkImageView> swapchainImageViews{};
+    float frameTime{};
+    int frameNumber{};
 
     void addAsset(IEAsset *asset);
 

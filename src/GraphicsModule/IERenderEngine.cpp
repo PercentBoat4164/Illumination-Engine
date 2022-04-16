@@ -186,7 +186,7 @@ void IERenderEngine::createSyncObjects() {
     inFlightFences.resize(swapchain.image_count);
     imagesInFlight.resize(swapchain.image_count);
 
-    // Destroy all the semaphores and fences.
+    // Create all the semaphores and fences.
     for (int i = 0; i < swapchain.image_count; ++i) {
         vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]);
         vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]);
@@ -335,7 +335,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     deletionQueue.insert(deletionQueue.begin(), [&] {
         renderPass.destroy();
     });
-    graphicsCommandPool[0].execute();
+    graphicsCommandPool[0].execute(nullptr);
     camera.create(this);
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, api.name + " v" + api.version.name);
@@ -400,17 +400,19 @@ bool IERenderEngine::update() {
     }
     imagesInFlight[imageIndex] = inFlightFences[currentFrame];
     VkDeviceSize offsets[] = {0};
-    VkViewport viewport{};
-    viewport.x = 0.0F;
-    viewport.y = 0.0F;
-    viewport.width = (float)swapchain.extent.width;
-    viewport.height = (float)swapchain.extent.height;
-    viewport.minDepth = 0.0F;
-    viewport.maxDepth = 1.0F;
+    VkViewport viewport{
+            .x = 0.0F,
+            .y = 0.0F,
+            .width = (float) swapchain.extent.width,
+            .height = (float) swapchain.extent.height,
+            .minDepth = 0.0F,
+            .maxDepth = 1.0F
+    };
     graphicsCommandPool[imageIndex].recordSetViewport(0, 1, &viewport);
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = swapchain.extent;
+    VkRect2D scissor{
+        .offset = {0, 0},
+        .extent = swapchain.extent,
+    };
     graphicsCommandPool[imageIndex].recordSetScissor(0, 1, &scissor);
     IERenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(imageIndex);
     graphicsCommandPool[imageIndex].recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -449,15 +451,16 @@ bool IERenderEngine::update() {
         }
     }
     graphicsCommandPool[imageIndex].recordEndRenderPass();
-    graphicsCommandPool[imageIndex].execute();
+    graphicsCommandPool[imageIndex].execute(imageAvailableSemaphores[currentFrame], renderFinishedSemaphores[currentFrame], inFlightFences[currentFrame]);
     graphicsCommandPool[imageIndex].wait();
-    VkSwapchainKHR swapchains[]{swapchain.swapchain};
-    VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
-    presentInfo.waitSemaphoreCount = 0;
-    presentInfo.pWaitSemaphores = nullptr;
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapchains;
-    presentInfo.pImageIndices = &imageIndex;
+    VkPresentInfoKHR presentInfo{
+            .sType=VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores = &renderFinishedSemaphores[currentFrame],
+            .swapchainCount = 1,
+            .pSwapchains = &swapchain.swapchain,
+            .pImageIndices = &imageIndex,
+    };
     result = vkQueuePresentKHR(presentQueue, &presentInfo);
     auto currentTime = (float)glfwGetTime();
     frameTime = currentTime - previousTime;
@@ -472,7 +475,7 @@ bool IERenderEngine::update() {
         throw std::runtime_error("failed to present swapchain image!");
     }
     currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
-    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(1/frameTime));
+    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(frameTime));
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(frameNumber));
     return glfwWindowShouldClose(window) != 1;
 }

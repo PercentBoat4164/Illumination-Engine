@@ -20,12 +20,12 @@ public:
     struct CreateInfo {
         VkImageView swapchainImageView{};
         VkRenderPass renderPass{};
-        std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
+        std::vector<float> defaultColor{0.0F, 0.0F, 1.0F, 1.0F};
     };
 
     VkFramebuffer framebuffer{};
     std::vector<VkClearValue> clearValues{3};
-    std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
+    std::vector<float> defaultColor{0.0F, 0.0F, 1.0F, 1.0F};
     VkImageView swapchainImageView{};
     VkRenderPass renderPass{};
     IEImage colorImage{};  /**@todo Eliminate this and use the inbuilt image.*/
