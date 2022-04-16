@@ -20,7 +20,10 @@ void IECommandPool::create(IERenderEngine *engineLink, IECommandPool::CreateInfo
     if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create command pool!");
     }
+}
 
+void IECommandPool::prepareCommandBuffers(uint32_t commandBufferCount) {
+    commandBuffers.reserve(commandBufferCount);
 }
 
 const IECommandBuffer &IECommandPool::operator[](uint32_t index) const {
@@ -54,12 +57,4 @@ void IECommandPool::destroy() {
 
 IECommandPool::~IECommandPool() {
     destroy();
-}
-
-void IECommandPool::clearUnused() {
-    commandBuffers.erase(std::remove_if(commandBuffers.begin(), commandBuffers.end(), commandBufferIsUnused), commandBuffers.end());
-}
-
-bool IECommandPool::commandBufferIsUnused(const IECommandBuffer &commandBuffer) {
-    return commandBuffer.state == IE_COMMAND_BUFFER_STATE_INVALID || commandBuffer.state == IE_COMMAND_BUFFER_STATE_INITIAL;
 }

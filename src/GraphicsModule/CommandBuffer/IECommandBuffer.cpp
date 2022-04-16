@@ -8,19 +8,23 @@
 #include "IEPipeline.hpp"
 
 
+IECommandBuffer::IECommandBuffer() = default;
+
 void IECommandBuffer::allocate() {
-    VkCommandBufferAllocateInfo allocateInfo {
-        .sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool=commandPool->commandPool,
-        .level=VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount=1
+    if (state == IE_COMMAND_BUFFER_STATE_INITIAL) {
+        return;
+    }
+    VkCommandBufferAllocateInfo allocateInfo{
+            .sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .commandPool=commandPool->commandPool,
+            .level=VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount=1
     };
     VkResult result = vkAllocateCommandBuffers(linkedRenderEngine->device.device, &allocateInfo, &commandBuffer);
     if (result != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failure to properly allocate command buffers! Error: " + IERenderEngine::translateVkResultCodes(result));
         free();
-    }
-    else {
+    } else {
         state = IE_COMMAND_BUFFER_STATE_INITIAL;
     }
 }
@@ -55,9 +59,7 @@ void IECommandBuffer::free() {
 }
 
 IECommandBuffer::IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool) {
-    this->linkedRenderEngine = linkedRenderEngine;
-    this->commandPool = commandPool;
-    state = IE_COMMAND_BUFFER_STATE_NONE;
+    create(linkedRenderEngine, commandPool);
 }
 
 void IECommandBuffer::reset() {
@@ -97,12 +99,10 @@ void IECommandBuffer::execute() {
     vkCreateFence(linkedRenderEngine->device.device, &fenceCreateInfo, nullptr, &fence);
     vkQueueSubmit(commandPool->queue, 1, &submitInfo, fence);
     state = IE_COMMAND_BUFFER_STATE_PENDING;
-    new std::thread{[this, fence] {
-        vkWaitForFences(linkedRenderEngine->device.device, 1, &fence, VK_TRUE, UINT64_MAX);
-        vkDestroyFence(linkedRenderEngine->device.device, fence, nullptr);
-        state = oneTimeSubmission ? IE_COMMAND_BUFFER_STATE_INVALID : IE_COMMAND_BUFFER_STATE_EXECUTABLE;
-        oneTimeSubmission = false;
-    }};
+    vkWaitForFences(linkedRenderEngine->device.device, 1, &fence, VK_TRUE, UINT64_MAX);
+    state = oneTimeSubmission ? IE_COMMAND_BUFFER_STATE_INVALID : IE_COMMAND_BUFFER_STATE_EXECUTABLE;
+    vkDestroyFence(linkedRenderEngine->device.device, fence, nullptr);
+    oneTimeSubmission = false;
 }
 
 void IECommandBuffer::recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier>& memoryBarriers, const std::vector<IEBufferMemoryBarrier>& bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier> &imageMemoryBarriers) {
@@ -296,6 +296,21 @@ void IECommandBuffer::destroy() {
     removeAllDependencies();
 }
 
+void IECommandBuffer::create(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool) {
+    this->linkedRenderEngine = linkedRenderEngine;
+    this->commandPool = commandPool;
+    state = IE_COMMAND_BUFFER_STATE_NONE;
+}
+
 IECommandBuffer::~IECommandBuffer() {
     destroy();
+    commandBuffer = VK_NULL_HANDLE;
+}
+
+IECommandBuffer::IECommandBuffer(const IECommandBuffer& source) noexcept: IECommandBuffer(source.linkedRenderEngine, source.commandPool) {
+    linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Executing the copy constructor");
+}
+
+IECommandBuffer::IECommandBuffer(IECommandBuffer&& source) noexcept : linkedRenderEngine{source.linkedRenderEngine}, commandPool{source.commandPool}, commandBuffer{source.commandBuffer}, state{source.state}, oneTimeSubmission{source.oneTimeSubmission} {
+    linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Executing the move constructor");
 }

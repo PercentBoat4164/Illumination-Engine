@@ -31,13 +31,13 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
             .data=stbi_load("res/Models/NoTexture.png", reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha),
             .filename=std::string("res/Models/NoTexture.png"),
     };
-    if (!textureCreateInfo.data) {
+    if (textureCreateInfo.data == nullptr) {
         throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename);
     }
     (*textures)[0].create(linkedRenderEngine, &textureCreateInfo);
     Assimp::Importer importer{};
     const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+    if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath));
     }
     processNode(scene->mRootNode, scene);
@@ -58,6 +58,7 @@ void IERenderable::createShaders() {
         shaders[i].create(linkedRenderEngine, new IEFile(shaderFileNames[i]));
     }
     deletionQueue.emplace_back([&] {
+        /**@todo Remove this section if it is not necessary.*/
 //        for (IEShader &shader : shaders) {
 //            shader.destroy();
 //        }

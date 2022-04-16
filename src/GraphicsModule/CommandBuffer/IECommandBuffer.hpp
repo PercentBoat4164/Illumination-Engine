@@ -26,11 +26,17 @@ typedef enum IECommandBufferState {
 
 class IECommandBuffer : public IEDependent {
 public:
+    IECommandBuffer(const IECommandBuffer& source) noexcept;
+
+    IECommandBuffer(IECommandBuffer &&source) noexcept;
+
     VkCommandBuffer commandBuffer{};
-    IECommandPool *commandPool;
-    IERenderEngine *linkedRenderEngine;
-    IECommandBufferState state;
+    IECommandPool *commandPool{};
+    IERenderEngine *linkedRenderEngine{};
+    IECommandBufferState state{};
     bool oneTimeSubmission{false};
+
+    IECommandBuffer();
 
     IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool);
 
@@ -82,7 +88,9 @@ public:
 
     void recordEndRenderPass();
 
-    void destroy();
+    void destroy() final;
 
     ~IECommandBuffer() override;
+
+    void create(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool);
 };

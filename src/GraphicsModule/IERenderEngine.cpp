@@ -327,12 +327,12 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     });
 
     // Create the renderPass
-    graphicsCommandPool[0].record();
+    graphicsCommandPool.prepareCommandBuffers(swapchainImageViews.size());
     IERenderPass::CreateInfo renderPassCreateInfo {
             .msaaSamples=1
     };
     renderPass.create(this, &renderPassCreateInfo);
-    deletionQueue.insert(deletionQueue.begin(), [&]{
+    deletionQueue.insert(deletionQueue.begin(), [&] {
         renderPass.destroy();
     });
     graphicsCommandPool[0].execute();
@@ -353,8 +353,6 @@ void IERenderEngine::addAsset(IEAsset *asset) {
 }
 
 void IERenderEngine::loadRenderable(IERenderable *renderable) {
-    graphicsCommandPool[0].record();
-
     // Create model buffer
     renderable->createModelBuffer();
 

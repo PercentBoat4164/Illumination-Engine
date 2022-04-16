@@ -34,8 +34,6 @@ public:
 
     void create(IERenderEngine* engineLink, CreateInfo* createInfo);
 
-    void clearUnused();
-
     const IECommandBuffer& operator[](uint32_t index) const;
 
     IECommandBuffer& operator[](uint32_t index);
@@ -43,4 +41,6 @@ public:
     void destroy();
 
     ~IECommandPool();
+
+    void prepareCommandBuffers(uint32_t commandBufferCount);
 };
