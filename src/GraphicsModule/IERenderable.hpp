@@ -63,7 +63,7 @@ public:
 
     ~IERenderable();
 
-    void update(const IECamera &camera, float time);
+    void update(const IEAsset *const asset, const IECamera &camera, float time);
 
     std::vector<std::function<void()>> deletionQueue{};
     IEBuffer modelBuffer{};

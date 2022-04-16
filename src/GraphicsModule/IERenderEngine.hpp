@@ -190,8 +190,6 @@ public:
 
     bool update();
 
-    void reloadRenderables();
-
     void handleFullscreenSettingsChange();
 
     static std::string translateVkResultCodes(VkResult result);
@@ -259,7 +257,7 @@ private:
     std::vector<VkFence> imagesInFlight{};
     std::vector<VkSemaphore> imageAvailableSemaphores{};
     std::vector<VkSemaphore> renderFinishedSemaphores{};
-    std::vector<IERenderable*> renderables{};
+    std::vector<IEAsset*> assets{};
     IEAccelerationStructure topLevelAccelerationStructure{};
     std::vector<std::function<void()>> fullRecreationDeletionQueue{};
     std::vector<std::function<void()>> recreationDeletionQueue{};

@@ -67,6 +67,7 @@ void IECommandBuffer::reset() {
     if (state == IE_COMMAND_BUFFER_STATE_INVALID) {
         linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to reset a command buffer that is invalid!");
     }
+    removeAllDependencies();
     vkResetCommandBuffer(commandBuffer, 0);
     state = IE_COMMAND_BUFFER_STATE_INITIAL;
 }
@@ -320,13 +321,10 @@ void IECommandBuffer::create(IERenderEngine *linkedRenderEngine, IECommandPool *
 
 IECommandBuffer::~IECommandBuffer() {
     destroy();
-    commandBuffer = VK_NULL_HANDLE;
 }
 
 IECommandBuffer::IECommandBuffer(const IECommandBuffer& source) noexcept: IECommandBuffer(source.linkedRenderEngine, source.commandPool) {
-    linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Executing the copy constructor");
 }
 
 IECommandBuffer::IECommandBuffer(IECommandBuffer&& source) noexcept : linkedRenderEngine{source.linkedRenderEngine}, commandPool{source.commandPool}, commandBuffer{source.commandBuffer}, state{source.state}, oneTimeSubmission{source.oneTimeSubmission} {
-    linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Executing the move constructor");
 }

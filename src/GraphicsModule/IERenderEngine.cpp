@@ -345,6 +345,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 }
 
 void IERenderEngine::addAsset(IEAsset *asset) {
+    assets.push_back(asset);
     for (IEAspect *aspect : asset->aspects) {
         if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
             loadRenderable((IERenderable*)aspect);
@@ -374,15 +375,13 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
     renderable->createPipeline();
 
     graphicsCommandPool[0].execute();
-    renderables.push_back(renderable);
-    graphicsCommandPool[0].reset();
 }
 
 bool IERenderEngine::update() {
     if (window == nullptr) {
         return false;
     }
-    if (renderables.empty()) {
+    if (assets.empty()) {
         return glfwWindowShouldClose(window) != 1;
     }
     vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -418,18 +417,20 @@ bool IERenderEngine::update() {
     graphicsCommandPool[imageIndex].recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     camera.update();
     auto time = static_cast<float>(glfwGetTime());
-    for (IERenderable *renderable : renderables) {
-        if (renderable->render) {
-            renderable->update(camera, time);
-        }
-    }
     if (settings->rayTracing) {
         topLevelAccelerationStructure.destroy();
         std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
-        bottomLevelAccelerationStructureDeviceAddresses.reserve(renderables.size());
-        for (IERenderable *renderable : renderables) {
-            if (renderable->render && settings->rayTracing) {
-                bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress);
+        bottomLevelAccelerationStructureDeviceAddresses.reserve(assets.size());
+        if (settings->rayTracing) {
+            for (IEAsset *asset: assets) {
+                for (IEAspect *aspect: asset->aspects) {
+                    if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
+                        auto *renderable = reinterpret_cast<IERenderable *>(aspect);
+                        if (renderable->render) {
+                            bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress);
+                        }
+                    }
+                }
             }
         }
         IEAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
@@ -439,15 +440,22 @@ bool IERenderEngine::update() {
         topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddresses = bottomLevelAccelerationStructureDeviceAddresses;
         topLevelAccelerationStructure.create(this, &topLevelAccelerationStructureCreateInfo);
     }
-    for (IERenderable *renderable : renderables) {
-        if (renderable->render) {
-            if (settings->rayTracing) {
-                renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2});
+    for (IEAsset *asset : assets) {
+        for (IEAspect *aspect : asset->aspects) {
+            if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
+                auto *renderable = reinterpret_cast<IERenderable *>(aspect);
+                if (renderable->render) {
+                    renderable->update(asset, camera, time);
+                    if (settings->rayTracing) {
+                        renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2});
+                    }
+                    graphicsCommandPool[imageIndex].recordBindVertexBuffers(0, 1, {&renderable->vertexBuffer}, offsets);
+                    graphicsCommandPool[imageIndex].recordBindIndexBuffer(&renderable->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+                    graphicsCommandPool[imageIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline);
+                    graphicsCommandPool[imageIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline, 0, {&renderable->descriptorSet}, {});
+                    graphicsCommandPool[imageIndex].recordDrawIndexed(renderable->indices.size(), 1, 0, 0, 0);
+                }
             }
-            graphicsCommandPool[imageIndex].recordBindVertexBuffers(0, 1, {&renderable->vertexBuffer}, offsets);
-            graphicsCommandPool[imageIndex].recordBindIndexBuffer(&renderable->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-            graphicsCommandPool[imageIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline);
-            graphicsCommandPool[imageIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline, 0, {&renderable->descriptorSet}, {});
         }
     }
     graphicsCommandPool[imageIndex].recordEndRenderPass();
@@ -475,15 +483,7 @@ bool IERenderEngine::update() {
         throw std::runtime_error("failed to present swapchain image!");
     }
     currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
-    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(frameTime));
-    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, std::to_string(frameNumber));
     return glfwWindowShouldClose(window) != 1;
-}
-
-void IERenderEngine::reloadRenderables() {
-    for (IERenderable* renderable : renderables) {
-        loadRenderable(renderable);
-    }
 }
 
 void IERenderEngine::handleFullscreenSettingsChange() {
@@ -523,17 +523,23 @@ void IERenderEngine::handleFullscreenSettingsChange() {
             }
         }
         glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
-    } else { glfwSetWindowMonitor(window, nullptr, settings->windowPosition[0], settings->windowPosition[1], static_cast<int>(settings->defaultWindowResolution[0]), static_cast<int>(settings->defaultWindowResolution[1]), static_cast<int>(settings->refreshRate)); }
+    } else {
+        glfwSetWindowMonitor(window, nullptr, settings->windowPosition[0], settings->windowPosition[1], static_cast<int>(settings->defaultWindowResolution[0]), static_cast<int>(settings->defaultWindowResolution[1]), static_cast<int>(settings->refreshRate));
+    }
     glfwSetWindowTitle(window, settings->applicationName.c_str());
 }
 
 void IERenderEngine::destroy() {
     destroySyncObjects();
     destroySwapchain();
-    for (IERenderable* renderable : renderables) {
-        renderable->destroy();
+    for (IEAsset* asset : assets) {
+        for (IEAspect *aspect : asset->aspects) {
+            if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
+                auto *renderable = reinterpret_cast<IERenderable *>(aspect);
+                renderable->destroy();
+            }
+        }
     }
-    renderables.clear();
     for (std::function<void()> &function : recreationDeletionQueue) {
         function();
     }

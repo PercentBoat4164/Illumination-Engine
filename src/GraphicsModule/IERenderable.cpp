@@ -34,7 +34,7 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
     if (textureCreateInfo.data == nullptr) {
         throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename);
     }
-    (*textures)[0].create(linkedRenderEngine, &textureCreateInfo);
+//    (*textures)[0].create(linkedRenderEngine, &textureCreateInfo);
     Assimp::Importer importer{};
     const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
@@ -95,9 +95,9 @@ IERenderable::~IERenderable() {
     destroy();
 }
 
-void IERenderable::update(const IECamera &camera, float time) {
-    glm::quat quaternion = glm::quat(glm::radians(rotation));
-    glm::mat4 modelMatrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0F), scale), glm::angle(quaternion), glm::axis(quaternion)), position);
+void IERenderable::update(const IEAsset *const asset, const IECamera &camera, float time) {
+    glm::quat quaternion = glm::quat(glm::radians(rotation + asset->rotation));
+    glm::mat4 modelMatrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0F), scale + asset->scale), glm::angle(quaternion), glm::axis(quaternion)), position + asset->position);
     uniformBufferObject.viewModelMatrix = camera.viewMatrix;
     uniformBufferObject.modelMatrix = modelMatrix;
     uniformBufferObject.projectionMatrix = camera.projectionMatrix;

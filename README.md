@@ -7,7 +7,7 @@ The Graphics Module is one of the modules that is designed to attach to the Illu
 - [x] OpenGL implementation
 - [x] Add basic shading
 - [ ] Merged implementation
-  - [ ] Rewrite Vulkan render engine implementation ~55%
+  - [X] Rewrite Vulkan render engine implementation (Work will never be done on this front)
   - [ ] Integrate bare-bones OpenGL implementation
   - [ ] Remove Vulkan SDK requirement
   - [ ] Finish OpenGL integration

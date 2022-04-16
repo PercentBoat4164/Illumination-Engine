@@ -154,9 +154,9 @@ public:
      * @param action
      * @param repeat
      */
-    void editActions(const IEKeyPressDescription& keyPressDescription, const std::function<void(GLFWwindow*)>& action, bool repeat=true) {
+    void editActions(const IEKeyPressDescription& keyPressDescription, const std::function<void(GLFWwindow*)>& action) {
         actionsOptions.erase(keyPressDescription);
-        actionsOptions.insert({keyPressDescription, {action, repeat}});
+        actionsOptions.insert({keyPressDescription, {action, keyPressDescription.action == GLFW_REPEAT}});
     }
 
     /**
@@ -212,9 +212,6 @@ public:
             keyboard->queue.erase(oppositeKeyPressIterator);
         }
         keyboard->queue.push_back(thisKeyPress);
-        #ifndef NDEBUG
-        printf("Key: %i, ScanCode: %i, Action: %i, Mods: %i, KeyName: %s\n", key, scancode, action, modifiers, glfwGetKeyName(key, scancode));
-        #endif
     }
 
 private:
