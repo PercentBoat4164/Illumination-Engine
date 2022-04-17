@@ -75,11 +75,7 @@ public:
 
     void transitionLayout(VkImageLayout newLayout);
 
-    void addDependent(void* dependent);
-
-    void removeDependent(void* dependent);
-
     ~IEImage() override;
 
-    void destroy() final;
+    virtual void destroy() override;
 };

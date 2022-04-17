@@ -32,7 +32,7 @@ public:
 
     IERenderPassBeginInfo beginRenderPass(uint32_t framebufferIndex);
 
-    void destroy();
+    void destroy() final;
 
     ~IERenderPass() override;
 

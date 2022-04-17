@@ -14,7 +14,11 @@ int main() {
     keyboard.editActions(GLFW_KEY_LEFT_SHIFT, [&](GLFWwindow*) { renderEngine.camera.position -= renderEngine.camera.up * renderEngine.frameTime * renderEngine.camera.speed; });
     keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_PRESS}, [&](GLFWwindow*) { renderEngine.camera.speed *= 6; });
     keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE}, [&](GLFWwindow*) { renderEngine.camera.speed /= 6; });
-    keyboard.editActions({GLFW_KEY_F11, GLFW_PRESS}, [&](GLFWwindow*) { renderEngine.handleFullscreenSettingsChange(); });
+    keyboard.editActions({GLFW_KEY_F11, GLFW_PRESS}, [&](GLFWwindow*) {
+        renderEngine.settings->fullscreen ^= true;
+        renderEngine.handleFullscreenSettingsChange();
+    });
+    keyboard.editActions({GLFW_KEY_ESCAPE, GLFW_REPEAT}, [&](GLFWwindow*) { glfwSetWindowShouldClose(renderEngine.window, 1); });
     IEWindowUser windowUser{&renderEngine, &keyboard};
     glfwSetWindowUserPointer(renderEngine.window, &windowUser);
     IEAsset asset{};

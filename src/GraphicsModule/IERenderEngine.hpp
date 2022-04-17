@@ -261,6 +261,7 @@ private:
     IEAccelerationStructure topLevelAccelerationStructure{};
     std::vector<std::function<void()>> fullRecreationDeletionQueue{};
     std::vector<std::function<void()>> recreationDeletionQueue{};
+    std::vector<std::function<void()>> renderableDeletionQueue{};
     std::vector<std::function<void()>> deletionQueue{};
     size_t currentFrame{};
     bool framebufferResized{false};
@@ -268,4 +269,7 @@ private:
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height);
 
+    void createRenderPass();
+
+    void handleResolutionChange();
 };

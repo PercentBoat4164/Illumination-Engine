@@ -201,10 +201,11 @@ public:
      * @param modifiers
      */
     void static keyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers) {
+        auto keyboard = (IEKeyboard *)((IEWindowUser *)(glfwGetWindowUserPointer(window)))->IEKeyboard; // keyboard connected to the window
         if (action == GLFW_REPEAT) {
+            keyboard->queue.emplace_back(key, action);
             return;
         }
-        auto keyboard = (IEKeyboard *)((IEWindowUser *)(glfwGetWindowUserPointer(window)))->IEKeyboard; // keyboard connected to the window
         IEKeyPressDescription thisKeyPress{key, action};
         IEKeyPressDescription oppositeKeyPress{key, thisKeyPress.action == GLFW_PRESS ? GLFW_RELEASE : GLFW_PRESS};
         auto oppositeKeyPressIterator = std::find(keyboard->queue.begin(), keyboard->queue.end(), oppositeKeyPress);

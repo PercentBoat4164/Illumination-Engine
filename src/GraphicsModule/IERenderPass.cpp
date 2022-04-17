@@ -104,6 +104,11 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
         framebufferCreateInfo.swapchainImageView = linkedRenderEngine->swapchainImageViews[i];
         framebuffers[i].create(linkedRenderEngine, &framebufferCreateInfo);
     }
+    deletionQueue.emplace_back([&] {
+        for (IEFramebuffer &framebuffer : framebuffers) {
+            framebuffer.destroy();
+        }
+    });
 }
 
 IERenderPassBeginInfo IERenderPass::beginRenderPass(uint32_t framebufferIndex) {

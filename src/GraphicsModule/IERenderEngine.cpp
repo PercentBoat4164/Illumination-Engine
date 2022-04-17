@@ -7,6 +7,7 @@
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"
 #include "Core/AssetModule/IEAsset.hpp"
+#include "Core/IEWindowUser.hpp"
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION  // Must precede GLEW inclusion.
@@ -59,7 +60,7 @@ GLFWwindow *IERenderEngine::createWindow() const {
     // Specify all window hints for the window
     /**@todo Optional - Make a convenient way to change these programmatically based on some settings.*/
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow* pWindow = glfwCreateWindow(settings->defaultWindowResolution[0], settings->defaultWindowResolution[1], settings->applicationName.c_str(), settings->fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+    GLFWwindow* pWindow = glfwCreateWindow(settings->defaultWindowResolution[0], settings->defaultWindowResolution[1], settings->applicationName.c_str(), nullptr, nullptr);
     return pWindow;
 }
 
@@ -149,6 +150,11 @@ VmaAllocator IERenderEngine::setUpGPUMemoryAllocator() {
 }
 
 vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
+    // Prepare the fullscreen
+    if (settings->fullscreen) {
+        handleFullscreenSettingsChange();
+    }
+
     // Create swapchain builder
     vkb::SwapchainBuilder swapchainBuilder{device};
     swapchainBuilder.set_desired_present_mode(settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
@@ -228,6 +234,18 @@ void IERenderEngine::createCommandPools() {
         commandPoolCreateInfo.commandQueue = vkb::QueueType::compute;
         computeCommandPool.create(this, &commandPoolCreateInfo);
     }
+}
+
+void IERenderEngine::createRenderPass() {
+    // Create the renderPass
+    graphicsCommandPool.prepareCommandBuffers(swapchainImageViews.size());
+    IERenderPass::CreateInfo renderPassCreateInfo {
+            .msaaSamples=1
+    };
+    renderPass.create(this, &renderPassCreateInfo);
+    deletionQueue.insert(deletionQueue.begin(), [&] {
+        renderPass.destroy();
+    });
 }
 
 IEAPI *IERenderEngine::autoDetectAPI() {
@@ -326,15 +344,9 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
         destroyCommandPools();
     });
 
-    // Create the renderPass
-    graphicsCommandPool.prepareCommandBuffers(swapchainImageViews.size());
-    IERenderPass::CreateInfo renderPassCreateInfo {
-            .msaaSamples=1
-    };
-    renderPass.create(this, &renderPassCreateInfo);
-    deletionQueue.insert(deletionQueue.begin(), [&] {
-        renderPass.destroy();
-    });
+    // Create render pass
+    createRenderPass();
+
     graphicsCommandPool[0].execute(nullptr);
     camera.create(this);
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
@@ -374,7 +386,17 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
     // Create pipeline
     renderable->createPipeline();
 
+    // Execute all commands to generate this renderable
     graphicsCommandPool[0].execute();
+
+    // Record the destruction of this renderable
+    renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
+}
+
+void IERenderEngine::handleResolutionChange() {
+    createSwapchain(true);
+    renderPass.destroy();
+    createRenderPass();
 }
 
 bool IERenderEngine::update() {
@@ -388,7 +410,7 @@ bool IERenderEngine::update() {
     uint32_t imageIndex{0};
     VkResult result = vkAcquireNextImageKhr(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        /**@todo Handle window resize*/
+        handleResolutionChange();
         return glfwWindowShouldClose(window) != 1;
     }
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -477,12 +499,15 @@ bool IERenderEngine::update() {
     vkQueueWaitIdle(presentQueue);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
         framebufferResized = false;
-        createSwapchain(false);
+        handleResolutionChange();
     }
     else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swapchain image!");
     }
     currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
+    if (frameTime > 1.0 / 30.0) {
+        settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime) + "ms to compute.");
+    }
     return glfwWindowShouldClose(window) != 1;
 }
 
@@ -522,6 +547,7 @@ void IERenderEngine::handleFullscreenSettingsChange() {
                 bestMonitorRefreshRate = mode->refreshRate;
             }
         }
+        settings->resolution = { bestMonitorWidth, bestMonitorHeight };
         glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
     } else {
         glfwSetWindowMonitor(window, nullptr, settings->windowPosition[0], settings->windowPosition[1], static_cast<int>(settings->defaultWindowResolution[0]), static_cast<int>(settings->defaultWindowResolution[1]), static_cast<int>(settings->refreshRate));
@@ -532,13 +558,8 @@ void IERenderEngine::handleFullscreenSettingsChange() {
 void IERenderEngine::destroy() {
     destroySyncObjects();
     destroySwapchain();
-    for (IEAsset* asset : assets) {
-        for (IEAspect *aspect : asset->aspects) {
-            if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
-                auto *renderable = reinterpret_cast<IERenderable *>(aspect);
-                renderable->destroy();
-            }
-        }
+    for (std::function<void()> &function : renderableDeletionQueue) {
+        function();
     }
     for (std::function<void()> &function : recreationDeletionQueue) {
         function();
@@ -555,10 +576,10 @@ IERenderEngine::~IERenderEngine() {
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-    auto *vulkanRenderEngine = (IERenderEngine *)glfwGetWindowUserPointer(pWindow);
-    vulkanRenderEngine->framebufferResized = true;
-    vulkanRenderEngine->settings->resolution[0] = width;
-    vulkanRenderEngine->settings->resolution[1] = height;
+    auto *renderEngine = (IERenderEngine *)((IEWindowUser *)glfwGetWindowUserPointer(pWindow))->IERenderEngine;
+    renderEngine->framebufferResized = true;
+    renderEngine->settings->resolution[0] = width;
+    renderEngine->settings->resolution[1] = height;
 }
 
 std::string IERenderEngine::translateVkResultCodes(VkResult result) {

@@ -227,6 +227,7 @@ void IERenderable::processNode(aiNode *node, const aiScene *scene) {
                         if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
                         textures->push_back(*temporaryTexture);
                         (*textures)[textures->size() - 1].create(linkedRenderEngine, &textureCreateInfo);
+                        stbi_image_free(textureCreateInfo.data);
                         linkedRenderEngine->graphicsCommandPool[0].execute(nullptr);
                         delete temporaryTexture;
                         *textureType.first = textures->size() - 1;

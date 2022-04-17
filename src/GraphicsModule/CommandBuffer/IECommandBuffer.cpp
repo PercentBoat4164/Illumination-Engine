@@ -8,8 +8,6 @@
 #include "IEPipeline.hpp"
 
 
-IECommandBuffer::IECommandBuffer() = default;
-
 void IECommandBuffer::allocate() {
     if (state == IE_COMMAND_BUFFER_STATE_INITIAL) {
         return;
@@ -59,7 +57,9 @@ void IECommandBuffer::free() {
 }
 
 IECommandBuffer::IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool) {
-    create(linkedRenderEngine, commandPool);
+    this->linkedRenderEngine = linkedRenderEngine;
+    this->commandPool = commandPool;
+    state = IE_COMMAND_BUFFER_STATE_NONE;
 }
 
 void IECommandBuffer::reset() {
@@ -109,6 +109,7 @@ void IECommandBuffer::execute(VkSemaphore input, VkSemaphore output, VkFence fen
             }
             vkResetFences(linkedRenderEngine->device.device, 1, &fence);
             VkResult result = vkQueueSubmit(commandPool->queue, 1, &submitInfo, fence);
+            delete submitInfo.pWaitDstStageMask;
             if (result != VK_SUCCESS) {
                 linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to submit command buffer! Error: " + IERenderEngine::translateVkResultCodes(result));
             }
@@ -313,18 +314,6 @@ void IECommandBuffer::destroy() {
     removeAllDependencies();
 }
 
-void IECommandBuffer::create(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool) {
-    this->linkedRenderEngine = linkedRenderEngine;
-    this->commandPool = commandPool;
-    state = IE_COMMAND_BUFFER_STATE_NONE;
-}
-
 IECommandBuffer::~IECommandBuffer() {
     destroy();
-}
-
-IECommandBuffer::IECommandBuffer(const IECommandBuffer& source) noexcept: IECommandBuffer(source.linkedRenderEngine, source.commandPool) {
-}
-
-IECommandBuffer::IECommandBuffer(IECommandBuffer&& source) noexcept : linkedRenderEngine{source.linkedRenderEngine}, commandPool{source.commandPool}, commandBuffer{source.commandBuffer}, state{source.state}, oneTimeSubmission{source.oneTimeSubmission} {
 }

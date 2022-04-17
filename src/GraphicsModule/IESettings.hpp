@@ -34,7 +34,7 @@ public:
     float anisotropicFilterLevel{16.0f};
     bool mipMapping{true};
     float mipMapLevel{0};
-    bool fullscreen{false};
+    bool fullscreen{true};
     int refreshRate{60};
     bool vSync{false};
     std::array<int, 2> resolution{defaultWindowResolution};

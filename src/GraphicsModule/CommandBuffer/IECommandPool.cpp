@@ -26,15 +26,6 @@ void IECommandPool::prepareCommandBuffers(uint32_t commandBufferCount) {
     commandBuffers.reserve(commandBufferCount);
 }
 
-const IECommandBuffer &IECommandPool::operator[](uint32_t index) const {
-    if (index <= commandBuffers.size()) {
-        return commandBuffers[index];
-    }
-    linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
-    return commandBuffers[commandBuffers.size() - 1];
-
-}
-
 IECommandBuffer &IECommandPool::operator[](uint32_t index) {
     if (index <= commandBuffers.size()) {
         if (index == commandBuffers.size()) {

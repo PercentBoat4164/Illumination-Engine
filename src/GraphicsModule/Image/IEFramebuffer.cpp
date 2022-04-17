@@ -18,8 +18,8 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
     copyCreateInfo(createInfo);
 
     // Verify that width and height are suitable
-    width = width == 0 ? static_cast<uint16_t>(linkedRenderEngine->swapchain.extent.width) : width;
-    height = height == 0 ? static_cast<uint16_t>(linkedRenderEngine->swapchain.extent.height) : height;
+    width = static_cast<uint16_t>(linkedRenderEngine->swapchain.extent.width);
+    height = static_cast<uint16_t>(linkedRenderEngine->swapchain.extent.height);
 
     if (swapchainImageView == VK_NULL_HANDLE) {
         throw std::runtime_error("IEFramebuffer::CreateInfo::swapchainImageView cannot be VK_NULL_HANDLE!");
@@ -74,6 +74,20 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
     deletionQueue.emplace_back([&] {
         vkDestroyFramebuffer(linkedRenderEngine->device.device, framebuffer, nullptr);
     });
+}
+
+IEFramebuffer::~IEFramebuffer() {
+    destroy();
+}
+
+void IEFramebuffer::destroy() {
+    if (hasNoDependents()) {
+        removeAllDependents();
+        for (std::function<void()> &function: deletionQueue) {
+            function();
+        }
+        deletionQueue.clear();
+    }
 }
 
 IEFramebuffer::IEFramebuffer() = default;
