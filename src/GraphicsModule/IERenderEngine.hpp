@@ -190,7 +190,7 @@ public:
 
     bool update();
 
-    void handleFullscreenSettingsChange();
+    void toggleFullscreen();
 
     static std::string translateVkResultCodes(VkResult result);
 
@@ -272,4 +272,6 @@ private:
     void createRenderPass();
 
     void handleResolutionChange();
+
+    static void windowPositionCallback(GLFWwindow *pWindow, int x, int y);
 };

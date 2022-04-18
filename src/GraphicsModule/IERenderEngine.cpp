@@ -60,7 +60,7 @@ GLFWwindow *IERenderEngine::createWindow() const {
     // Specify all window hints for the window
     /**@todo Optional - Make a convenient way to change these programmatically based on some settings.*/
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow* pWindow = glfwCreateWindow(settings->defaultWindowResolution[0], settings->defaultWindowResolution[1], settings->applicationName.c_str(), nullptr, nullptr);
+    GLFWwindow* pWindow = glfwCreateWindow(settings->defaultResolution[0], settings->defaultResolution[1], settings->applicationName.c_str(), nullptr, nullptr);
     return pWindow;
 }
 
@@ -150,15 +150,10 @@ VmaAllocator IERenderEngine::setUpGPUMemoryAllocator() {
 }
 
 vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
-    // Prepare the fullscreen
-    if (settings->fullscreen) {
-        handleFullscreenSettingsChange();
-    }
-
     // Create swapchain builder
     vkb::SwapchainBuilder swapchainBuilder{device};
     swapchainBuilder.set_desired_present_mode(settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
-            .set_desired_extent(settings->resolution[0], settings->resolution[1])
+            .set_desired_extent((*settings->currentResolution)[0], (*settings->currentResolution)[1])
             .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})  // This may have to change in the event that HDR is to be supported.
             .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     if (useOldSwapchain) {  // Use the old swapchain if it exists and that was requested.
@@ -292,13 +287,13 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI abstraction.*/
-    glfwInit();
     window = createWindow();
     setWindowIcons("res/icons");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    glfwGetWindowPos(window, &settings->windowPosition[0], &settings->windowPosition[1]);
+    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    glfwSetWindowPosCallback(window, windowPositionCallback);
     glfwSetWindowUserPointer(window, this);
 
     // Create surface
@@ -484,7 +479,6 @@ bool IERenderEngine::update() {
     }
     graphicsCommandPool[imageIndex].recordEndRenderPass();
     graphicsCommandPool[imageIndex].execute(imageAvailableSemaphores[currentFrame], renderFinishedSemaphores[currentFrame], inFlightFences[currentFrame]);
-    graphicsCommandPool[imageIndex].commandPool->commandPoolMutex.lock();
     VkPresentInfoKHR presentInfo{
             .sType=VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .waitSemaphoreCount = 1,
@@ -493,13 +487,13 @@ bool IERenderEngine::update() {
             .pSwapchains = &swapchain.swapchain,
             .pImageIndices = &imageIndex,
     };
+    graphicsCommandPool[imageIndex].commandPool->commandPoolMutex.lock();
     result = vkQueuePresentKHR(presentQueue, &presentInfo);
+    graphicsCommandPool[imageIndex].commandPool->commandPoolMutex.unlock();
     auto currentTime = (float)glfwGetTime();
     frameTime = currentTime - previousTime;
     previousTime = currentTime;
     frameNumber++;
-    vkQueueWaitIdle(presentQueue);
-    graphicsCommandPool[imageIndex].commandPool->commandPoolMutex.unlock();
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
         framebufferResized = false;
         handleResolutionChange();
@@ -514,9 +508,9 @@ bool IERenderEngine::update() {
     return glfwWindowShouldClose(window) != 1;
 }
 
-void IERenderEngine::handleFullscreenSettingsChange() {
+void IERenderEngine::toggleFullscreen() {
+    settings->fullscreen ^= true;
     if (settings->fullscreen) {
-        glfwGetWindowPos(window, settings->windowPosition.data(), &settings->windowPosition[1]);
         int monitorCount{};
         int windowX{};
         int windowY{};
@@ -550,11 +544,18 @@ void IERenderEngine::handleFullscreenSettingsChange() {
                 bestMonitorRefreshRate = mode->refreshRate;
             }
         }
-        settings->resolution = { bestMonitorWidth, bestMonitorHeight };
-        glfwSetWindowMonitor(window, monitor, 0, 0, bestMonitorWidth, bestMonitorHeight, bestMonitorRefreshRate);
+        settings->refreshRate = bestMonitorRefreshRate;
+        settings->currentResolution = &settings->fullscreenResolution;
+        *settings->currentResolution = { bestMonitorWidth, bestMonitorHeight };
+        glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
+        settings->currentPosition = &settings->fullscreenPosition;
     } else {
-        glfwSetWindowMonitor(window, nullptr, settings->windowPosition[0], settings->windowPosition[1], static_cast<int>(settings->defaultWindowResolution[0]), static_cast<int>(settings->defaultWindowResolution[1]), static_cast<int>(settings->refreshRate));
+        monitor = nullptr;
+        settings->currentResolution = &settings->windowedResolution;
+        settings->currentPosition = &settings->windowedPosition;
     }
+    glfwSetWindowMonitor(window, monitor, (*settings->currentPosition)[0], (*settings->currentPosition)[1], (*settings->currentResolution)[0], (*settings->currentResolution)[1], settings->refreshRate);
+    handleResolutionChange();
     glfwSetWindowTitle(window, settings->applicationName.c_str());
 }
 
@@ -578,11 +579,17 @@ IERenderEngine::~IERenderEngine() {
     destroy();
 }
 
+void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
+    auto *renderEngine = (IERenderEngine *)((IEWindowUser *)glfwGetWindowUserPointer(pWindow))->IERenderEngine;
+    (*renderEngine->settings->currentPosition)[0] = x;
+    (*renderEngine->settings->currentPosition)[1] = y;
+}
+
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
     auto *renderEngine = (IERenderEngine *)((IEWindowUser *)glfwGetWindowUserPointer(pWindow))->IERenderEngine;
     renderEngine->framebufferResized = true;
-    renderEngine->settings->resolution[0] = width;
-    renderEngine->settings->resolution[1] = height;
+    (*renderEngine->settings->currentResolution)[0] = width;
+    (*renderEngine->settings->currentResolution)[1] = height;
 }
 
 std::string IERenderEngine::translateVkResultCodes(VkResult result) {
