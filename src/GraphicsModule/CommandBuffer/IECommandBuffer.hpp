@@ -7,6 +7,9 @@ class IERenderEngine;
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <variant>
+#include <thread>
+#include <mutex>
+
 #include "Buffer/IEBuffer.hpp"
 #include "Image/IEImage.hpp"
 #include "IEDependent.hpp"
@@ -30,6 +33,7 @@ public:
     IERenderEngine *linkedRenderEngine{};
     IECommandBufferState state{};
     bool oneTimeSubmission{false};
+    std::thread executionThread{};
 
     IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool);
 
@@ -38,20 +42,20 @@ public:
     /**
      * @brief Allocate this command buffer as a primary command buffer.
      */
-    void allocate();
+    void allocate(bool synchronize=true);
 
     /**
      * @brief Prepare this command buffer for recording.
      */
-    void record(bool oneTimeSubmit=false);
+    void record(bool synchronize=true, bool oneTimeSubmit=false);
 
-    void free();
+    void free(bool synchronize=true);
 
-    void reset();
+    void reset(bool synchronize=true);
 
     void execute(VkSemaphore input=nullptr, VkSemaphore output=nullptr, VkFence fence=nullptr);
 
-    void finish();
+    void finish(bool synchronize=true);
 
     void recordPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector<VkMemoryBarrier> &memoryBarriers, const std::vector<IEBufferMemoryBarrier> &bufferMemoryBarriers, const std::vector<IEImageMemoryBarrier> &imageMemoryBarriers);
 
@@ -84,4 +88,8 @@ public:
     void destroy() final;
 
     ~IECommandBuffer() override;
+
+    IECommandBuffer(const IECommandBuffer &source) = delete;
+
+    IECommandBuffer(IECommandBuffer &&source) noexcept {};
 };

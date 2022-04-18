@@ -347,7 +347,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     // Create render pass
     createRenderPass();
 
-    graphicsCommandPool[0].execute(nullptr);
+    graphicsCommandPool[0].execute();
     camera.create(this);
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, api.name + " v" + api.version.name);
@@ -391,6 +391,8 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
 
     // Record the destruction of this renderable
     renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
+
+    graphicsCommandPool[0].wait();
 }
 
 void IERenderEngine::handleResolutionChange() {
@@ -482,7 +484,7 @@ bool IERenderEngine::update() {
     }
     graphicsCommandPool[imageIndex].recordEndRenderPass();
     graphicsCommandPool[imageIndex].execute(imageAvailableSemaphores[currentFrame], renderFinishedSemaphores[currentFrame], inFlightFences[currentFrame]);
-    graphicsCommandPool[imageIndex].wait();
+    graphicsCommandPool[imageIndex].commandPool->commandPoolMutex.lock();
     VkPresentInfoKHR presentInfo{
             .sType=VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .waitSemaphoreCount = 1,
@@ -497,6 +499,7 @@ bool IERenderEngine::update() {
     previousTime = currentTime;
     frameNumber++;
     vkQueueWaitIdle(presentQueue);
+    graphicsCommandPool[imageIndex].commandPool->commandPoolMutex.unlock();
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
         framebufferResized = false;
         handleResolutionChange();

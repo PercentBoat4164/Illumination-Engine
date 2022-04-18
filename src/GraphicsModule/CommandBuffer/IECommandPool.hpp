@@ -18,8 +18,6 @@ class IERenderEngine;
 
 
 class IECommandPool {
-private:
-    static bool commandBufferIsUnused(const IECommandBuffer& commandBuffer);
 public:
     struct CreateInfo {
     public:
@@ -31,10 +29,9 @@ public:
     std::vector<IECommandBuffer> commandBuffers{};
     IERenderEngine* linkedRenderEngine{};
     VkQueue queue;
+    std::mutex commandPoolMutex{};
 
     void create(IERenderEngine* engineLink, CreateInfo* createInfo);
-
-    const IECommandBuffer& operator[](uint32_t index) const;
 
     IECommandBuffer& operator[](uint32_t index);
 

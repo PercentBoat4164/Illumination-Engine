@@ -18,7 +18,6 @@
 IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
     linkedRenderEngine = engineLink;
     childType = IE_CHILD_TYPE_RENDERABLE;
-    linkedRenderEngine->graphicsCommandPool[0].record();
     textures = &linkedRenderEngine->textures;
     modelName = filePath.c_str();
     directory = filePath.substr(0, filePath.find_last_of('/'));
@@ -41,7 +40,7 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
         throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath));
     }
     processNode(scene->mRootNode, scene);
-    linkedRenderEngine->graphicsCommandPool[0].execute(nullptr);
+    linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
 void IERenderable::destroy() {
@@ -228,7 +227,7 @@ void IERenderable::processNode(aiNode *node, const aiScene *scene) {
                         textures->push_back(*temporaryTexture);
                         (*textures)[textures->size() - 1].create(linkedRenderEngine, &textureCreateInfo);
                         stbi_image_free(textureCreateInfo.data);
-                        linkedRenderEngine->graphicsCommandPool[0].execute(nullptr);
+                        linkedRenderEngine->graphicsCommandPool[0].execute();
                         delete temporaryTexture;
                         *textureType.first = textures->size() - 1;
                     }

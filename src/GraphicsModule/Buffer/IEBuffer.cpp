@@ -73,11 +73,12 @@ void IEBuffer::toImage(IEImage *image, uint32_t width, uint32_t height) {
     if (image->imageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         oldLayout = image->imageLayout;
         image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, buffer, image->image, image->imageLayout, 1, &region);
+        linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(this, image, {region});
         image->transitionLayout(oldLayout);
     } else {
-        vkCmdCopyBufferToImage((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, buffer, image->image, image->imageLayout, 1, &region);
+        linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(this, image, {region});
     }
+    linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
 void IEBuffer::toImage(IEImage *image) {

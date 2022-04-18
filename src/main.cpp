@@ -5,6 +5,7 @@
 
 int main() {
     IERenderEngine renderEngine{};
+
     IEKeyboard keyboard{renderEngine.window};
     keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow*) { renderEngine.camera.position += renderEngine.camera.front * renderEngine.frameTime * renderEngine.camera.speed; });
     keyboard.editActions(GLFW_KEY_A, [&](GLFWwindow*) { renderEngine.camera.position -= renderEngine.camera.right * renderEngine.frameTime * renderEngine.camera.speed; });
@@ -19,13 +20,20 @@ int main() {
         renderEngine.handleFullscreenSettingsChange();
     });
     keyboard.editActions({GLFW_KEY_ESCAPE, GLFW_REPEAT}, [&](GLFWwindow*) { glfwSetWindowShouldClose(renderEngine.window, 1); });
+
     IEWindowUser windowUser{&renderEngine, &keyboard};
     glfwSetWindowUserPointer(renderEngine.window, &windowUser);
+
     IEAsset asset{};
     asset.addAspect(new IERenderable(&renderEngine, "res/Models/Cube/cube.obj"));
     renderEngine.addAsset(&asset);
+
     asset.position = {0.0F, -2.0F, 0.0F};
     renderEngine.camera.position = {0.0F, 2.0F, 0.0F};
+
+    renderEngine.settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", std::hash<std::thread::id>{}(std::this_thread::get_id())));
+
+    glfwSetTime(0);
     while (renderEngine.update()) {
         glfwPollEvents();
         keyboard.handleQueue();
