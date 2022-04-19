@@ -63,7 +63,7 @@ public:
 
     ~IERenderable();
 
-    void update(const IEAsset *const asset, const IECamera &camera, float time);
+    void update(IEAsset *const asset, const IECamera &camera, float time);
 
     std::vector<std::function<void()>> deletionQueue{};
     IEBuffer modelBuffer{};
@@ -71,9 +71,6 @@ public:
     IEUniformBufferObject uniformBufferObject{};
     std::vector<IETexture>* textures;
     std::vector<IEShader> shaders{};
-    glm::vec3 position{};
-    glm::vec3 rotation{};
-    glm::vec3 scale{1.0f, 1.0f, 1.0f};
     bool render{true};
     std::string directory{};
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};

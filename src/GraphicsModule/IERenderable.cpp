@@ -94,9 +94,14 @@ IERenderable::~IERenderable() {
     destroy();
 }
 
-void IERenderable::update(const IEAsset *const asset, const IECamera &camera, float time) {
-    glm::quat quaternion = glm::quat(glm::radians(rotation + asset->rotation));
-    glm::mat4 modelMatrix = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0F), scale + asset->scale), glm::angle(quaternion), glm::axis(quaternion)), position + asset->position);
+void IERenderable::update(IEAsset *const asset, const IECamera &camera, float time) {
+    glm::mat4 modelMatrix = glm::translate(glm::scale(glm::identity<glm::mat4>(), asset->scale), asset->position);
+    glm::quat(asset->rotation);
+    modelMatrix = glm::rotate(modelMatrix, asset->rotation.y, glm::vec3(-1.0F, 0.0F, 0.0F));
+    modelMatrix = glm::rotate(modelMatrix, asset->rotation.x, glm::vec3(0.0F, 1.0F, 0.0F));
+    modelMatrix = glm::rotate(modelMatrix, asset->rotation.z, glm::vec3(0.0F, 0.0F, 1.0F));
+
+
     uniformBufferObject.viewModelMatrix = camera.viewMatrix;
     uniformBufferObject.modelMatrix = modelMatrix;
     uniformBufferObject.projectionMatrix = camera.projectionMatrix;
@@ -223,7 +228,9 @@ void IERenderable::processNode(aiNode *node, const aiScene *scene) {
                         textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                         textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
                         textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha);
-                        if (!textureCreateInfo.data) { throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename); }
+                        if (textureCreateInfo.data == nullptr) {
+                            throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename);
+                        }
                         textures->push_back(*temporaryTexture);
                         (*textures)[textures->size() - 1].create(linkedRenderEngine, &textureCreateInfo);
                         stbi_image_free(textureCreateInfo.data);

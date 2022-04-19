@@ -40,5 +40,5 @@ void main() {
 //    vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
 //    fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f));
     fragmentColor = aces(vec4((ambient + diffuse), 1.0f));
-//    fragmentColor = aces(vec4(1.0f));
+//    fragmentColor = aces(vec4(texture(diffuseTexture, fragmentTextureCoordinates)));
 }

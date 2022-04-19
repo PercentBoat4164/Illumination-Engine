@@ -106,6 +106,8 @@ vkb::Device IERenderEngine::setUpDevice(std::vector<std::vector<const char *>> *
         selector.add_desired_extensions(*desiredExtensions->data());
     }
 
+    selector.prefer_gpu_device_type(vkb::PreferredDeviceType::integrated);
+
     // Set surface for physical device.
     vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(surface).select();
 
@@ -530,7 +532,7 @@ void IERenderEngine::toggleFullscreen() {
         glfwGetWindowPos(window, &windowX, &windowY);
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
         monitors = glfwGetMonitors(&monitorCount);
-        for (int i = 0; i < monitorCount; i++) {
+        for (int i = 0; i < monitorCount; ++i) {
             mode = glfwGetVideoMode(monitors[i]);
             glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
             monitorWidth = mode->width;
@@ -710,3 +712,6 @@ bool IERenderEngine::ExtensionAndFeatureInfo::rayTracingWithRayQuerySupportQuery
 bool IERenderEngine::ExtensionAndFeatureInfo::variableDescriptorCountSupportQuery() const {
     return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount != 0U;
 }
+
+
+// Use pointers to functions to switch between Vulkan and OpenGL variants.

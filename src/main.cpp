@@ -34,6 +34,7 @@ int main() {
 
     glfwSetTime(0);
     while (renderEngine.update()) {
+        asset.rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine.frameTime;
         glfwPollEvents();
         keyboard.handleQueue();
     }
