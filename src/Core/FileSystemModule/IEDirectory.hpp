@@ -21,7 +21,7 @@ public:
         path = initialPath;
     }
 
-    std::vector<IEDirectory*> subDirectories{};
+    std::vector<IEDirectory*> subdirectories{};
     std::vector<IEFile*> files{};
     std::string path{};
     bool exists{};
@@ -36,8 +36,8 @@ public:
     }
 
     std::vector<IEDirectory*> allDirectories() {
-        std::vector<IEDirectory*> allSubDirectories{subDirectories};
-        for (IEDirectory* subDirectory : subDirectories) {
+        std::vector<IEDirectory*> allSubDirectories{subdirectories};
+        for (IEDirectory* subDirectory : subdirectories) {
             std::vector<IEDirectory*> theseSubDirectories{subDirectory->allDirectories()};
             allSubDirectories.insert(allSubDirectories.end(), theseSubDirectories.begin(), theseSubDirectories.end());
         }
@@ -46,7 +46,7 @@ public:
 
     std::vector<IEFile*> allFiles() {
         std::vector<IEFile*> allFiles{files};
-        for (IEDirectory* subDirectory : subDirectories) {
+        for (IEDirectory* subDirectory : subdirectories) {
             std::vector<IEFile*> theseFiles{subDirectory->allFiles()};
             allFiles.insert(allFiles.end(), theseFiles.begin(), theseFiles.end());
         }
