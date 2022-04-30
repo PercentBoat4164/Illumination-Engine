@@ -194,22 +194,6 @@ public:
 
     static std::string translateVkResultCodes(VkResult result);
 
-    IEBuffer *createGlobalBuffer(IEBuffer::CreateInfo *createInfo) {
-        globalBuffers.emplace_back(this, createInfo);
-        return &globalBuffers[globalBuffers.size()];
-    }
-
-    IEBuffer *registerGlobalBuffer(IEBuffer buffer) {
-        globalBuffers.push_back(buffer);
-        buffer.destroy();
-        return &globalBuffers[globalBuffers.size()];
-    }
-
-    IEImage *createGlobalImage(IEImage::CreateInfo *createInfo) {
-        globalImages.emplace_back(this, createInfo);
-        return &globalImages[globalImages.size()];
-    }
-
     void destroy();
 
     ~IERenderEngine();
@@ -242,9 +226,7 @@ public:
     PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR{};
     PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR{};
     PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
-    std::vector<IETexture> textures{1};
-    std::vector<IEBuffer> globalBuffers{};
-    std::vector<IEImage> globalImages{};
+    std::vector<IETexture *> textures{};
     std::vector<VkImageView> swapchainImageViews{};
     float frameTime{};
     int frameNumber{};
@@ -274,4 +256,5 @@ private:
     void handleResolutionChange();
 
     static void windowPositionCallback(GLFWwindow *pWindow, int x, int y);
+
 };

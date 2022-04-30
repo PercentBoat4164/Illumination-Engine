@@ -3,6 +3,8 @@ find_package(OpenGL)  # Check for OpenGL
 
 include(FetchContent)  # Requires CMake 3.14
 
+# Possibly add https://github.com/libvips/libvips as the image importer of choice. (high speed, high compatibility, highly maintained, but does not use CMake)
+
 # Get AssImp
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 set(ASSIMP_BUILD_SAMPLES OFF)

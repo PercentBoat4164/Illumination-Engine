@@ -64,13 +64,13 @@ public:
 
     ~IERenderable();
 
-    void update(IEAsset *const asset, const IECamera &camera, float time);
+    void update(IEAsset *asset, const IECamera &camera, float time);
 
     std::vector<std::function<void()>> deletionQueue{};
     IEBuffer modelBuffer{};
     IERenderEngine *linkedRenderEngine{};
     IEUniformBufferObject uniformBufferObject{};
-    std::vector<IETexture>* textures;
+    std::vector<IETexture> textures{};
     std::vector<IEShader> shaders{};
     bool render{true};
     std::string directory{};
@@ -88,8 +88,5 @@ public:
     void createShaders();
 
 private:
-    /**@todo Write this better.*/
-    [[noreturn]] void processNode(aiNode *node, const aiScene *scene);
-
     void processMesh(const aiMesh &mesh, const aiScene &scene);
 };

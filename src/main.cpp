@@ -15,26 +15,35 @@ int main() {
     keyboard.editActions(GLFW_KEY_LEFT_SHIFT, [&](GLFWwindow*) { renderEngine.camera.position -= renderEngine.camera.up * renderEngine.frameTime * renderEngine.camera.speed; });
     keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_PRESS}, [&](GLFWwindow*) { renderEngine.camera.speed *= 6; });
     keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE}, [&](GLFWwindow*) { renderEngine.camera.speed /= 6; });
-    keyboard.editActions({GLFW_KEY_F11, GLFW_PRESS}, [&](GLFWwindow*) {
-        renderEngine.toggleFullscreen();
-    });
+    keyboard.editActions({GLFW_KEY_F11, GLFW_PRESS}, [&](GLFWwindow*) { renderEngine.toggleFullscreen(); });
     keyboard.editActions({GLFW_KEY_ESCAPE, GLFW_REPEAT}, [&](GLFWwindow*) { glfwSetWindowShouldClose(renderEngine.window, 1); });
 
     IEWindowUser windowUser{&renderEngine, &keyboard};
     glfwSetWindowUserPointer(renderEngine.window, &windowUser);
 
-    IEAsset asset{};
-    asset.addAspect(new IERenderable(&renderEngine, "res/Models/Cube/cube.glb"));
-    renderEngine.addAsset(&asset);
+    IEAsset glb{.filename="res/Models/AncientStatue/ancientStatue.glb"};
+    glb.addAspect(new IERenderable(&renderEngine, "res/Models/AncientStatue/ancientStatue.glb"));
+    renderEngine.addAsset(&glb);
 
-    asset.position = {0.0F, -2.0F, 0.0F};
+    IEAsset obj{.filename="res/Models/AncientStatue/ancientStatue.obj"};
+    obj.addAspect(new IERenderable(&renderEngine, "res/Models/AncientStatue/ancientStatue.obj"));
+    renderEngine.addAsset(&obj);
+
+    IEAsset fbx{.filename="res/Models/AncientStatue/ancientStatue.fbx"};
+    fbx.addAspect(new IERenderable(&renderEngine, "res/Models/AncientStatue/ancientStatue.fbx"));
+    renderEngine.addAsset(&fbx);
+
+    glb.position = {0.0F, -2.0F, 0.0F};
+    fbx.position = {0.0F, -1.0F, 0.0F};
     renderEngine.camera.position = {0.0F, 2.0F, 0.0F};
 
-    renderEngine.settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", std::hash<std::thread::id>{}(std::this_thread::get_id())));
+    renderEngine.settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", pthread_self()));
 
     glfwSetTime(0);
     while (renderEngine.update()) {
-        asset.rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine.frameTime;
+        glb.rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine.frameTime;
+        obj.position = glm::vec3(sin(glfwGetTime()), cos(glfwGetTime()), 0) * glm::vec3(2);
+        fbx.scale = glm::vec3((float)abs(sin(glfwGetTime())));
         glfwPollEvents();
         keyboard.handleQueue();
     }

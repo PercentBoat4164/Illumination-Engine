@@ -354,11 +354,15 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 }
 
 void IERenderEngine::addAsset(IEAsset *asset) {
+    asset->index = assets.size();
     assets.push_back(asset);
     for (IEAspect *aspect : asset->aspects) {
         if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
             loadRenderable((IERenderable*)aspect);
         }
+    }
+    for (IEAsset *thisAsset : assets) {  // This is necessary because the pointers will become invalid if the vector is forced to move in memory.
+        thisAsset->allAssets = &assets;
     }
 }
 
@@ -562,6 +566,9 @@ void IERenderEngine::toggleFullscreen() {
 }
 
 void IERenderEngine::destroy() {
+    for (IECommandBuffer &commandBuffer : graphicsCommandPool.commandBuffers) {
+        commandBuffer.wait();
+    }
     destroySyncObjects();
     destroySwapchain();
     for (std::function<void()> &function : renderableDeletionQueue) {

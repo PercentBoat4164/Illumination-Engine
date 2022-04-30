@@ -2,38 +2,10 @@
 add_subdirectory(Shaders)
 
 set(IEGraphicsModuleSourceFiles  # Gather sources
-        IEAPI.cpp
-        IEAPI.hpp
         Buffer/IEAccelerationStructure.cpp
         Buffer/IEAccelerationStructure.hpp
         Buffer/IEBuffer.cpp
         Buffer/IEBuffer.hpp
-        IECamera.cpp
-        IECamera.hpp
-        IEDescriptorSet.cpp
-        IEDescriptorSet.hpp
-        IEMonitor.cpp
-        IEMonitor.hpp
-        IEPipeline.cpp
-        IEPipeline.hpp
-        Renderable/IERenderable.cpp
-        Renderable/IERenderable.hpp
-        IERenderableSettings.cpp
-        IERenderableSettings.hpp
-        IERenderEngine.cpp
-        IERenderEngine.hpp
-        IERenderPass.cpp
-        IERenderPass.hpp
-        IESettings.cpp
-        IESettings.hpp
-        Renderable/IEShader.cpp
-        Renderable/IEShader.hpp
-        IEUniformBufferObject.cpp
-        IEUniformBufferObject.hpp
-        IEVersion.cpp
-        IEVersion.hpp
-        Renderable/IEVertex.cpp
-        Renderable/IEVertex.hpp
         CommandBuffer/IECommandBuffer.cpp
         CommandBuffer/IECommandBuffer.hpp
         CommandBuffer/IECommandPool.cpp
@@ -44,12 +16,40 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Image/IEImage.hpp
         Image/IETexture.cpp
         Image/IETexture.hpp
+        Renderable/IEMaterial.cpp
+        Renderable/IEMaterial.hpp
+        Renderable/IERenderable.cpp
+        Renderable/IERenderable.hpp
+        Renderable/IEShader.cpp
+        Renderable/IEShader.hpp
+        Renderable/IEVertex.cpp
+        Renderable/IEVertex.hpp
+        IEAPI.cpp
+        IEAPI.hpp
+        IECamera.cpp
+        IECamera.hpp
         IEDependency.cpp
         IEDependency.hpp
         IEDependent.cpp
         IEDependent.hpp
-        Renderable/IEMaterial.cpp
-        Renderable/IEMaterial.hpp
+        IEDescriptorSet.cpp
+        IEDescriptorSet.hpp
+        IEMonitor.cpp
+        IEMonitor.hpp
+        IEPipeline.cpp
+        IEPipeline.hpp
+        IERenderEngine.cpp
+        IERenderEngine.hpp
+        IERenderPass.cpp
+        IERenderPass.hpp
+        IERenderableSettings.cpp
+        IERenderableSettings.hpp
+        IESettings.cpp
+        IESettings.hpp
+        IEUniformBufferObject.cpp
+        IEUniformBufferObject.hpp
+        IEVersion.cpp
+        IEVersion.hpp
         )
 
 # Create and define properties for the library
@@ -61,14 +61,13 @@ set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(IEGraphicsModule INTERFACE IECore)
 
 # Add external dependency libraries and include directories to the target
+target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm)
+target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR})
+target_compile_definitions(IEGraphicsModule PUBLIC ILLUMINATION_ENGINE_OPENGL)  # Compile with OpenGL support
 if (Vulkan_FOUND)
-    target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm vk-bootstrap vulkan)
-    target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR} ${vk-bootstrap_DIR} ${vma_DIR})
-    target_compile_definitions(IEGraphicsModule PUBLIC ILLUMINATION_ENGINE_VULKAN ILLUMINATION_ENGINE_OPENGL)  # Compile with Vulkan and OpenGL support
-else ()
-    target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm)
-    target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR})
-    target_compile_definitions(IEGraphicsModule PUBLIC ILLUMINATION_ENGINE_OPENGL)  # Compile with OpenGL support
+    target_link_libraries(IEGraphicsModule PUBLIC vk-bootstrap vulkan)
+    target_include_directories(IEGraphicsModule PUBLIC ${vk-bootstrap_DIR} ${vma_DIR})
+    target_compile_definitions(IEGraphicsModule PUBLIC ILLUMINATION_ENGINE_VULKAN)  # Compile with Vulkan support
 endif ()
 
 add_dependencies(IEGraphicsModule IEGMShaders)  # Add shader pre-compilation as a dependency

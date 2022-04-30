@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 class IEAsset;
 
@@ -17,4 +18,6 @@ class IEAspect {
 public:
     std::string childType;
     std::vector<IEAsset*> associatedAssets{};  // A vector of assets that this aspect belongs to
+
+    virtual void destroy() = 0;
 };
