@@ -14,6 +14,9 @@ layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec3 vertexColor;
 layout(location = 2) in vec2 vertexTextureCoordinates;
 layout(location = 3) in vec3 vertexNormal;
+layout(location = 4) in vec3 vertexTangent;
+layout(location = 5) in vec3 vertexBitangent;
+
 
 layout(location = 0) out vec2 fragmentTextureCoordinates;
 layout(location = 1) out vec3 interpolatedNormal;

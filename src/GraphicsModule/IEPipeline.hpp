@@ -9,7 +9,7 @@ class IERenderPass;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "IEShader.hpp"
+#include "GraphicsModule/Renderable/IEShader.hpp"
 #include "IEDependency.hpp"
 
 // External dependencies

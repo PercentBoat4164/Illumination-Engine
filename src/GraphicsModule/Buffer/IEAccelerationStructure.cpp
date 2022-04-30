@@ -3,7 +3,7 @@
 
 /* Include dependencies within this module. */
 #include "IERenderEngine.hpp"
-#include "IEVertex.hpp"
+#include "GraphicsModule/Renderable/IEVertex.hpp"
 
 /* Include external dependencies. */
 #include <stdexcept>

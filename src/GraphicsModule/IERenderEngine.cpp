@@ -2,7 +2,7 @@
 #include "IERenderEngine.hpp"
 
 /* Include dependencies within this module. */
-#include "IERenderable.hpp"
+#include "GraphicsModule/Renderable/IERenderable.hpp"
 
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"
@@ -106,7 +106,7 @@ vkb::Device IERenderEngine::setUpDevice(std::vector<std::vector<const char *>> *
         selector.add_desired_extensions(*desiredExtensions->data());
     }
 
-    selector.prefer_gpu_device_type(vkb::PreferredDeviceType::integrated);
+    selector.prefer_gpu_device_type(vkb::PreferredDeviceType::discrete);
 
     // Set surface for physical device.
     vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(surface).select();
@@ -505,7 +505,7 @@ bool IERenderEngine::update() {
     }
     currentFrame = (currentFrame + 1) % (int)swapchain.image_count;
     if (frameTime > 1.0 / 30.0) {
-        settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime) + "ms to compute.");
+        settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime * 1000) + "ms to compute.");
     }
     return glfwWindowShouldClose(window) != 1;
 }

@@ -113,7 +113,7 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
 //                .maxAnisotropy=anisotropyLevel,
             .compareEnable=VK_FALSE,
             .compareOp=VK_COMPARE_OP_ALWAYS,
-            .minLod=0.0f,
+            .minLod=0.0F,
 //                .maxLod=static_cast<float>(mipLevels),
             .borderColor=VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
             .unnormalizedCoordinates=VK_FALSE,
@@ -227,5 +227,3 @@ void IETexture::generateMipMaps() {
 //    linkedRenderEngine->graphicsCommandPool->executeCommandBuffer(0);
 //    linkedRenderEngine->graphicsCommandPool->recordCommandBuffer(0);
 }
-
-IETexture::IETexture() = default;

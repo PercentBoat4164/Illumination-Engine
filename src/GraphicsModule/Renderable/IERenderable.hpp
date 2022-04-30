@@ -21,6 +21,7 @@ class IECamera;
 
 // Modular dependencies
 #include "Core/AssetModule/IEAspect.hpp"
+#include "IEMaterial.hpp"
 
 // External dependencies
 #include <vulkan/vulkan.h>
@@ -34,10 +35,10 @@ class IECamera;
 
 class IERenderable : public IEAspect {
 public:
-    const char *modelName{};
+    std::string modelName{};
     std::vector<uint32_t> indices{};
     std::vector<IEVertex> vertices{};
-    VkTransformMatrixKHR transformationMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
+    VkTransformMatrixKHR transformationMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
     uint32_t diffuseTexture{};
     uint32_t emissionTexture{};
     uint32_t heightTexture{};
@@ -73,7 +74,8 @@ public:
     std::vector<IEShader> shaders{};
     bool render{true};
     std::string directory{};
-    VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
+    VkTransformMatrixKHR identityTransformMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
+    std::vector<IEMaterial> materials{};
 
     void createIndexBuffer();
 
@@ -87,5 +89,7 @@ public:
 
 private:
     /**@todo Write this better.*/
-    void processNode(aiNode *node, const aiScene *scene);
+    [[noreturn]] void processNode(aiNode *node, const aiScene *scene);
+
+    void processMesh(const aiMesh &mesh, const aiScene &scene);
 };

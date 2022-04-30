@@ -4,7 +4,7 @@
 /* Include dependencies within this module. */
 #include "IEDescriptorSet.hpp"
 #include "IERenderEngine.hpp"
-#include "IEVertex.hpp"
+#include "GraphicsModule/Renderable/IEVertex.hpp"
 
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"
@@ -52,7 +52,7 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
     // create graphics pipeline
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
     VkVertexInputBindingDescription bindingDescription = IEVertex::getBindingDescription();
-    std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = IEVertex::getAttributeDescriptions();
+    std::array<VkVertexInputAttributeDescription, 6> attributeDescriptions = IEVertex::getAttributeDescriptions();
     vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
     vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
     vertexInputStateCreateInfo.pVertexBindingDescriptions = &bindingDescription;

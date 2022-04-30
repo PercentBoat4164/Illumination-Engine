@@ -14,6 +14,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)  # Directory to put 
 add_subdirectory(ext)  # Generate external dependencies from source
 add_subdirectory(src)  # Generate Illumination Engine from source
 
+add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res DEPENDS ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res COMMENT "Copying resource files...")
 file(COPY ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})  # Move resource files
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)

@@ -16,8 +16,8 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IEMonitor.hpp
         IEPipeline.cpp
         IEPipeline.hpp
-        IERenderable.cpp
-        IERenderable.hpp
+        Renderable/IERenderable.cpp
+        Renderable/IERenderable.hpp
         IERenderableSettings.cpp
         IERenderableSettings.hpp
         IERenderEngine.cpp
@@ -26,14 +26,14 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IERenderPass.hpp
         IESettings.cpp
         IESettings.hpp
-        IEShader.cpp
-        IEShader.hpp
+        Renderable/IEShader.cpp
+        Renderable/IEShader.hpp
         IEUniformBufferObject.cpp
         IEUniformBufferObject.hpp
         IEVersion.cpp
         IEVersion.hpp
-        IEVertex.cpp
-        IEVertex.hpp
+        Renderable/IEVertex.cpp
+        Renderable/IEVertex.hpp
         CommandBuffer/IECommandBuffer.cpp
         CommandBuffer/IECommandBuffer.hpp
         CommandBuffer/IECommandPool.cpp
@@ -44,7 +44,13 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Image/IEImage.hpp
         Image/IETexture.cpp
         Image/IETexture.hpp
-        IEDependency.cpp IEDependency.hpp IEDependent.cpp IEDependent.hpp)
+        IEDependency.cpp
+        IEDependency.hpp
+        IEDependent.cpp
+        IEDependent.hpp
+        Renderable/IEMaterial.cpp
+        Renderable/IEMaterial.hpp
+        )
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

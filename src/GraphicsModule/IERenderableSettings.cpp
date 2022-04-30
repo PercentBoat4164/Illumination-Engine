@@ -12,7 +12,7 @@ uint32_t IEPolygonMode(enum IEPolygonMode polygonMode, const IEAPI& api) {
     if (api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
         return IEPolygonModesOpenGL[polygonMode];
     }
-    else return GL_FILL;
+    return GL_FILL;
 }
 
 uint32_t IECullMode(enum IECullMode cullMode, const IEAPI &api) {
@@ -22,5 +22,5 @@ uint32_t IECullMode(enum IECullMode cullMode, const IEAPI &api) {
     if (api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
         return IECullModesOpenGL[cullMode];
     }
-    else return GL_NONE;
+    return GL_NONE;
 }

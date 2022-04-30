@@ -5,21 +5,21 @@
 #include "IERenderEngine.hpp"
 
 /* Include external dependencies. */
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
+#include "assimp/scene.h"
+#include "assimp/GltfMaterial.h"
 
-#include <stb_image.h>
+#include "stb_image.h"
 
-#include <glm/detail/type_quat.hpp>
-#include <glm/ext/quaternion_trigonometric.hpp>
-#include <glm/glm.hpp>
+#include "glm/detail/type_quat.hpp"
+#include "glm/glm.hpp"
 
 IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
     linkedRenderEngine = engineLink;
     childType = IE_CHILD_TYPE_RENDERABLE;
     textures = &linkedRenderEngine->textures;
-    modelName = filePath.c_str();
+    modelName = filePath;
     directory = filePath.substr(0, filePath.find_last_of('/'));
     int channels{};
     IETexture::CreateInfo textureCreateInfo{
@@ -35,12 +35,14 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
     }
 //    (*textures)[0].create(linkedRenderEngine, &textureCreateInfo);
     Assimp::Importer importer{};
-    const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals);
+    const aiScene *scene = importer.ReadFile(modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace | aiProcess_GenNormals | aiProcess_RemoveRedundantMaterials);
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         throw std::runtime_error("failed to prepare texture image from file: " + std::string(filePath));
     }
-    processNode(scene->mRootNode, scene);
+    processMesh(*scene->mMeshes[0], *scene);
+//    processNode(scene->mRootNode, scene);
     linkedRenderEngine->graphicsCommandPool[0].execute();
+//    parseMaterial(*scene->mMaterials[0]);
 }
 
 void IERenderable::destroy() {
@@ -100,8 +102,6 @@ void IERenderable::update(IEAsset *const asset, const IECamera &camera, float ti
     modelMatrix = glm::rotate(modelMatrix, asset->rotation.y, glm::vec3(-1.0F, 0.0F, 0.0F));
     modelMatrix = glm::rotate(modelMatrix, asset->rotation.x, glm::vec3(0.0F, 1.0F, 0.0F));
     modelMatrix = glm::rotate(modelMatrix, asset->rotation.z, glm::vec3(0.0F, 0.0F, 1.0F));
-
-
     uniformBufferObject.viewModelMatrix = camera.viewMatrix;
     uniformBufferObject.modelMatrix = modelMatrix;
     uniformBufferObject.projectionMatrix = camera.projectionMatrix;
@@ -166,7 +166,7 @@ void IERenderable::createPipeline() {
     });
 }
 
-void IERenderable::processNode(aiNode *node, const aiScene *scene) {
+[[noreturn]] void IERenderable::processNode(aiNode *node, const aiScene *scene) {
     for (uint32_t i = 0; i < node->mNumMeshes; ++i) {
         vertices.reserve(scene->mMeshes[node->mMeshes[i]]->mNumVertices);
         for (uint32_t j = 0; j < scene->mMeshes[node->mMeshes[i]]->mNumVertices; ++j) {
@@ -228,7 +228,7 @@ void IERenderable::processNode(aiNode *node, const aiScene *scene) {
                         textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                         textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
                         textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, STBI_rgb_alpha);
-                        if (textureCreateInfo.data == nullptr) {
+                        if (textureCreateInfo.data != nullptr) {
                             throw std::runtime_error("failed to prepare texture image from file: " + textureCreateInfo.filename);
                         }
                         textures->push_back(*temporaryTexture);
@@ -246,4 +246,98 @@ void IERenderable::processNode(aiNode *node, const aiScene *scene) {
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
         processNode(node->mChildren[i], scene);
     }
+}
+
+void IERenderable::processMesh(const aiMesh &mesh, const aiScene &scene) {
+    // process mesh
+    vertices.reserve(mesh.mNumVertices);
+    for (int i = 0; i < mesh.mNumVertices; ++i) {
+        IEVertex temporaryVertex{};
+        if (mesh.HasPositions()) {
+            temporaryVertex.position = {mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z};
+        }
+        if (mesh.HasNormals()) {
+            temporaryVertex.normal = {mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z};
+        }
+        if (mesh.HasTextureCoords(0)) {
+            temporaryVertex.textureCoordinates = {mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y};
+        }
+        if (mesh.HasVertexColors(0)) {
+            temporaryVertex.color = {mesh.mColors[0][i].a, mesh.mColors[0][i].r, mesh.mColors[0][i].g, mesh.mColors[0][i].b};
+        }
+        if (mesh.HasTangentsAndBitangents()) {
+            temporaryVertex.tangent = {mesh.mTangents[i].x, mesh.mTangents[i].y, mesh.mTangents[i].z};
+            temporaryVertex.biTangent = {mesh.mBitangents[i].x, mesh.mBitangents[i].y, mesh.mBitangents[i].z};
+        }
+        vertices.push_back(temporaryVertex);
+    }
+    indices.reserve(3UL * mesh.mNumFaces);
+    for (int i = 0; i < mesh.mNumFaces; ++i) {
+        if (mesh.mFaces[i].mNumIndices != 3) {
+            linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Detected non-triangular face! Try using the aiProcess_Triangulate flag.");
+        } else {
+            for (int j = 0; j < mesh.mFaces[i].mNumIndices; ++j) {
+                indices.push_back(mesh.mFaces[i].mIndices[j]);
+            }
+        }
+    }
+    triangleCount = mesh.mNumFaces;
+    std::vector<std::pair<uint32_t *, aiTextureType>> textureTypes{
+            {&diffuseTexture, aiTextureType_DIFFUSE},
+            {&emissionTexture, aiTextureType_EMISSIVE},
+            {&heightTexture, aiTextureType_HEIGHT},
+            {&metallicTexture, aiTextureType_METALNESS},
+            {&normalTexture, aiTextureType_NORMALS},
+            {&roughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS},
+            {&specularTexture, aiTextureType_SPECULAR}
+    };
+    IETexture::CreateInfo textureCreateInfo{};
+    textureCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+    textureCreateInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
+    for (std::pair<uint32_t *, aiTextureType> textureType : textureTypes) {
+        unsigned int numTextures = scene.mMaterials[mesh.mMaterialIndex]->GetTextureCount(textureType.second);
+        for (int i = 0; numTextures > 0; ++i) {
+            aiString filename;
+            scene.mMaterials[mesh.mMaterialIndex]->GetTexture(textureType.second, i, &filename);
+            if (filename.length == 0) {
+                continue;
+            }
+            textures->resize(textures->size() + 1);
+            --numTextures;
+            const aiTexture *embeddedTexture = scene.GetEmbeddedTexture(filename.C_Str());
+            if (embeddedTexture != nullptr && embeddedTexture->mHeight == 0) {
+                textureCreateInfo.filename = std::string(embeddedTexture->mFilename.C_Str()) + "." + embeddedTexture->achFormatHint;
+                textureCreateInfo.data = (unsigned char *)embeddedTexture->pcData;
+                int channels;
+                textureCreateInfo.data = stbi_load_from_memory(textureCreateInfo.data, (int)embeddedTexture->mWidth, reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, 4);
+            } else {
+                int channels;
+                textureCreateInfo.filename = directory + "/" + filename.C_Str();
+                textureCreateInfo.data = stbi_load(textureCreateInfo.filename.c_str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, 4);
+            }
+            (*textures)[i].create(linkedRenderEngine, &textureCreateInfo);
+        }
+    }
+//
+//    IETexture::CreateInfo textureCreateInfo{};
+//    textureCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+//    textureCreateInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+//    textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+//    textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
+//    for (int i = 0; i < scene.mNumTextures; ++i) {
+//        const aiTexture *embeddedTexture = scene.GetEmbeddedTexture(scene.mTextures[i]->mFilename.C_Str());
+//        if (embeddedTexture != nullptr && embeddedTexture->mHeight == 0) {
+//            textureCreateInfo.filename = std::string(embeddedTexture->mFilename.C_Str()) + "." + embeddedTexture->achFormatHint;
+//            textureCreateInfo.data = (unsigned char *)embeddedTexture->pcData;
+//            int channels;
+//            textureCreateInfo.data = stbi_load_from_memory(textureCreateInfo.data, (int)embeddedTexture->mWidth, reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, 4);
+//        } else {
+//            int channels;
+//            textureCreateInfo.filename = scene.mTextures[i]->mFilename.C_Str();
+//            textureCreateInfo.data = stbi_load(scene.mTextures[i]->mFilename.C_Str(), reinterpret_cast<int *>(&textureCreateInfo.width), reinterpret_cast<int *>(&textureCreateInfo.height), &channels, 4);
+//        }
+//        (*textures)[i].create(linkedRenderEngine, &textureCreateInfo);
+//    }
 }

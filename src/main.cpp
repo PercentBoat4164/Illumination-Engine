@@ -24,7 +24,7 @@ int main() {
     glfwSetWindowUserPointer(renderEngine.window, &windowUser);
 
     IEAsset asset{};
-    asset.addAspect(new IERenderable(&renderEngine, "res/Models/Cube/cube.obj"));
+    asset.addAspect(new IERenderable(&renderEngine, "res/Models/Cube/cube.glb"));
     renderEngine.addAsset(&asset);
 
     asset.position = {0.0F, -2.0F, 0.0F};

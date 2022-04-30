@@ -32,8 +32,6 @@ public:
         std::string filename{};
     };
 
-    IETexture();
-
     void copyCreateInfo(IETexture::CreateInfo *createInfo);
 
     void create(IERenderEngine *engineLink, IETexture::CreateInfo *createInfo);
