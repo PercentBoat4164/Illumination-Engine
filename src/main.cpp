@@ -4,7 +4,8 @@
 #include "Core/FileSystemModule/IEFileSystem.hpp"
 
 int main() {
-    IERenderEngine renderEngine{};
+    IESettings settings{};
+    IERenderEngine renderEngine{settings};
 
     IEKeyboard keyboard{renderEngine.window};
     keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow*) { renderEngine.camera.position += renderEngine.camera.front * renderEngine.frameTime * renderEngine.camera.speed; });
@@ -22,18 +23,18 @@ int main() {
     glfwSetWindowUserPointer(renderEngine.window, &windowUser);
 
     IEAsset fbx{.filename="res/Models/AncientStatue/ancientStatue.fbx"};
-    fbx.addAspect(new IERenderable(&renderEngine, "res/Models/AncientStatue/ancientStatue.fbx"));
-    renderEngine.addAsset(&fbx);
-
-    fbx.position = {0.0F, -1.0F, 0.0F};
-    renderEngine.camera.position = {0.0F, 2.0F, 0.0F};
-
-    renderEngine.settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", pthread_self()));
-
-    glfwSetTime(0);
-    while (renderEngine.update()) {
-        fbx.rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine.frameTime;
-        glfwPollEvents();
-        keyboard.handleQueue();
-    }
+//    fbx.addAspect(new IERenderable(&renderEngine, "res/Models/AncientStatue/ancientStatue.fbx"));
+//    renderEngine.addAsset(&fbx);
+//
+//    fbx.position = {0.0F, -1.0F, 0.0F};
+//    renderEngine.camera.position = {0.0F, 2.0F, 0.0F};
+//
+//    renderEngine.settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", pthread_self()));
+//
+//    glfwSetTime(0);
+//    while (renderEngine.update()) {
+//        fbx.rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine.frameTime;
+//        glfwPollEvents();
+//        keyboard.handleQueue();
+//    }
 }

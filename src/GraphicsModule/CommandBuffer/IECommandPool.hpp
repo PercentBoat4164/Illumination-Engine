@@ -30,6 +30,7 @@ public:
     IERenderEngine* linkedRenderEngine{};
     VkQueue queue;
     std::mutex commandPoolMutex{};
+    std::vector<std::function<void()>> deletionQueue{};
 
     void create(IERenderEngine* engineLink, CreateInfo* createInfo);
 

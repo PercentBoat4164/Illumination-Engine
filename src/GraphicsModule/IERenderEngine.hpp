@@ -41,7 +41,8 @@ class IERenderable;
 
 class IERenderEngine {
 private:
-    /**
+
+/**
      * @brief Private helper function that creates a Vulkan instance.
      * @return The newly created Vulkan instance.
      */
@@ -96,7 +97,7 @@ private:
      */
     void createCommandPools();
 
-    IEAPI *autoDetectAPI();
+    IEAPI *autoDetectAPIVersion(const std::string &api);
 
     /**
      * @brief Replaces the only IEGraphicsLink::build() function.
@@ -194,7 +195,7 @@ public:
 
     static std::string translateVkResultCodes(VkResult result);
 
-    void destroy();
+    void vulkanDestroy();
 
     ~IERenderEngine();
 
@@ -205,7 +206,7 @@ public:
     IECommandPool presentCommandPool{};
     IECommandPool transferCommandPool{};
     IECommandPool computeCommandPool{};
-    IEAPI api;
+    IEAPI API;
     ExtensionAndFeatureInfo extensionAndFeatureInfo{};
     GLFWmonitor *monitor{};
     GLFWwindow *window{};
@@ -232,11 +233,19 @@ public:
     int frameNumber{};
 
     // Function pointers
-    const std::function<bool()> update{[this] { return vulkanUpdate(); }};
+    std::function<bool()> update{[this] { return openGLUpdate(); }};
+    std::function<void()> destroy{[this] { openGLDestroy(); }};
+
+    void openGLDestroy() {
+        glFinish();
+        glfwTerminate();
+    }
 
     void addAsset(IEAsset *asset);
 
     bool openGLUpdate();
+
+    explicit IERenderEngine(IESettings &settings);
 
 private:
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
@@ -262,4 +271,7 @@ private:
 
     static void windowPositionCallback(GLFWwindow *pWindow, int x, int y);
 
+public:
+
+    static void glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam);
 };

@@ -17,19 +17,9 @@ public:
     std::vector<IEAsset *> *allAssets{};
     std::vector<IEAspect *> aspects{};
 
-    void addAspect(IEAspect* aspect) {
-        aspects.emplace_back(aspect);
-        aspect->associatedAssets.push_back(this);
-    }
+    void addAspect(IEAspect* aspect);
 
-    ~IEAsset() {
-        for (IEAspect *aspect : aspects) {
-            aspect->associatedAssets.erase(std::find(aspect->associatedAssets.begin(), aspect->associatedAssets.end(), this));
-            aspect->destroy();
-        }
-        allAssets->erase(allAssets->begin() + (ssize_t)index);
-        filename = "";
-    }
+    ~IEAsset();
 };
 
 /*

@@ -56,14 +56,18 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     return instance;
 }
 
+/**@note This method works for both OpenGL and Vulkan.*/
 GLFWwindow *IERenderEngine::createWindow() const {
-    // Specify all window hints for the window
-    /**@todo Optional - Make a convenient way to change these programmatically based on some settings.*/
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     GLFWwindow* pWindow = glfwCreateWindow(settings->defaultResolution[0], settings->defaultResolution[1], settings->applicationName.c_str(), nullptr, nullptr);
+    if (pWindow == nullptr) {
+        const char *description;
+        int code = glfwGetError(&description);
+        settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to create window! Error: " + std::to_string(code) + " " + description);
+    }
     return pWindow;
 }
 
+/**@note This method works for both OpenGL and Vulkan.*/
 void IERenderEngine::setWindowIcons(const std::string &path) const {
     int width;
     int height;
@@ -245,10 +249,11 @@ void IERenderEngine::createRenderPass() {
     });
 }
 
-IEAPI *IERenderEngine::autoDetectAPI() {
-    api = IEAPI{IE_RENDER_ENGINE_API_NAME_VULKAN};
-    api.version = api.getHighestSupportedVersion(this);
-    return &api;
+/**@note This method works for both OpenGL and Vulkan.*/
+IEAPI *IERenderEngine::autoDetectAPIVersion(const std::string &api) {
+    API = IEAPI{api};
+    API.version = API.getHighestSupportedVersion(this);
+    return &API;
 }
 
 void IERenderEngine::buildFunctionPointers() {
@@ -284,11 +289,16 @@ void IERenderEngine::destroyCommandPools() {
 IERenderEngine::IERenderEngine(IESettings *settings) {
     this->settings = settings;
 
+    // Set the function pointers
+    update = [this] { return vulkanUpdate(); };
+    destroy = [this] { vulkanDestroy(); };
+
     // Create a Vulkan instance
     createVulkanInstance();
 
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI abstraction.*/
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     window = createWindow();
     setWindowIcons("res/icons");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -304,7 +314,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     // Set up the device
     std::vector<std::vector<const char *>> extensions{};
     if (settings->rayTracing) {
-        extensions.push_back(extensionAndFeatureInfo.queryEngineFeatureExtensionRequirements(IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, &api));
+        extensions.push_back(extensionAndFeatureInfo.queryEngineFeatureExtensionRequirements(IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING, &API));
         /**@todo Find a better way to handle specifying features. Perhaps use a similar method as was used for extensions.*/
         extensionAndFeatureInfo.accelerationStructureFeatures.accelerationStructure = VK_TRUE;
         extensionAndFeatureInfo.bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
@@ -314,7 +324,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     setUpDevice(&extensions, extensionAndFeatureInfo.pNextHighestFeature);
 
     // Get API Version
-    autoDetectAPI();
+    autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_VULKAN);
 
     // Build function pointers and generate queues
     buildFunctionPointers();
@@ -347,7 +357,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     graphicsCommandPool[0].execute();
     camera.create(this);
     settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
-    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, api.name + " v" + api.version.name);
+    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
     deletionQueue.insert(deletionQueue.begin(), [&] {
         topLevelAccelerationStructure.destroy();
     });
@@ -403,7 +413,7 @@ void IERenderEngine::handleResolutionChange() {
 }
 
 bool IERenderEngine::openGLUpdate() {
-
+    return true;
 }
 
 bool IERenderEngine::vulkanUpdate() {
@@ -569,7 +579,7 @@ void IERenderEngine::toggleFullscreen() {
     glfwSetWindowTitle(window, settings->applicationName.c_str());
 }
 
-void IERenderEngine::destroy() {
+void IERenderEngine::vulkanDestroy() {
     for (IECommandBuffer &commandBuffer : graphicsCommandPool.commandBuffers) {
         commandBuffer.wait();
     }
@@ -724,5 +734,94 @@ bool IERenderEngine::ExtensionAndFeatureInfo::variableDescriptorCountSupportQuer
     return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount != 0U;
 }
 
+IERenderEngine::IERenderEngine(IESettings &settings) {
+    this->settings = &settings;
 
-// Use pointers to functions to switch between Vulkan and OpenGL variants.
+    // Initialize GLFW then create and setup window
+    /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI abstraction.*/
+    if (glfwInit() != GLFW_TRUE) {
+        settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to initialize GLFW!");
+    }
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    window = createWindow();
+    setWindowIcons("res/icons");
+    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    glfwGetWindowPos(window, &(*settings.currentPosition)[0], &(*settings.currentPosition)[1]);
+    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
+    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    glfwSetWindowPosCallback(window, windowPositionCallback);
+    glfwSetWindowUserPointer(window, this);
+
+    // Make context current
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
+
+    // Initialize glew
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK) {
+        settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to initialize GLEW!");
+    }
+
+    // Get API Version
+    autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);
+
+    /*
+     * This is where a lot of setup would happen it has been excluded here because it includes features like default fullscreen, msaa, and vsync which are not necessary for a rudimentary implementation. In the future these should be handled by the GUI module.
+     */
+
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // makes sure errors are displayed synchronously
+        glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    }
+
+    camera.create(this);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
+    settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
+}
+
+void APIENTRY IERenderEngine::glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
+    std::cout << "---------------" << std::endl;
+    std::cout << "Debug message (" << id << "): " <<  message << std::endl;
+    switch (source) {
+        case GL_DEBUG_SOURCE_API:               std::cout << "Source: API"; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     std::cout << "Source: Window System"; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: Shader Compiler"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:       std::cout << "Source: Third Party"; break;
+        case GL_DEBUG_SOURCE_APPLICATION:       std::cout << "Source: Application"; break;
+        case GL_DEBUG_SOURCE_OTHER:             std::cout << "Source: Other"; break;
+        default:                                std::cout << "Source: Unknown"; break;
+    }
+    std::cout << std::endl;
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behaviour"; break;
+        case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Performance"; break;
+        case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker"; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
+        case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
+        case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
+        default:                                std::cout << "Type: Unknown"; break;
+    }
+    std::cout << std::endl;
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:            std::cout << "Severity: high"; break;
+        case GL_DEBUG_SEVERITY_MEDIUM:          std::cout << "Severity: medium"; break;
+        case GL_DEBUG_SEVERITY_LOW:             std::cout << "Severity: low"; break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION:    std::cout << "Severity: notification"; break;
+        default:                                std::cout << "Source: Unknown"; break;
+    }
+    std::cout << std::endl;
+    std::cout << std::endl;
+}
