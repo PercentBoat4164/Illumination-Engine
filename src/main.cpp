@@ -21,19 +21,10 @@ int main() {
     IEWindowUser windowUser{&renderEngine, &keyboard};
     glfwSetWindowUserPointer(renderEngine.window, &windowUser);
 
-    IEAsset glb{.filename="res/Models/AncientStatue/ancientStatue.glb"};
-    glb.addAspect(new IERenderable(&renderEngine, "res/Models/AncientStatue/ancientStatue.glb"));
-    renderEngine.addAsset(&glb);
-
-    IEAsset obj{.filename="res/Models/AncientStatue/ancientStatue.obj"};
-    obj.addAspect(new IERenderable(&renderEngine, "res/Models/AncientStatue/ancientStatue.obj"));
-    renderEngine.addAsset(&obj);
-
     IEAsset fbx{.filename="res/Models/AncientStatue/ancientStatue.fbx"};
     fbx.addAspect(new IERenderable(&renderEngine, "res/Models/AncientStatue/ancientStatue.fbx"));
     renderEngine.addAsset(&fbx);
 
-    glb.position = {0.0F, -2.0F, 0.0F};
     fbx.position = {0.0F, -1.0F, 0.0F};
     renderEngine.camera.position = {0.0F, 2.0F, 0.0F};
 
@@ -41,9 +32,7 @@ int main() {
 
     glfwSetTime(0);
     while (renderEngine.update()) {
-        glb.rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine.frameTime;
-        obj.position = glm::vec3(sin(glfwGetTime()), cos(glfwGetTime()), 0) * glm::vec3(2);
-        fbx.scale = glm::vec3((float)abs(sin(glfwGetTime())));
+        fbx.rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine.frameTime;
         glfwPollEvents();
         keyboard.handleQueue();
     }

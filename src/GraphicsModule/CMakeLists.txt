@@ -1,5 +1,5 @@
 # Generate all subdirectories
-add_subdirectory(Shaders)
+add_subdirectory(DefaultShaders)
 
 set(IEGraphicsModuleSourceFiles  # Gather sources
         Buffer/IEAccelerationStructure.cpp

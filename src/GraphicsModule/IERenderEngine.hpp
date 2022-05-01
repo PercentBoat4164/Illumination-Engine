@@ -188,7 +188,7 @@ public:
 
     void loadRenderable(IERenderable* renderable);
 
-    bool update();
+    bool vulkanUpdate();
 
     void toggleFullscreen();
 
@@ -231,7 +231,12 @@ public:
     float frameTime{};
     int frameNumber{};
 
+    // Function pointers
+    const std::function<bool()> update{[this] { return vulkanUpdate(); }};
+
     void addAsset(IEAsset *asset);
+
+    bool openGLUpdate();
 
 private:
     VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};

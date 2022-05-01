@@ -402,7 +402,11 @@ void IERenderEngine::handleResolutionChange() {
     createRenderPass();
 }
 
-bool IERenderEngine::update() {
+bool IERenderEngine::openGLUpdate() {
+
+}
+
+bool IERenderEngine::vulkanUpdate() {
     if (window == nullptr) {
         return false;
     }
