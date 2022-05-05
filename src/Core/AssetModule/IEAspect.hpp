@@ -19,5 +19,7 @@ public:
     std::string childType;
     std::vector<IEAsset*> associatedAssets{};  // A vector of assets that this aspect belongs to
 
+    virtual void update() = 0;
+
     virtual void destroy() = 0;
 };

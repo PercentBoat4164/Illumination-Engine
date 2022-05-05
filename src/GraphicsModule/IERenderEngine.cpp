@@ -289,7 +289,7 @@ void IERenderEngine::destroyCommandPools() {
 IERenderEngine::IERenderEngine(IESettings *settings) {
     this->settings = settings;
 
-    // Set the function pointers
+    // Set the _function pointers
     update = [this] { return vulkanUpdate(); };
     destroy = [this] { vulkanDestroy(); };
 
@@ -326,7 +326,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     // Get API Version
     autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_VULKAN);
 
-    // Build function pointers and generate queues
+    // Build _function pointers and generate queues
     buildFunctionPointers();
 
     // Set up GPU Memory allocator
@@ -377,28 +377,11 @@ void IERenderEngine::addAsset(IEAsset *asset) {
 }
 
 void IERenderEngine::loadRenderable(IERenderable *renderable) {
-    // Create model buffer
-    renderable->createModelBuffer();
+    renderable->create();
 
-    // Create vertex buffer
-    renderable->createVertexBuffer();
+    renderable->loadFromDiskToRAM();
 
-    // Create index buffer
-    renderable->createIndexBuffer();
-
-    // Create mesh transformation buffer and acceleration structure if ray tracing
-
-    // Create descriptor set
-    renderable->createDescriptorSet();
-
-    // Create shaders
-    renderable->createShaders();
-
-    // Create pipeline
-    renderable->createPipeline();
-
-    // Execute all commands to generate this renderable
-    graphicsCommandPool[0].execute();
+    renderable->load();
 
     // Record the destruction of this renderable
     renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
@@ -413,7 +396,7 @@ void IERenderEngine::handleResolutionChange() {
 }
 
 bool IERenderEngine::openGLUpdate() {
-    return true;
+    return glfwWindowShouldClose(window) != 1;
 }
 
 bool IERenderEngine::vulkanUpdate() {
@@ -480,22 +463,21 @@ bool IERenderEngine::vulkanUpdate() {
         topLevelAccelerationStructure.create(this, &topLevelAccelerationStructureCreateInfo);
     }
     for (IEAsset *asset : assets) {
-        for (IEAspect *aspect : asset->aspects) {
-            if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
-                auto *renderable = reinterpret_cast<IERenderable *>(aspect);
-                if (renderable->render) {
-                    renderable->update(asset, camera, time);
-                    if (settings->rayTracing) {
-                        renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2});
-                    }
-                    graphicsCommandPool[imageIndex].recordBindVertexBuffers(0, 1, {&renderable->vertexBuffer}, offsets);
-                    graphicsCommandPool[imageIndex].recordBindIndexBuffer(&renderable->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-                    graphicsCommandPool[imageIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline);
-                    graphicsCommandPool[imageIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline, 0, {&renderable->descriptorSet}, {});
-                    graphicsCommandPool[imageIndex].recordDrawIndexed(renderable->indices.size(), 1, 0, 0, 0);
-                }
-            }
-        }
+        asset->update();
+//        for (IEAspect *aspect : asset->aspects) {
+//            auto *renderable = dynamic_cast<IERenderable *>(aspect);
+//            if (renderable->render) {
+//                renderable->update(asset, camera, time);
+//                if (settings->rayTracing) {
+//                    renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2});
+//                }
+//                graphicsCommandPool[imageIndex].recordBindVertexBuffers(0, 1, {&renderable->vertexBuffer}, offsets);
+//                graphicsCommandPool[imageIndex].recordBindIndexBuffer(&renderable->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+//                graphicsCommandPool[imageIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline);
+//                graphicsCommandPool[imageIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline, 0, {&renderable->descriptorSet}, {});
+//                graphicsCommandPool[imageIndex].recordDrawIndexed(renderable->indices.size(), 1, 0, 0, 0);
+//            }
+//        }
     }
     graphicsCommandPool[imageIndex].recordEndRenderPass();
     graphicsCommandPool[imageIndex].execute(imageAvailableSemaphores[currentFrame], renderFinishedSemaphores[currentFrame], inFlightFences[currentFrame]);

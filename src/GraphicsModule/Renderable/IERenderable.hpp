@@ -1,29 +1,29 @@
 #pragma once
 
 /* Predefine classes used with pointers or as return values for functions. */
-class aiNode;
-
 class aiScene;
 
 class IECamera;
 
-/* Include classes used as attributes or function arguments. */
+/* Include classes used as attributes or _function arguments. */
 // Internal dependencies
 #include "Buffer/IEAccelerationStructure.hpp"
 #include "Buffer/IEBuffer.hpp"
+#include "Image/IETexture.hpp"
 #include "IEDescriptorSet.hpp"
+#include "IEMaterial.hpp"
 #include "IEPipeline.hpp"
 #include "IEShader.hpp"
 #include "IEUniformBufferObject.hpp"
 #include "IEVertex.hpp"
 
-#include "GraphicsModule/Image/IETexture.hpp"
-
 // Modular dependencies
 #include "Core/AssetModule/IEAspect.hpp"
-#include "IEMaterial.hpp"
+#include "IEMesh.hpp"
 
 // External dependencies
+#include <assimp/Importer.hpp>
+
 #include <vulkan/vulkan.h>
 
 // System dependencies
@@ -33,53 +33,46 @@ class IECamera;
 #define IE_CHILD_TYPE_RENDERABLE "Renderable"
 
 
-class IERenderable : public IEAspect {
+class IERenderable final : public IEAspect {
 public:
     std::string modelName{};
-    std::vector<uint32_t> indices{};
-    std::vector<IEVertex> vertices{};
+    std::vector<IEMesh> meshes{};
     VkTransformMatrixKHR transformationMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
-    uint32_t diffuseTexture{};
-    uint32_t emissionTexture{};
-    uint32_t heightTexture{};
-    uint32_t metallicTexture{};
-    uint32_t normalTexture{};
-    uint32_t roughnessTexture{};
-    uint32_t specularTexture{};
-    uint32_t triangleCount{};
-    IEBuffer vertexBuffer{};
-    IEBuffer indexBuffer{};
     IEBuffer transformationBuffer{};
     IEDescriptorSet descriptorSet{};
     IEPipeline pipeline{};
     IEAccelerationStructure bottomLevelAccelerationStructure{};
-
-    IERenderable(IERenderEngine* engineLink, const std::string& filePath);
-
-    void destroy();
-
-    void createModelBuffer();
-
-    void createVertexBuffer();
-
-    ~IERenderable();
-
-    void update(IEAsset *asset, const IECamera &camera, float time);
-
     std::vector<std::function<void()>> deletionQueue{};
     IEBuffer modelBuffer{};
     IERenderEngine *linkedRenderEngine{};
     IEUniformBufferObject uniformBufferObject{};
-    std::vector<IETexture> textures{};
     std::vector<IEShader> shaders{};
+    Assimp::Importer importer{};
     bool render{true};
+    uint32_t commandBufferIndex;
     std::string directory{};
     VkTransformMatrixKHR identityTransformMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
-    std::vector<IEMaterial> materials{};
 
-    void createIndexBuffer();
+    IERenderable(IERenderEngine* engineLink, const std::string& filePath);
 
-    /**@todo Rewrite the shader abstraction to generate a required descriptor set. Create pipelines based off of descriptor set / shader pairs. Sort and render geometry by pipeline used.*/
+    static void setAPI(const IEAPI &api);
+
+    void create();
+
+    void loadFromDiskToRAM();
+
+    void load();
+
+    void update(IEAsset *asset, const IECamera &camera, float time);
+
+    void unload();
+
+    void destroy() override;
+
+    virtual ~IERenderable() final;
+
+private:
+    void createModelBuffer();
 
     void createDescriptorSet();
 
@@ -87,6 +80,46 @@ public:
 
     void createShaders();
 
-private:
-    void processMesh(const aiMesh &mesh, const aiScene &scene);
+    /* API dependent functions */
+    static std::function<void(IERenderable &)> _create;
+    void _openglCreate();
+    void _vulkanCreate();
+
+    static std::function<void(IERenderable &)> _loadFromDiskToRAM;
+    void _openglLoadFromDiskToRAM();
+    void _vulkanLoadFromDiskToRAM();
+
+    static std::function<void(IERenderable &)> _load;
+    void _openglLoad();
+    void _vulkanLoad();
+
+    static std::function<void(IERenderable &)> _createModelBuffers;
+    void _openglCreateModelBuffer();
+    void _vulkanCreateModelBuffer();
+
+    static std::function<void(IERenderable &)> _createDescriptorSet;
+    void _openglCreateDescriptorSet();
+    void _vulkanCreateDescriptorSet();
+
+    static std::function<void(IERenderable &)> _createPipeline;
+    void _openglCreatePipeline();
+    void _vulkanCreatePipeline();
+
+    static std::function<void(IERenderable &)> _createShaders;
+    void _openglCreateShaders();
+    void _vulkanCreateShaders();
+
+    static std::function<void(IERenderable &, IEAsset *, const IECamera &, float)> _update;
+    void _openglUpdate(IEAsset *, const IECamera &, float);
+    void _vulkanUpdate(IEAsset *, const IECamera &, float);
+
+    static std::function<void(IERenderable &)> _unload;
+    void _openglUnload();
+    void _vulkanUnload();
+
+    static std::function<void(IERenderable &)> _destroy;
+    void _openglDestroy();
+    void _vulkanDestroy();
+
+    void update();
 };

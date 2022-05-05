@@ -20,6 +20,8 @@ public:
     void addAspect(IEAspect* aspect);
 
     ~IEAsset();
+
+    void update();
 };
 
 /*

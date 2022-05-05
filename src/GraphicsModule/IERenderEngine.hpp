@@ -11,7 +11,7 @@ class GLFWmonitor;
 
 class IERenderable;
 
-/* Include classes used as attributes or function arguments. */
+/* Include classes used as attributes or _function arguments. */
 // Internal dependencies
 #include "IEAPI.hpp"
 #include "IECamera.hpp"
@@ -43,7 +43,7 @@ class IERenderEngine {
 private:
 
 /**
-     * @brief Private helper function that creates a Vulkan instance.
+     * @brief Private helper _function that creates a Vulkan instance.
      * @return The newly created Vulkan instance.
      */
     vkb::Instance createVulkanInstance();
@@ -100,7 +100,7 @@ private:
     IEAPI *autoDetectAPIVersion(const std::string &api);
 
     /**
-     * @brief Replaces the only IEGraphicsLink::build() function.
+     * @brief Replaces the only IEGraphicsLink::build() _function.
      */
     void buildFunctionPointers();
 
@@ -227,14 +227,14 @@ public:
     PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR{};
     PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR{};
     PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
-    std::vector<IETexture *> textures{};
+    std::vector<std::shared_ptr<IETexture>> textures{};
     std::vector<VkImageView> swapchainImageViews{};
     float frameTime{};
     int frameNumber{};
 
     // Function pointers
-    std::function<bool()> update{[this] { return openGLUpdate(); }};
-    std::function<void()> destroy{[this] { openGLDestroy(); }};
+    std::function<bool()> update{[this] { return vulkanUpdate(); }};
+    std::function<void()> destroy{[this] { vulkanDestroy(); }};
 
     void openGLDestroy() {
         glFinish();

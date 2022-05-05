@@ -12,6 +12,9 @@
 #include "glm/glm.hpp"
 
 class IEMaterial {
-    int diffuseTextureIndex = 0;
-    glm::vec4 diffuseColor {1.0F, 1.0F, 1.0F, 1.0F};
+public:
+    uint32_t index{};
+    uint32_t textureCount{};
+    uint32_t diffuseTextureIndex{};
+    glm::vec4 diffuseColor{1.0F, 1.0F, 1.0F, 1.0F};
 };

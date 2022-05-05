@@ -7,7 +7,7 @@ class IEDescriptorSet;
 
 class IERenderPass;
 
-/* Include classes used as attributes or function arguments. */
+/* Include classes used as attributes or _function arguments. */
 // Internal dependencies
 #include "GraphicsModule/Renderable/IEShader.hpp"
 #include "IEDependency.hpp"

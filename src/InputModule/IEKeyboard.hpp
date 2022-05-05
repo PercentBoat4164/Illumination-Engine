@@ -12,6 +12,7 @@
 #include <vector>
 #include <any>
 #include <string>
+#include <cstdint>
 #include "Core/IEWindowUser.hpp"
 
 /**
@@ -115,7 +116,7 @@ public:
     }
 
     /**
-     * @brief Adds or changes a key press to function correlation.
+     * @brief Adds or changes a key press to _function correlation.
      * @param keyPressDescription
      * @param action
      */
@@ -125,7 +126,7 @@ public:
     }
 
     /**
-     * @brief Adds or changes key press to function correlation.
+     * @brief Adds or changes key press to _function correlation.
      * @param key
      * @param action
      */
@@ -136,7 +137,7 @@ public:
     }
 
     /**
-     * @brief Adds or changes key press to function correlation.
+     * @brief Adds or changes key press to _function correlation.
      * @param key
      * @param keyAction
      * @param modifiers
@@ -149,7 +150,7 @@ public:
     }
 
     /**
-     * @brief Adds or changes a key press to function correlation.
+     * @brief Adds or changes a key press to _function correlation.
      * @param keyPressDescription
      * @param action
      * @param repeat
@@ -160,7 +161,7 @@ public:
     }
 
     /**
-     * @brief Adds or changes key press to function correlation.
+     * @brief Adds or changes key press to _function correlation.
      * @param key
      * @param action
      * @param repeat
@@ -172,7 +173,7 @@ public:
     }
 
     /**
-     * @brief Adds or changes key press to function correlation.
+     * @brief Adds or changes key press to _function correlation.
      * @param key
      * @param keyAction
      * @param modifiers
@@ -193,7 +194,7 @@ public:
     }
 
     /**
-     * @brief Default key event handler function. Enqueues the key as pressed or released. Does not handle repeats.
+     * @brief Default key event handler _function. Enqueues the key as pressed or released. Does not handle repeats.
      * @param window
      * @param key
      * @param scancode
@@ -218,5 +219,5 @@ public:
 private:
     GLFWwindow* window; // window this keyboard manages
     std::vector<IEKeyPressDescription> queue{}; // queue of key presses
-    std::unordered_map<IEKeyPressDescription, std::pair<std::function<void(GLFWwindow*)>, bool>> actionsOptions{}; // hash table of key press description to function
+    std::unordered_map<IEKeyPressDescription, std::pair<std::function<void(GLFWwindow*)>, bool>> actionsOptions{}; // hash table of key press description to _function
 };

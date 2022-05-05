@@ -15,3 +15,9 @@ IEAsset::~IEAsset() {
     }
     filename = "";
 }
+
+void IEAsset::update() {
+    for (IEAspect *aspect : aspects) {
+        aspect->update();
+    }
+}
