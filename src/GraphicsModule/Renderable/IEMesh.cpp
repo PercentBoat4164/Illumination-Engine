@@ -107,4 +107,32 @@ std::function<void(IEMesh &, const std::string &, const aiScene *, aiMesh *)> IE
 std::function<void(IEMesh &)> IEMesh::_createIndexBuffer = std::function<void(IEMesh &)>{ [] (const IEMesh&) { return; } };
 std::function<void(IEMesh &)> IEMesh::_createVertexBuffer = std::function<void(IEMesh &)>{ [] (const IEMesh&) { return; } };
 
+void IEMesh::import(const std::string &directory, const aiScene *scene, aiMesh *mesh) {
+    return _import(*this, directory, scene, mesh);
+}
+
+void IEMesh::create(IERenderEngine *engineLink) {
+    linkedRenderEngine = engineLink;
+    return _create(*this);
+}
+
+IEMesh::~IEMesh() {
+    destroy();
+}
+
+void IEMesh::destroy() {
+    for (const std::function<void()> &function: deletionQueue) {
+        function();
+    }
+    deletionQueue.clear();
+}
+
+void IEMesh::createVertexBuffer() {
+
+}
+
+void IEMesh::createIndexBuffer() {
+
+}
+
 

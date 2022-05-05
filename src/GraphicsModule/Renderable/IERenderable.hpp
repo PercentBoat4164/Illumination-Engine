@@ -30,8 +30,6 @@ class IECamera;
 #include <string>
 #include <functional>
 
-#define IE_CHILD_TYPE_RENDERABLE "Renderable"
-
 
 class IERenderable final : public IEAspect {
 public:
@@ -49,7 +47,7 @@ public:
     std::vector<IEShader> shaders{};
     Assimp::Importer importer{};
     bool render{true};
-    uint32_t commandBufferIndex;
+    uint32_t commandBufferIndex{};
     std::string directory{};
     VkTransformMatrixKHR identityTransformMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
 
@@ -72,6 +70,7 @@ public:
     virtual ~IERenderable() final;
 
 private:
+    /* API dependent functions */
     void createModelBuffer();
 
     void createDescriptorSet();
@@ -80,7 +79,6 @@ private:
 
     void createShaders();
 
-    /* API dependent functions */
     static std::function<void(IERenderable &)> _create;
     void _openglCreate();
     void _vulkanCreate();
@@ -121,5 +119,5 @@ private:
     void _openglDestroy();
     void _vulkanDestroy();
 
-    void update();
+    void update() final;
 };

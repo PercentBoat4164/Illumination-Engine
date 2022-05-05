@@ -4,6 +4,9 @@
 #include <vector>
 #include "IEVertex.hpp"
 #include "IEMaterial.hpp"
+#include "IEDescriptorSet.hpp"
+#include "Buffer/IEAccelerationStructure.hpp"
+#include "Buffer/IEBuffer.hpp"
 
 class IERenderEngine;
 
@@ -37,31 +40,15 @@ private:
     void _vulkanCreateIndexBuffer();
 
 public:
-    void create(IERenderEngine *engineLink) {
-        linkedRenderEngine = engineLink;
-        return _create(*this);
-    }
+    void create(IERenderEngine *engineLink);
 
-    void import(const std::string &directory, const aiScene *scene, aiMesh *mesh) {
-//        return _import(*this, directory, scene, mesh);  // This is the line causing compilation errors.
-    }
+    void import(const std::string &directory, const aiScene *scene, aiMesh *mesh);
 
-    void createVertexBuffer() {
+    void createVertexBuffer();
 
-    }
+    void createIndexBuffer();
 
-    void createIndexBuffer() {
+    void destroy();
 
-    }
-
-    void destroy() {
-        for (const std::function<void()> &function: deletionQueue) {
-            function();
-        }
-        deletionQueue.clear();
-    }
-
-    ~IEMesh() {
-        destroy();
-    }
+    ~IEMesh();
 };

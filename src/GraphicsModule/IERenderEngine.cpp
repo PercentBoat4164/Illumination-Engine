@@ -367,9 +367,9 @@ void IERenderEngine::addAsset(IEAsset *asset) {
     asset->index = assets.size();
     assets.push_back(asset);
     for (IEAspect *aspect : asset->aspects) {
-        if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
+//        if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
             loadRenderable((IERenderable*)aspect);
-        }
+//        }
     }
     for (IEAsset *thisAsset : assets) {  // This is necessary because the pointers will become invalid if the vector is forced to move in memory.
         thisAsset->allAssets = &assets;
@@ -446,12 +446,12 @@ bool IERenderEngine::vulkanUpdate() {
         if (settings->rayTracing) {
             for (IEAsset *asset: assets) {
                 for (IEAspect *aspect: asset->aspects) {
-                    if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
+//                    if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
                         auto *renderable = reinterpret_cast<IERenderable *>(aspect);
                         if (renderable->render) {
                             bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress);
                         }
-                    }
+//                    }
                 }
             }
         }

@@ -3,6 +3,7 @@
 
 /* Include dependencies within this module. */
 #include "IERenderEngine.hpp"
+#include "IEMesh.hpp"
 
 /* Include external dependencies. */
 #include "assimp/postprocess.h"
@@ -14,7 +15,6 @@
 #include "glm/glm.hpp"
 
 IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
-    childType = IE_CHILD_TYPE_RENDERABLE;
     linkedRenderEngine = engineLink;
     directory = filePath.substr(0, filePath.find_last_of('/'));
     modelName = filePath.substr(filePath.find_last_of('/'));

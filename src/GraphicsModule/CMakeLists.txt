@@ -18,6 +18,8 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Image/IETexture.hpp
         Renderable/IEMaterial.cpp
         Renderable/IEMaterial.hpp
+        Renderable/IEMesh.cpp
+        Renderable/IEMesh.hpp
         Renderable/IERenderable.cpp
         Renderable/IERenderable.hpp
         Renderable/IEShader.cpp
