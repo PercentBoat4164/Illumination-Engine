@@ -1,705 +1,452 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=11"/>
-<meta name="generator" content="Doxygen 1.9.4"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Illumination Engine: IeKeyboard Class Reference</title>
-<link href="tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript" src="dynsections.js"></script>
-<link href="navtree.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="resize.js"></script>
-<script type="text/javascript" src="navtreedata.js"></script>
-<script type="text/javascript" src="navtree.js"></script>
-<link href="search/search.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="search/searchdata.js"></script>
-<script type="text/javascript" src="search/search.js"></script>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-  $(document).ready(function() { init_search(); });
-/* @license-end */
-</script>
-<link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <meta charset="UTF-8" />
+  <title>IeKeyboard class | Illumination Engine A Game Development Engine Written In C++</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,600,600i%7CSource+Code+Pro:400,400i,600" />
+  <link rel="stylesheet" href="m-dark+documentation.compiled.css" />
+  <link rel="icon" href="IlluminationEngineLogo128.png" type="image/png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#22272e" />
 </head>
 <body>
-<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
-<div id="titlearea">
-<table cellspacing="0" cellpadding="0">
- <tbody>
- <tr id="projectrow">
-  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineSignResized2.png"/></td>
-  <td id="projectalign">
-   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
-   </div>
-   <div id="projectbrief">A Game Development Engine Written In C++</div>
-  </td>
-    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
-        <span class="left">
-          <img id="MSearchSelect" src="search/mag_sel.svg"
-               onmouseover="return searchBox.OnSearchSelectShow()"
-               onmouseout="return searchBox.OnSearchSelectHide()"
-               alt=""/>
-          <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
-               onkeyup="searchBox.OnSearchFieldChange(event)"/>
-          </span><span class="right">
-            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
-          </span>
+<header><nav id="navigation">
+  <div class="m-container">
+    <div class="m-row">
+      <a href="index.html" id="m-navbar-brand" class="m-col-t-8 m-col-m-none m-left-m"><img src="IlluminationEngineLogo128.png" alt="" />Illumination Engine <span class="m-thin">A Game Development Engine Written In C++</span></a>
+      <div class="m-col-t-4 m-hide-m m-text-right m-nopadr">
+        <a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+          <path id="m-doc-search-icon-path" d="m6 0c-3.31 0-6 2.69-6 6 0 3.31 2.69 6 6 6 1.49 0 2.85-0.541 3.89-1.44-0.0164 0.338 0.147 0.759 0.5 1.15l3.22 3.79c0.552 0.614 1.45 0.665 2 0.115 0.55-0.55 0.499-1.45-0.115-2l-3.79-3.22c-0.392-0.353-0.812-0.515-1.15-0.5 0.895-1.05 1.44-2.41 1.44-3.89 0-3.31-2.69-6-6-6zm0 1.56a4.44 4.44 0 0 1 4.44 4.44 4.44 4.44 0 0 1-4.44 4.44 4.44 4.44 0 0 1-4.44-4.44 4.44 4.44 0 0 1 4.44-4.44z"/>
+        </svg></a>
+        <a id="m-navbar-show" href="#navigation" title="Show navigation"></a>
+        <a id="m-navbar-hide" href="#" title="Hide navigation"></a>
+      </div>
+      <div id="m-navbar-collapse" class="m-col-t-12 m-show-m m-col-m-none m-right-m">
+        <div class="m-row">
+          <ol class="m-col-t-6 m-col-m-none">
+            <li><a href="https://joellogan.github.io">Main Page</a></li>
+            <li><a href="pages.html">Pages</a></li>
+          </ol>
+          <ol class="m-col-t-6 m-col-m-none" start="3">
+            <li><a href="annotated.html">Classes</a></li>
+            <li><a href="files.html">Files</a></li>
+            <li class="m-show-m"><a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+              <use href="#m-doc-search-icon-path" />
+            </svg></a></li>
+          </ol>
         </div>
-</td>
- </tr>
- </tbody>
-</table>
-</div>
-<!-- end header part -->
-<!-- Generated by Doxygen 1.9.4 -->
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-var searchBox = new SearchBox("searchBox", "search",'Search','.html');
-/* @license-end */
-</script>
-</div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
-  <div id="nav-tree">
-    <div id="nav-tree-contents">
-      <div id="nav-sync" class="sync"></div>
+      </div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
-       class="ui-resizable-handle">
+</nav></header>
+<main><article>
+  <div class="m-container m-container-inflatable">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <h1>
+          IeKeyboard <span class="m-thin">class</span>
+        </h1>
+        <p>The Keyboard class is intended to manage keyboard event handling.</p>
+        <nav class="m-block m-default">
+          <h3>Contents</h3>
+          <ul>
+            <li>
+              Reference
+              <ul>
+                <li><a href="#pub-static-methods">Public static functions</a></li>
+                <li><a href="#typeless-methods">Constructors, destructors, conversion operators</a></li>
+                <li><a href="#pub-methods">Public functions</a></li>
+                <li><a href="#pub-attribs">Public variables</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+        <section id="pub-static-methods">
+          <h2><a href="#pub-static-methods">Public static functions</a></h2>
+          <dl class="m-doc">
+            <dt>
+              <span class="m-doc-wrap-bumper">static void <a href="#a52a0f90472fe3f6692b25971c1013d04" class="m-doc">keyCallback</a>(</span><span class="m-doc-wrap">GLFWwindow* window,
+              int key,
+              int scancode,
+              int action,
+              int modifiers)</span>
+            </dt>
+            <dd>Default key event handler function. Enqueues the key as pressed or released. Does not handle repeats.</dd>
+          </dl>
+        </section>
+        <section id="typeless-methods">
+          <h2><a href="#typeless-methods">Constructors, destructors, conversion operators</a></h2>
+          <dl class="m-doc">
+            <dt>
+              <span class="m-doc-wrap-bumper"><a href="#af662fd29abcbb8d2d3073b3b8ca4bc95" class="m-doc">IeKeyboard</a>(</span><span class="m-doc-wrap">GLFWwindow* initialWindow,
+              void* initialAttachment = nullptr) <span class="m-label m-flat m-info">explicit</span> </span>
+            </dt>
+            <dd>Constructs a keyboard from a initialWindow. The initialWindow&#x27;s user pointer will be set to the <a href="class_ie_keyboard.html" class="m-doc">IeKeyboard</a> object.</dd>
+          </dl>
+        </section>
+        <section id="pub-methods">
+          <h2><a href="#pub-methods">Public functions</a></h2>
+          <dl class="m-doc">
+            <dt>
+              <span class="m-doc-wrap-bumper">void <a href="#a43bd1e9422ea17522d662dfe70e869e0" class="m-doc">setEnqueueMethod</a>(</span><span class="m-doc-wrap">GLFWkeyfun function = <a href="class_ie_keyboard.html#a52a0f90472fe3f6692b25971c1013d04" class="m-doc">keyCallback</a>)</span>
+            </dt>
+            <dd>Sets the queue method. Pass one of the two pre-created key event handler functions.</dd>
+            <dt id="a48bbb0705bcd4cab00465d6de9818fb3">
+              <span class="m-doc-wrap-bumper">void <a href="#a48bbb0705bcd4cab00465d6de9818fb3" class="m-doc-self">handleQueue</a>(</span><span class="m-doc-wrap">)</span>
+            </dt>
+            <dd>Handles all the actions indicated by the key presses logged in the queue.</dd>
+            <dt>
+              <span class="m-doc-wrap-bumper">void <a href="#a211ab4f741a599c2071029112fe3b7d8" class="m-doc">editActions</a>(</span><span class="m-doc-wrap">const <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a>&amp; keyPressDescription,
+              const std::pair&lt;<a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;, bool&gt;&amp; action)</span>
+            </dt>
+            <dd>Adds or changes a key press to function correlation.</dd>
+            <dt>
+              <span class="m-doc-wrap-bumper">void <a href="#aa47c9e0684297fe2eaf09b1a45e4fa6a" class="m-doc">editActions</a>(</span><span class="m-doc-wrap">uint16_t key,
+              const std::pair&lt;<a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;, bool&gt;&amp; action)</span>
+            </dt>
+            <dd>Adds or changes key press to function correlation.</dd>
+            <dt>
+              <span class="m-doc-wrap-bumper">void <a href="#adcfd829ce683b7d0e150422bd625bed8" class="m-doc">editActions</a>(</span><span class="m-doc-wrap">uint16_t key,
+              uint16_t keyAction,
+              uint16_t modifiers,
+              const std::pair&lt;<a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;, bool&gt;&amp; action)</span>
+            </dt>
+            <dd>Adds or changes key press to function correlation.</dd>
+            <dt>
+              <span class="m-doc-wrap-bumper">void <a href="#ae53aaaca6e8510fe6322ae6a8a270f16" class="m-doc">editActions</a>(</span><span class="m-doc-wrap">const <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a>&amp; keyPressDescription,
+              const <a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;&amp; action,
+              bool repeat = true)</span>
+            </dt>
+            <dd>Adds or changes a key press to function correlation.</dd>
+            <dt>
+              <span class="m-doc-wrap-bumper">void <a href="#a939224795717c9a7c1e7e15b008a269a" class="m-doc">editActions</a>(</span><span class="m-doc-wrap">uint16_t key,
+              const <a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;&amp; action,
+              bool repeat = true)</span>
+            </dt>
+            <dd>Adds or changes key press to function correlation.</dd>
+            <dt>
+              <span class="m-doc-wrap-bumper">void <a href="#abac3b135cbfc64f5c99d596d0220e75f" class="m-doc">editActions</a>(</span><span class="m-doc-wrap">uint16_t key,
+              uint16_t keyAction,
+              uint16_t modifiers,
+              const <a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;&amp; action,
+              bool repeat = true)</span>
+            </dt>
+            <dd>Adds or changes key press to function correlation.</dd>
+            <dt id="ae2e209d032084b6ca6011e139e790c08">
+              <span class="m-doc-wrap-bumper">void <a href="#ae2e209d032084b6ca6011e139e790c08" class="m-doc-self">clearQueue</a>(</span><span class="m-doc-wrap">)</span>
+            </dt>
+            <dd>Clears the event queue.</dd>
+          </dl>
+        </section>
+        <section id="pub-attribs">
+          <h2><a href="#pub-attribs">Public variables</a></h2>
+          <dl class="m-doc">
+            <dt id="a60d6cfd61b770e70c444db7ee9e95106">
+              void* <a href="#a60d6cfd61b770e70c444db7ee9e95106" class="m-doc-self">attachment</a>
+            </dt>
+            <dd><span></span></dd>
+          </dl>
+        </section>
+        <section>
+          <h2>Function documentation</h2>
+          <section class="m-doc-details" id="a52a0f90472fe3f6692b25971c1013d04"><div>
+            <h3>
+              <span class="m-doc-wrap-bumper">static void IeKeyboard::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#a52a0f90472fe3f6692b25971c1013d04" class="m-doc-self">keyCallback</a>(</span><span class="m-doc-wrap">GLFWwindow* window,
+              int key,
+              int scancode,
+              int action,
+              int modifiers)</span></span>
+            </h3>
+            <p>Default key event handler function. Enqueues the key as pressed or released. Does not handle repeats.</p>
+            <table class="m-table m-fullwidth m-flat">
+              <thead>
+                <tr><th colspan="2">Parameters</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width: 1%">window</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>key</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>scancode</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>action</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>modifiers</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div></section>
+          <section class="m-doc-details" id="af662fd29abcbb8d2d3073b3b8ca4bc95"><div>
+            <h3>
+              <span class="m-doc-wrap-bumper"> IeKeyboard::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#af662fd29abcbb8d2d3073b3b8ca4bc95" class="m-doc-self">IeKeyboard</a>(</span><span class="m-doc-wrap">GLFWwindow* initialWindow,
+              void* initialAttachment = nullptr) <span class="m-label m-info">explicit</span> </span></span>
+            </h3>
+            <p>Constructs a keyboard from a initialWindow. The initialWindow&#x27;s user pointer will be set to the <a href="class_ie_keyboard.html" class="m-doc">IeKeyboard</a> object.</p>
+            <table class="m-table m-fullwidth m-flat">
+              <thead>
+                <tr><th colspan="2">Parameters</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width: 1%">initialWindow</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>initialAttachment</td>
+                  <td></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th>Returns</th>
+                  <td><a href="class_ie_keyboard.html" class="m-doc">IeKeyboard</a></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div></section>
+          <section class="m-doc-details" id="a43bd1e9422ea17522d662dfe70e869e0"><div>
+            <h3>
+              <span class="m-doc-wrap-bumper">void IeKeyboard::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#a43bd1e9422ea17522d662dfe70e869e0" class="m-doc-self">setEnqueueMethod</a>(</span><span class="m-doc-wrap">GLFWkeyfun function = <a href="class_ie_keyboard.html#a52a0f90472fe3f6692b25971c1013d04" class="m-doc">keyCallback</a>)</span></span>
+            </h3>
+            <p>Sets the queue method. Pass one of the two pre-created key event handler functions.</p>
+            <table class="m-table m-fullwidth m-flat">
+              <thead>
+                <tr><th colspan="2">Parameters</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width: 1%">function</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div></section>
+          <section class="m-doc-details" id="a211ab4f741a599c2071029112fe3b7d8"><div>
+            <h3>
+              <span class="m-doc-wrap-bumper">void IeKeyboard::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#a211ab4f741a599c2071029112fe3b7d8" class="m-doc-self">editActions</a>(</span><span class="m-doc-wrap">const <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a>&amp; keyPressDescription,
+              const std::pair&lt;<a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;, bool&gt;&amp; action)</span></span>
+            </h3>
+            <p>Adds or changes a key press to function correlation.</p>
+            <table class="m-table m-fullwidth m-flat">
+              <thead>
+                <tr><th colspan="2">Parameters</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width: 1%">keyPressDescription</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>action</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div></section>
+          <section class="m-doc-details" id="aa47c9e0684297fe2eaf09b1a45e4fa6a"><div>
+            <h3>
+              <span class="m-doc-wrap-bumper">void IeKeyboard::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#aa47c9e0684297fe2eaf09b1a45e4fa6a" class="m-doc-self">editActions</a>(</span><span class="m-doc-wrap">uint16_t key,
+              const std::pair&lt;<a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;, bool&gt;&amp; action)</span></span>
+            </h3>
+            <p>Adds or changes key press to function correlation.</p>
+            <table class="m-table m-fullwidth m-flat">
+              <thead>
+                <tr><th colspan="2">Parameters</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width: 1%">key</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>action</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div></section>
+          <section class="m-doc-details" id="adcfd829ce683b7d0e150422bd625bed8"><div>
+            <h3>
+              <span class="m-doc-wrap-bumper">void IeKeyboard::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#adcfd829ce683b7d0e150422bd625bed8" class="m-doc-self">editActions</a>(</span><span class="m-doc-wrap">uint16_t key,
+              uint16_t keyAction,
+              uint16_t modifiers,
+              const std::pair&lt;<a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;, bool&gt;&amp; action)</span></span>
+            </h3>
+            <p>Adds or changes key press to function correlation.</p>
+            <table class="m-table m-fullwidth m-flat">
+              <thead>
+                <tr><th colspan="2">Parameters</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width: 1%">key</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>keyAction</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>modifiers</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>action</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div></section>
+          <section class="m-doc-details" id="ae53aaaca6e8510fe6322ae6a8a270f16"><div>
+            <h3>
+              <span class="m-doc-wrap-bumper">void IeKeyboard::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#ae53aaaca6e8510fe6322ae6a8a270f16" class="m-doc-self">editActions</a>(</span><span class="m-doc-wrap">const <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a>&amp; keyPressDescription,
+              const <a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;&amp; action,
+              bool repeat = true)</span></span>
+            </h3>
+            <p>Adds or changes a key press to function correlation.</p>
+            <table class="m-table m-fullwidth m-flat">
+              <thead>
+                <tr><th colspan="2">Parameters</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width: 1%">keyPressDescription</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>action</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>repeat</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div></section>
+          <section class="m-doc-details" id="a939224795717c9a7c1e7e15b008a269a"><div>
+            <h3>
+              <span class="m-doc-wrap-bumper">void IeKeyboard::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#a939224795717c9a7c1e7e15b008a269a" class="m-doc-self">editActions</a>(</span><span class="m-doc-wrap">uint16_t key,
+              const <a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;&amp; action,
+              bool repeat = true)</span></span>
+            </h3>
+            <p>Adds or changes key press to function correlation.</p>
+            <table class="m-table m-fullwidth m-flat">
+              <thead>
+                <tr><th colspan="2">Parameters</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width: 1%">key</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>action</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>repeat</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div></section>
+          <section class="m-doc-details" id="abac3b135cbfc64f5c99d596d0220e75f"><div>
+            <h3>
+              <span class="m-doc-wrap-bumper">void IeKeyboard::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#abac3b135cbfc64f5c99d596d0220e75f" class="m-doc-self">editActions</a>(</span><span class="m-doc-wrap">uint16_t key,
+              uint16_t keyAction,
+              uint16_t modifiers,
+              const <a href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411" class="m-doc">std::<wbr />function</a>&lt;void(GLFWwindow*)&gt;&amp; action,
+              bool repeat = true)</span></span>
+            </h3>
+            <p>Adds or changes key press to function correlation.</p>
+            <table class="m-table m-fullwidth m-flat">
+              <thead>
+                <tr><th colspan="2">Parameters</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width: 1%">key</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>keyAction</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>modifiers</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>action</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>repeat</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div></section>
+        </section>
+      </div>
+    </div>
+  </div>
+</article></main>
+<div class="m-doc-search" id="search">
+  <a href="#!" onclick="return hideSearch()"></a>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-m-8 m-push-m-2">
+        <div class="m-doc-search-header m-text m-small">
+          <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
+          <div id="search-symbolcount">&hellip;</div>
+        </div>
+        <div class="m-doc-search-content">
+          <form>
+            <input type="search" name="q" id="search-input" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
+          </form>
+          <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.</noscript>
+          <div id="search-help" class="m-text m-dim m-text-center">
+            <p class="m-noindent">Search for symbols, directories, files, pages or
+            modules. You can omit any prefix from the symbol or file path; adding a
+            <code>:</code> or <code>/</code> suffix lists all members of given symbol or
+            directory.</p>
+            <p class="m-noindent">Use <span class="m-label m-dim">&darr;</span>
+            / <span class="m-label m-dim">&uarr;</span> to navigate through the list,
+            <span class="m-label m-dim">Enter</span> to go.
+            <span class="m-label m-dim">Tab</span> autocompletes common prefix, you can
+            copy a link to the result using <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">L</span> while <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">M</span> produces a Markdown link.</p>
+          </div>
+          <div id="search-notfound" class="m-text m-warning m-text-center">Sorry, nothing was found.</div>
+          <ul id="search-results"></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('class_ie_keyboard.html',''); initResizable(); });
-/* @license-end */
-</script>
-<div id="doc-content">
-<!-- window showing the filter options -->
-<div id="MSearchSelectWindow"
-     onmouseover="return searchBox.OnSearchSelectShow()"
-     onmouseout="return searchBox.OnSearchSelectHide()"
-     onkeydown="return searchBox.OnSearchSelectKey(event)">
-</div>
-
-<!-- iframe showing the search results (closed by default) -->
-<div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
-        name="MSearchResults" id="MSearchResults">
-</iframe>
-</div>
-
-<div class="header">
-  <div class="summary">
-<a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="class_ie_keyboard-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">IeKeyboard Class Reference</div></div>
-</div><!--header-->
-<div class="contents">
-
-<p>The Keyboard class is intended to manage keyboard event handling.  
- <a href="class_ie_keyboard.html#details">More...</a></p>
-
-<p><code>#include &lt;<a class="el" href="_ie_keyboard_8hpp_source.html">IeKeyboard.hpp</a>&gt;</code></p>
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
-Public Member Functions</h2></td></tr>
-<tr class="memitem:af662fd29abcbb8d2d3073b3b8ca4bc95"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#af662fd29abcbb8d2d3073b3b8ca4bc95">IeKeyboard</a> (GLFWwindow *initialWindow, void *initialAttachment=nullptr)</td></tr>
-<tr class="memdesc:af662fd29abcbb8d2d3073b3b8ca4bc95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the <a class="el" href="class_ie_keyboard.html" title="The Keyboard class is intended to manage keyboard event handling.">IeKeyboard</a> object.  <a href="class_ie_keyboard.html#af662fd29abcbb8d2d3073b3b8ca4bc95">More...</a><br /></td></tr>
-<tr class="separator:af662fd29abcbb8d2d3073b3b8ca4bc95"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43bd1e9422ea17522d662dfe70e869e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#a43bd1e9422ea17522d662dfe70e869e0">setEnqueueMethod</a> (GLFWkeyfun <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">function</a>=<a class="el" href="class_ie_keyboard.html#a52a0f90472fe3f6692b25971c1013d04">keyCallback</a>)</td></tr>
-<tr class="memdesc:a43bd1e9422ea17522d662dfe70e869e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the queue method. Pass one of the two pre-created key event handler functions.  <a href="class_ie_keyboard.html#a43bd1e9422ea17522d662dfe70e869e0">More...</a><br /></td></tr>
-<tr class="separator:a43bd1e9422ea17522d662dfe70e869e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48bbb0705bcd4cab00465d6de9818fb3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#a48bbb0705bcd4cab00465d6de9818fb3">handleQueue</a> ()</td></tr>
-<tr class="memdesc:a48bbb0705bcd4cab00465d6de9818fb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles all the actions indicated by the key presses logged in the queue.  <a href="class_ie_keyboard.html#a48bbb0705bcd4cab00465d6de9818fb3">More...</a><br /></td></tr>
-<tr class="separator:a48bbb0705bcd4cab00465d6de9818fb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a211ab4f741a599c2071029112fe3b7d8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#a211ab4f741a599c2071029112fe3b7d8">editActions</a> (const <a class="el" href="struct_ie_key_press_description.html">IeKeyPressDescription</a> &amp;keyPressDescription, const std::pair&lt; <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt;, bool &gt; &amp;action)</td></tr>
-<tr class="memdesc:a211ab4f741a599c2071029112fe3b7d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds or changes a key press to function correlation.  <a href="class_ie_keyboard.html#a211ab4f741a599c2071029112fe3b7d8">More...</a><br /></td></tr>
-<tr class="separator:a211ab4f741a599c2071029112fe3b7d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa47c9e0684297fe2eaf09b1a45e4fa6a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#aa47c9e0684297fe2eaf09b1a45e4fa6a">editActions</a> (uint16_t key, const std::pair&lt; <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt;, bool &gt; &amp;action)</td></tr>
-<tr class="memdesc:aa47c9e0684297fe2eaf09b1a45e4fa6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds or changes key press to function correlation.  <a href="class_ie_keyboard.html#aa47c9e0684297fe2eaf09b1a45e4fa6a">More...</a><br /></td></tr>
-<tr class="separator:aa47c9e0684297fe2eaf09b1a45e4fa6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adcfd829ce683b7d0e150422bd625bed8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#adcfd829ce683b7d0e150422bd625bed8">editActions</a> (uint16_t key, uint16_t keyAction, uint16_t modifiers, const std::pair&lt; <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt;, bool &gt; &amp;action)</td></tr>
-<tr class="memdesc:adcfd829ce683b7d0e150422bd625bed8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds or changes key press to function correlation.  <a href="class_ie_keyboard.html#adcfd829ce683b7d0e150422bd625bed8">More...</a><br /></td></tr>
-<tr class="separator:adcfd829ce683b7d0e150422bd625bed8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae53aaaca6e8510fe6322ae6a8a270f16"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#ae53aaaca6e8510fe6322ae6a8a270f16">editActions</a> (const <a class="el" href="struct_ie_key_press_description.html">IeKeyPressDescription</a> &amp;keyPressDescription, const <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt; &amp;action, bool repeat=true)</td></tr>
-<tr class="memdesc:ae53aaaca6e8510fe6322ae6a8a270f16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds or changes a key press to function correlation.  <a href="class_ie_keyboard.html#ae53aaaca6e8510fe6322ae6a8a270f16">More...</a><br /></td></tr>
-<tr class="separator:ae53aaaca6e8510fe6322ae6a8a270f16"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a939224795717c9a7c1e7e15b008a269a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#a939224795717c9a7c1e7e15b008a269a">editActions</a> (uint16_t key, const <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt; &amp;action, bool repeat=true)</td></tr>
-<tr class="memdesc:a939224795717c9a7c1e7e15b008a269a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds or changes key press to function correlation.  <a href="class_ie_keyboard.html#a939224795717c9a7c1e7e15b008a269a">More...</a><br /></td></tr>
-<tr class="separator:a939224795717c9a7c1e7e15b008a269a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abac3b135cbfc64f5c99d596d0220e75f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#abac3b135cbfc64f5c99d596d0220e75f">editActions</a> (uint16_t key, uint16_t keyAction, uint16_t modifiers, const <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt; &amp;action, bool repeat=true)</td></tr>
-<tr class="memdesc:abac3b135cbfc64f5c99d596d0220e75f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds or changes key press to function correlation.  <a href="class_ie_keyboard.html#abac3b135cbfc64f5c99d596d0220e75f">More...</a><br /></td></tr>
-<tr class="separator:abac3b135cbfc64f5c99d596d0220e75f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2e209d032084b6ca6011e139e790c08"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#ae2e209d032084b6ca6011e139e790c08">clearQueue</a> ()</td></tr>
-<tr class="memdesc:ae2e209d032084b6ca6011e139e790c08"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears the event queue.  <a href="class_ie_keyboard.html#ae2e209d032084b6ca6011e139e790c08">More...</a><br /></td></tr>
-<tr class="separator:ae2e209d032084b6ca6011e139e790c08"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a52a0f90472fe3f6692b25971c1013d04"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#a52a0f90472fe3f6692b25971c1013d04">keyCallback</a> (GLFWwindow *window, int key, int scancode, int action, int modifiers)</td></tr>
-<tr class="memdesc:a52a0f90472fe3f6692b25971c1013d04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default key event handler function. Enqueues the key as pressed or released. Does not handle repeats.  <a href="class_ie_keyboard.html#a52a0f90472fe3f6692b25971c1013d04">More...</a><br /></td></tr>
-<tr class="separator:a52a0f90472fe3f6692b25971c1013d04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a60d6cfd61b770e70c444db7ee9e95106"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ie_keyboard.html#a60d6cfd61b770e70c444db7ee9e95106">attachment</a></td></tr>
-<tr class="separator:a60d6cfd61b770e70c444db7ee9e95106"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >The Keyboard class is intended to manage keyboard event handling. </p>
-</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="af662fd29abcbb8d2d3073b3b8ca4bc95" name="af662fd29abcbb8d2d3073b3b8ca4bc95"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af662fd29abcbb8d2d3073b3b8ca4bc95">&#9670;&nbsp;</a></span>IeKeyboard()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">IeKeyboard::IeKeyboard </td>
-          <td>(</td>
-          <td class="paramtype">GLFWwindow *&#160;</td>
-          <td class="paramname"><em>initialWindow</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>initialAttachment</em> = <code>nullptr</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the <a class="el" href="class_ie_keyboard.html" title="The Keyboard class is intended to manage keyboard event handling.">IeKeyboard</a> object. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">initialWindow</td><td></td></tr>
-    <tr><td class="paramname">initialAttachment=nullptr</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="class_ie_keyboard.html" title="The Keyboard class is intended to manage keyboard event handling.">IeKeyboard</a> </dd></dl>
-
-</div>
-</div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a id="ae2e209d032084b6ca6011e139e790c08" name="ae2e209d032084b6ca6011e139e790c08"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae2e209d032084b6ca6011e139e790c08">&#9670;&nbsp;</a></span>clearQueue()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void IeKeyboard::clearQueue </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Clears the event queue. </p>
-
-</div>
-</div>
-<a id="ae53aaaca6e8510fe6322ae6a8a270f16" name="ae53aaaca6e8510fe6322ae6a8a270f16"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae53aaaca6e8510fe6322ae6a8a270f16">&#9670;&nbsp;</a></span>editActions() <span class="overload">[1/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void IeKeyboard::editActions </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="struct_ie_key_press_description.html">IeKeyPressDescription</a> &amp;&#160;</td>
-          <td class="paramname"><em>keyPressDescription</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt; &amp;&#160;</td>
-          <td class="paramname"><em>action</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>repeat</em> = <code>true</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Adds or changes a key press to function correlation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">keyPressDescription</td><td></td></tr>
-    <tr><td class="paramname">action</td><td></td></tr>
-    <tr><td class="paramname">repeat</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a211ab4f741a599c2071029112fe3b7d8" name="a211ab4f741a599c2071029112fe3b7d8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a211ab4f741a599c2071029112fe3b7d8">&#9670;&nbsp;</a></span>editActions() <span class="overload">[2/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void IeKeyboard::editActions </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="struct_ie_key_press_description.html">IeKeyPressDescription</a> &amp;&#160;</td>
-          <td class="paramname"><em>keyPressDescription</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::pair&lt; <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt;, bool &gt; &amp;&#160;</td>
-          <td class="paramname"><em>action</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Adds or changes a key press to function correlation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">keyPressDescription</td><td></td></tr>
-    <tr><td class="paramname">action</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a939224795717c9a7c1e7e15b008a269a" name="a939224795717c9a7c1e7e15b008a269a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a939224795717c9a7c1e7e15b008a269a">&#9670;&nbsp;</a></span>editActions() <span class="overload">[3/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void IeKeyboard::editActions </td>
-          <td>(</td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt; &amp;&#160;</td>
-          <td class="paramname"><em>action</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>repeat</em> = <code>true</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Adds or changes key press to function correlation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td></td></tr>
-    <tr><td class="paramname">action</td><td></td></tr>
-    <tr><td class="paramname">repeat</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="aa47c9e0684297fe2eaf09b1a45e4fa6a" name="aa47c9e0684297fe2eaf09b1a45e4fa6a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa47c9e0684297fe2eaf09b1a45e4fa6a">&#9670;&nbsp;</a></span>editActions() <span class="overload">[4/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void IeKeyboard::editActions </td>
-          <td>(</td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::pair&lt; <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt;, bool &gt; &amp;&#160;</td>
-          <td class="paramname"><em>action</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Adds or changes key press to function correlation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td></td></tr>
-    <tr><td class="paramname">action</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="abac3b135cbfc64f5c99d596d0220e75f" name="abac3b135cbfc64f5c99d596d0220e75f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abac3b135cbfc64f5c99d596d0220e75f">&#9670;&nbsp;</a></span>editActions() <span class="overload">[5/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void IeKeyboard::editActions </td>
-          <td>(</td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>keyAction</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>modifiers</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt; &amp;&#160;</td>
-          <td class="paramname"><em>action</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>repeat</em> = <code>true</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Adds or changes key press to function correlation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td></td></tr>
-    <tr><td class="paramname">keyAction</td><td></td></tr>
-    <tr><td class="paramname">modifiers</td><td></td></tr>
-    <tr><td class="paramname">action</td><td></td></tr>
-    <tr><td class="paramname">repeat</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="adcfd829ce683b7d0e150422bd625bed8" name="adcfd829ce683b7d0e150422bd625bed8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adcfd829ce683b7d0e150422bd625bed8">&#9670;&nbsp;</a></span>editActions() <span class="overload">[6/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void IeKeyboard::editActions </td>
-          <td>(</td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>keyAction</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>modifiers</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::pair&lt; <a class="el" href="_c_make_lists_8txt.html#a91c32157af1d45c76c8606001b6c6411">std::function</a>&lt; void(GLFWwindow *)&gt;, bool &gt; &amp;&#160;</td>
-          <td class="paramname"><em>action</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Adds or changes key press to function correlation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td></td></tr>
-    <tr><td class="paramname">keyAction</td><td></td></tr>
-    <tr><td class="paramname">modifiers</td><td></td></tr>
-    <tr><td class="paramname">action</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a48bbb0705bcd4cab00465d6de9818fb3" name="a48bbb0705bcd4cab00465d6de9818fb3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a48bbb0705bcd4cab00465d6de9818fb3">&#9670;&nbsp;</a></span>handleQueue()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void IeKeyboard::handleQueue </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Handles all the actions indicated by the key presses logged in the queue. </p>
-
-</div>
-</div>
-<a id="a52a0f90472fe3f6692b25971c1013d04" name="a52a0f90472fe3f6692b25971c1013d04"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a52a0f90472fe3f6692b25971c1013d04">&#9670;&nbsp;</a></span>keyCallback()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void IeKeyboard::keyCallback </td>
-          <td>(</td>
-          <td class="paramtype">GLFWwindow *&#160;</td>
-          <td class="paramname"><em>window</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>scancode</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>action</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>modifiers</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Default key event handler function. Enqueues the key as pressed or released. Does not handle repeats. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">window</td><td></td></tr>
-    <tr><td class="paramname">key</td><td></td></tr>
-    <tr><td class="paramname">scancode</td><td></td></tr>
-    <tr><td class="paramname">action</td><td></td></tr>
-    <tr><td class="paramname">modifiers</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a43bd1e9422ea17522d662dfe70e869e0" name="a43bd1e9422ea17522d662dfe70e869e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a43bd1e9422ea17522d662dfe70e869e0">&#9670;&nbsp;</a></span>setEnqueueMethod()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void IeKeyboard::setEnqueueMethod </td>
-          <td>(</td>
-          <td class="paramtype">GLFWkeyfun&#160;</td>
-          <td class="paramname"><em>function</em> = <code><a class="el" href="class_ie_keyboard.html#a52a0f90472fe3f6692b25971c1013d04">keyCallback</a></code></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Sets the queue method. Pass one of the two pre-created key event handler functions. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">function</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="a60d6cfd61b770e70c444db7ee9e95106" name="a60d6cfd61b770e70c444db7ee9e95106"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a60d6cfd61b770e70c444db7ee9e95106">&#9670;&nbsp;</a></span>attachment</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void* IeKeyboard::attachment</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<hr/>The documentation for this class was generated from the following file:<ul>
-<li>Illumination-Engine/src/InputModule/<a class="el" href="_ie_keyboard_8hpp_source.html">IeKeyboard.hpp</a></li>
-</ul>
-</div><!-- contents -->
-</div><!-- doc-content -->
-<!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="navelem"><a class="el" href="class_ie_keyboard.html">IeKeyboard</a></li>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.4 </li>
-  </ul>
-</div>
+<script src="search-v2.js"></script>
+<script src="searchdata-v2.js" async="async"></script>
+<footer><nav>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <p>Illumination Engine A Game Development Engine Written In C++. Created with <a href="https://doxygen.org/">Doxygen</a> 1.9.4 and <a href="https://mcss.mosra.cz/">m.css</a>.</p>
+      </div>
+    </div>
+  </div>
+</nav></footer>
 </body>
 </html>

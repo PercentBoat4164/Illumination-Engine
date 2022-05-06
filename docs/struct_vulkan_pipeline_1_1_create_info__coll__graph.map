@@ -1,6 +1,0 @@
-<map id="VulkanPipeline::CreateInfo" name="VulkanPipeline::CreateInfo">
-<area shape="rect" id="node1" title=" " alt="" coords="72,199,267,225"/>
-<area shape="rect" id="node2" href="$class_vulkan_descriptor_set.html" title=" " alt="" coords="5,109,160,136"/>
-<area shape="rect" id="node3" href="$struct_vulkan_descriptor_set_1_1_create_info.html" title=" " alt="" coords="5,5,160,47"/>
-<area shape="rect" id="node4" href="$class_vulkan_render_pass.html" title=" " alt="" coords="185,109,327,136"/>
-</map>

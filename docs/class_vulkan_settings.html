@@ -1,410 +1,189 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=11"/>
-<meta name="generator" content="Doxygen 1.9.4"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Illumination Engine: VulkanSettings Class Reference</title>
-<link href="tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript" src="dynsections.js"></script>
-<link href="navtree.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="resize.js"></script>
-<script type="text/javascript" src="navtreedata.js"></script>
-<script type="text/javascript" src="navtree.js"></script>
-<link href="search/search.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="search/searchdata.js"></script>
-<script type="text/javascript" src="search/search.js"></script>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-  $(document).ready(function() { init_search(); });
-/* @license-end */
-</script>
-<link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <meta charset="UTF-8" />
+  <title>VulkanSettings class | Illumination Engine A Game Development Engine Written In C++</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,600,600i%7CSource+Code+Pro:400,400i,600" />
+  <link rel="stylesheet" href="m-dark+documentation.compiled.css" />
+  <link rel="icon" href="IlluminationEngineLogo128.png" type="image/png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#22272e" />
 </head>
 <body>
-<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
-<div id="titlearea">
-<table cellspacing="0" cellpadding="0">
- <tbody>
- <tr id="projectrow">
-  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineSignResized2.png"/></td>
-  <td id="projectalign">
-   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
-   </div>
-   <div id="projectbrief">A Game Development Engine Written In C++</div>
-  </td>
-    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
-        <span class="left">
-          <img id="MSearchSelect" src="search/mag_sel.svg"
-               onmouseover="return searchBox.OnSearchSelectShow()"
-               onmouseout="return searchBox.OnSearchSelectHide()"
-               alt=""/>
-          <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
-               onkeyup="searchBox.OnSearchFieldChange(event)"/>
-          </span><span class="right">
-            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
-          </span>
+<header><nav id="navigation">
+  <div class="m-container">
+    <div class="m-row">
+      <a href="index.html" id="m-navbar-brand" class="m-col-t-8 m-col-m-none m-left-m"><img src="IlluminationEngineLogo128.png" alt="" />Illumination Engine <span class="m-thin">A Game Development Engine Written In C++</span></a>
+      <div class="m-col-t-4 m-hide-m m-text-right m-nopadr">
+        <a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+          <path id="m-doc-search-icon-path" d="m6 0c-3.31 0-6 2.69-6 6 0 3.31 2.69 6 6 6 1.49 0 2.85-0.541 3.89-1.44-0.0164 0.338 0.147 0.759 0.5 1.15l3.22 3.79c0.552 0.614 1.45 0.665 2 0.115 0.55-0.55 0.499-1.45-0.115-2l-3.79-3.22c-0.392-0.353-0.812-0.515-1.15-0.5 0.895-1.05 1.44-2.41 1.44-3.89 0-3.31-2.69-6-6-6zm0 1.56a4.44 4.44 0 0 1 4.44 4.44 4.44 4.44 0 0 1-4.44 4.44 4.44 4.44 0 0 1-4.44-4.44 4.44 4.44 0 0 1 4.44-4.44z"/>
+        </svg></a>
+        <a id="m-navbar-show" href="#navigation" title="Show navigation"></a>
+        <a id="m-navbar-hide" href="#" title="Hide navigation"></a>
+      </div>
+      <div id="m-navbar-collapse" class="m-col-t-12 m-show-m m-col-m-none m-right-m">
+        <div class="m-row">
+          <ol class="m-col-t-6 m-col-m-none">
+            <li><a href="https://joellogan.github.io">Main Page</a></li>
+            <li><a href="pages.html">Pages</a></li>
+          </ol>
+          <ol class="m-col-t-6 m-col-m-none" start="3">
+            <li><a href="annotated.html">Classes</a></li>
+            <li><a href="files.html">Files</a></li>
+            <li class="m-show-m"><a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+              <use href="#m-doc-search-icon-path" />
+            </svg></a></li>
+          </ol>
         </div>
-</td>
- </tr>
- </tbody>
-</table>
-</div>
-<!-- end header part -->
-<!-- Generated by Doxygen 1.9.4 -->
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-var searchBox = new SearchBox("searchBox", "search",'Search','.html');
-/* @license-end */
-</script>
-</div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
-  <div id="nav-tree">
-    <div id="nav-tree-contents">
-      <div id="nav-sync" class="sync"></div>
+      </div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
-       class="ui-resizable-handle">
+</nav></header>
+<main><article>
+  <div class="m-container m-container-inflatable">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <h1>
+          VulkanSettings <span class="m-thin">class</span>
+          <div class="m-doc-include m-code m-inverted m-text-right"><span class="cp">#include</span> <a class="cpf" href="vulkan_settings_8hpp.html">&lt;Illumination-Engine/src/GraphicsModule/Vulkan/vulkanSettings.hpp&gt;</a></div>
+        </h1>
+        <p><span></span></p>
+        <nav class="m-block m-default">
+          <h3>Contents</h3>
+          <ul>
+            <li>
+              Reference
+              <ul>
+                <li><a href="#pub-attribs">Public variables</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+        <section id="pub-attribs">
+          <h2><a href="#pub-attribs">Public variables</a></h2>
+          <dl class="m-doc">
+            <dt id="a8d308609ae68f2750c2e86c4be569af0">
+              bool <a href="#a8d308609ae68f2750c2e86c4be569af0" class="m-doc-self">rayTracing</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a50a94159f49ccedc122e242e1b430045">
+              std::string <a href="#a50a94159f49ccedc122e242e1b430045" class="m-doc-self">applicationName</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad8e4eb7f4a9bdc94da52c20b6255ba83">
+              std::array&lt;int, 3&gt; <a href="#ad8e4eb7f4a9bdc94da52c20b6255ba83" class="m-doc-self">applicationVersion</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a6b12c93dc7393449e38749d509abf7bb">
+              std::array&lt;int, 3&gt; <a href="#a6b12c93dc7393449e38749d509abf7bb" class="m-doc-self">requiredVulkanVersion</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a467144d4bcfa44a53159d5db627a226b">
+              VkSampleCountFlagBits <a href="#a467144d4bcfa44a53159d5db627a226b" class="m-doc-self">msaaSamples</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aca40c6e25fe66128b19464a89e187327">
+              std::array&lt;uint32_t, 2&gt; <a href="#aca40c6e25fe66128b19464a89e187327" class="m-doc-self">defaultWindowResolution</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a591a4b648cc600f65c87888e91f97e5f">
+              std::array&lt;int, 2&gt; <a href="#a591a4b648cc600f65c87888e91f97e5f" class="m-doc-self">windowPosition</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a8e5c3f55671d371086befed7da42d99d">
+              float <a href="#a8e5c3f55671d371086befed7da42d99d" class="m-doc-self">anisotropicFilterLevel</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9b9cbf6493016f91db0ecd4d640c33ed">
+              bool <a href="#a9b9cbf6493016f91db0ecd4d640c33ed" class="m-doc-self">mipMapping</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="abf8d9722100b12ce8183cacbeab5c8a4">
+              float <a href="#abf8d9722100b12ce8183cacbeab5c8a4" class="m-doc-self">mipMapLevel</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9dc318396a2d238961add619fd70c935">
+              bool <a href="#a9dc318396a2d238961add619fd70c935" class="m-doc-self">fullscreen</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="afa03019468f90b21b72a21fcaaa5a16f">
+              int <a href="#afa03019468f90b21b72a21fcaaa5a16f" class="m-doc-self">refreshRate</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad8c161c8f2acdea9e4880835121aa7cd">
+              bool <a href="#ad8c161c8f2acdea9e4880835121aa7cd" class="m-doc-self">vSync</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad97c30a1ed322de3bac12cc3d2610ad4">
+              std::array&lt;uint32_t, 2&gt; <a href="#ad97c30a1ed322de3bac12cc3d2610ad4" class="m-doc-self">resolution</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a6a53ab5a5fbf8ebf913d679f22e1341a">
+              double <a href="#a6a53ab5a5fbf8ebf913d679f22e1341a" class="m-doc-self">fov</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a33ac2e8703ed036c99e337b531e0658b">
+              double <a href="#a33ac2e8703ed036c99e337b531e0658b" class="m-doc-self">renderDistance</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4341d3ff4c2b2be1c78a6d1a785e204d">
+              double <a href="#a4341d3ff4c2b2be1c78a6d1a785e204d" class="m-doc-self">mouseSensitivity</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a33427320bedb4bc3c29223adfea9af57">
+              float <a href="#a33427320bedb4bc3c29223adfea9af57" class="m-doc-self">movementSpeed</a>
+            </dt>
+            <dd><span></span></dd>
+          </dl>
+        </section>
+      </div>
+    </div>
+  </div>
+</article></main>
+<div class="m-doc-search" id="search">
+  <a href="#!" onclick="return hideSearch()"></a>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-m-8 m-push-m-2">
+        <div class="m-doc-search-header m-text m-small">
+          <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
+          <div id="search-symbolcount">&hellip;</div>
+        </div>
+        <div class="m-doc-search-content">
+          <form>
+            <input type="search" name="q" id="search-input" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
+          </form>
+          <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.</noscript>
+          <div id="search-help" class="m-text m-dim m-text-center">
+            <p class="m-noindent">Search for symbols, directories, files, pages or
+            modules. You can omit any prefix from the symbol or file path; adding a
+            <code>:</code> or <code>/</code> suffix lists all members of given symbol or
+            directory.</p>
+            <p class="m-noindent">Use <span class="m-label m-dim">&darr;</span>
+            / <span class="m-label m-dim">&uarr;</span> to navigate through the list,
+            <span class="m-label m-dim">Enter</span> to go.
+            <span class="m-label m-dim">Tab</span> autocompletes common prefix, you can
+            copy a link to the result using <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">L</span> while <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">M</span> produces a Markdown link.</p>
+          </div>
+          <div id="search-notfound" class="m-text m-warning m-text-center">Sorry, nothing was found.</div>
+          <ul id="search-results"></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('class_vulkan_settings.html',''); initResizable(); });
-/* @license-end */
-</script>
-<div id="doc-content">
-<!-- window showing the filter options -->
-<div id="MSearchSelectWindow"
-     onmouseover="return searchBox.OnSearchSelectShow()"
-     onmouseout="return searchBox.OnSearchSelectHide()"
-     onkeydown="return searchBox.OnSearchSelectKey(event)">
-</div>
-
-<!-- iframe showing the search results (closed by default) -->
-<div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
-        name="MSearchResults" id="MSearchResults">
-</iframe>
-</div>
-
-<div class="header">
-  <div class="summary">
-<a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="class_vulkan_settings-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">VulkanSettings Class Reference</div></div>
-</div><!--header-->
-<div class="contents">
-
-<p><code>#include &lt;<a class="el" href="vulkan_settings_8hpp_source.html">vulkanSettings.hpp</a>&gt;</code></p>
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a8d308609ae68f2750c2e86c4be569af0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a8d308609ae68f2750c2e86c4be569af0">rayTracing</a> {false}</td></tr>
-<tr class="separator:a8d308609ae68f2750c2e86c4be569af0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a50a94159f49ccedc122e242e1b430045"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a50a94159f49ccedc122e242e1b430045">applicationName</a> {&quot;Illumination Engine&quot;}</td></tr>
-<tr class="separator:a50a94159f49ccedc122e242e1b430045"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad8e4eb7f4a9bdc94da52c20b6255ba83"><td class="memItemLeft" align="right" valign="top">std::array&lt; int, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#ad8e4eb7f4a9bdc94da52c20b6255ba83">applicationVersion</a> {0, 0, 1}</td></tr>
-<tr class="separator:ad8e4eb7f4a9bdc94da52c20b6255ba83"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b12c93dc7393449e38749d509abf7bb"><td class="memItemLeft" align="right" valign="top">std::array&lt; int, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a6b12c93dc7393449e38749d509abf7bb">requiredVulkanVersion</a> {1, 2, 0}</td></tr>
-<tr class="separator:a6b12c93dc7393449e38749d509abf7bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a467144d4bcfa44a53159d5db627a226b"><td class="memItemLeft" align="right" valign="top">VkSampleCountFlagBits&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a467144d4bcfa44a53159d5db627a226b">msaaSamples</a> {VK_SAMPLE_COUNT_8_BIT}</td></tr>
-<tr class="separator:a467144d4bcfa44a53159d5db627a226b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca40c6e25fe66128b19464a89e187327"><td class="memItemLeft" align="right" valign="top">std::array&lt; uint32_t, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#aca40c6e25fe66128b19464a89e187327">defaultWindowResolution</a> {800, 600}</td></tr>
-<tr class="separator:aca40c6e25fe66128b19464a89e187327"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a591a4b648cc600f65c87888e91f97e5f"><td class="memItemLeft" align="right" valign="top">std::array&lt; int, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a591a4b648cc600f65c87888e91f97e5f">windowPosition</a> {0, 0}</td></tr>
-<tr class="separator:a591a4b648cc600f65c87888e91f97e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8e5c3f55671d371086befed7da42d99d"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a8e5c3f55671d371086befed7da42d99d">anisotropicFilterLevel</a> {16.0f}</td></tr>
-<tr class="separator:a8e5c3f55671d371086befed7da42d99d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9b9cbf6493016f91db0ecd4d640c33ed"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a9b9cbf6493016f91db0ecd4d640c33ed">mipMapping</a> {true}</td></tr>
-<tr class="separator:a9b9cbf6493016f91db0ecd4d640c33ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf8d9722100b12ce8183cacbeab5c8a4"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#abf8d9722100b12ce8183cacbeab5c8a4">mipMapLevel</a> {0.0f}</td></tr>
-<tr class="separator:abf8d9722100b12ce8183cacbeab5c8a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9dc318396a2d238961add619fd70c935"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a9dc318396a2d238961add619fd70c935">fullscreen</a> {false}</td></tr>
-<tr class="separator:a9dc318396a2d238961add619fd70c935"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa03019468f90b21b72a21fcaaa5a16f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#afa03019468f90b21b72a21fcaaa5a16f">refreshRate</a> {60}</td></tr>
-<tr class="separator:afa03019468f90b21b72a21fcaaa5a16f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad8c161c8f2acdea9e4880835121aa7cd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#ad8c161c8f2acdea9e4880835121aa7cd">vSync</a> {true}</td></tr>
-<tr class="separator:ad8c161c8f2acdea9e4880835121aa7cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad97c30a1ed322de3bac12cc3d2610ad4"><td class="memItemLeft" align="right" valign="top">std::array&lt; uint32_t, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#ad97c30a1ed322de3bac12cc3d2610ad4">resolution</a> {<a class="el" href="class_vulkan_settings.html#aca40c6e25fe66128b19464a89e187327">defaultWindowResolution</a>}</td></tr>
-<tr class="separator:ad97c30a1ed322de3bac12cc3d2610ad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a53ab5a5fbf8ebf913d679f22e1341a"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a6a53ab5a5fbf8ebf913d679f22e1341a">fov</a> {90}</td></tr>
-<tr class="separator:a6a53ab5a5fbf8ebf913d679f22e1341a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33ac2e8703ed036c99e337b531e0658b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a33ac2e8703ed036c99e337b531e0658b">renderDistance</a> {1000000}</td></tr>
-<tr class="separator:a33ac2e8703ed036c99e337b531e0658b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4341d3ff4c2b2be1c78a6d1a785e204d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a4341d3ff4c2b2be1c78a6d1a785e204d">mouseSensitivity</a> {0.1}</td></tr>
-<tr class="separator:a4341d3ff4c2b2be1c78a6d1a785e204d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33427320bedb4bc3c29223adfea9af57"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_settings.html#a33427320bedb4bc3c29223adfea9af57">movementSpeed</a> {2.5}</td></tr>
-<tr class="separator:a33427320bedb4bc3c29223adfea9af57"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="a8e5c3f55671d371086befed7da42d99d" name="a8e5c3f55671d371086befed7da42d99d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8e5c3f55671d371086befed7da42d99d">&#9670;&nbsp;</a></span>anisotropicFilterLevel</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">float VulkanSettings::anisotropicFilterLevel {16.0f}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a50a94159f49ccedc122e242e1b430045" name="a50a94159f49ccedc122e242e1b430045"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a50a94159f49ccedc122e242e1b430045">&#9670;&nbsp;</a></span>applicationName</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::string VulkanSettings::applicationName {&quot;Illumination Engine&quot;}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ad8e4eb7f4a9bdc94da52c20b6255ba83" name="ad8e4eb7f4a9bdc94da52c20b6255ba83"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad8e4eb7f4a9bdc94da52c20b6255ba83">&#9670;&nbsp;</a></span>applicationVersion</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::array&lt;int, 3&gt; VulkanSettings::applicationVersion {0, 0, 1}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aca40c6e25fe66128b19464a89e187327" name="aca40c6e25fe66128b19464a89e187327"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aca40c6e25fe66128b19464a89e187327">&#9670;&nbsp;</a></span>defaultWindowResolution</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::array&lt;uint32_t, 2&gt; VulkanSettings::defaultWindowResolution {800, 600}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a6a53ab5a5fbf8ebf913d679f22e1341a" name="a6a53ab5a5fbf8ebf913d679f22e1341a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6a53ab5a5fbf8ebf913d679f22e1341a">&#9670;&nbsp;</a></span>fov</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double VulkanSettings::fov {90}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a9dc318396a2d238961add619fd70c935" name="a9dc318396a2d238961add619fd70c935"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9dc318396a2d238961add619fd70c935">&#9670;&nbsp;</a></span>fullscreen</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool VulkanSettings::fullscreen {false}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="abf8d9722100b12ce8183cacbeab5c8a4" name="abf8d9722100b12ce8183cacbeab5c8a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf8d9722100b12ce8183cacbeab5c8a4">&#9670;&nbsp;</a></span>mipMapLevel</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">float VulkanSettings::mipMapLevel {0.0f}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a9b9cbf6493016f91db0ecd4d640c33ed" name="a9b9cbf6493016f91db0ecd4d640c33ed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b9cbf6493016f91db0ecd4d640c33ed">&#9670;&nbsp;</a></span>mipMapping</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool VulkanSettings::mipMapping {true}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a4341d3ff4c2b2be1c78a6d1a785e204d" name="a4341d3ff4c2b2be1c78a6d1a785e204d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4341d3ff4c2b2be1c78a6d1a785e204d">&#9670;&nbsp;</a></span>mouseSensitivity</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double VulkanSettings::mouseSensitivity {0.1}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a33427320bedb4bc3c29223adfea9af57" name="a33427320bedb4bc3c29223adfea9af57"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33427320bedb4bc3c29223adfea9af57">&#9670;&nbsp;</a></span>movementSpeed</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">float VulkanSettings::movementSpeed {2.5}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a467144d4bcfa44a53159d5db627a226b" name="a467144d4bcfa44a53159d5db627a226b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a467144d4bcfa44a53159d5db627a226b">&#9670;&nbsp;</a></span>msaaSamples</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">VkSampleCountFlagBits VulkanSettings::msaaSamples {VK_SAMPLE_COUNT_8_BIT}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a8d308609ae68f2750c2e86c4be569af0" name="a8d308609ae68f2750c2e86c4be569af0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8d308609ae68f2750c2e86c4be569af0">&#9670;&nbsp;</a></span>rayTracing</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool VulkanSettings::rayTracing {false}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="afa03019468f90b21b72a21fcaaa5a16f" name="afa03019468f90b21b72a21fcaaa5a16f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa03019468f90b21b72a21fcaaa5a16f">&#9670;&nbsp;</a></span>refreshRate</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int VulkanSettings::refreshRate {60}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a33ac2e8703ed036c99e337b531e0658b" name="a33ac2e8703ed036c99e337b531e0658b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33ac2e8703ed036c99e337b531e0658b">&#9670;&nbsp;</a></span>renderDistance</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double VulkanSettings::renderDistance {1000000}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a6b12c93dc7393449e38749d509abf7bb" name="a6b12c93dc7393449e38749d509abf7bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b12c93dc7393449e38749d509abf7bb">&#9670;&nbsp;</a></span>requiredVulkanVersion</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::array&lt;int, 3&gt; VulkanSettings::requiredVulkanVersion {1, 2, 0}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ad97c30a1ed322de3bac12cc3d2610ad4" name="ad97c30a1ed322de3bac12cc3d2610ad4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad97c30a1ed322de3bac12cc3d2610ad4">&#9670;&nbsp;</a></span>resolution</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::array&lt;uint32_t, 2&gt; VulkanSettings::resolution {<a class="el" href="class_vulkan_settings.html#aca40c6e25fe66128b19464a89e187327">defaultWindowResolution</a>}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ad8c161c8f2acdea9e4880835121aa7cd" name="ad8c161c8f2acdea9e4880835121aa7cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad8c161c8f2acdea9e4880835121aa7cd">&#9670;&nbsp;</a></span>vSync</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool VulkanSettings::vSync {true}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a591a4b648cc600f65c87888e91f97e5f" name="a591a4b648cc600f65c87888e91f97e5f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a591a4b648cc600f65c87888e91f97e5f">&#9670;&nbsp;</a></span>windowPosition</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::array&lt;int, 2&gt; VulkanSettings::windowPosition {0, 0}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<hr/>The documentation for this class was generated from the following file:<ul>
-<li>Illumination-Engine/src/GraphicsModule/Vulkan/<a class="el" href="vulkan_settings_8hpp_source.html">vulkanSettings.hpp</a></li>
-</ul>
-</div><!-- contents -->
-</div><!-- doc-content -->
-<!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="navelem"><a class="el" href="class_vulkan_settings.html">VulkanSettings</a></li>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.4 </li>
-  </ul>
-</div>
+<script src="search-v2.js"></script>
+<script src="searchdata-v2.js" async="async"></script>
+<footer><nav>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <p>Illumination Engine A Game Development Engine Written In C++. Created with <a href="https://doxygen.org/">Doxygen</a> 1.9.4 and <a href="https://mcss.mosra.cz/">m.css</a>.</p>
+      </div>
+    </div>
+  </div>
+</nav></footer>
 </body>
 </html>

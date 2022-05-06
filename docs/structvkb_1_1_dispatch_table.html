@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>vkb::DispatchTable struct | Illumination Engine A Game Development Engine Written In C++</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,600,600i%7CSource+Code+Pro:400,400i,600" />
+  <link rel="stylesheet" href="m-dark+documentation.compiled.css" />
+  <link rel="icon" href="IlluminationEngineLogo128.png" type="image/png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#22272e" />
+</head>
+<body>
+<header><nav id="navigation">
+  <div class="m-container">
+    <div class="m-row">
+      <a href="index.html" id="m-navbar-brand" class="m-col-t-8 m-col-m-none m-left-m"><img src="IlluminationEngineLogo128.png" alt="" />Illumination Engine <span class="m-thin">A Game Development Engine Written In C++</span></a>
+      <div class="m-col-t-4 m-hide-m m-text-right m-nopadr">
+        <a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+          <path id="m-doc-search-icon-path" d="m6 0c-3.31 0-6 2.69-6 6 0 3.31 2.69 6 6 6 1.49 0 2.85-0.541 3.89-1.44-0.0164 0.338 0.147 0.759 0.5 1.15l3.22 3.79c0.552 0.614 1.45 0.665 2 0.115 0.55-0.55 0.499-1.45-0.115-2l-3.79-3.22c-0.392-0.353-0.812-0.515-1.15-0.5 0.895-1.05 1.44-2.41 1.44-3.89 0-3.31-2.69-6-6-6zm0 1.56a4.44 4.44 0 0 1 4.44 4.44 4.44 4.44 0 0 1-4.44 4.44 4.44 4.44 0 0 1-4.44-4.44 4.44 4.44 0 0 1 4.44-4.44z"/>
+        </svg></a>
+        <a id="m-navbar-show" href="#navigation" title="Show navigation"></a>
+        <a id="m-navbar-hide" href="#" title="Hide navigation"></a>
+      </div>
+      <div id="m-navbar-collapse" class="m-col-t-12 m-show-m m-col-m-none m-right-m">
+        <div class="m-row">
+          <ol class="m-col-t-6 m-col-m-none">
+            <li><a href="https://joellogan.github.io">Main Page</a></li>
+            <li><a href="pages.html">Pages</a></li>
+          </ol>
+          <ol class="m-col-t-6 m-col-m-none" start="3">
+            <li><a href="annotated.html">Classes</a></li>
+            <li><a href="files.html">Files</a></li>
+            <li class="m-show-m"><a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+              <use href="#m-doc-search-icon-path" />
+            </svg></a></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav></header>
+<main><article>
+  <div class="m-container m-container-inflatable">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <h1>
+          <span class="m-breadcrumb"><a href="namespacevkb.html">vkb</a>::<wbr/></span>DispatchTable <span class="m-thin">struct</span>
+          <div class="m-doc-include m-code m-inverted m-text-right"><span class="cp">#include</span> <a class="cpf" href="_vk_bootstrap_dispatch_8h.html">&lt;Illumination-Engine/release-build/_deps/vk-bootstrap-src/src/VkBootstrapDispatch.h&gt;</a></div>
+        </h1>
+        <p><span></span></p>
+        <nav class="m-block m-default">
+          <h3>Contents</h3>
+          <ul>
+            <li>
+              Reference
+              <ul>
+                <li><a href="#typeless-methods">Constructors, destructors, conversion operators</a></li>
+                <li><a href="#pub-methods">Public functions</a></li>
+                <li><a href="#pub-attribs">Public variables</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+        <section id="typeless-methods">
+          <h2><a href="#typeless-methods">Constructors, destructors, conversion operators</a></h2>
+          <dl class="m-doc">
+            <dt id="a6cad35972eab082dee17dcedb4dc4cc8">
+              <span class="m-doc-wrap-bumper"><a href="#a6cad35972eab082dee17dcedb4dc4cc8" class="m-doc-self">DispatchTable</a>(</span><span class="m-doc-wrap">) <span class="m-label m-flat m-info">defaulted</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ac08ab94bc370e43bce3da74300ef7547">
+              <span class="m-doc-wrap-bumper"><a href="#ac08ab94bc370e43bce3da74300ef7547" class="m-doc-self">DispatchTable</a>(</span><span class="m-doc-wrap">VkDevice device,
+              PFN_vkGetDeviceProcAddr procAddr)</span>
+            </dt>
+            <dd><span></span></dd>
+          </dl>
+        </section>
+        <section id="pub-methods">
+          <h2><a href="#pub-methods">Public functions</a></h2>
+          <dl class="m-doc">
+            <dt id="acb0f44c45f76dc27da2ed9cfac40c91c">
+              <span class="m-doc-wrap-bumper">void <a href="#acb0f44c45f76dc27da2ed9cfac40c91c" class="m-doc-self">getDeviceQueue</a>(</span><span class="m-doc-wrap">uint32_t queueFamilyIndex,
+              uint32_t queueIndex,
+              VkQueue* pQueue) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ae2fc880f29bb682ee7301053c6181eba">
+              <span class="m-doc-wrap-bumper">auto <a href="#ae2fc880f29bb682ee7301053c6181eba" class="m-doc-self">queueSubmit</a>(</span><span class="m-doc-wrap">VkQueue queue,
+              uint32_t submitCount,
+              const VkSubmitInfo* pSubmits,
+              VkFence fence) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a751b0b42e41032093d1d026edd53c1dc">
+              <span class="m-doc-wrap-bumper">auto <a href="#a751b0b42e41032093d1d026edd53c1dc" class="m-doc-self">queueWaitIdle</a>(</span><span class="m-doc-wrap">VkQueue queue) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a770f27b7edba7ea40b2b8d9c3e383a71">
+              <span class="m-doc-wrap-bumper">auto <a href="#a770f27b7edba7ea40b2b8d9c3e383a71" class="m-doc-self">deviceWaitIdle</a>(</span><span class="m-doc-wrap">) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aa3b5ea008955ad1d50e66218085ce0ef">
+              <span class="m-doc-wrap-bumper">auto <a href="#aa3b5ea008955ad1d50e66218085ce0ef" class="m-doc-self">allocateMemory</a>(</span><span class="m-doc-wrap">const VkMemoryAllocateInfo* pAllocateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkDeviceMemory* pMemory) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aaad72ad0ac812d2817e09ed58ee98dd1">
+              <span class="m-doc-wrap-bumper">void <a href="#aaad72ad0ac812d2817e09ed58ee98dd1" class="m-doc-self">freeMemory</a>(</span><span class="m-doc-wrap">VkDeviceMemory memory,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad0cd97167c968b3cd6d335e3b8d952e0">
+              <span class="m-doc-wrap-bumper">auto <a href="#ad0cd97167c968b3cd6d335e3b8d952e0" class="m-doc-self">mapMemory</a>(</span><span class="m-doc-wrap">VkDeviceMemory memory,
+              VkDeviceSize offset,
+              VkDeviceSize size,
+              VkMemoryMapFlags flags,
+              void** ppData) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a6c0d520c6685ddb43af67b8cd5814e61">
+              <span class="m-doc-wrap-bumper">void <a href="#a6c0d520c6685ddb43af67b8cd5814e61" class="m-doc-self">unmapMemory</a>(</span><span class="m-doc-wrap">VkDeviceMemory memory) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a174e0b080a94c262395aa0a962550962">
+              <span class="m-doc-wrap-bumper">auto <a href="#a174e0b080a94c262395aa0a962550962" class="m-doc-self">flushMappedMemoryRanges</a>(</span><span class="m-doc-wrap">uint32_t memoryRangeCount,
+              const VkMappedMemoryRange* pMemoryRanges) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a86c2cceb625b47cea575a2df1c941909">
+              <span class="m-doc-wrap-bumper">auto <a href="#a86c2cceb625b47cea575a2df1c941909" class="m-doc-self">invalidateMappedMemoryRanges</a>(</span><span class="m-doc-wrap">uint32_t memoryRangeCount,
+              const VkMappedMemoryRange* pMemoryRanges) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a2fb08a732b8463c5ef838599933a849b">
+              <span class="m-doc-wrap-bumper">void <a href="#a2fb08a732b8463c5ef838599933a849b" class="m-doc-self">getDeviceMemoryCommitment</a>(</span><span class="m-doc-wrap">VkDeviceMemory memory,
+              VkDeviceSize* pCommittedMemoryInBytes) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad45355f44f7dcf9a7a973909014516c1">
+              <span class="m-doc-wrap-bumper">void <a href="#ad45355f44f7dcf9a7a973909014516c1" class="m-doc-self">getBufferMemoryRequirements</a>(</span><span class="m-doc-wrap">VkBuffer buffer,
+              VkMemoryRequirements* pMemoryRequirements) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9aea27d7e10a16881a1884a45e6013d7">
+              <span class="m-doc-wrap-bumper">auto <a href="#a9aea27d7e10a16881a1884a45e6013d7" class="m-doc-self">bindBufferMemory</a>(</span><span class="m-doc-wrap">VkBuffer buffer,
+              VkDeviceMemory memory,
+              VkDeviceSize memoryOffset) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a7d6b8ef5d9b232c04efaa71add3174e5">
+              <span class="m-doc-wrap-bumper">void <a href="#a7d6b8ef5d9b232c04efaa71add3174e5" class="m-doc-self">getImageMemoryRequirements</a>(</span><span class="m-doc-wrap">VkImage image,
+              VkMemoryRequirements* pMemoryRequirements) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ae35166c4248ecfa306a2d6427b2e4102">
+              <span class="m-doc-wrap-bumper">auto <a href="#ae35166c4248ecfa306a2d6427b2e4102" class="m-doc-self">bindImageMemory</a>(</span><span class="m-doc-wrap">VkImage image,
+              VkDeviceMemory memory,
+              VkDeviceSize memoryOffset) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a340eeadd542a688b5a51511329f1d9db">
+              <span class="m-doc-wrap-bumper">void <a href="#a340eeadd542a688b5a51511329f1d9db" class="m-doc-self">getImageSparseMemoryRequirements</a>(</span><span class="m-doc-wrap">VkImage image,
+              uint32_t* pSparseMemoryRequirementCount,
+              VkSparseImageMemoryRequirements* pSparseMemoryRequirements) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a7fe58ab51957fd17e5ff865ed7bf50fa">
+              <span class="m-doc-wrap-bumper">auto <a href="#a7fe58ab51957fd17e5ff865ed7bf50fa" class="m-doc-self">queueBindSparse</a>(</span><span class="m-doc-wrap">VkQueue queue,
+              uint32_t bindInfoCount,
+              const VkBindSparseInfo* pBindInfo,
+              VkFence fence) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a95d4fd86eeb1213b694999d3af94912c">
+              <span class="m-doc-wrap-bumper">auto <a href="#a95d4fd86eeb1213b694999d3af94912c" class="m-doc-self">createFence</a>(</span><span class="m-doc-wrap">const VkFenceCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkFence* pFence) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9acaff6d41af6454205ec56d9dee0248">
+              <span class="m-doc-wrap-bumper">void <a href="#a9acaff6d41af6454205ec56d9dee0248" class="m-doc-self">destroyFence</a>(</span><span class="m-doc-wrap">VkFence fence,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab6eef9f0500827b4367fc0b2a1a43675">
+              <span class="m-doc-wrap-bumper">auto <a href="#ab6eef9f0500827b4367fc0b2a1a43675" class="m-doc-self">resetFences</a>(</span><span class="m-doc-wrap">uint32_t fenceCount,
+              const VkFence* pFences) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4efb1fccc59a09cc03fe93c4cfc5168a">
+              <span class="m-doc-wrap-bumper">auto <a href="#a4efb1fccc59a09cc03fe93c4cfc5168a" class="m-doc-self">getFenceStatus</a>(</span><span class="m-doc-wrap">VkFence fence) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a3128675977563f215103ebfd3bdc106b">
+              <span class="m-doc-wrap-bumper">auto <a href="#a3128675977563f215103ebfd3bdc106b" class="m-doc-self">waitForFences</a>(</span><span class="m-doc-wrap">uint32_t fenceCount,
+              const VkFence* pFences,
+              VkBool32 waitAll,
+              uint64_t timeout) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a8610abf5e3ea186194dd357bc85866fd">
+              <span class="m-doc-wrap-bumper">auto <a href="#a8610abf5e3ea186194dd357bc85866fd" class="m-doc-self">createSemaphore</a>(</span><span class="m-doc-wrap">const VkSemaphoreCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkSemaphore* pSemaphore) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a993dc7a9792d8eb46bedbe9881b7bc38">
+              <span class="m-doc-wrap-bumper">void <a href="#a993dc7a9792d8eb46bedbe9881b7bc38" class="m-doc-self">destroySemaphore</a>(</span><span class="m-doc-wrap">VkSemaphore semaphore,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a2c332bb6219490f50ccfcfe6c83da81f">
+              <span class="m-doc-wrap-bumper">auto <a href="#a2c332bb6219490f50ccfcfe6c83da81f" class="m-doc-self">createEvent</a>(</span><span class="m-doc-wrap">const VkEventCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkEvent* pEvent) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af388be9073e4fd31ee6f51d2b463bbb1">
+              <span class="m-doc-wrap-bumper">void <a href="#af388be9073e4fd31ee6f51d2b463bbb1" class="m-doc-self">destroyEvent</a>(</span><span class="m-doc-wrap">VkEvent event,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad28f9c2357a5ddc5be258a5ddd8cc111">
+              <span class="m-doc-wrap-bumper">auto <a href="#ad28f9c2357a5ddc5be258a5ddd8cc111" class="m-doc-self">getEventStatus</a>(</span><span class="m-doc-wrap">VkEvent event) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af0cb6dcb79665374865ad719dbca473c">
+              <span class="m-doc-wrap-bumper">auto <a href="#af0cb6dcb79665374865ad719dbca473c" class="m-doc-self">setEvent</a>(</span><span class="m-doc-wrap">VkEvent event) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9c4e11012538d8701fd4c1df19b78300">
+              <span class="m-doc-wrap-bumper">auto <a href="#a9c4e11012538d8701fd4c1df19b78300" class="m-doc-self">resetEvent</a>(</span><span class="m-doc-wrap">VkEvent event) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="acd060ac0e849746b3b6ffaa9303e3958">
+              <span class="m-doc-wrap-bumper">auto <a href="#acd060ac0e849746b3b6ffaa9303e3958" class="m-doc-self">createQueryPool</a>(</span><span class="m-doc-wrap">const VkQueryPoolCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkQueryPool* pQueryPool) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a298360f9db83d8fa91514e3fc4e26b88">
+              <span class="m-doc-wrap-bumper">void <a href="#a298360f9db83d8fa91514e3fc4e26b88" class="m-doc-self">destroyQueryPool</a>(</span><span class="m-doc-wrap">VkQueryPool queryPool,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a95d4cd72b70fe95ccacefbd1433f2682">
+              <span class="m-doc-wrap-bumper">auto <a href="#a95d4cd72b70fe95ccacefbd1433f2682" class="m-doc-self">getQueryPoolResults</a>(</span><span class="m-doc-wrap">VkQueryPool queryPool,
+              uint32_t firstQuery,
+              uint32_t queryCount,
+              size_t dataSize,
+              void* pData,
+              VkDeviceSize stride,
+              VkQueryResultFlags flags) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ae988ccc48d349f678b2c264e3b84a8d0">
+              <span class="m-doc-wrap-bumper">auto <a href="#ae988ccc48d349f678b2c264e3b84a8d0" class="m-doc-self">createBuffer</a>(</span><span class="m-doc-wrap">const VkBufferCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkBuffer* pBuffer) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab9f0ae14dd584f9cabea23f6dd02877b">
+              <span class="m-doc-wrap-bumper">void <a href="#ab9f0ae14dd584f9cabea23f6dd02877b" class="m-doc-self">destroyBuffer</a>(</span><span class="m-doc-wrap">VkBuffer buffer,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9630ae752cf6aa2a9fed0a73de601cfe">
+              <span class="m-doc-wrap-bumper">auto <a href="#a9630ae752cf6aa2a9fed0a73de601cfe" class="m-doc-self">createBufferView</a>(</span><span class="m-doc-wrap">const VkBufferViewCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkBufferView* pView) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aa5e160ce0639dfafc33074486640a2e6">
+              <span class="m-doc-wrap-bumper">void <a href="#aa5e160ce0639dfafc33074486640a2e6" class="m-doc-self">destroyBufferView</a>(</span><span class="m-doc-wrap">VkBufferView bufferView,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a93e8a56a2e8fe2955aeac61f56536cb9">
+              <span class="m-doc-wrap-bumper">auto <a href="#a93e8a56a2e8fe2955aeac61f56536cb9" class="m-doc-self">createImage</a>(</span><span class="m-doc-wrap">const VkImageCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkImage* pImage) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af3fbf04f6ced6e8df0581a26294b015b">
+              <span class="m-doc-wrap-bumper">void <a href="#af3fbf04f6ced6e8df0581a26294b015b" class="m-doc-self">destroyImage</a>(</span><span class="m-doc-wrap">VkImage image,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9a847bf7525b55bec3a5084a24930276">
+              <span class="m-doc-wrap-bumper">void <a href="#a9a847bf7525b55bec3a5084a24930276" class="m-doc-self">getImageSubresourceLayout</a>(</span><span class="m-doc-wrap">VkImage image,
+              const VkImageSubresource* pSubresource,
+              VkSubresourceLayout* pLayout) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab429b35dc7cd6c424ed33971112f6187">
+              <span class="m-doc-wrap-bumper">auto <a href="#ab429b35dc7cd6c424ed33971112f6187" class="m-doc-self">createImageView</a>(</span><span class="m-doc-wrap">const VkImageViewCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkImageView* pView) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a22d4b2a3f31baebe6cb96ef46470df17">
+              <span class="m-doc-wrap-bumper">void <a href="#a22d4b2a3f31baebe6cb96ef46470df17" class="m-doc-self">destroyImageView</a>(</span><span class="m-doc-wrap">VkImageView imageView,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="acc1c3a0ab68260ac159adc2d5701b75e">
+              <span class="m-doc-wrap-bumper">auto <a href="#acc1c3a0ab68260ac159adc2d5701b75e" class="m-doc-self">createShaderModule</a>(</span><span class="m-doc-wrap">const VkShaderModuleCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkShaderModule* pShaderModule) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af8ca175e1a8dc071e7a650307796292a">
+              <span class="m-doc-wrap-bumper">void <a href="#af8ca175e1a8dc071e7a650307796292a" class="m-doc-self">destroyShaderModule</a>(</span><span class="m-doc-wrap">VkShaderModule shaderModule,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aaf7623f29ec8e9238d5a01e9c8bce626">
+              <span class="m-doc-wrap-bumper">auto <a href="#aaf7623f29ec8e9238d5a01e9c8bce626" class="m-doc-self">createPipelineCache</a>(</span><span class="m-doc-wrap">const VkPipelineCacheCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkPipelineCache* pPipelineCache) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ae576c0987ec940d8636e4de52dc396a6">
+              <span class="m-doc-wrap-bumper">void <a href="#ae576c0987ec940d8636e4de52dc396a6" class="m-doc-self">destroyPipelineCache</a>(</span><span class="m-doc-wrap">VkPipelineCache pipelineCache,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aab6a2b9d4c25bef94ca62b5c46e9f136">
+              <span class="m-doc-wrap-bumper">auto <a href="#aab6a2b9d4c25bef94ca62b5c46e9f136" class="m-doc-self">getPipelineCacheData</a>(</span><span class="m-doc-wrap">VkPipelineCache pipelineCache,
+              size_t* pDataSize,
+              void* pData) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aa2fb33c74a0be30510a1127d12a026d8">
+              <span class="m-doc-wrap-bumper">auto <a href="#aa2fb33c74a0be30510a1127d12a026d8" class="m-doc-self">mergePipelineCaches</a>(</span><span class="m-doc-wrap">VkPipelineCache dstCache,
+              uint32_t srcCacheCount,
+              const VkPipelineCache* pSrcCaches) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="afd3ae644b642d4b5a9f48843b265145d">
+              <span class="m-doc-wrap-bumper">auto <a href="#afd3ae644b642d4b5a9f48843b265145d" class="m-doc-self">createGraphicsPipelines</a>(</span><span class="m-doc-wrap">VkPipelineCache pipelineCache,
+              uint32_t createInfoCount,
+              const VkGraphicsPipelineCreateInfo* pCreateInfos,
+              const VkAllocationCallbacks* pAllocator,
+              VkPipeline* pPipelines) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad1f0905f3ba069a5d98748b6478432f5">
+              <span class="m-doc-wrap-bumper">auto <a href="#ad1f0905f3ba069a5d98748b6478432f5" class="m-doc-self">createComputePipelines</a>(</span><span class="m-doc-wrap">VkPipelineCache pipelineCache,
+              uint32_t createInfoCount,
+              const VkComputePipelineCreateInfo* pCreateInfos,
+              const VkAllocationCallbacks* pAllocator,
+              VkPipeline* pPipelines) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9b6d60d587c8a6d4362ecee82e68be30">
+              <span class="m-doc-wrap-bumper">void <a href="#a9b6d60d587c8a6d4362ecee82e68be30" class="m-doc-self">destroyPipeline</a>(</span><span class="m-doc-wrap">VkPipeline pipeline,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a267c928b441df2e0312bd99b2c009b9e">
+              <span class="m-doc-wrap-bumper">auto <a href="#a267c928b441df2e0312bd99b2c009b9e" class="m-doc-self">createPipelineLayout</a>(</span><span class="m-doc-wrap">const VkPipelineLayoutCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkPipelineLayout* pPipelineLayout) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a23c7616a08f6699dc39721824244b664">
+              <span class="m-doc-wrap-bumper">void <a href="#a23c7616a08f6699dc39721824244b664" class="m-doc-self">destroyPipelineLayout</a>(</span><span class="m-doc-wrap">VkPipelineLayout pipelineLayout,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aa1fd5977ac30200909250942d06ca122">
+              <span class="m-doc-wrap-bumper">auto <a href="#aa1fd5977ac30200909250942d06ca122" class="m-doc-self">createSampler</a>(</span><span class="m-doc-wrap">const VkSamplerCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkSampler* pSampler) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a211eb28bf51f5c9959705605a3ca67ca">
+              <span class="m-doc-wrap-bumper">void <a href="#a211eb28bf51f5c9959705605a3ca67ca" class="m-doc-self">destroySampler</a>(</span><span class="m-doc-wrap">VkSampler sampler,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a8aed279af976066883e76b1735e7fb23">
+              <span class="m-doc-wrap-bumper">auto <a href="#a8aed279af976066883e76b1735e7fb23" class="m-doc-self">createDescriptorSetLayout</a>(</span><span class="m-doc-wrap">const VkDescriptorSetLayoutCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkDescriptorSetLayout* pSetLayout) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a15978f9d683adb3fda4652e7a1cf4e33">
+              <span class="m-doc-wrap-bumper">void <a href="#a15978f9d683adb3fda4652e7a1cf4e33" class="m-doc-self">destroyDescriptorSetLayout</a>(</span><span class="m-doc-wrap">VkDescriptorSetLayout descriptorSetLayout,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a43d82c748d34cfb65441514a9458cf42">
+              <span class="m-doc-wrap-bumper">auto <a href="#a43d82c748d34cfb65441514a9458cf42" class="m-doc-self">createDescriptorPool</a>(</span><span class="m-doc-wrap">const VkDescriptorPoolCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkDescriptorPool* pDescriptorPool) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="acce7c8104da770e556708ecd52741114">
+              <span class="m-doc-wrap-bumper">void <a href="#acce7c8104da770e556708ecd52741114" class="m-doc-self">destroyDescriptorPool</a>(</span><span class="m-doc-wrap">VkDescriptorPool descriptorPool,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a10fb8c190da422c0d31798a0808e3466">
+              <span class="m-doc-wrap-bumper">auto <a href="#a10fb8c190da422c0d31798a0808e3466" class="m-doc-self">resetDescriptorPool</a>(</span><span class="m-doc-wrap">VkDescriptorPool descriptorPool,
+              VkDescriptorPoolResetFlags flags) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a01e224ce0e6afc78dee716b3b769f886">
+              <span class="m-doc-wrap-bumper">auto <a href="#a01e224ce0e6afc78dee716b3b769f886" class="m-doc-self">allocateDescriptorSets</a>(</span><span class="m-doc-wrap">const VkDescriptorSetAllocateInfo* pAllocateInfo,
+              VkDescriptorSet* pDescriptorSets) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a112f1517614b02d3890a82bbfbe45a1b">
+              <span class="m-doc-wrap-bumper">auto <a href="#a112f1517614b02d3890a82bbfbe45a1b" class="m-doc-self">freeDescriptorSets</a>(</span><span class="m-doc-wrap">VkDescriptorPool descriptorPool,
+              uint32_t descriptorSetCount,
+              const VkDescriptorSet* pDescriptorSets) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ac296165393b58d91b389b3f40f4823b1">
+              <span class="m-doc-wrap-bumper">void <a href="#ac296165393b58d91b389b3f40f4823b1" class="m-doc-self">updateDescriptorSets</a>(</span><span class="m-doc-wrap">uint32_t descriptorWriteCount,
+              const VkWriteDescriptorSet* pDescriptorWrites,
+              uint32_t descriptorCopyCount,
+              const VkCopyDescriptorSet* pDescriptorCopies) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="afe76846b929bf8660cfb7be4fab536fb">
+              <span class="m-doc-wrap-bumper">auto <a href="#afe76846b929bf8660cfb7be4fab536fb" class="m-doc-self">createFramebuffer</a>(</span><span class="m-doc-wrap">const VkFramebufferCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkFramebuffer* pFramebuffer) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad8fe1f9eb62676f9e5757555f34518cb">
+              <span class="m-doc-wrap-bumper">void <a href="#ad8fe1f9eb62676f9e5757555f34518cb" class="m-doc-self">destroyFramebuffer</a>(</span><span class="m-doc-wrap">VkFramebuffer framebuffer,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9eb9e81d044f19dcc54b59cc38562345">
+              <span class="m-doc-wrap-bumper">auto <a href="#a9eb9e81d044f19dcc54b59cc38562345" class="m-doc-self">createRenderPass</a>(</span><span class="m-doc-wrap">const VkRenderPassCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkRenderPass* pRenderPass) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab761bcbbab89ae6d1f36ecc28818be04">
+              <span class="m-doc-wrap-bumper">void <a href="#ab761bcbbab89ae6d1f36ecc28818be04" class="m-doc-self">destroyRenderPass</a>(</span><span class="m-doc-wrap">VkRenderPass renderPass,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a0ea07026cd4de324326770c5a0bf827c">
+              <span class="m-doc-wrap-bumper">void <a href="#a0ea07026cd4de324326770c5a0bf827c" class="m-doc-self">getRenderAreaGranularity</a>(</span><span class="m-doc-wrap">VkRenderPass renderPass,
+              VkExtent2D* pGranularity) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab53ad58d7b86acf906a90b183194a147">
+              <span class="m-doc-wrap-bumper">auto <a href="#ab53ad58d7b86acf906a90b183194a147" class="m-doc-self">createCommandPool</a>(</span><span class="m-doc-wrap">const VkCommandPoolCreateInfo* pCreateInfo,
+              const VkAllocationCallbacks* pAllocator,
+              VkCommandPool* pCommandPool) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9e0659e642f5290c4a114a8eab9e6ed6">
+              <span class="m-doc-wrap-bumper">void <a href="#a9e0659e642f5290c4a114a8eab9e6ed6" class="m-doc-self">destroyCommandPool</a>(</span><span class="m-doc-wrap">VkCommandPool commandPool,
+              const VkAllocationCallbacks* pAllocator) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="afc0e79645812e20952128fc8a1e81932">
+              <span class="m-doc-wrap-bumper">auto <a href="#afc0e79645812e20952128fc8a1e81932" class="m-doc-self">resetCommandPool</a>(</span><span class="m-doc-wrap">VkCommandPool commandPool,
+              VkCommandPoolResetFlags flags) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a41cba2d19ac381af38f1849b9787f10c">
+              <span class="m-doc-wrap-bumper">auto <a href="#a41cba2d19ac381af38f1849b9787f10c" class="m-doc-self">allocateCommandBuffers</a>(</span><span class="m-doc-wrap">const VkCommandBufferAllocateInfo* pAllocateInfo,
+              VkCommandBuffer* pCommandBuffers) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a968c68ffd1d7a7564237783654acb986">
+              <span class="m-doc-wrap-bumper">void <a href="#a968c68ffd1d7a7564237783654acb986" class="m-doc-self">freeCommandBuffers</a>(</span><span class="m-doc-wrap">VkCommandPool commandPool,
+              uint32_t commandBufferCount,
+              const VkCommandBuffer* pCommandBuffers) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad7e24e6a71c69e0d3c38b1138a6160df">
+              <span class="m-doc-wrap-bumper">auto <a href="#ad7e24e6a71c69e0d3c38b1138a6160df" class="m-doc-self">beginCommandBuffer</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              const VkCommandBufferBeginInfo* pBeginInfo) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9cbcf3ae09ed4ca1bf0690100b33e268">
+              <span class="m-doc-wrap-bumper">auto <a href="#a9cbcf3ae09ed4ca1bf0690100b33e268" class="m-doc-self">endCommandBuffer</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab45465d80cca71d2722215a9bdc3a4f8">
+              <span class="m-doc-wrap-bumper">auto <a href="#ab45465d80cca71d2722215a9bdc3a4f8" class="m-doc-self">resetCommandBuffer</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkCommandBufferResetFlags flags) const -&gt; VkResult <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a3fde6d1337ed75bfcf810ea36761b015">
+              <span class="m-doc-wrap-bumper">void <a href="#a3fde6d1337ed75bfcf810ea36761b015" class="m-doc-self">cmdBindPipeline</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkPipelineBindPoint pipelineBindPoint,
+              VkPipeline pipeline) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ac915f78314ff436f4ef678a26c893320">
+              <span class="m-doc-wrap-bumper">void <a href="#ac915f78314ff436f4ef678a26c893320" class="m-doc-self">cmdSetViewport</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              uint32_t firstViewport,
+              uint32_t viewportCount,
+              const VkViewport* pViewports) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4e4337aa509b4e87f5fe1de1bba2536b">
+              <span class="m-doc-wrap-bumper">void <a href="#a4e4337aa509b4e87f5fe1de1bba2536b" class="m-doc-self">cmdSetScissor</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              uint32_t firstScissor,
+              uint32_t scissorCount,
+              const VkRect2D* pScissors) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a1ff2f7673cde190d5ba65fd46f6ca654">
+              <span class="m-doc-wrap-bumper">void <a href="#a1ff2f7673cde190d5ba65fd46f6ca654" class="m-doc-self">cmdSetLineWidth</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              float lineWidth) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a50a6debcfe830fe20a173f5096dd591e">
+              <span class="m-doc-wrap-bumper">void <a href="#a50a6debcfe830fe20a173f5096dd591e" class="m-doc-self">cmdSetDepthBias</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              float depthBiasConstantFactor,
+              float depthBiasClamp,
+              float depthBiasSlopeFactor) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a02115d2b0f6e7c6e1715b39945daf6e9">
+              <span class="m-doc-wrap-bumper">void <a href="#a02115d2b0f6e7c6e1715b39945daf6e9" class="m-doc-self">cmdSetBlendConstants</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              float blendConstants[4]) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="adf19676f99daeb34365b1f07911bb5ef">
+              <span class="m-doc-wrap-bumper">void <a href="#adf19676f99daeb34365b1f07911bb5ef" class="m-doc-self">cmdSetDepthBounds</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              float minDepthBounds,
+              float maxDepthBounds) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a618586f35e6587acd9c02b1a598c0658">
+              <span class="m-doc-wrap-bumper">void <a href="#a618586f35e6587acd9c02b1a598c0658" class="m-doc-self">cmdSetStencilCompareMask</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkStencilFaceFlags faceMask,
+              uint32_t compareMask) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a36d42790f09c81c9f99cb8d6e642c57f">
+              <span class="m-doc-wrap-bumper">void <a href="#a36d42790f09c81c9f99cb8d6e642c57f" class="m-doc-self">cmdSetStencilWriteMask</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkStencilFaceFlags faceMask,
+              uint32_t writeMask) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a197f48782c7f39b1069281018e92966d">
+              <span class="m-doc-wrap-bumper">void <a href="#a197f48782c7f39b1069281018e92966d" class="m-doc-self">cmdSetStencilReference</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkStencilFaceFlags faceMask,
+              uint32_t reference) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a371bf5f83c8cb5608b8ab40117d9887a">
+              <span class="m-doc-wrap-bumper">void <a href="#a371bf5f83c8cb5608b8ab40117d9887a" class="m-doc-self">cmdBindDescriptorSets</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkPipelineBindPoint pipelineBindPoint,
+              VkPipelineLayout layout,
+              uint32_t firstSet,
+              uint32_t descriptorSetCount,
+              const VkDescriptorSet* pDescriptorSets,
+              uint32_t dynamicOffsetCount,
+              const uint32_t* pDynamicOffsets) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a38428a2099697dd8504dbfbd4f7f255b">
+              <span class="m-doc-wrap-bumper">void <a href="#a38428a2099697dd8504dbfbd4f7f255b" class="m-doc-self">cmdBindIndexBuffer</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkBuffer buffer,
+              VkDeviceSize offset,
+              VkIndexType indexType) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aff70eadd27ca04783c542fc628fe1e94">
+              <span class="m-doc-wrap-bumper">void <a href="#aff70eadd27ca04783c542fc628fe1e94" class="m-doc-self">cmdBindVertexBuffers</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              uint32_t firstBinding,
+              uint32_t bindingCount,
+              const VkBuffer* pBuffers,
+              const VkDeviceSize* pOffsets) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ac1098c4100a0b8f28cd46bb83fb16c38">
+              <span class="m-doc-wrap-bumper">void <a href="#ac1098c4100a0b8f28cd46bb83fb16c38" class="m-doc-self">cmdDraw</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              uint32_t vertexCount,
+              uint32_t instanceCount,
+              uint32_t firstVertex,
+              uint32_t firstInstance) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a3d2677dc925259e86428c5c12172a715">
+              <span class="m-doc-wrap-bumper">void <a href="#a3d2677dc925259e86428c5c12172a715" class="m-doc-self">cmdDrawIndexed</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              uint32_t indexCount,
+              uint32_t instanceCount,
+              uint32_t firstIndex,
+              int32_t vertexOffset,
+              uint32_t firstInstance) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4157755869417441b881fb1a9536ffe4">
+              <span class="m-doc-wrap-bumper">void <a href="#a4157755869417441b881fb1a9536ffe4" class="m-doc-self">cmdDrawIndirect</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkBuffer buffer,
+              VkDeviceSize offset,
+              uint32_t drawCount,
+              uint32_t stride) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab68184b5fa6fcf979cd59371b9ec9734">
+              <span class="m-doc-wrap-bumper">void <a href="#ab68184b5fa6fcf979cd59371b9ec9734" class="m-doc-self">cmdDrawIndexedIndirect</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkBuffer buffer,
+              VkDeviceSize offset,
+              uint32_t drawCount,
+              uint32_t stride) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a37a39dd166d401d1d530ffe07dd955c5">
+              <span class="m-doc-wrap-bumper">void <a href="#a37a39dd166d401d1d530ffe07dd955c5" class="m-doc-self">cmdDispatch</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              uint32_t groupCountX,
+              uint32_t groupCountY,
+              uint32_t groupCountZ) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aa48f498c9feea058219fb2539c3cd753">
+              <span class="m-doc-wrap-bumper">void <a href="#aa48f498c9feea058219fb2539c3cd753" class="m-doc-self">cmdDispatchIndirect</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkBuffer buffer,
+              VkDeviceSize offset) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a60fed94a02aea2a9dc1eb524970159be">
+              <span class="m-doc-wrap-bumper">void <a href="#a60fed94a02aea2a9dc1eb524970159be" class="m-doc-self">cmdCopyBuffer</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkBuffer srcBuffer,
+              VkBuffer dstBuffer,
+              uint32_t regionCount,
+              const VkBufferCopy* pRegions) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="acf7c33de244777a1c3aa66777826e48c">
+              <span class="m-doc-wrap-bumper">void <a href="#acf7c33de244777a1c3aa66777826e48c" class="m-doc-self">cmdCopyImage</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkImage srcImage,
+              VkImageLayout srcImageLayout,
+              VkImage dstImage,
+              VkImageLayout dstImageLayout,
+              uint32_t regionCount,
+              const VkImageCopy* pRegions) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af78e9e03adadb66b73fe424a6570dada">
+              <span class="m-doc-wrap-bumper">void <a href="#af78e9e03adadb66b73fe424a6570dada" class="m-doc-self">cmdBlitImage</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkImage srcImage,
+              VkImageLayout srcImageLayout,
+              VkImage dstImage,
+              VkImageLayout dstImageLayout,
+              uint32_t regionCount,
+              const VkImageBlit* pRegions,
+              VkFilter filter) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aec8a7dbb3142f62c883c7c2ab465c1d5">
+              <span class="m-doc-wrap-bumper">void <a href="#aec8a7dbb3142f62c883c7c2ab465c1d5" class="m-doc-self">cmdCopyBufferToImage</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkBuffer srcBuffer,
+              VkImage dstImage,
+              VkImageLayout dstImageLayout,
+              uint32_t regionCount,
+              const VkBufferImageCopy* pRegions) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a762067bcb6d376d9d9963044a8658c4b">
+              <span class="m-doc-wrap-bumper">void <a href="#a762067bcb6d376d9d9963044a8658c4b" class="m-doc-self">cmdCopyImageToBuffer</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkImage srcImage,
+              VkImageLayout srcImageLayout,
+              VkBuffer dstBuffer,
+              uint32_t regionCount,
+              const VkBufferImageCopy* pRegions) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af5294b19749956c3f84e57f69b06d78f">
+              <span class="m-doc-wrap-bumper">void <a href="#af5294b19749956c3f84e57f69b06d78f" class="m-doc-self">cmdUpdateBuffer</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkBuffer dstBuffer,
+              VkDeviceSize dstOffset,
+              VkDeviceSize dataSize,
+              const void* pData) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ac544ba5f5d063c731fdffbc6756af66f">
+              <span class="m-doc-wrap-bumper">void <a href="#ac544ba5f5d063c731fdffbc6756af66f" class="m-doc-self">cmdFillBuffer</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkBuffer dstBuffer,
+              VkDeviceSize dstOffset,
+              VkDeviceSize size,
+              uint32_t data) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a2d2616e5949c6d23890df7ddedf32f98">
+              <span class="m-doc-wrap-bumper">void <a href="#a2d2616e5949c6d23890df7ddedf32f98" class="m-doc-self">cmdClearColorImage</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkImage image,
+              VkImageLayout imageLayout,
+              const VkClearColorValue* pColor,
+              uint32_t rangeCount,
+              const VkImageSubresourceRange* pRanges) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad6aff8ea5866b7f75bf105d1630fc73e">
+              <span class="m-doc-wrap-bumper">void <a href="#ad6aff8ea5866b7f75bf105d1630fc73e" class="m-doc-self">cmdClearDepthStencilImage</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkImage image,
+              VkImageLayout imageLayout,
+              const VkClearDepthStencilValue* pDepthStencil,
+              uint32_t rangeCount,
+              const VkImageSubresourceRange* pRanges) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab1df9a107eee18aa722a763974dd9bfa">
+              <span class="m-doc-wrap-bumper">void <a href="#ab1df9a107eee18aa722a763974dd9bfa" class="m-doc-self">cmdClearAttachments</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              uint32_t attachmentCount,
+              const VkClearAttachment* pAttachments,
+              uint32_t rectCount,
+              const VkClearRect* pRects) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a5e192f473ed2efa27671f6d9c2f354b6">
+              <span class="m-doc-wrap-bumper">void <a href="#a5e192f473ed2efa27671f6d9c2f354b6" class="m-doc-self">cmdResolveImage</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkImage srcImage,
+              VkImageLayout srcImageLayout,
+              VkImage dstImage,
+              VkImageLayout dstImageLayout,
+              uint32_t regionCount,
+              const VkImageResolve* pRegions) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a5f0135c9850bed03fdb07e033ec67ae5">
+              <span class="m-doc-wrap-bumper">void <a href="#a5f0135c9850bed03fdb07e033ec67ae5" class="m-doc-self">cmdSetEvent</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkEvent event,
+              VkPipelineStageFlags stageMask) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4fd2eea7b80dc8da3a2459d47a3f5d68">
+              <span class="m-doc-wrap-bumper">void <a href="#a4fd2eea7b80dc8da3a2459d47a3f5d68" class="m-doc-self">cmdResetEvent</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkEvent event,
+              VkPipelineStageFlags stageMask) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a3c471d882697d8621d2d59af49a116a1">
+              <span class="m-doc-wrap-bumper">void <a href="#a3c471d882697d8621d2d59af49a116a1" class="m-doc-self">cmdWaitEvents</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              uint32_t eventCount,
+              const VkEvent* pEvents,
+              VkPipelineStageFlags srcStageMask,
+              VkPipelineStageFlags dstStageMask,
+              uint32_t memoryBarrierCount,
+              const VkMemoryBarrier* pMemoryBarriers,
+              uint32_t bufferMemoryBarrierCount,
+              const VkBufferMemoryBarrier* pBufferMemoryBarriers,
+              uint32_t imageMemoryBarrierCount,
+              const VkImageMemoryBarrier* pImageMemoryBarriers) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a8cc1fb8bf07d2f93a4e1e9c3367c0491">
+              <span class="m-doc-wrap-bumper">void <a href="#a8cc1fb8bf07d2f93a4e1e9c3367c0491" class="m-doc-self">cmdPipelineBarrier</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkPipelineStageFlags srcStageMask,
+              VkPipelineStageFlags dstStageMask,
+              VkDependencyFlags dependencyFlags,
+              uint32_t memoryBarrierCount,
+              const VkMemoryBarrier* pMemoryBarriers,
+              uint32_t bufferMemoryBarrierCount,
+              const VkBufferMemoryBarrier* pBufferMemoryBarriers,
+              uint32_t imageMemoryBarrierCount,
+              const VkImageMemoryBarrier* pImageMemoryBarriers) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aed88feceac5dc981ea082f35be060d1c">
+              <span class="m-doc-wrap-bumper">void <a href="#aed88feceac5dc981ea082f35be060d1c" class="m-doc-self">cmdBeginQuery</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkQueryPool queryPool,
+              uint32_t query,
+              VkQueryControlFlags flags) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a5c2c5c774d396e2c8d6b523725c4aa9c">
+              <span class="m-doc-wrap-bumper">void <a href="#a5c2c5c774d396e2c8d6b523725c4aa9c" class="m-doc-self">cmdEndQuery</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkQueryPool queryPool,
+              uint32_t query) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aa07d9a528a76cbcfa39070a752aab319">
+              <span class="m-doc-wrap-bumper">void <a href="#aa07d9a528a76cbcfa39070a752aab319" class="m-doc-self">cmdResetQueryPool</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkQueryPool queryPool,
+              uint32_t firstQuery,
+              uint32_t queryCount) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a014cec62905fc17c8d19b1e0ace4ab11">
+              <span class="m-doc-wrap-bumper">void <a href="#a014cec62905fc17c8d19b1e0ace4ab11" class="m-doc-self">cmdWriteTimestamp</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkPipelineStageFlagBits pipelineStage,
+              VkQueryPool queryPool,
+              uint32_t query) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ac00a98bdb5a665e6189cf1c7e6f43897">
+              <span class="m-doc-wrap-bumper">void <a href="#ac00a98bdb5a665e6189cf1c7e6f43897" class="m-doc-self">cmdCopyQueryPoolResults</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkQueryPool queryPool,
+              uint32_t firstQuery,
+              uint32_t queryCount,
+              VkBuffer dstBuffer,
+              VkDeviceSize dstOffset,
+              VkDeviceSize stride,
+              VkQueryResultFlags flags) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a38482a9cfddf69a860554b621fec5a0a">
+              <span class="m-doc-wrap-bumper">void <a href="#a38482a9cfddf69a860554b621fec5a0a" class="m-doc-self">cmdPushConstants</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkPipelineLayout layout,
+              VkShaderStageFlags stageFlags,
+              uint32_t offset,
+              uint32_t size,
+              const void* pValues) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a5d9e29560bbc749750b7dcee0f0970d0">
+              <span class="m-doc-wrap-bumper">void <a href="#a5d9e29560bbc749750b7dcee0f0970d0" class="m-doc-self">cmdBeginRenderPass</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              const VkRenderPassBeginInfo* pRenderPassBegin,
+              VkSubpassContents contents) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a73b01d641ffae563f598fffc58b0869f">
+              <span class="m-doc-wrap-bumper">void <a href="#a73b01d641ffae563f598fffc58b0869f" class="m-doc-self">cmdNextSubpass</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              VkSubpassContents contents) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aefefc181f42269ec79e5444400894693">
+              <span class="m-doc-wrap-bumper">void <a href="#aefefc181f42269ec79e5444400894693" class="m-doc-self">cmdEndRenderPass</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="abec17e280a0c3a7dc5b1520c4d3358ad">
+              <span class="m-doc-wrap-bumper">void <a href="#abec17e280a0c3a7dc5b1520c4d3358ad" class="m-doc-self">cmdExecuteCommands</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer,
+              uint32_t commandBufferCount,
+              const VkCommandBuffer* pCommandBuffers) const <span class="m-label m-flat m-success">noexcept</span></span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aff933bb47312afededafa0d68f215304">
+              <span class="m-doc-wrap-bumper">auto <a href="#aff933bb47312afededafa0d68f215304" class="m-doc-self">is_populated</a>(</span><span class="m-doc-wrap">) const -&gt; bool</span>
+            </dt>
+            <dd><span></span></dd>
+          </dl>
+        </section>
+        <section id="pub-attribs">
+          <h2><a href="#pub-attribs">Public variables</a></h2>
+          <dl class="m-doc">
+            <dt id="a6a29d8358a34c683131d1cd228664537">
+              PFN_vkGetDeviceQueue <a href="#a6a29d8358a34c683131d1cd228664537" class="m-doc-self">fp_vkGetDeviceQueue</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a275efaa102f07ba64239520883184370">
+              PFN_vkQueueSubmit <a href="#a275efaa102f07ba64239520883184370" class="m-doc-self">fp_vkQueueSubmit</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af1684bc2ba9a1e2e3824d174fc6c1e05">
+              PFN_vkQueueWaitIdle <a href="#af1684bc2ba9a1e2e3824d174fc6c1e05" class="m-doc-self">fp_vkQueueWaitIdle</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a7ef5b3fe13581e9d3dc85801eb567645">
+              PFN_vkDeviceWaitIdle <a href="#a7ef5b3fe13581e9d3dc85801eb567645" class="m-doc-self">fp_vkDeviceWaitIdle</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a95142187e46004b78007f08e74855dbd">
+              PFN_vkAllocateMemory <a href="#a95142187e46004b78007f08e74855dbd" class="m-doc-self">fp_vkAllocateMemory</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a083b4938c2c699d913da608c526d7979">
+              PFN_vkFreeMemory <a href="#a083b4938c2c699d913da608c526d7979" class="m-doc-self">fp_vkFreeMemory</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a5e45777d5c7f3b291340f74ee1054269">
+              PFN_vkMapMemory <a href="#a5e45777d5c7f3b291340f74ee1054269" class="m-doc-self">fp_vkMapMemory</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a7923f0bb269b89d5bb75f28c1916fd64">
+              PFN_vkUnmapMemory <a href="#a7923f0bb269b89d5bb75f28c1916fd64" class="m-doc-self">fp_vkUnmapMemory</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9e2b819d73d7887cd9fca8c454c82404">
+              PFN_vkFlushMappedMemoryRanges <a href="#a9e2b819d73d7887cd9fca8c454c82404" class="m-doc-self">fp_vkFlushMappedMemoryRanges</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af03fdcabdee7747defea783c8dab7819">
+              PFN_vkInvalidateMappedMemoryRanges <a href="#af03fdcabdee7747defea783c8dab7819" class="m-doc-self">fp_vkInvalidateMappedMemoryRanges</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aad3603faa79807008afc8df9f0aa053f">
+              PFN_vkGetDeviceMemoryCommitment <a href="#aad3603faa79807008afc8df9f0aa053f" class="m-doc-self">fp_vkGetDeviceMemoryCommitment</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab656d0714a0709bdbce479ec69813856">
+              PFN_vkGetBufferMemoryRequirements <a href="#ab656d0714a0709bdbce479ec69813856" class="m-doc-self">fp_vkGetBufferMemoryRequirements</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a20d37105b50a1de6f2b07d73cf70c4c7">
+              PFN_vkBindBufferMemory <a href="#a20d37105b50a1de6f2b07d73cf70c4c7" class="m-doc-self">fp_vkBindBufferMemory</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a877d738f50f7ecddb81d45098949d17e">
+              PFN_vkGetImageMemoryRequirements <a href="#a877d738f50f7ecddb81d45098949d17e" class="m-doc-self">fp_vkGetImageMemoryRequirements</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a5579ca25a2c6e40175cdbf47e583caa2">
+              PFN_vkBindImageMemory <a href="#a5579ca25a2c6e40175cdbf47e583caa2" class="m-doc-self">fp_vkBindImageMemory</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ac9535ecf7b7c8e4b535ee6d661dc2321">
+              PFN_vkGetImageSparseMemoryRequirements <a href="#ac9535ecf7b7c8e4b535ee6d661dc2321" class="m-doc-self">fp_vkGetImageSparseMemoryRequirements</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="afb936acc80cbaed723ec5b08abc805bf">
+              PFN_vkQueueBindSparse <a href="#afb936acc80cbaed723ec5b08abc805bf" class="m-doc-self">fp_vkQueueBindSparse</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a6da30295848567712856e7a69631886e">
+              PFN_vkCreateFence <a href="#a6da30295848567712856e7a69631886e" class="m-doc-self">fp_vkCreateFence</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a0ab5a8e8d0ae7413c58aeff5daf0a375">
+              PFN_vkDestroyFence <a href="#a0ab5a8e8d0ae7413c58aeff5daf0a375" class="m-doc-self">fp_vkDestroyFence</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="acec50a747a2912dc9e998d48ef925207">
+              PFN_vkResetFences <a href="#acec50a747a2912dc9e998d48ef925207" class="m-doc-self">fp_vkResetFences</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af202f4fe034b9a3a6d21e3fec9fd793a">
+              PFN_vkGetFenceStatus <a href="#af202f4fe034b9a3a6d21e3fec9fd793a" class="m-doc-self">fp_vkGetFenceStatus</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a3d4a5805f871b50f6f0c5850b065a1a3">
+              PFN_vkWaitForFences <a href="#a3d4a5805f871b50f6f0c5850b065a1a3" class="m-doc-self">fp_vkWaitForFences</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a8c5f58f651b4e1a79509cc2103c011a1">
+              PFN_vkCreateSemaphore <a href="#a8c5f58f651b4e1a79509cc2103c011a1" class="m-doc-self">fp_vkCreateSemaphore</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a894477ca23082df980641d56ea7a8639">
+              PFN_vkDestroySemaphore <a href="#a894477ca23082df980641d56ea7a8639" class="m-doc-self">fp_vkDestroySemaphore</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a3e432fde01a48e29bfb24425dae53385">
+              PFN_vkCreateEvent <a href="#a3e432fde01a48e29bfb24425dae53385" class="m-doc-self">fp_vkCreateEvent</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a51295705e2d551190ee16eed7c80e17d">
+              PFN_vkDestroyEvent <a href="#a51295705e2d551190ee16eed7c80e17d" class="m-doc-self">fp_vkDestroyEvent</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a0bd359fbbc51c4acd22ab739b7111029">
+              PFN_vkGetEventStatus <a href="#a0bd359fbbc51c4acd22ab739b7111029" class="m-doc-self">fp_vkGetEventStatus</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a85bb1c353a14c5bd71d1d04a97d390aa">
+              PFN_vkSetEvent <a href="#a85bb1c353a14c5bd71d1d04a97d390aa" class="m-doc-self">fp_vkSetEvent</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="adb799dde30cdb5f015536a1b1ce686fc">
+              PFN_vkResetEvent <a href="#adb799dde30cdb5f015536a1b1ce686fc" class="m-doc-self">fp_vkResetEvent</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a5ac6eaf0b45b220e527ca95abbb0ba7f">
+              PFN_vkCreateQueryPool <a href="#a5ac6eaf0b45b220e527ca95abbb0ba7f" class="m-doc-self">fp_vkCreateQueryPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a28c28bf5efae9e3d87a52252c5a0c795">
+              PFN_vkDestroyQueryPool <a href="#a28c28bf5efae9e3d87a52252c5a0c795" class="m-doc-self">fp_vkDestroyQueryPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a692d84b4a3ea060a9290c84f620cf688">
+              PFN_vkGetQueryPoolResults <a href="#a692d84b4a3ea060a9290c84f620cf688" class="m-doc-self">fp_vkGetQueryPoolResults</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4d39c1c0f3f00ddeaa563a59e2cb354d">
+              PFN_vkCreateBuffer <a href="#a4d39c1c0f3f00ddeaa563a59e2cb354d" class="m-doc-self">fp_vkCreateBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a696a2349fdebbf1e09318b899e051670">
+              PFN_vkDestroyBuffer <a href="#a696a2349fdebbf1e09318b899e051670" class="m-doc-self">fp_vkDestroyBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a8748b3d1a8b3224c37fd8c4cf099dcf3">
+              PFN_vkCreateBufferView <a href="#a8748b3d1a8b3224c37fd8c4cf099dcf3" class="m-doc-self">fp_vkCreateBufferView</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a7c78cecf1f8d32e8e8f10012d555aec7">
+              PFN_vkDestroyBufferView <a href="#a7c78cecf1f8d32e8e8f10012d555aec7" class="m-doc-self">fp_vkDestroyBufferView</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a38e463f2926631261d948d8e9a69fbea">
+              PFN_vkCreateImage <a href="#a38e463f2926631261d948d8e9a69fbea" class="m-doc-self">fp_vkCreateImage</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a786fd6ef65dd058129faca4dd420f1e8">
+              PFN_vkDestroyImage <a href="#a786fd6ef65dd058129faca4dd420f1e8" class="m-doc-self">fp_vkDestroyImage</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a1fff9649bfd9c3f49cf6e36d8fb80558">
+              PFN_vkGetImageSubresourceLayout <a href="#a1fff9649bfd9c3f49cf6e36d8fb80558" class="m-doc-self">fp_vkGetImageSubresourceLayout</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a706ce21f553a36be1b875c52db8dff16">
+              PFN_vkCreateImageView <a href="#a706ce21f553a36be1b875c52db8dff16" class="m-doc-self">fp_vkCreateImageView</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a963436940f957fc044d72507ab97dff5">
+              PFN_vkDestroyImageView <a href="#a963436940f957fc044d72507ab97dff5" class="m-doc-self">fp_vkDestroyImageView</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9dfa4300e8721de86acf4085dadf71ac">
+              PFN_vkCreateShaderModule <a href="#a9dfa4300e8721de86acf4085dadf71ac" class="m-doc-self">fp_vkCreateShaderModule</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a985e1803e05aaae5b48f2f705fd11adc">
+              PFN_vkDestroyShaderModule <a href="#a985e1803e05aaae5b48f2f705fd11adc" class="m-doc-self">fp_vkDestroyShaderModule</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a6e0089b97d7c5e6f351a49e9d5ec1aca">
+              PFN_vkCreatePipelineCache <a href="#a6e0089b97d7c5e6f351a49e9d5ec1aca" class="m-doc-self">fp_vkCreatePipelineCache</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a1892646c71e938237be75f8f2a72ded2">
+              PFN_vkDestroyPipelineCache <a href="#a1892646c71e938237be75f8f2a72ded2" class="m-doc-self">fp_vkDestroyPipelineCache</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="abf5ffbd60b0c6bb74d6000b0187dfc0e">
+              PFN_vkGetPipelineCacheData <a href="#abf5ffbd60b0c6bb74d6000b0187dfc0e" class="m-doc-self">fp_vkGetPipelineCacheData</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a1729f53c53e6155989953cc82c76ea13">
+              PFN_vkMergePipelineCaches <a href="#a1729f53c53e6155989953cc82c76ea13" class="m-doc-self">fp_vkMergePipelineCaches</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="abd520b94c3ef37d3aeac3c7828af6616">
+              PFN_vkCreateGraphicsPipelines <a href="#abd520b94c3ef37d3aeac3c7828af6616" class="m-doc-self">fp_vkCreateGraphicsPipelines</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ac23174a667918cf2474189bd670c9157">
+              PFN_vkCreateComputePipelines <a href="#ac23174a667918cf2474189bd670c9157" class="m-doc-self">fp_vkCreateComputePipelines</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9abb3e5107d8980caecdf8bbdc8f5357">
+              PFN_vkDestroyPipeline <a href="#a9abb3e5107d8980caecdf8bbdc8f5357" class="m-doc-self">fp_vkDestroyPipeline</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aa2e553d82dd834dd94a1b595c967c305">
+              PFN_vkCreatePipelineLayout <a href="#aa2e553d82dd834dd94a1b595c967c305" class="m-doc-self">fp_vkCreatePipelineLayout</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a040e0d15c9a40272142c379c1a79103c">
+              PFN_vkDestroyPipelineLayout <a href="#a040e0d15c9a40272142c379c1a79103c" class="m-doc-self">fp_vkDestroyPipelineLayout</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="afbcca9102f87cb1acce565c387d8b122">
+              PFN_vkCreateSampler <a href="#afbcca9102f87cb1acce565c387d8b122" class="m-doc-self">fp_vkCreateSampler</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a04739717f4c68cb6d1461c6ff214a2bd">
+              PFN_vkDestroySampler <a href="#a04739717f4c68cb6d1461c6ff214a2bd" class="m-doc-self">fp_vkDestroySampler</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a09db2ba9e3fe5b78b972782396b870a4">
+              PFN_vkCreateDescriptorSetLayout <a href="#a09db2ba9e3fe5b78b972782396b870a4" class="m-doc-self">fp_vkCreateDescriptorSetLayout</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a66bd3a82ed20a4392b51e11ae651be5f">
+              PFN_vkDestroyDescriptorSetLayout <a href="#a66bd3a82ed20a4392b51e11ae651be5f" class="m-doc-self">fp_vkDestroyDescriptorSetLayout</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a54850cde5490ec7fa87290c0ac208a3f">
+              PFN_vkCreateDescriptorPool <a href="#a54850cde5490ec7fa87290c0ac208a3f" class="m-doc-self">fp_vkCreateDescriptorPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="abfa8df3dddb949871e897d704ca0594b">
+              PFN_vkDestroyDescriptorPool <a href="#abfa8df3dddb949871e897d704ca0594b" class="m-doc-self">fp_vkDestroyDescriptorPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a1b90b985016f10121e1408abba84a446">
+              PFN_vkResetDescriptorPool <a href="#a1b90b985016f10121e1408abba84a446" class="m-doc-self">fp_vkResetDescriptorPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a859d8430c7c4860ea47276014ac55fd0">
+              PFN_vkAllocateDescriptorSets <a href="#a859d8430c7c4860ea47276014ac55fd0" class="m-doc-self">fp_vkAllocateDescriptorSets</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab2122f8ca02f81caf18406c11eac3598">
+              PFN_vkFreeDescriptorSets <a href="#ab2122f8ca02f81caf18406c11eac3598" class="m-doc-self">fp_vkFreeDescriptorSets</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4f2ac6663d4eae5cf4e31db43c1e6ebf">
+              PFN_vkUpdateDescriptorSets <a href="#a4f2ac6663d4eae5cf4e31db43c1e6ebf" class="m-doc-self">fp_vkUpdateDescriptorSets</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aec8949d56d0d3c84ef45a47c8b106937">
+              PFN_vkCreateFramebuffer <a href="#aec8949d56d0d3c84ef45a47c8b106937" class="m-doc-self">fp_vkCreateFramebuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aaa22a241b6d147efa196637011b1d881">
+              PFN_vkDestroyFramebuffer <a href="#aaa22a241b6d147efa196637011b1d881" class="m-doc-self">fp_vkDestroyFramebuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a22f97ef9c053e1be4e8a2172b51b976d">
+              PFN_vkCreateRenderPass <a href="#a22f97ef9c053e1be4e8a2172b51b976d" class="m-doc-self">fp_vkCreateRenderPass</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9c65d8a5a14a329ce249010147b4859c">
+              PFN_vkDestroyRenderPass <a href="#a9c65d8a5a14a329ce249010147b4859c" class="m-doc-self">fp_vkDestroyRenderPass</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a2a11f817a8bf5b83f1d67aa330a48422">
+              PFN_vkGetRenderAreaGranularity <a href="#a2a11f817a8bf5b83f1d67aa330a48422" class="m-doc-self">fp_vkGetRenderAreaGranularity</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af531fd0328791c3e575fea31e79a1d34">
+              PFN_vkCreateCommandPool <a href="#af531fd0328791c3e575fea31e79a1d34" class="m-doc-self">fp_vkCreateCommandPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a28db74f9c27813fc322243d78494b7bc">
+              PFN_vkDestroyCommandPool <a href="#a28db74f9c27813fc322243d78494b7bc" class="m-doc-self">fp_vkDestroyCommandPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aa67a7d49ca42b27dc21bcce5ecbe165c">
+              PFN_vkResetCommandPool <a href="#aa67a7d49ca42b27dc21bcce5ecbe165c" class="m-doc-self">fp_vkResetCommandPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a5a40d4faf4f4acedec43bec7bcc4e401">
+              PFN_vkAllocateCommandBuffers <a href="#a5a40d4faf4f4acedec43bec7bcc4e401" class="m-doc-self">fp_vkAllocateCommandBuffers</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af6022604e68d668efa2ed495e7b5e393">
+              PFN_vkFreeCommandBuffers <a href="#af6022604e68d668efa2ed495e7b5e393" class="m-doc-self">fp_vkFreeCommandBuffers</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a1e0563801c2db0fb0cf02f4542475fc1">
+              PFN_vkBeginCommandBuffer <a href="#a1e0563801c2db0fb0cf02f4542475fc1" class="m-doc-self">fp_vkBeginCommandBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab0583c60f9ac5a0fa2f8e732c833e66b">
+              PFN_vkEndCommandBuffer <a href="#ab0583c60f9ac5a0fa2f8e732c833e66b" class="m-doc-self">fp_vkEndCommandBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ae6a8da9443a1215ca13ed0a2af9f4fdf">
+              PFN_vkResetCommandBuffer <a href="#ae6a8da9443a1215ca13ed0a2af9f4fdf" class="m-doc-self">fp_vkResetCommandBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a368d576c6b9100c10e63e7c3b8f46668">
+              PFN_vkCmdBindPipeline <a href="#a368d576c6b9100c10e63e7c3b8f46668" class="m-doc-self">fp_vkCmdBindPipeline</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4aa6207f9c3c4944ac1a4d5894d9bfe8">
+              PFN_vkCmdSetViewport <a href="#a4aa6207f9c3c4944ac1a4d5894d9bfe8" class="m-doc-self">fp_vkCmdSetViewport</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a23a58301ed1ed008e15790c46e984808">
+              PFN_vkCmdSetScissor <a href="#a23a58301ed1ed008e15790c46e984808" class="m-doc-self">fp_vkCmdSetScissor</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a34d0fef30884765880ca741eb14f5026">
+              PFN_vkCmdSetLineWidth <a href="#a34d0fef30884765880ca741eb14f5026" class="m-doc-self">fp_vkCmdSetLineWidth</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a16e02c4ab91bcf772aac7c0e76dfb941">
+              PFN_vkCmdSetDepthBias <a href="#a16e02c4ab91bcf772aac7c0e76dfb941" class="m-doc-self">fp_vkCmdSetDepthBias</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aab49b000aec5ae50bd0df72f6463bdc4">
+              PFN_vkCmdSetBlendConstants <a href="#aab49b000aec5ae50bd0df72f6463bdc4" class="m-doc-self">fp_vkCmdSetBlendConstants</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a2ef589f6503d7446d3f9b220780d913a">
+              PFN_vkCmdSetDepthBounds <a href="#a2ef589f6503d7446d3f9b220780d913a" class="m-doc-self">fp_vkCmdSetDepthBounds</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a366da9c1d7a227c2487fed0eecb02ca8">
+              PFN_vkCmdSetStencilCompareMask <a href="#a366da9c1d7a227c2487fed0eecb02ca8" class="m-doc-self">fp_vkCmdSetStencilCompareMask</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ae962071ff12299519b100d079b9dd515">
+              PFN_vkCmdSetStencilWriteMask <a href="#ae962071ff12299519b100d079b9dd515" class="m-doc-self">fp_vkCmdSetStencilWriteMask</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9a5f043b15fd329c71f39ea2187aea09">
+              PFN_vkCmdSetStencilReference <a href="#a9a5f043b15fd329c71f39ea2187aea09" class="m-doc-self">fp_vkCmdSetStencilReference</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ace449dbf6a043c006d859ea6673277a8">
+              PFN_vkCmdBindDescriptorSets <a href="#ace449dbf6a043c006d859ea6673277a8" class="m-doc-self">fp_vkCmdBindDescriptorSets</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a70794dc4a784086057e51680ab5e7fc7">
+              PFN_vkCmdBindIndexBuffer <a href="#a70794dc4a784086057e51680ab5e7fc7" class="m-doc-self">fp_vkCmdBindIndexBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a06650b9a17e08dfa91888c93fbdd2a5c">
+              PFN_vkCmdBindVertexBuffers <a href="#a06650b9a17e08dfa91888c93fbdd2a5c" class="m-doc-self">fp_vkCmdBindVertexBuffers</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a91ef449f719df37ac0289cee1d3906e3">
+              PFN_vkCmdDraw <a href="#a91ef449f719df37ac0289cee1d3906e3" class="m-doc-self">fp_vkCmdDraw</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a15e82f953289b236ca7f17fa1fc72402">
+              PFN_vkCmdDrawIndexed <a href="#a15e82f953289b236ca7f17fa1fc72402" class="m-doc-self">fp_vkCmdDrawIndexed</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="afaa81439fc784a247017e599de747c0c">
+              PFN_vkCmdDrawIndirect <a href="#afaa81439fc784a247017e599de747c0c" class="m-doc-self">fp_vkCmdDrawIndirect</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ad1302b4ed8cdf465004a93073cd0cd28">
+              PFN_vkCmdDrawIndexedIndirect <a href="#ad1302b4ed8cdf465004a93073cd0cd28" class="m-doc-self">fp_vkCmdDrawIndexedIndirect</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a97e80013956d0203d1e3d20f051e9771">
+              PFN_vkCmdDispatch <a href="#a97e80013956d0203d1e3d20f051e9771" class="m-doc-self">fp_vkCmdDispatch</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a79bb3e9f05f1bb377b236be6c30a92ee">
+              PFN_vkCmdDispatchIndirect <a href="#a79bb3e9f05f1bb377b236be6c30a92ee" class="m-doc-self">fp_vkCmdDispatchIndirect</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a608f7eb9785809461f842100627fb9da">
+              PFN_vkCmdCopyBuffer <a href="#a608f7eb9785809461f842100627fb9da" class="m-doc-self">fp_vkCmdCopyBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a345f3fa583e20cf0c061042a88d67bb2">
+              PFN_vkCmdCopyImage <a href="#a345f3fa583e20cf0c061042a88d67bb2" class="m-doc-self">fp_vkCmdCopyImage</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ada4b5007af829316340b512c9cdd1b92">
+              PFN_vkCmdBlitImage <a href="#ada4b5007af829316340b512c9cdd1b92" class="m-doc-self">fp_vkCmdBlitImage</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="abc6beebe30f128c19f006c9fe806c891">
+              PFN_vkCmdCopyBufferToImage <a href="#abc6beebe30f128c19f006c9fe806c891" class="m-doc-self">fp_vkCmdCopyBufferToImage</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a79030f4495d78de3f7a1d30e0e2e4b68">
+              PFN_vkCmdCopyImageToBuffer <a href="#a79030f4495d78de3f7a1d30e0e2e4b68" class="m-doc-self">fp_vkCmdCopyImageToBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="abc94609d2dffe3d22b12705909cd7e61">
+              PFN_vkCmdUpdateBuffer <a href="#abc94609d2dffe3d22b12705909cd7e61" class="m-doc-self">fp_vkCmdUpdateBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="add8009ac57ac67ab9e0f3f556d4665c1">
+              PFN_vkCmdFillBuffer <a href="#add8009ac57ac67ab9e0f3f556d4665c1" class="m-doc-self">fp_vkCmdFillBuffer</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="afae9299758eb665637606678b7abf305">
+              PFN_vkCmdClearColorImage <a href="#afae9299758eb665637606678b7abf305" class="m-doc-self">fp_vkCmdClearColorImage</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a89bf4c2a1a290db106edf38728017fbb">
+              PFN_vkCmdClearDepthStencilImage <a href="#a89bf4c2a1a290db106edf38728017fbb" class="m-doc-self">fp_vkCmdClearDepthStencilImage</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ae902b587559615d6e03345073ae9ed84">
+              PFN_vkCmdClearAttachments <a href="#ae902b587559615d6e03345073ae9ed84" class="m-doc-self">fp_vkCmdClearAttachments</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a7b144591ea9a07b9cd98e7a4ada64c9d">
+              PFN_vkCmdResolveImage <a href="#a7b144591ea9a07b9cd98e7a4ada64c9d" class="m-doc-self">fp_vkCmdResolveImage</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a3699f8411bf04c3b8c8e82d2d57e4c11">
+              PFN_vkCmdSetEvent <a href="#a3699f8411bf04c3b8c8e82d2d57e4c11" class="m-doc-self">fp_vkCmdSetEvent</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="affb4b97b2b8ecef19373413e2db07899">
+              PFN_vkCmdResetEvent <a href="#affb4b97b2b8ecef19373413e2db07899" class="m-doc-self">fp_vkCmdResetEvent</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4ae6e3e002e7f487aa45dd6d56d00897">
+              PFN_vkCmdWaitEvents <a href="#a4ae6e3e002e7f487aa45dd6d56d00897" class="m-doc-self">fp_vkCmdWaitEvents</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aab95fe0e419422cfe6f3d3aad66b51e5">
+              PFN_vkCmdPipelineBarrier <a href="#aab95fe0e419422cfe6f3d3aad66b51e5" class="m-doc-self">fp_vkCmdPipelineBarrier</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a164970a0c5abf818777b1b980e55b92b">
+              PFN_vkCmdBeginQuery <a href="#a164970a0c5abf818777b1b980e55b92b" class="m-doc-self">fp_vkCmdBeginQuery</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aa8e6375f146170a1217da93802d980ad">
+              PFN_vkCmdEndQuery <a href="#aa8e6375f146170a1217da93802d980ad" class="m-doc-self">fp_vkCmdEndQuery</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a6696e4b685118fcc9b6fb9067d4d7d55">
+              PFN_vkCmdResetQueryPool <a href="#a6696e4b685118fcc9b6fb9067d4d7d55" class="m-doc-self">fp_vkCmdResetQueryPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4a718476bb2743f5ddd2b3ca7c7bc5ad">
+              PFN_vkCmdWriteTimestamp <a href="#a4a718476bb2743f5ddd2b3ca7c7bc5ad" class="m-doc-self">fp_vkCmdWriteTimestamp</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a5d357fbf02183858cc19632806782e67">
+              PFN_vkCmdCopyQueryPoolResults <a href="#a5d357fbf02183858cc19632806782e67" class="m-doc-self">fp_vkCmdCopyQueryPoolResults</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a2acf2b555d379a9042b2b36d08bb1b50">
+              PFN_vkCmdPushConstants <a href="#a2acf2b555d379a9042b2b36d08bb1b50" class="m-doc-self">fp_vkCmdPushConstants</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4107a56728b58bf4ca4c605be043659d">
+              PFN_vkCmdBeginRenderPass <a href="#a4107a56728b58bf4ca4c605be043659d" class="m-doc-self">fp_vkCmdBeginRenderPass</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a33200837c2ea5a3c1dcf1d1023711241">
+              PFN_vkCmdNextSubpass <a href="#a33200837c2ea5a3c1dcf1d1023711241" class="m-doc-self">fp_vkCmdNextSubpass</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a14833f83cd065b9ae022b2c5ab6ce489">
+              PFN_vkCmdEndRenderPass <a href="#a14833f83cd065b9ae022b2c5ab6ce489" class="m-doc-self">fp_vkCmdEndRenderPass</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9fcd49f2e596c2d92e2171ececda3894">
+              PFN_vkCmdExecuteCommands <a href="#a9fcd49f2e596c2d92e2171ececda3894" class="m-doc-self">fp_vkCmdExecuteCommands</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a31e61e3bb5d230e482d91da47eb31477">
+              VkDevice <a href="#a31e61e3bb5d230e482d91da47eb31477" class="m-doc-self">device</a>
+            </dt>
+            <dd><span></span></dd>
+          </dl>
+        </section>
+      </div>
+    </div>
+  </div>
+</article></main>
+<div class="m-doc-search" id="search">
+  <a href="#!" onclick="return hideSearch()"></a>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-m-8 m-push-m-2">
+        <div class="m-doc-search-header m-text m-small">
+          <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
+          <div id="search-symbolcount">&hellip;</div>
+        </div>
+        <div class="m-doc-search-content">
+          <form>
+            <input type="search" name="q" id="search-input" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
+          </form>
+          <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.</noscript>
+          <div id="search-help" class="m-text m-dim m-text-center">
+            <p class="m-noindent">Search for symbols, directories, files, pages or
+            modules. You can omit any prefix from the symbol or file path; adding a
+            <code>:</code> or <code>/</code> suffix lists all members of given symbol or
+            directory.</p>
+            <p class="m-noindent">Use <span class="m-label m-dim">&darr;</span>
+            / <span class="m-label m-dim">&uarr;</span> to navigate through the list,
+            <span class="m-label m-dim">Enter</span> to go.
+            <span class="m-label m-dim">Tab</span> autocompletes common prefix, you can
+            copy a link to the result using <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">L</span> while <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">M</span> produces a Markdown link.</p>
+          </div>
+          <div id="search-notfound" class="m-text m-warning m-text-center">Sorry, nothing was found.</div>
+          <ul id="search-results"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="search-v2.js"></script>
+<script src="searchdata-v2.js" async="async"></script>
+<footer><nav>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <p>Illumination Engine A Game Development Engine Written In C++. Created with <a href="https://doxygen.org/">Doxygen</a> 1.9.4 and <a href="https://mcss.mosra.cz/">m.css</a>.</p>
+      </div>
+    </div>
+  </div>
+</nav></footer>
+</body>
+</html>

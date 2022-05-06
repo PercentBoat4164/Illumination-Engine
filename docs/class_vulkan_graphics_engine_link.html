@@ -1,642 +1,237 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=11"/>
-<meta name="generator" content="Doxygen 1.9.4"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Illumination Engine: VulkanGraphicsEngineLink Class Reference</title>
-<link href="tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript" src="dynsections.js"></script>
-<link href="navtree.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="resize.js"></script>
-<script type="text/javascript" src="navtreedata.js"></script>
-<script type="text/javascript" src="navtree.js"></script>
-<link href="search/search.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="search/searchdata.js"></script>
-<script type="text/javascript" src="search/search.js"></script>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-  $(document).ready(function() { init_search(); });
-/* @license-end */
-</script>
-<link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <meta charset="UTF-8" />
+  <title>VulkanGraphicsEngineLink class | Illumination Engine A Game Development Engine Written In C++</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,600,600i%7CSource+Code+Pro:400,400i,600" />
+  <link rel="stylesheet" href="m-dark+documentation.compiled.css" />
+  <link rel="icon" href="IlluminationEngineLogo128.png" type="image/png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#22272e" />
 </head>
 <body>
-<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
-<div id="titlearea">
-<table cellspacing="0" cellpadding="0">
- <tbody>
- <tr id="projectrow">
-  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineSignResized2.png"/></td>
-  <td id="projectalign">
-   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
-   </div>
-   <div id="projectbrief">A Game Development Engine Written In C++</div>
-  </td>
-    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
-        <span class="left">
-          <img id="MSearchSelect" src="search/mag_sel.svg"
-               onmouseover="return searchBox.OnSearchSelectShow()"
-               onmouseout="return searchBox.OnSearchSelectHide()"
-               alt=""/>
-          <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
-               onkeyup="searchBox.OnSearchFieldChange(event)"/>
-          </span><span class="right">
-            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
-          </span>
+<header><nav id="navigation">
+  <div class="m-container">
+    <div class="m-row">
+      <a href="index.html" id="m-navbar-brand" class="m-col-t-8 m-col-m-none m-left-m"><img src="IlluminationEngineLogo128.png" alt="" />Illumination Engine <span class="m-thin">A Game Development Engine Written In C++</span></a>
+      <div class="m-col-t-4 m-hide-m m-text-right m-nopadr">
+        <a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+          <path id="m-doc-search-icon-path" d="m6 0c-3.31 0-6 2.69-6 6 0 3.31 2.69 6 6 6 1.49 0 2.85-0.541 3.89-1.44-0.0164 0.338 0.147 0.759 0.5 1.15l3.22 3.79c0.552 0.614 1.45 0.665 2 0.115 0.55-0.55 0.499-1.45-0.115-2l-3.79-3.22c-0.392-0.353-0.812-0.515-1.15-0.5 0.895-1.05 1.44-2.41 1.44-3.89 0-3.31-2.69-6-6-6zm0 1.56a4.44 4.44 0 0 1 4.44 4.44 4.44 4.44 0 0 1-4.44 4.44 4.44 4.44 0 0 1-4.44-4.44 4.44 4.44 0 0 1 4.44-4.44z"/>
+        </svg></a>
+        <a id="m-navbar-show" href="#navigation" title="Show navigation"></a>
+        <a id="m-navbar-hide" href="#" title="Hide navigation"></a>
+      </div>
+      <div id="m-navbar-collapse" class="m-col-t-12 m-show-m m-col-m-none m-right-m">
+        <div class="m-row">
+          <ol class="m-col-t-6 m-col-m-none">
+            <li><a href="https://joellogan.github.io">Main Page</a></li>
+            <li><a href="pages.html">Pages</a></li>
+          </ol>
+          <ol class="m-col-t-6 m-col-m-none" start="3">
+            <li><a href="annotated.html">Classes</a></li>
+            <li><a href="files.html">Files</a></li>
+            <li class="m-show-m"><a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+              <use href="#m-doc-search-icon-path" />
+            </svg></a></li>
+          </ol>
         </div>
-</td>
- </tr>
- </tbody>
-</table>
-</div>
-<!-- end header part -->
-<!-- Generated by Doxygen 1.9.4 -->
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-var searchBox = new SearchBox("searchBox", "search",'Search','.html');
-/* @license-end */
-</script>
-</div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
-  <div id="nav-tree">
-    <div id="nav-tree-contents">
-      <div id="nav-sync" class="sync"></div>
+      </div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
-       class="ui-resizable-handle">
+</nav></header>
+<main><article>
+  <div class="m-container m-container-inflatable">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <h1>
+          VulkanGraphicsEngineLink <span class="m-thin">class</span>
+          <div class="m-doc-include m-code m-inverted m-text-right"><span class="cp">#include</span> <a class="cpf" href="vulkan_graphics_engine_link_8hpp.html">&lt;Illumination-Engine/src/GraphicsModule/Vulkan/vulkanGraphicsEngineLink.hpp&gt;</a></div>
+        </h1>
+        <p><span></span></p>
+        <nav class="m-block m-default">
+          <h3>Contents</h3>
+          <ul>
+            <li>
+              Reference
+              <ul>
+                <li><a href="#pub-types">Public types</a></li>
+                <li><a href="#pub-methods">Public functions</a></li>
+                <li><a href="#pub-attribs">Public variables</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+        <section id="pub-types">
+          <h2><a href="#pub-types">Public types</a></h2>
+          <dl class="m-doc">
+            <dt>
+              struct <a href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html" class="m-doc">PhysicalDeviceInfo</a>
+            </dt>
+            <dd><span></span></dd>
+          </dl>
+        </section>
+        <section id="pub-methods">
+          <h2><a href="#pub-methods">Public functions</a></h2>
+          <dl class="m-doc">
+            <dt id="ac1f5fe416beac9cd895fdbc21fd3ad27">
+              <span class="m-doc-wrap-bumper">void <a href="#ac1f5fe416beac9cd895fdbc21fd3ad27" class="m-doc-self">build</a>(</span><span class="m-doc-wrap">bool renderDocCapturing = false)</span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a32c40e4c48367fcdfa54bf9364167197">
+              <span class="m-doc-wrap-bumper">auto <a href="#a32c40e4c48367fcdfa54bf9364167197" class="m-doc-self">beginSingleTimeCommands</a>(</span><span class="m-doc-wrap">) const -&gt; VkCommandBuffer</span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a8c8d66e66725778ed6ef24894b3ee31c">
+              <span class="m-doc-wrap-bumper">void <a href="#a8c8d66e66725778ed6ef24894b3ee31c" class="m-doc-self">endSingleTimeCommands</a>(</span><span class="m-doc-wrap">VkCommandBuffer commandBuffer) const</span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a9c3393fdf549f1369dd693cb8eeb2691">
+              <span class="m-doc-wrap-bumper">auto <a href="#a9c3393fdf549f1369dd693cb8eeb2691" class="m-doc-self">enableFeature</a>(</span><span class="m-doc-wrap">VkBool32* feature) -&gt; VkBool32</span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aed65da6c916cc248b692435a1a917229">
+              <span class="m-doc-wrap-bumper">auto <a href="#aed65da6c916cc248b692435a1a917229" class="m-doc-self">enableFeature</a>(</span><span class="m-doc-wrap">const std::vector&lt;VkBool32*&gt;&amp; features) -&gt; std::vector&lt;VkBool32&gt;</span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a253cb724aa2392f4106bf93ce040ff93">
+              <span class="m-doc-wrap-bumper">auto <a href="#a253cb724aa2392f4106bf93ce040ff93" class="m-doc-self">testFeature</a>(</span><span class="m-doc-wrap">const VkBool32* feature) -&gt; VkBool32*</span>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4faef86f60c5ff376c7db0134cd6a4bb">
+              <span class="m-doc-wrap-bumper">auto <a href="#a4faef86f60c5ff376c7db0134cd6a4bb" class="m-doc-self">testFeature</a>(</span><span class="m-doc-wrap">const std::vector&lt;VkBool32*&gt;&amp; features) -&gt; std::vector&lt;VkBool32&gt;</span>
+            </dt>
+            <dd><span></span></dd>
+          </dl>
+        </section>
+        <section id="pub-attribs">
+          <h2><a href="#pub-attribs">Public variables</a></h2>
+          <dl class="m-doc">
+            <dt id="a1e692fccecf505957ea64c4d30f197c4">
+              VulkanSettings* <a href="#a1e692fccecf505957ea64c4d30f197c4" class="m-doc-self">settings</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a3c433a3e894ebcb5b38665ee2cbfe3dd">
+              vkb::Device* <a href="#a3c433a3e894ebcb5b38665ee2cbfe3dd" class="m-doc-self">device</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a33082671c0a7ec4c3a98d071cffe36bc">
+              vkb::Swapchain* <a href="#a33082671c0a7ec4c3a98d071cffe36bc" class="m-doc-self">swapchain</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a4ceb5658e7b351283f04e81b03500d73">
+              VkCommandPool* <a href="#a4ceb5658e7b351283f04e81b03500d73" class="m-doc-self">commandPool</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ac2992803916957a2f9acc0de5c79c165">
+              VmaAllocator* <a href="#ac2992803916957a2f9acc0de5c79c165" class="m-doc-self">allocator</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aca6e790ee24f730c98f97cf9d83afe1e">
+              VkQueue* <a href="#aca6e790ee24f730c98f97cf9d83afe1e" class="m-doc-self">graphicsQueue</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a94ea9ade8719fa6fefb852b750fdf882">
+              VkQueue* <a href="#a94ea9ade8719fa6fefb852b750fdf882" class="m-doc-self">presentQueue</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a094bac571a45afe608b828441fd2a3fa">
+              VkQueue* <a href="#a094bac571a45afe608b828441fd2a3fa" class="m-doc-self">transferQueue</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a60222b2147e74d407f32ce272042004c">
+              VkQueue* <a href="#a60222b2147e74d407f32ce272042004c" class="m-doc-self">computeQueue</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a349c9e0def6977c0a2b6639d7e69091e">
+              std::vector&lt;VkImageView&gt;* <a href="#a349c9e0def6977c0a2b6639d7e69091e" class="m-doc-self">swapchainImageViews</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a67dae40a4a0061d7dac8e3bdedbd6d22">
+              PFN_vkGetBufferDeviceAddress <a href="#a67dae40a4a0061d7dac8e3bdedbd6d22" class="m-doc-self">vkGetBufferDeviceAddressKHR</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a619645b99aa153b14c9293f71dc18755">
+              PFN_vkCmdBuildAccelerationStructuresKHR <a href="#a619645b99aa153b14c9293f71dc18755" class="m-doc-self">vkCmdBuildAccelerationStructuresKHR</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aed65e164c7dd3323902eb30cb38300e1">
+              PFN_vkCreateAccelerationStructureKHR <a href="#aed65e164c7dd3323902eb30cb38300e1" class="m-doc-self">vkCreateAccelerationStructureKHR</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="ab22c2106045ab530c0e17aac25be24c5">
+              PFN_vkDestroyAccelerationStructureKHR <a href="#ab22c2106045ab530c0e17aac25be24c5" class="m-doc-self">vkDestroyAccelerationStructureKHR</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a2df4074e7f0273bd3659d53299486670">
+              PFN_vkGetAccelerationStructureBuildSizesKHR <a href="#a2df4074e7f0273bd3659d53299486670" class="m-doc-self">vkGetAccelerationStructureBuildSizesKHR</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="af7f58e0655399149d5cc421ba3654447">
+              PFN_vkGetAccelerationStructureDeviceAddressKHR <a href="#af7f58e0655399149d5cc421ba3654447" class="m-doc-self">vkGetAccelerationStructureDeviceAddressKHR</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a20f4aa751b5befd8cc0ef0dd139f6fc5">
+              PFN_vkAcquireNextImageKHR <a href="#a20f4aa751b5befd8cc0ef0dd139f6fc5" class="m-doc-self">vkAcquireNextImageKhr</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="aaa8bfc5e3df713b47a46db11e4556ac6">
+              <a href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html" class="m-doc">PhysicalDeviceInfo</a> <a href="#aaa8bfc5e3df713b47a46db11e4556ac6" class="m-doc-self">supportedPhysicalDeviceInfo</a>
+            </dt>
+            <dd><span></span></dd>
+            <dt id="a23160c962d66a2d643ab85fe38c1ce98">
+              <a href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html" class="m-doc">PhysicalDeviceInfo</a> <a href="#a23160c962d66a2d643ab85fe38c1ce98" class="m-doc-self">enabledPhysicalDeviceInfo</a>
+            </dt>
+            <dd><span></span></dd>
+          </dl>
+        </section>
+      </div>
+    </div>
+  </div>
+</article></main>
+<div class="m-doc-search" id="search">
+  <a href="#!" onclick="return hideSearch()"></a>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-m-8 m-push-m-2">
+        <div class="m-doc-search-header m-text m-small">
+          <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
+          <div id="search-symbolcount">&hellip;</div>
+        </div>
+        <div class="m-doc-search-content">
+          <form>
+            <input type="search" name="q" id="search-input" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
+          </form>
+          <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.</noscript>
+          <div id="search-help" class="m-text m-dim m-text-center">
+            <p class="m-noindent">Search for symbols, directories, files, pages or
+            modules. You can omit any prefix from the symbol or file path; adding a
+            <code>:</code> or <code>/</code> suffix lists all members of given symbol or
+            directory.</p>
+            <p class="m-noindent">Use <span class="m-label m-dim">&darr;</span>
+            / <span class="m-label m-dim">&uarr;</span> to navigate through the list,
+            <span class="m-label m-dim">Enter</span> to go.
+            <span class="m-label m-dim">Tab</span> autocompletes common prefix, you can
+            copy a link to the result using <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">L</span> while <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">M</span> produces a Markdown link.</p>
+          </div>
+          <div id="search-notfound" class="m-text m-warning m-text-center">Sorry, nothing was found.</div>
+          <ul id="search-results"></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('class_vulkan_graphics_engine_link.html',''); initResizable(); });
-/* @license-end */
-</script>
-<div id="doc-content">
-<!-- window showing the filter options -->
-<div id="MSearchSelectWindow"
-     onmouseover="return searchBox.OnSearchSelectShow()"
-     onmouseout="return searchBox.OnSearchSelectHide()"
-     onkeydown="return searchBox.OnSearchSelectKey(event)">
-</div>
-
-<!-- iframe showing the search results (closed by default) -->
-<div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
-        name="MSearchResults" id="MSearchResults">
-</iframe>
-</div>
-
-<div class="header">
-  <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
-<a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="class_vulkan_graphics_engine_link-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">VulkanGraphicsEngineLink Class Reference</div></div>
-</div><!--header-->
-<div class="contents">
-
-<p><code>#include &lt;<a class="el" href="vulkan_graphics_engine_link_8hpp_source.html">vulkanGraphicsEngineLink.hpp</a>&gt;</code></p>
-<div class="dynheader">
-Collaboration diagram for VulkanGraphicsEngineLink:</div>
-<div class="dyncontent">
-<div class="center"><img src="class_vulkan_graphics_engine_link__coll__graph.png" border="0" usemap="#a_vulkan_graphics_engine_link_coll__map" alt="Collaboration graph"/></div>
-<map name="a_vulkan_graphics_engine_link_coll__map" id="a_vulkan_graphics_engine_link_coll__map">
-<area shape="rect" title=" " alt="" coords="59,124,253,151"/>
-<area shape="rect" href="class_vulkan_settings.html" title=" " alt="" coords="5,13,125,39"/>
-<area shape="rect" href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html" title=" " alt="" coords="149,5,344,47"/>
-</map>
-<center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html">PhysicalDeviceInfo</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
-Public Member Functions</h2></td></tr>
-<tr class="memitem:ac1f5fe416beac9cd895fdbc21fd3ad27"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#ac1f5fe416beac9cd895fdbc21fd3ad27">build</a> (bool renderDocCapturing=false)</td></tr>
-<tr class="separator:ac1f5fe416beac9cd895fdbc21fd3ad27"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a32c40e4c48367fcdfa54bf9364167197"><td class="memItemLeft" align="right" valign="top">VkCommandBuffer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a32c40e4c48367fcdfa54bf9364167197">beginSingleTimeCommands</a> () const</td></tr>
-<tr class="separator:a32c40e4c48367fcdfa54bf9364167197"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8c8d66e66725778ed6ef24894b3ee31c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a8c8d66e66725778ed6ef24894b3ee31c">endSingleTimeCommands</a> (VkCommandBuffer commandBuffer) const</td></tr>
-<tr class="separator:a8c8d66e66725778ed6ef24894b3ee31c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9c3393fdf549f1369dd693cb8eeb2691"><td class="memItemLeft" align="right" valign="top">VkBool32&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a9c3393fdf549f1369dd693cb8eeb2691">enableFeature</a> (VkBool32 *feature)</td></tr>
-<tr class="separator:a9c3393fdf549f1369dd693cb8eeb2691"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed65da6c916cc248b692435a1a917229"><td class="memItemLeft" align="right" valign="top">std::vector&lt; VkBool32 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#aed65da6c916cc248b692435a1a917229">enableFeature</a> (const std::vector&lt; VkBool32 * &gt; &amp;features)</td></tr>
-<tr class="separator:aed65da6c916cc248b692435a1a917229"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a253cb724aa2392f4106bf93ce040ff93"><td class="memItemLeft" align="right" valign="top">VkBool32 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a253cb724aa2392f4106bf93ce040ff93">testFeature</a> (const VkBool32 *feature)</td></tr>
-<tr class="separator:a253cb724aa2392f4106bf93ce040ff93"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4faef86f60c5ff376c7db0134cd6a4bb"><td class="memItemLeft" align="right" valign="top">std::vector&lt; VkBool32 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a4faef86f60c5ff376c7db0134cd6a4bb">testFeature</a> (const std::vector&lt; VkBool32 * &gt; &amp;features)</td></tr>
-<tr class="separator:a4faef86f60c5ff376c7db0134cd6a4bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a1e692fccecf505957ea64c4d30f197c4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_vulkan_settings.html">VulkanSettings</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a1e692fccecf505957ea64c4d30f197c4">settings</a> = nullptr</td></tr>
-<tr class="separator:a1e692fccecf505957ea64c4d30f197c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c433a3e894ebcb5b38665ee2cbfe3dd"><td class="memItemLeft" align="right" valign="top">vkb::Device *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a3c433a3e894ebcb5b38665ee2cbfe3dd">device</a> {}</td></tr>
-<tr class="separator:a3c433a3e894ebcb5b38665ee2cbfe3dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33082671c0a7ec4c3a98d071cffe36bc"><td class="memItemLeft" align="right" valign="top">vkb::Swapchain *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a33082671c0a7ec4c3a98d071cffe36bc">swapchain</a> {}</td></tr>
-<tr class="separator:a33082671c0a7ec4c3a98d071cffe36bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ceb5658e7b351283f04e81b03500d73"><td class="memItemLeft" align="right" valign="top">VkCommandPool *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a4ceb5658e7b351283f04e81b03500d73">commandPool</a> {}</td></tr>
-<tr class="separator:a4ceb5658e7b351283f04e81b03500d73"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2992803916957a2f9acc0de5c79c165"><td class="memItemLeft" align="right" valign="top">VmaAllocator *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#ac2992803916957a2f9acc0de5c79c165">allocator</a> {}</td></tr>
-<tr class="separator:ac2992803916957a2f9acc0de5c79c165"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca6e790ee24f730c98f97cf9d83afe1e"><td class="memItemLeft" align="right" valign="top">VkQueue *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#aca6e790ee24f730c98f97cf9d83afe1e">graphicsQueue</a> {}</td></tr>
-<tr class="separator:aca6e790ee24f730c98f97cf9d83afe1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94ea9ade8719fa6fefb852b750fdf882"><td class="memItemLeft" align="right" valign="top">VkQueue *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a94ea9ade8719fa6fefb852b750fdf882">presentQueue</a> {}</td></tr>
-<tr class="separator:a94ea9ade8719fa6fefb852b750fdf882"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a094bac571a45afe608b828441fd2a3fa"><td class="memItemLeft" align="right" valign="top">VkQueue *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a094bac571a45afe608b828441fd2a3fa">transferQueue</a> {}</td></tr>
-<tr class="separator:a094bac571a45afe608b828441fd2a3fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60222b2147e74d407f32ce272042004c"><td class="memItemLeft" align="right" valign="top">VkQueue *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a60222b2147e74d407f32ce272042004c">computeQueue</a> {}</td></tr>
-<tr class="separator:a60222b2147e74d407f32ce272042004c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a349c9e0def6977c0a2b6639d7e69091e"><td class="memItemLeft" align="right" valign="top">std::vector&lt; VkImageView &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a349c9e0def6977c0a2b6639d7e69091e">swapchainImageViews</a> {}</td></tr>
-<tr class="separator:a349c9e0def6977c0a2b6639d7e69091e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67dae40a4a0061d7dac8e3bdedbd6d22"><td class="memItemLeft" align="right" valign="top">PFN_vkGetBufferDeviceAddress&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a67dae40a4a0061d7dac8e3bdedbd6d22">vkGetBufferDeviceAddressKHR</a> {}</td></tr>
-<tr class="separator:a67dae40a4a0061d7dac8e3bdedbd6d22"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a619645b99aa153b14c9293f71dc18755"><td class="memItemLeft" align="right" valign="top">PFN_vkCmdBuildAccelerationStructuresKHR&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a619645b99aa153b14c9293f71dc18755">vkCmdBuildAccelerationStructuresKHR</a> {}</td></tr>
-<tr class="separator:a619645b99aa153b14c9293f71dc18755"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed65e164c7dd3323902eb30cb38300e1"><td class="memItemLeft" align="right" valign="top">PFN_vkCreateAccelerationStructureKHR&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#aed65e164c7dd3323902eb30cb38300e1">vkCreateAccelerationStructureKHR</a> {}</td></tr>
-<tr class="separator:aed65e164c7dd3323902eb30cb38300e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab22c2106045ab530c0e17aac25be24c5"><td class="memItemLeft" align="right" valign="top">PFN_vkDestroyAccelerationStructureKHR&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#ab22c2106045ab530c0e17aac25be24c5">vkDestroyAccelerationStructureKHR</a> {}</td></tr>
-<tr class="separator:ab22c2106045ab530c0e17aac25be24c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2df4074e7f0273bd3659d53299486670"><td class="memItemLeft" align="right" valign="top">PFN_vkGetAccelerationStructureBuildSizesKHR&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a2df4074e7f0273bd3659d53299486670">vkGetAccelerationStructureBuildSizesKHR</a> {}</td></tr>
-<tr class="separator:a2df4074e7f0273bd3659d53299486670"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af7f58e0655399149d5cc421ba3654447"><td class="memItemLeft" align="right" valign="top">PFN_vkGetAccelerationStructureDeviceAddressKHR&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#af7f58e0655399149d5cc421ba3654447">vkGetAccelerationStructureDeviceAddressKHR</a> {}</td></tr>
-<tr class="separator:af7f58e0655399149d5cc421ba3654447"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20f4aa751b5befd8cc0ef0dd139f6fc5"><td class="memItemLeft" align="right" valign="top">PFN_vkAcquireNextImageKHR&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a20f4aa751b5befd8cc0ef0dd139f6fc5">vkAcquireNextImageKhr</a> {}</td></tr>
-<tr class="separator:a20f4aa751b5befd8cc0ef0dd139f6fc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa8bfc5e3df713b47a46db11e4556ac6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html">PhysicalDeviceInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#aaa8bfc5e3df713b47a46db11e4556ac6">supportedPhysicalDeviceInfo</a> {}</td></tr>
-<tr class="separator:aaa8bfc5e3df713b47a46db11e4556ac6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a23160c962d66a2d643ab85fe38c1ce98"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html">PhysicalDeviceInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vulkan_graphics_engine_link.html#a23160c962d66a2d643ab85fe38c1ce98">enabledPhysicalDeviceInfo</a> {}</td></tr>
-<tr class="separator:a23160c962d66a2d643ab85fe38c1ce98"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a id="a32c40e4c48367fcdfa54bf9364167197" name="a32c40e4c48367fcdfa54bf9364167197"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a32c40e4c48367fcdfa54bf9364167197">&#9670;&nbsp;</a></span>beginSingleTimeCommands()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">VkCommandBuffer VulkanGraphicsEngineLink::beginSingleTimeCommands </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ac1f5fe416beac9cd895fdbc21fd3ad27" name="ac1f5fe416beac9cd895fdbc21fd3ad27"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1f5fe416beac9cd895fdbc21fd3ad27">&#9670;&nbsp;</a></span>build()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void VulkanGraphicsEngineLink::build </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>renderDocCapturing</em> = <code>false</code></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aed65da6c916cc248b692435a1a917229" name="aed65da6c916cc248b692435a1a917229"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed65da6c916cc248b692435a1a917229">&#9670;&nbsp;</a></span>enableFeature() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::vector&lt; VkBool32 &gt; VulkanGraphicsEngineLink::enableFeature </td>
-          <td>(</td>
-          <td class="paramtype">const std::vector&lt; VkBool32 * &gt; &amp;&#160;</td>
-          <td class="paramname"><em>features</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a9c3393fdf549f1369dd693cb8eeb2691" name="a9c3393fdf549f1369dd693cb8eeb2691"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c3393fdf549f1369dd693cb8eeb2691">&#9670;&nbsp;</a></span>enableFeature() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">VkBool32 VulkanGraphicsEngineLink::enableFeature </td>
-          <td>(</td>
-          <td class="paramtype">VkBool32 *&#160;</td>
-          <td class="paramname"><em>feature</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a8c8d66e66725778ed6ef24894b3ee31c" name="a8c8d66e66725778ed6ef24894b3ee31c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8c8d66e66725778ed6ef24894b3ee31c">&#9670;&nbsp;</a></span>endSingleTimeCommands()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void VulkanGraphicsEngineLink::endSingleTimeCommands </td>
-          <td>(</td>
-          <td class="paramtype">VkCommandBuffer&#160;</td>
-          <td class="paramname"><em>commandBuffer</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a4faef86f60c5ff376c7db0134cd6a4bb" name="a4faef86f60c5ff376c7db0134cd6a4bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4faef86f60c5ff376c7db0134cd6a4bb">&#9670;&nbsp;</a></span>testFeature() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::vector&lt; VkBool32 &gt; VulkanGraphicsEngineLink::testFeature </td>
-          <td>(</td>
-          <td class="paramtype">const std::vector&lt; VkBool32 * &gt; &amp;&#160;</td>
-          <td class="paramname"><em>features</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a253cb724aa2392f4106bf93ce040ff93" name="a253cb724aa2392f4106bf93ce040ff93"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a253cb724aa2392f4106bf93ce040ff93">&#9670;&nbsp;</a></span>testFeature() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">VkBool32 * VulkanGraphicsEngineLink::testFeature </td>
-          <td>(</td>
-          <td class="paramtype">const VkBool32 *&#160;</td>
-          <td class="paramname"><em>feature</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="ac2992803916957a2f9acc0de5c79c165" name="ac2992803916957a2f9acc0de5c79c165"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac2992803916957a2f9acc0de5c79c165">&#9670;&nbsp;</a></span>allocator</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">VmaAllocator* VulkanGraphicsEngineLink::allocator {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a4ceb5658e7b351283f04e81b03500d73" name="a4ceb5658e7b351283f04e81b03500d73"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ceb5658e7b351283f04e81b03500d73">&#9670;&nbsp;</a></span>commandPool</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">VkCommandPool* VulkanGraphicsEngineLink::commandPool {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a60222b2147e74d407f32ce272042004c" name="a60222b2147e74d407f32ce272042004c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a60222b2147e74d407f32ce272042004c">&#9670;&nbsp;</a></span>computeQueue</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">VkQueue* VulkanGraphicsEngineLink::computeQueue {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a3c433a3e894ebcb5b38665ee2cbfe3dd" name="a3c433a3e894ebcb5b38665ee2cbfe3dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3c433a3e894ebcb5b38665ee2cbfe3dd">&#9670;&nbsp;</a></span>device</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">vkb::Device* VulkanGraphicsEngineLink::device {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a23160c962d66a2d643ab85fe38c1ce98" name="a23160c962d66a2d643ab85fe38c1ce98"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a23160c962d66a2d643ab85fe38c1ce98">&#9670;&nbsp;</a></span>enabledPhysicalDeviceInfo</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html">PhysicalDeviceInfo</a> VulkanGraphicsEngineLink::enabledPhysicalDeviceInfo {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aca6e790ee24f730c98f97cf9d83afe1e" name="aca6e790ee24f730c98f97cf9d83afe1e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aca6e790ee24f730c98f97cf9d83afe1e">&#9670;&nbsp;</a></span>graphicsQueue</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">VkQueue* VulkanGraphicsEngineLink::graphicsQueue {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a94ea9ade8719fa6fefb852b750fdf882" name="a94ea9ade8719fa6fefb852b750fdf882"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a94ea9ade8719fa6fefb852b750fdf882">&#9670;&nbsp;</a></span>presentQueue</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">VkQueue* VulkanGraphicsEngineLink::presentQueue {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a1e692fccecf505957ea64c4d30f197c4" name="a1e692fccecf505957ea64c4d30f197c4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1e692fccecf505957ea64c4d30f197c4">&#9670;&nbsp;</a></span>settings</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="class_vulkan_settings.html">VulkanSettings</a>* VulkanGraphicsEngineLink::settings = nullptr</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aaa8bfc5e3df713b47a46db11e4556ac6" name="aaa8bfc5e3df713b47a46db11e4556ac6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaa8bfc5e3df713b47a46db11e4556ac6">&#9670;&nbsp;</a></span>supportedPhysicalDeviceInfo</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html">PhysicalDeviceInfo</a> VulkanGraphicsEngineLink::supportedPhysicalDeviceInfo {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a33082671c0a7ec4c3a98d071cffe36bc" name="a33082671c0a7ec4c3a98d071cffe36bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33082671c0a7ec4c3a98d071cffe36bc">&#9670;&nbsp;</a></span>swapchain</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">vkb::Swapchain* VulkanGraphicsEngineLink::swapchain {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a349c9e0def6977c0a2b6639d7e69091e" name="a349c9e0def6977c0a2b6639d7e69091e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a349c9e0def6977c0a2b6639d7e69091e">&#9670;&nbsp;</a></span>swapchainImageViews</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::vector&lt;VkImageView&gt;* VulkanGraphicsEngineLink::swapchainImageViews {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a094bac571a45afe608b828441fd2a3fa" name="a094bac571a45afe608b828441fd2a3fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a094bac571a45afe608b828441fd2a3fa">&#9670;&nbsp;</a></span>transferQueue</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">VkQueue* VulkanGraphicsEngineLink::transferQueue {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a20f4aa751b5befd8cc0ef0dd139f6fc5" name="a20f4aa751b5befd8cc0ef0dd139f6fc5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a20f4aa751b5befd8cc0ef0dd139f6fc5">&#9670;&nbsp;</a></span>vkAcquireNextImageKhr</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">PFN_vkAcquireNextImageKHR VulkanGraphicsEngineLink::vkAcquireNextImageKhr {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a619645b99aa153b14c9293f71dc18755" name="a619645b99aa153b14c9293f71dc18755"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a619645b99aa153b14c9293f71dc18755">&#9670;&nbsp;</a></span>vkCmdBuildAccelerationStructuresKHR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">PFN_vkCmdBuildAccelerationStructuresKHR VulkanGraphicsEngineLink::vkCmdBuildAccelerationStructuresKHR {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aed65e164c7dd3323902eb30cb38300e1" name="aed65e164c7dd3323902eb30cb38300e1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed65e164c7dd3323902eb30cb38300e1">&#9670;&nbsp;</a></span>vkCreateAccelerationStructureKHR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">PFN_vkCreateAccelerationStructureKHR VulkanGraphicsEngineLink::vkCreateAccelerationStructureKHR {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ab22c2106045ab530c0e17aac25be24c5" name="ab22c2106045ab530c0e17aac25be24c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab22c2106045ab530c0e17aac25be24c5">&#9670;&nbsp;</a></span>vkDestroyAccelerationStructureKHR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">PFN_vkDestroyAccelerationStructureKHR VulkanGraphicsEngineLink::vkDestroyAccelerationStructureKHR {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a2df4074e7f0273bd3659d53299486670" name="a2df4074e7f0273bd3659d53299486670"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2df4074e7f0273bd3659d53299486670">&#9670;&nbsp;</a></span>vkGetAccelerationStructureBuildSizesKHR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">PFN_vkGetAccelerationStructureBuildSizesKHR VulkanGraphicsEngineLink::vkGetAccelerationStructureBuildSizesKHR {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="af7f58e0655399149d5cc421ba3654447" name="af7f58e0655399149d5cc421ba3654447"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af7f58e0655399149d5cc421ba3654447">&#9670;&nbsp;</a></span>vkGetAccelerationStructureDeviceAddressKHR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">PFN_vkGetAccelerationStructureDeviceAddressKHR VulkanGraphicsEngineLink::vkGetAccelerationStructureDeviceAddressKHR {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a67dae40a4a0061d7dac8e3bdedbd6d22" name="a67dae40a4a0061d7dac8e3bdedbd6d22"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a67dae40a4a0061d7dac8e3bdedbd6d22">&#9670;&nbsp;</a></span>vkGetBufferDeviceAddressKHR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">PFN_vkGetBufferDeviceAddress VulkanGraphicsEngineLink::vkGetBufferDeviceAddressKHR {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<hr/>The documentation for this class was generated from the following file:<ul>
-<li>Illumination-Engine/src/GraphicsModule/Vulkan/<a class="el" href="vulkan_graphics_engine_link_8hpp_source.html">vulkanGraphicsEngineLink.hpp</a></li>
-</ul>
-</div><!-- contents -->
-</div><!-- doc-content -->
-<!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="navelem"><a class="el" href="class_vulkan_graphics_engine_link.html">VulkanGraphicsEngineLink</a></li>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.4 </li>
-  </ul>
-</div>
+<script src="search-v2.js"></script>
+<script src="searchdata-v2.js" async="async"></script>
+<footer><nav>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <p>Illumination Engine A Game Development Engine Written In C++. Created with <a href="https://doxygen.org/">Doxygen</a> 1.9.4 and <a href="https://mcss.mosra.cz/">m.css</a>.</p>
+      </div>
+    </div>
+  </div>
+</nav></footer>
 </body>
 </html>

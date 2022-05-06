@@ -1,158 +1,225 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=11"/>
-<meta name="generator" content="Doxygen 1.9.4"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Illumination Engine: Class List</title>
-<link href="tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript" src="dynsections.js"></script>
-<link href="navtree.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="resize.js"></script>
-<script type="text/javascript" src="navtreedata.js"></script>
-<script type="text/javascript" src="navtree.js"></script>
-<link href="search/search.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="search/searchdata.js"></script>
-<script type="text/javascript" src="search/search.js"></script>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-  $(document).ready(function() { init_search(); });
-/* @license-end */
-</script>
-<link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <meta charset="UTF-8" />
+  <title>Illumination Engine A Game Development Engine Written In C++</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,600,600i%7CSource+Code+Pro:400,400i,600" />
+  <link rel="stylesheet" href="m-dark+documentation.compiled.css" />
+  <link rel="icon" href="IlluminationEngineLogo128.png" type="image/png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#22272e" />
 </head>
 <body>
-<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
-<div id="titlearea">
-<table cellspacing="0" cellpadding="0">
- <tbody>
- <tr id="projectrow">
-  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineSignResized2.png"/></td>
-  <td id="projectalign">
-   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
-   </div>
-   <div id="projectbrief">A Game Development Engine Written In C++</div>
-  </td>
-    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
-        <span class="left">
-          <img id="MSearchSelect" src="search/mag_sel.svg"
-               onmouseover="return searchBox.OnSearchSelectShow()"
-               onmouseout="return searchBox.OnSearchSelectHide()"
-               alt=""/>
-          <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
-               onkeyup="searchBox.OnSearchFieldChange(event)"/>
-          </span><span class="right">
-            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
-          </span>
+<header><nav id="navigation">
+  <div class="m-container">
+    <div class="m-row">
+      <a href="index.html" id="m-navbar-brand" class="m-col-t-8 m-col-m-none m-left-m"><img src="IlluminationEngineLogo128.png" alt="" />Illumination Engine <span class="m-thin">A Game Development Engine Written In C++</span></a>
+      <div class="m-col-t-4 m-hide-m m-text-right m-nopadr">
+        <a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+          <path id="m-doc-search-icon-path" d="m6 0c-3.31 0-6 2.69-6 6 0 3.31 2.69 6 6 6 1.49 0 2.85-0.541 3.89-1.44-0.0164 0.338 0.147 0.759 0.5 1.15l3.22 3.79c0.552 0.614 1.45 0.665 2 0.115 0.55-0.55 0.499-1.45-0.115-2l-3.79-3.22c-0.392-0.353-0.812-0.515-1.15-0.5 0.895-1.05 1.44-2.41 1.44-3.89 0-3.31-2.69-6-6-6zm0 1.56a4.44 4.44 0 0 1 4.44 4.44 4.44 4.44 0 0 1-4.44 4.44 4.44 4.44 0 0 1-4.44-4.44 4.44 4.44 0 0 1 4.44-4.44z"/>
+        </svg></a>
+        <a id="m-navbar-show" href="#navigation" title="Show navigation"></a>
+        <a id="m-navbar-hide" href="#" title="Hide navigation"></a>
+      </div>
+      <div id="m-navbar-collapse" class="m-col-t-12 m-show-m m-col-m-none m-right-m">
+        <div class="m-row">
+          <ol class="m-col-t-6 m-col-m-none">
+            <li><a href="https://joellogan.github.io">Main Page</a></li>
+            <li><a href="pages.html">Pages</a></li>
+          </ol>
+          <ol class="m-col-t-6 m-col-m-none" start="3">
+            <li><a href="annotated.html" id="m-navbar-current">Classes</a></li>
+            <li><a href="files.html">Files</a></li>
+            <li class="m-show-m"><a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
+              <use href="#m-doc-search-icon-path" />
+            </svg></a></li>
+          </ol>
         </div>
-</td>
- </tr>
- </tbody>
-</table>
-</div>
-<!-- end header part -->
-<!-- Generated by Doxygen 1.9.4 -->
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-var searchBox = new SearchBox("searchBox", "search",'Search','.html');
-/* @license-end */
-</script>
-</div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
-  <div id="nav-tree">
-    <div id="nav-tree-contents">
-      <div id="nav-sync" class="sync"></div>
+      </div>
     </div>
   </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
-       class="ui-resizable-handle">
+</nav></header>
+<main><article>
+  <div class="m-container m-container-inflatable">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <h1>Classes</h1>
+        <ul class="m-doc">
+          <li class="m-doc-collapsible">
+            <a href="#" onclick="return toggle(this)">namespace</a> <a href="namespacestd.html" class="m-doc">std</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="structstd_1_1hash_3_01_ie_key_press_description_01_4.html" class="m-doc">hash&lt;IeKeyPressDescription&gt;</a> <span class="m-doc">The hash method for the <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a> structure.</span></li>
+            </ul>
+          </li>
+          <li>class <a href="class_i_e_aspect.html" class="m-doc">IEAspect</a> <span class="m-doc"><span></span></span></li>
+          <li>class <a href="class_i_e_asset.html" class="m-doc">IEAsset</a> <span class="m-doc"><span></span></span></li>
+          <li>class <a href="class_i_e_file.html" class="m-doc">IEFile</a> <span class="m-doc"><span></span></span></li>
+          <li>class <a href="class_i_e_file_system.html" class="m-doc">IEFileSystem</a> <span class="m-doc"><span></span></span></li>
+          <li>class <a href="class_i_e_keyboard.html" class="m-doc">IEKeyboard</a> <span class="m-doc">The Keyboard class is intended to manage keyboard event handling.</span></li>
+          <li>struct <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a> <span class="m-doc">A class that stores the data related to a key press action.</span></li>
+          <li>class <a href="class_i_e_logger.html" class="m-doc">IELogger</a> <span class="m-doc">A small logging tool that is a very thin wrapper for spdlog.</span></li>
+          <li>struct <a href="struct_i_e_window_user_pointer.html" class="m-doc">IEWindowUserPointer</a> <span class="m-doc"><span></span></span></li>
+          <li>class <a href="class_open_g_l_camera.html" class="m-doc">OpenGLCamera</a> <span class="m-doc"><span></span></span></li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_open_g_l_framebuffer.html" class="m-doc">OpenGLFramebuffer</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_open_g_l_framebuffer_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li>class <a href="class_open_g_l_graphics_engine_link.html" class="m-doc">OpenGLGraphicsEngineLink</a> <span class="m-doc"><span></span></span></li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_open_g_l_image.html" class="m-doc">OpenGLImage</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_open_g_l_image_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_open_g_l_program.html" class="m-doc">OpenGLProgram</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_open_g_l_program_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_open_g_l_renderable.html" class="m-doc">OpenGLRenderable</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li class="m-doc-collapsible collapsed">
+                <a href="#" onclick="return toggle(this)">struct</a> <a href="struct_open_g_l_renderable_1_1_open_g_l_mesh.html" class="m-doc">OpenGLMesh</a> <span class="m-doc"><span></span></span>
+                <ul class="m-doc">
+                  <li>struct <a href="struct_open_g_l_renderable_1_1_open_g_l_mesh_1_1_open_g_l_vertex.html" class="m-doc">OpenGLVertex</a> <span class="m-doc"><span></span></span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>class <a href="class_open_g_l_render_engine.html" class="m-doc">OpenGLRenderEngine</a> <span class="m-doc"><span></span></span></li>
+          <li>class <a href="class_open_g_l_settings.html" class="m-doc">OpenGLSettings</a> <span class="m-doc"><span></span></span></li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_open_g_l_shader.html" class="m-doc">OpenGLShader</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_open_g_l_shader_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li>class <a href="class_open_g_l_texture.html" class="m-doc">OpenGLTexture</a> <span class="m-doc"><span></span></span></li>
+          <li>class <a href="class_vulkan_acceleration_structure.html" class="m-doc">VulkanAccelerationStructure</a> <span class="m-doc"><span></span></span></li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_vulkan_buffer.html" class="m-doc">VulkanBuffer</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_vulkan_buffer_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li>class <a href="class_vulkan_camera.html" class="m-doc">VulkanCamera</a> <span class="m-doc"><span></span></span></li>
+          <li>class <a href="class_vulkan_command_buffer.html" class="m-doc">VulkanCommandBuffer</a> <span class="m-doc"><span></span></span></li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_vulkan_descriptor_set.html" class="m-doc">VulkanDescriptorSet</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_vulkan_descriptor_set_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_vulkan_framebuffer.html" class="m-doc">VulkanFramebuffer</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_vulkan_framebuffer_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_vulkan_graphics_engine_link.html" class="m-doc">VulkanGraphicsEngineLink</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html" class="m-doc">PhysicalDeviceInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_vulkan_image.html" class="m-doc">VulkanImage</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_vulkan_image_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_vulkan_pipeline.html" class="m-doc">VulkanPipeline</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_vulkan_pipeline_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_vulkan_renderable.html" class="m-doc">VulkanRenderable</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_vulkan_renderable_1_1_vulkan_mesh.html" class="m-doc">VulkanMesh</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li>class <a href="class_vulkan_render_engine.html" class="m-doc">VulkanRenderEngine</a> <span class="m-doc"><span></span></span></li>
+          <li>class <a href="class_vulkan_render_pass.html" class="m-doc">VulkanRenderPass</a> <span class="m-doc"><span></span></span></li>
+          <li class="m-doc-collapsible collapsed">
+            <a href="#" onclick="return toggle(this)">class</a> <a href="class_vulkan_shader.html" class="m-doc">VulkanShader</a> <span class="m-doc"><span></span></span>
+            <ul class="m-doc">
+              <li>struct <a href="struct_vulkan_shader_1_1_create_info.html" class="m-doc">CreateInfo</a> <span class="m-doc"><span></span></span></li>
+            </ul>
+          </li>
+          <li>class <a href="class_vulkan_texture.html" class="m-doc">VulkanTexture</a> <span class="m-doc"><span></span></span></li>
+          <li>struct <a href="struct_vulkan_uniform_buffer_object.html" class="m-doc">VulkanUniformBufferObject</a> <span class="m-doc"><span></span></span></li>
+          <li>struct <a href="struct_vulkan_vertex.html" class="m-doc">VulkanVertex</a> <span class="m-doc"><span></span></span></li>
+        </ul>
+        <script>
+        function toggle(e) {
+            e.parentElement.className = e.parentElement.className == 'm-doc-collapsible' ?
+                'm-doc-expansible' : 'm-doc-collapsible';
+            return false;
+        }
+        /* Collapse all nodes marked as such. Doing it via JS instead of
+           directly in markup so disabling it doesn't harm usability. The list
+           is somehow regenerated on every iteration and shrinks as I change
+           the classes. It's not documented anywhere and I'm not sure if this
+           is the same across browsers, so I am going backwards in that list to
+           be sure. */
+        var collapsed = document.getElementsByClassName("collapsed");
+        for(var i = collapsed.length - 1; i >= 0; --i)
+            collapsed[i].className = 'm-doc-expansible';
+        </script>
+      </div>
+    </div>
+  </div>
+</article></main>
+<div class="m-doc-search" id="search">
+  <a href="#!" onclick="return hideSearch()"></a>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-m-8 m-push-m-2">
+        <div class="m-doc-search-header m-text m-small">
+          <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
+          <div id="search-symbolcount">&hellip;</div>
+        </div>
+        <div class="m-doc-search-content">
+          <form>
+            <input type="search" name="q" id="search-input" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
+          </form>
+          <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.</noscript>
+          <div id="search-help" class="m-text m-dim m-text-center">
+            <p class="m-noindent">Search for symbols, directories, files, pages or
+            modules. You can omit any prefix from the symbol or file path; adding a
+            <code>:</code> or <code>/</code> suffix lists all members of given symbol or
+            directory.</p>
+            <p class="m-noindent">Use <span class="m-label m-dim">&darr;</span>
+            / <span class="m-label m-dim">&uarr;</span> to navigate through the list,
+            <span class="m-label m-dim">Enter</span> to go.
+            <span class="m-label m-dim">Tab</span> autocompletes common prefix, you can
+            copy a link to the result using <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">L</span> while <span class="m-label m-dim">⌘</span>
+            <span class="m-label m-dim">M</span> produces a Markdown link.</p>
+          </div>
+          <div id="search-notfound" class="m-text m-warning m-text-center">Sorry, nothing was found.</div>
+          <ul id="search-results"></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('annotated.html',''); initResizable(); });
-/* @license-end */
-</script>
-<div id="doc-content">
-<!-- window showing the filter options -->
-<div id="MSearchSelectWindow"
-     onmouseover="return searchBox.OnSearchSelectShow()"
-     onmouseout="return searchBox.OnSearchSelectHide()"
-     onkeydown="return searchBox.OnSearchSelectKey(event)">
-</div>
-
-<!-- iframe showing the search results (closed by default) -->
-<div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
-        name="MSearchResults" id="MSearchResults">
-</iframe>
-</div>
-
-<div class="header">
-  <div class="headertitle"><div class="title">Class List</div></div>
-</div><!--header-->
-<div class="contents">
-<div class="textblock">Here are the classes, structs, unions and interfaces with brief descriptions:</div><div class="directory">
-<div class="levels">[detail level <span onclick="javascript:toggleLevel(1);">1</span><span onclick="javascript:toggleLevel(2);">2</span><span onclick="javascript:toggleLevel(3);">3</span>]</div><table class="directory">
-<tr id="row_0_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_0_" class="arrow" onclick="toggleFolder('0_')">&#9660;</span><span class="icona"><span class="icon">N</span></span><b>std</b></td><td class="desc"></td></tr>
-<tr id="row_0_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="structstd_1_1hash_3_01_ie_key_press_description_01_4.html" target="_self">hash&lt; IeKeyPressDescription &gt;</a></td><td class="desc">The hash method for the <a class="el" href="struct_ie_key_press_description.html" title="A class that stores the data related to a key press action.">IeKeyPressDescription</a> structure </td></tr>
-<tr id="row_1_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_ie_keyboard.html" target="_self">IeKeyboard</a></td><td class="desc">The Keyboard class is intended to manage keyboard event handling </td></tr>
-<tr id="row_2_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_ie_key_press_description.html" target="_self">IeKeyPressDescription</a></td><td class="desc">A class that stores the data related to a key press action </td></tr>
-<tr id="row_3_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_i_e_logger.html" target="_self">IELogger</a></td><td class="desc">A small logging tool that is a very thin wrapper for spdlog </td></tr>
-<tr id="row_4_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_camera.html" target="_self">OpenGLCamera</a></td><td class="desc"></td></tr>
-<tr id="row_5_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_5_" class="arrow" onclick="toggleFolder('5_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_framebuffer.html" target="_self">OpenGLFramebuffer</a></td><td class="desc"></td></tr>
-<tr id="row_5_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_open_g_l_framebuffer_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_6_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_graphics_engine_link.html" target="_self">OpenGLGraphicsEngineLink</a></td><td class="desc"></td></tr>
-<tr id="row_7_"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_7_" class="arrow" onclick="toggleFolder('7_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_image.html" target="_self">OpenGLImage</a></td><td class="desc"></td></tr>
-<tr id="row_7_0_" class="even"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_open_g_l_image_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_8_"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_8_" class="arrow" onclick="toggleFolder('8_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_program.html" target="_self">OpenGLProgram</a></td><td class="desc"></td></tr>
-<tr id="row_8_0_" class="even"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_open_g_l_program_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_9_"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_9_" class="arrow" onclick="toggleFolder('9_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_renderable.html" target="_self">OpenGLRenderable</a></td><td class="desc"></td></tr>
-<tr id="row_9_0_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span id="arr_9_0_" class="arrow" onclick="toggleFolder('9_0_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_open_g_l_renderable_1_1_open_g_l_mesh.html" target="_self">OpenGLMesh</a></td><td class="desc"></td></tr>
-<tr id="row_9_0_0_"><td class="entry"><span style="width:48px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_open_g_l_renderable_1_1_open_g_l_mesh_1_1_open_g_l_vertex.html" target="_self">OpenGLVertex</a></td><td class="desc"></td></tr>
-<tr id="row_10_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_render_engine.html" target="_self">OpenGLRenderEngine</a></td><td class="desc"></td></tr>
-<tr id="row_11_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_settings.html" target="_self">OpenGLSettings</a></td><td class="desc"></td></tr>
-<tr id="row_12_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_12_" class="arrow" onclick="toggleFolder('12_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_shader.html" target="_self">OpenGLShader</a></td><td class="desc"></td></tr>
-<tr id="row_12_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_open_g_l_shader_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_13_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_open_g_l_texture.html" target="_self">OpenGLTexture</a></td><td class="desc"></td></tr>
-<tr id="row_14_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_acceleration_structure.html" target="_self">VulkanAccelerationStructure</a></td><td class="desc"></td></tr>
-<tr id="row_15_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_15_" class="arrow" onclick="toggleFolder('15_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_buffer.html" target="_self">VulkanBuffer</a></td><td class="desc"></td></tr>
-<tr id="row_15_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_buffer_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_16_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_camera.html" target="_self">VulkanCamera</a></td><td class="desc"></td></tr>
-<tr id="row_17_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_command_buffer.html" target="_self">VulkanCommandBuffer</a></td><td class="desc"></td></tr>
-<tr id="row_18_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_18_" class="arrow" onclick="toggleFolder('18_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_descriptor_set.html" target="_self">VulkanDescriptorSet</a></td><td class="desc"></td></tr>
-<tr id="row_18_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_descriptor_set_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_19_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_19_" class="arrow" onclick="toggleFolder('19_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_framebuffer.html" target="_self">VulkanFramebuffer</a></td><td class="desc"></td></tr>
-<tr id="row_19_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_framebuffer_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_20_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_20_" class="arrow" onclick="toggleFolder('20_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_graphics_engine_link.html" target="_self">VulkanGraphicsEngineLink</a></td><td class="desc"></td></tr>
-<tr id="row_20_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_graphics_engine_link_1_1_physical_device_info.html" target="_self">PhysicalDeviceInfo</a></td><td class="desc"></td></tr>
-<tr id="row_21_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_21_" class="arrow" onclick="toggleFolder('21_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_image.html" target="_self">VulkanImage</a></td><td class="desc"></td></tr>
-<tr id="row_21_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_image_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_22_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_22_" class="arrow" onclick="toggleFolder('22_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_pipeline.html" target="_self">VulkanPipeline</a></td><td class="desc"></td></tr>
-<tr id="row_22_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_pipeline_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_23_" class="even"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_23_" class="arrow" onclick="toggleFolder('23_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_renderable.html" target="_self">VulkanRenderable</a></td><td class="desc"></td></tr>
-<tr id="row_23_0_"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_renderable_1_1_vulkan_mesh.html" target="_self">VulkanMesh</a></td><td class="desc"></td></tr>
-<tr id="row_24_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_render_engine.html" target="_self">VulkanRenderEngine</a></td><td class="desc"></td></tr>
-<tr id="row_25_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_render_pass.html" target="_self">VulkanRenderPass</a></td><td class="desc"></td></tr>
-<tr id="row_26_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_settings.html" target="_self">VulkanSettings</a></td><td class="desc"></td></tr>
-<tr id="row_27_"><td class="entry"><span style="width:0px;display:inline-block;">&#160;</span><span id="arr_27_" class="arrow" onclick="toggleFolder('27_')">&#9660;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_shader.html" target="_self">VulkanShader</a></td><td class="desc"></td></tr>
-<tr id="row_27_0_" class="even"><td class="entry"><span style="width:32px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_shader_1_1_create_info.html" target="_self">CreateInfo</a></td><td class="desc"></td></tr>
-<tr id="row_28_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="class_vulkan_texture.html" target="_self">VulkanTexture</a></td><td class="desc"></td></tr>
-<tr id="row_29_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_uniform_buffer_object.html" target="_self">VulkanUniformBufferObject</a></td><td class="desc"></td></tr>
-<tr id="row_30_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><span class="icona"><span class="icon">C</span></span><a class="el" href="struct_vulkan_vertex.html" target="_self">VulkanVertex</a></td><td class="desc"></td></tr>
-</table>
-</div><!-- directory -->
-</div><!-- contents -->
-</div><!-- doc-content -->
-<!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.4 </li>
-  </ul>
-</div>
+<script src="search-v2.js"></script>
+<script src="searchdata-v2.js" async="async"></script>
+<footer><nav>
+  <div class="m-container">
+    <div class="m-row">
+      <div class="m-col-l-10 m-push-l-1">
+        <p>Illumination Engine A Game Development Engine Written In C++. Created with <a href="https://doxygen.org/">Doxygen</a> 1.9.4 and <a href="https://mcss.mosra.cz/">m.css</a>.</p>
+      </div>
+    </div>
+  </div>
+</nav></footer>
 </body>
 </html>
