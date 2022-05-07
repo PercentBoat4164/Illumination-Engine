@@ -73,7 +73,7 @@ void main() {
     color *= vec3(max(fbmResultAtDifferentTime * 2, 1.0), 1, 1);
     outColor = vec4(0);
     float distanceFromFragmentToLight = distance(fragmentPosition, vec3(0, 0, 2));
-    float lightIntensityAfterAttenuation = 1 / ( 1 + distanceFromFragmentToLight + distanceFromFragmentToLight * distanceFromFragmentToLight) * brightness;
+    float lightIntensityAfterAttenuation = 1 / (1 + distanceFromFragmentToLight + distanceFromFragmentToLight * distanceFromFragmentToLight) * brightness;
     rayQueryEXT rayQuery;
     for (int i = 0; i < samples; ++i) {
         vec3 randomPointOnUnitSphere = normalize(vec3(gold_noise(gl_FragCoord.xy, cameraData.time + 1 + i), gold_noise(gl_FragCoord.xy, cameraData.time + 2 + i), gold_noise(gl_FragCoord.xy, cameraData.time + 3 + i)));

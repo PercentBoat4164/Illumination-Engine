@@ -22,30 +22,30 @@ class IERenderPass;
 
 class IEPipeline : public IEDependency {
 public:
-    struct CreateInfo {
-        //Required
-        std::vector<IEShader> *shaders{};
-        IEDescriptorSet *descriptorSet{};
-        IERenderPass *renderPass{};
-    };
+	struct CreateInfo {
+		//Required
+		std::vector<IEShader> *shaders{};
+		IEDescriptorSet *descriptorSet{};
+		IERenderPass *renderPass{};
+	};
 
-    #ifndef NDEBUG
-    struct Created {
-        bool pipelineLayout{};
-    } created;
-    #endif
+	#ifndef NDEBUG
+	struct Created {
+		bool pipelineLayout{};
+	} created;
+	#endif
 
-    VkPipelineLayout pipelineLayout{};
-    CreateInfo createdWith{};
-    VkPipeline pipeline{};
+	VkPipelineLayout pipelineLayout{};
+	CreateInfo createdWith{};
+	VkPipeline pipeline{};
 
-    void destroy() final;
+	void destroy() final;
 
-    void create(IERenderEngine *engineLink, CreateInfo *createInfo);
+	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-    ~IEPipeline() override;
+	~IEPipeline() override;
 
 private:
-    IERenderEngine *linkedRenderEngine{};
-    std::vector<std::function<void()>> deletionQueue{};
+	IERenderEngine *linkedRenderEngine{};
+	std::vector<std::function<void()>> deletionQueue{};
 };

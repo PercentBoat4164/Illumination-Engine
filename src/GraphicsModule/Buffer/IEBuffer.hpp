@@ -22,59 +22,60 @@ class IERenderEngine;
 
 class IEBuffer : public IEDependency {
 public:
-    struct CreateInfo {
-        //Only required for IEBuffer
-        VkDeviceSize size{};
-        VkBufferUsageFlags usage{};
-        VmaMemoryUsage allocationUsage{};
+	struct CreateInfo {
+		// Only required for IEBuffer
+		VkDeviceSize size{};
+		VkBufferUsageFlags usage{};
+		VmaMemoryUsage allocationUsage{};
+	};
 
-        //Only required for acceleration structure creation
-        VkAccelerationStructureTypeKHR type{};
-        VkTransformMatrixKHR *transformationMatrix{};
-        uint32_t primitiveCount{1};
+	typedef enum IEBufferStatus {
+		IE_BUFFER_STATUS_NONE = 0x0,
+		IE_BUFFER_STATUS_CREATED = 0x1,
+		IE_BUFFER_STATUS_DATA_IN_RAM = 0x2,
+		IE_BUFFER_STATUS_DATA_IN_VRAM = 0x4,
+		IE_BUFFER_STATUS_DESTROYED = 0x8,
+		IE_BUFFER_STATUS_DATA_IN_RAM_AND_VRAM = IE_BUFFER_STATUS_DATA_IN_RAM | IE_BUFFER_STATUS_DATA_IN_VRAM,
+		IE_BUFFER_STATUS_MAX_ENUM = 0xFF
+	} IEBufferStatus;
 
-        //Optional, only available for acceleration structures
-        VkAccelerationStructureKHR accelerationStructureToModify{};
+	std::string data{};
+	VkBuffer buffer{};
+	VkDeviceAddress deviceAddress{};
+	VkDeviceSize size{};
+	VkBufferUsageFlags usage{};
+	VmaMemoryUsage allocationUsage{};
+	bool created{false};
+	std::vector<std::function<void()>> deletionQueue{};
+	IEBufferStatus status{IE_BUFFER_STATUS_NONE};
 
-        //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR
-        VkDeviceAddress vertexBufferAddress{};
-        VkDeviceAddress indexBufferAddress{};
-        VkDeviceAddress transformationBufferAddress{};
+	void destroy() final;
 
-        //Only required if type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR
-        std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
+	IEBuffer();
 
-        //Optional
-        void *data{};
+	IEBuffer(IERenderEngine *, IEBuffer::CreateInfo *);
 
-        //Required only if bufferData != nullptr
-        uint32_t sizeOfData{};
-    };
+	IEBuffer(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
 
-    void *data{};
-    VkBuffer buffer{};
-    VkDeviceAddress deviceAddress{};
-    CreateInfo createdWith{};
-    bool created{false};
+	void create(IERenderEngine *, IEBuffer::CreateInfo *);
 
-    void destroy() final;
+	void create(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
 
-    IEBuffer();
+	void toImage(IEImage *, uint32_t, uint32_t);
 
-    IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
+	void toImage(IEImage *);
 
-    virtual void create(IERenderEngine *engineLink, CreateInfo *createInfo);
+	~IEBuffer() override;
 
-    void uploadData(void *input, uint32_t sizeOfInput);
+	void loadFromRAMToVRAM();
 
-    void toImage(IEImage *image, uint32_t width, uint32_t height);
+	void loadFromDiskToRAM(void *);
 
-    void toImage(IEImage *image);
+	void loadFromDiskToRAM(const std::string &);
 
-    ~IEBuffer() override;
+	void unloadFromVRAM();
 
 protected:
-    std::vector<std::function<void()>> deletionQueue{};
-    IERenderEngine* linkedRenderEngine{};
-    VmaAllocation allocation{};
+	IERenderEngine *linkedRenderEngine{};
+	VmaAllocation allocation{};
 };

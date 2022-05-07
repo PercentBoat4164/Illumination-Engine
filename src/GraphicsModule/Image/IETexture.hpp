@@ -16,29 +16,32 @@ class IEBuffer;
 #include <cstdint>
 #include <string>
 
+class aiTexture;
 
 class IETexture : public IEImage {
 public:
-    struct CreateInfo {
-        VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};
-        VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};
-        VkImageType type{VK_IMAGE_TYPE_2D};
-        VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
-        VkImageCreateFlags flags{};
-        VmaMemoryUsage allocationUsage{};
-        uint32_t width{}, height{};
-        IEBuffer *dataSource{};
-        stbi_uc *data{};
-        std::string filename{};
-    };
+	VkSampler sampler{};
 
-    void copyCreateInfo(IETexture::CreateInfo *createInfo);
+	struct CreateInfo {
+		VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};
+		VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};
+		VkImageType type{VK_IMAGE_TYPE_2D};
+		VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
+		VkImageCreateFlags flags{};
+		VmaMemoryUsage allocationUsage{};
+	};
 
-    void create(IERenderEngine *engineLink, IETexture::CreateInfo *createInfo);
+	IETexture() = default;
 
-    void upload(void *data);
+	IETexture(IERenderEngine *, IETexture::CreateInfo *);
 
-    void upload(IEBuffer *data);
+	void create(IERenderEngine *, IETexture::CreateInfo *);
 
-    void generateMipMaps();
+	void loadFromDiskToRAM(const aiTexture *);
+
+	void upload(void *);
+
+	void upload(IEBuffer *);
+
+	virtual void loadFromRAMToVRAM();
 };

@@ -11,10 +11,18 @@
 #include "IERenderableSettings.hpp"
 #include "glm/glm.hpp"
 
+class IEMesh;
+
 class IEMaterial {
 public:
-    uint32_t index{};
-    uint32_t textureCount{};
-    uint32_t diffuseTextureIndex{};
-    glm::vec4 diffuseColor{1.0F, 1.0F, 1.0F, 1.0F};
+	IEMesh *parentMesh{};
+	uint32_t textureCount{};
+	uint32_t diffuseTextureIndex{};
+	glm::vec4 diffuseColor{1.0F, 1.0F, 1.0F, 1.0F};
+
+	void create(IEMesh *);
+
+	void loadFromDiskToRAM(const std::string &, const aiScene *, uint32_t);
+
+	void loadFromRAMToVRAM() const;
 };

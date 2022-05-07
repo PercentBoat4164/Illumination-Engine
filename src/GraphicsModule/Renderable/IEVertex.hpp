@@ -13,14 +13,14 @@ class VkVertexInputAttributeDescription;
 #include <array>
 
 struct IEVertex {
-    glm::vec3 position{};
-    glm::vec4 color{};
-    glm::vec2 textureCoordinates{};
-    glm::vec3 normal{};
-    glm::vec3 tangent{};
-    glm::vec3 biTangent{};
+	glm::vec3 position{};
+	glm::vec4 color{};
+	glm::vec2 textureCoordinates{};
+	glm::vec3 normal{};
+	glm::vec3 tangent{};
+	glm::vec3 biTangent{};
 
-    static VkVertexInputBindingDescription getBindingDescription();
+	static VkVertexInputBindingDescription getBindingDescription();
 
-    static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
+	static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
 };

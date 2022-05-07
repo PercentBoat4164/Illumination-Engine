@@ -10,276 +10,276 @@
 #include "IERenderPass.hpp"
 
 void IEDependency::addDependent(IEDependent *dependent) {
-    if (!isDependencyOf(dependent)) {
-        dependents.push_back(dependent);
-    }
-    if (!dependent->isDependentOn(this)) {
-        dependent->addDependency(this);
-    }
+	if (!isDependencyOf(dependent)) {
+		dependents.push_back(dependent);
+	}
+	if (!dependent->isDependentOn(this)) {
+		dependent->addDependency(this);
+	}
 }
 
 bool IEDependency::isDependencyOf(IEDependent *dependent) {
-    return std::any_of(dependents.begin(), dependents.end(), [dependent](IEDependent *thisDependent) { return thisDependent == dependent; });
+	return std::any_of(dependents.begin(), dependents.end(), [dependent](IEDependent *thisDependent) { return thisDependent == dependent; });
 }
 
 bool IEDependency::hasNoDependents() const {
-    return dependents.empty();
+	return dependents.empty();
 }
 
 void IEDependency::removeDependent(IEDependent *dependent) {
-    dependents.erase(std::remove(dependents.begin(), dependents.end(), dependent), dependents.end());
-    if (dependent->isDependentOn(this)) {
-        dependent->removeDependency(this);
-    }
+	dependents.erase(std::remove(dependents.begin(), dependents.end(), dependent), dependents.end());
+	if (dependent->isDependentOn(this)) {
+		dependent->removeDependency(this);
+	}
 }
 
 void IEDependency::removeAllDependents() {
-    for (IEDependent *dependent : dependents) {
-        dependent->removeDependency(this);
-    }
+	for (IEDependent *dependent: dependents) {
+		dependent->removeDependency(this);
+	}
 }
 
 void IEDependency::wait() {
-    for (IEDependent *dependent : dependents) {
-        dependent->wait();
-    }
+	for (IEDependent *dependent: dependents) {
+		dependent->wait();
+	}
 }
 
 void IEDependency::destroy() {
-    removeAllDependents();
+	removeAllDependents();
 }
 
 IEDependency::~IEDependency() {
-    destroy();
+	destroy();
 }
 
 std::vector<IEImage *> IEImageMemoryBarrier::getImages() const {
-    return {image};
+	return {image};
 }
 
 IEImageMemoryBarrier::operator VkImageMemoryBarrier() const {
-    return {
-            .sType=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .pNext=pNext,
-            .srcAccessMask=srcAccessMask,
-            .dstAccessMask=dstAccessMask,
-            .newLayout=newLayout,
-            .srcQueueFamilyIndex=srcQueueFamilyIndex,
-            .dstQueueFamilyIndex=dstQueueFamilyIndex,
-            .image=image->image,
-            .subresourceRange=subresourceRange
-    };
+	return {
+			.sType=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+			.pNext=pNext,
+			.srcAccessMask=srcAccessMask,
+			.dstAccessMask=dstAccessMask,
+			.newLayout=newLayout,
+			.srcQueueFamilyIndex=srcQueueFamilyIndex,
+			.dstQueueFamilyIndex=dstQueueFamilyIndex,
+			.image=image->image,
+			.subresourceRange=subresourceRange
+	};
 }
 
 IEImageMemoryBarrier::operator VkImageMemoryBarrier2() const {
-    return {
-            .sType=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .pNext=pNext,
-            .srcAccessMask=srcAccessMask,
-            .dstAccessMask=dstAccessMask,
-            .newLayout=newLayout,
-            .srcQueueFamilyIndex=srcQueueFamilyIndex,
-            .dstQueueFamilyIndex=dstQueueFamilyIndex,
-            .image=image->image,
-            .subresourceRange=subresourceRange
-    };
+	return {
+			.sType=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+			.pNext=pNext,
+			.srcAccessMask=srcAccessMask,
+			.dstAccessMask=dstAccessMask,
+			.newLayout=newLayout,
+			.srcQueueFamilyIndex=srcQueueFamilyIndex,
+			.dstQueueFamilyIndex=dstQueueFamilyIndex,
+			.image=image->image,
+			.subresourceRange=subresourceRange
+	};
 }
 
 std::vector<IEDependency *> IEImageMemoryBarrier::getDependencies() const {
-    return {};
+	return {};
 }
 
 std::vector<IERenderPass *> IEImageMemoryBarrier::getRenderPasses() const {
-    return {};
+	return {};
 }
 
 std::vector<IEDescriptorSet *> IEImageMemoryBarrier::getDescriptorSets() const {
-    return {};
+	return {};
 }
 
 std::vector<IEPipeline *> IEImageMemoryBarrier::getPipelines() const {
-    return {};
+	return {};
 }
 
 std::vector<IEBuffer *> IEImageMemoryBarrier::getBuffers() const {
-    return {};
+	return {};
 }
 
 std::vector<IEBuffer *> IEBufferMemoryBarrier::getBuffers() const {
-    return {buffer};
+	return {buffer};
 }
 
 IEBufferMemoryBarrier::operator VkBufferMemoryBarrier() const {
-    return {
-            .sType=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-            .pNext=pNext,
-            .srcAccessMask=srcAccessMask,
-            .dstAccessMask=dstAccessMask,
-            .srcQueueFamilyIndex=srcQueueFamilyIndex,
-            .dstQueueFamilyIndex=dstQueueFamilyIndex,
-            .buffer=buffer->buffer,
-            .offset=offset,
-            .size=size
-    };
+	return {
+			.sType=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+			.pNext=pNext,
+			.srcAccessMask=srcAccessMask,
+			.dstAccessMask=dstAccessMask,
+			.srcQueueFamilyIndex=srcQueueFamilyIndex,
+			.dstQueueFamilyIndex=dstQueueFamilyIndex,
+			.buffer=buffer->buffer,
+			.offset=offset,
+			.size=size
+	};
 }
 
 IEBufferMemoryBarrier::operator VkBufferMemoryBarrier2() const {
-    return {
-            .sType=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
-            .pNext=pNext,
-            .srcAccessMask=srcAccessMask,
-            .dstAccessMask=dstAccessMask,
-            .srcQueueFamilyIndex=srcQueueFamilyIndex,
-            .dstQueueFamilyIndex=dstQueueFamilyIndex,
-            .buffer=buffer->buffer,
-            .offset=offset,
-            .size=size
-    };
+	return {
+			.sType=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
+			.pNext=pNext,
+			.srcAccessMask=srcAccessMask,
+			.dstAccessMask=dstAccessMask,
+			.srcQueueFamilyIndex=srcQueueFamilyIndex,
+			.dstQueueFamilyIndex=dstQueueFamilyIndex,
+			.buffer=buffer->buffer,
+			.offset=offset,
+			.size=size
+	};
 }
 
 std::vector<IEImage *> IEBufferMemoryBarrier::getImages() const {
-    return {};
+	return {};
 }
 
 std::vector<IEPipeline *> IEBufferMemoryBarrier::getPipelines() const {
-    return {};
+	return {};
 }
 
 std::vector<IEDescriptorSet *> IEBufferMemoryBarrier::getDescriptorSets() const {
-    return {};
+	return {};
 }
 
 std::vector<IERenderPass *> IEBufferMemoryBarrier::getRenderPasses() const {
-    return {};
+	return {};
 }
 
 std::vector<IEDependency *> IEBufferMemoryBarrier::getDependencies() const {
-    return {};
+	return {};
 }
 
 std::vector<IEBuffer *> IEDependencyInfo::getBuffers() const {
-    std::vector<IEBuffer *> buffers{};
-    buffers.reserve(bufferMemoryBarriers.size());
-    for (const IEBufferMemoryBarrier& bufferBarrier : bufferMemoryBarriers) {
-        buffers.push_back(bufferBarrier.buffer);
-    }
-    return buffers;
+	std::vector<IEBuffer *> buffers{};
+	buffers.reserve(bufferMemoryBarriers.size());
+	for (const IEBufferMemoryBarrier &bufferBarrier: bufferMemoryBarriers) {
+		buffers.push_back(bufferBarrier.buffer);
+	}
+	return buffers;
 }
 
 std::vector<IEImage *> IEDependencyInfo::getImages() const {
-    std::vector<IEImage *> images{};
-    images.reserve(imageMemoryBarriers.size());
-    for (const IEImageMemoryBarrier& imageBarrier : imageMemoryBarriers) {
-        images.push_back(imageBarrier.image);
-    }
-    return images;
+	std::vector<IEImage *> images{};
+	images.reserve(imageMemoryBarriers.size());
+	for (const IEImageMemoryBarrier &imageBarrier: imageMemoryBarriers) {
+		images.push_back(imageBarrier.image);
+	}
+	return images;
 }
 
 IEDependencyInfo::operator VkDependencyInfo() {
-    bufferBarriers.resize(bufferMemoryBarriers.size());
-    for (const IEBufferMemoryBarrier& bufferBarrier : bufferMemoryBarriers) {
-        bufferBarriers.emplace_back((VkBufferMemoryBarrier2)bufferBarrier);
-    }
-    imageBarriers.resize(imageMemoryBarriers.size());
-    for (const IEImageMemoryBarrier& imageBarrier : imageMemoryBarriers) {
-        imageBarriers.emplace_back((VkImageMemoryBarrier2)imageBarrier);
-    }
-    return {
-            .sType=VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-            .pNext=pNext,
-            .dependencyFlags=dependencyFlags,
-            .memoryBarrierCount=static_cast<uint32_t>(memoryBarriers.size()),
-            .pMemoryBarriers=memoryBarriers.data(),
-            .bufferMemoryBarrierCount=static_cast<uint32_t>(bufferMemoryBarriers.size()),
-            .pBufferMemoryBarriers=bufferBarriers.data(),
-            .imageMemoryBarrierCount=static_cast<uint32_t>(imageMemoryBarriers.size()),
-            .pImageMemoryBarriers=imageBarriers.data(),
-    };
+	bufferBarriers.resize(bufferMemoryBarriers.size());
+	for (const IEBufferMemoryBarrier &bufferBarrier: bufferMemoryBarriers) {
+		bufferBarriers.emplace_back((VkBufferMemoryBarrier2) bufferBarrier);
+	}
+	imageBarriers.resize(imageMemoryBarriers.size());
+	for (const IEImageMemoryBarrier &imageBarrier: imageMemoryBarriers) {
+		imageBarriers.emplace_back((VkImageMemoryBarrier2) imageBarrier);
+	}
+	return {
+			.sType=VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+			.pNext=pNext,
+			.dependencyFlags=dependencyFlags,
+			.memoryBarrierCount=static_cast<uint32_t>(memoryBarriers.size()),
+			.pMemoryBarriers=memoryBarriers.data(),
+			.bufferMemoryBarrierCount=static_cast<uint32_t>(bufferMemoryBarriers.size()),
+			.pBufferMemoryBarriers=bufferBarriers.data(),
+			.imageMemoryBarrierCount=static_cast<uint32_t>(imageMemoryBarriers.size()),
+			.pImageMemoryBarriers=imageBarriers.data(),
+	};
 }
 
 std::vector<IEPipeline *> IEDependencyInfo::getPipelines() const {
-    return {};
+	return {};
 }
 
 std::vector<IEDescriptorSet *> IEDependencyInfo::getDescriptorSets() const {
-    return {};
+	return {};
 }
 
 std::vector<IERenderPass *> IEDependencyInfo::getRenderPasses() const {
-    return {};
+	return {};
 }
 
 std::vector<IEDependency *> IEDependencyInfo::getDependencies() const {
-    return {};
+	return {};
 }
 
 std::vector<IEImage *> IECopyBufferToImageInfo::getImages() const {
-    return {dstImage};
+	return {dstImage};
 }
 
 std::vector<IEBuffer *> IECopyBufferToImageInfo::getBuffers() const {
-    return {srcBuffer};
+	return {srcBuffer};
 }
 
 IECopyBufferToImageInfo::operator VkCopyBufferToImageInfo2() const {
-    return {
-            .sType=VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
-            .pNext=pNext,
-            .srcBuffer=srcBuffer->buffer,
-            .dstImage=dstImage->image,
-            .regionCount=static_cast<uint32_t>(regions.size()),
-            .pRegions=regions.data()
-    };
+	return {
+			.sType=VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
+			.pNext=pNext,
+			.srcBuffer=srcBuffer->buffer,
+			.dstImage=dstImage->image,
+			.regionCount=static_cast<uint32_t>(regions.size()),
+			.pRegions=regions.data()
+	};
 }
 
 std::vector<IEDependency *> IECopyBufferToImageInfo::getDependencies() const {
-    return {};
+	return {};
 }
 
 std::vector<IERenderPass *> IECopyBufferToImageInfo::getRenderPasses() const {
-    return {};
+	return {};
 }
 
 std::vector<IEDescriptorSet *> IECopyBufferToImageInfo::getDescriptorSets() const {
-    return {};
+	return {};
 }
 
 std::vector<IEPipeline *> IECopyBufferToImageInfo::getPipelines() const {
-    return {};
+	return {};
 }
 
 IERenderPassBeginInfo::operator VkRenderPassBeginInfo() const {
-    return {
-            .sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .pNext=pNext,
-            .renderPass=renderPass->renderPass,
-            .framebuffer=framebuffer->framebuffer,
-            .renderArea=renderArea,
-            .clearValueCount=clearValueCount,
-            .pClearValues=pClearValues
-    };
+	return {
+			.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+			.pNext=pNext,
+			.renderPass=renderPass->renderPass,
+			.framebuffer=framebuffer->framebuffer,
+			.renderArea=renderArea,
+			.clearValueCount=clearValueCount,
+			.pClearValues=pClearValues
+	};
 }
 
 std::vector<IEImage *> IERenderPassBeginInfo::getImages() const {
-    return {framebuffer};
+	return {framebuffer};
 }
 
 std::vector<IERenderPass *> IERenderPassBeginInfo::getRenderPasses() const {
-    return {renderPass};
+	return {renderPass};
 }
 
 std::vector<IEDependency *> IERenderPassBeginInfo::getDependencies() const {
-    return {};
+	return {};
 }
 
 std::vector<IEDescriptorSet *> IERenderPassBeginInfo::getDescriptorSets() const {
-    return {};
+	return {};
 }
 
 std::vector<IEPipeline *> IERenderPassBeginInfo::getPipelines() const {
-    return {};
+	return {};
 }
 
 std::vector<IEBuffer *> IERenderPassBeginInfo::getBuffers() const {
-    return {};
+	return {};
 }

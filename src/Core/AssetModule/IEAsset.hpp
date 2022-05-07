@@ -8,20 +8,20 @@
 
 class IEAsset {
 public:
-    // Things that are shared among all aspects of an asset
-    glm::vec3 position{};
-    glm::vec3 rotation{};
-    glm::vec3 scale{1.0f, 1.0f, 1.0f};
-    std::string filename{};
-    size_t index{};
-    std::vector<IEAsset *> *allAssets{};
-    std::vector<IEAspect *> aspects{};
+	// Things that are shared among all aspects of an asset
+	glm::vec3 position{};
+	glm::vec3 rotation{};
+	glm::vec3 scale{1.0f, 1.0f, 1.0f};
+	std::string filename{};
+	size_t index{};
+	std::vector<IEAsset *> *allAssets{};
+	std::vector<IEAspect *> aspects{};
 
-    void addAspect(IEAspect* aspect);
+	void addAspect(IEAspect *aspect);
 
-    ~IEAsset();
+	~IEAsset();
 
-    void update();
+	void update();
 };
 
 /*

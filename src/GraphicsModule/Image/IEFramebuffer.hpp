@@ -17,27 +17,27 @@ class IERenderEngine;
 
 class IEFramebuffer : public IEImage {
 public:
-    struct CreateInfo {
-        VkImageView swapchainImageView{};
-        VkRenderPass renderPass{};
-        std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
-    };
+	struct CreateInfo {
+		VkImageView swapchainImageView{};
+		VkRenderPass renderPass{};
+		std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
+	};
 
-    VkFramebuffer framebuffer{};
-    std::vector<VkClearValue> clearValues{3};
-    std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
-    VkImageView swapchainImageView{};
-    VkRenderPass renderPass{};
-    IEImage colorImage{};  /**@todo Eliminate this and use the inbuilt image.*/
-    IEImage depthImage{};
+	VkFramebuffer framebuffer{};
+	std::vector<VkClearValue> clearValues{3};
+	std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
+	VkImageView swapchainImageView{};
+	VkRenderPass renderPass{};
+	IEImage colorImage{};  /**@todo Eliminate this and use the inbuilt image.*/
+	IEImage depthImage{};
 
-    IEFramebuffer();
+	IEFramebuffer();
 
-    void copyCreateInfo(IEFramebuffer::CreateInfo *createInfo);
+	void copyCreateInfo(IEFramebuffer::CreateInfo *createInfo);
 
-    void create(IERenderEngine *engineLink, CreateInfo *createInfo);
+	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-    ~IEFramebuffer() override;
+	~IEFramebuffer() override;
 
-    void destroy() override;
+	void destroy() override;
 };

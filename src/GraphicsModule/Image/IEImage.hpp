@@ -23,59 +23,64 @@ class IEBuffer;
 #include <functional>
 
 class IEImage : public IEDependency {
-protected:
-    [[maybe_unused]] [[nodiscard]] uint8_t getHighestMSAASampleCount(uint8_t requested) const;
+private:
+	static std::function<void(IEImage &)> _create;
+	static std::function<void(IEImage &)> _loadFromDiskToRAM;
 
-    [[maybe_unused]] [[nodiscard]] float getHighestAnisotropyLevel(float requested) const;
+protected:
+	[[nodiscard]] uint8_t getHighestMSAASampleCount(uint8_t requested) const;
+
+	[[nodiscard]] float getHighestAnisotropyLevel(float requested) const;
 
 public:
-    struct CreateInfo {
-        VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};
-        VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};
-        VkImageType type{VK_IMAGE_TYPE_2D};
-        VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
-        VkImageCreateFlags flags{};
-        VkImageAspectFlags aspect{VK_IMAGE_ASPECT_COLOR_BIT};
-        VmaMemoryUsage allocationUsage{};
-        uint32_t width{}, height{};
-        IEBuffer *dataSource{};
-        stbi_uc *data{};
-    };
+	struct CreateInfo {
+		VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};
+		VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};
+		VkImageType type{VK_IMAGE_TYPE_2D};
+		VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
+		VkImageCreateFlags flags{};
+		VkImageAspectFlags aspect{VK_IMAGE_ASPECT_COLOR_BIT};
+		VmaMemoryUsage allocationUsage{};
+		uint32_t width{}, height{};
+		IEBuffer *dataSource{};
+		std::string data{};
+	};
 
-    VkImage image{};
-    VkImageView view{};
-    VkSampler sampler{};
-    VkFormat imageFormat{VK_FORMAT_R8G8B8A8_SRGB};  // Image format as interpreted by the Vulkan API
-    VkImageLayout imageLayout{VK_IMAGE_LAYOUT_UNDEFINED};  // How the GPU sees the image
-    VkImageType imageType{VK_IMAGE_TYPE_2D};  // Image shape (1D, 2D, 3D)
-    VkImageTiling imageMemoryArrangement{VK_IMAGE_TILING_OPTIMAL};  // How the image is stored in GPU memory
-    VkImageUsageFlags imageUsage{VK_IMAGE_USAGE_SAMPLED_BIT};  // How the program is going to use the image
-    VkImageCreateFlags imageFlags{};  // How should / was the image be created
-    VkImageAspectFlags imageAspect{VK_IMAGE_ASPECT_COLOR_BIT};
-    VmaMemoryUsage allocationUsage{};  // How is the allocation going to be used between the CPU and GPU
-    uint32_t width{}, height{};
-    IEBuffer *dataSource{};
-    stbi_uc *data{};
-    std::string filename{};
+	VkImage image{};
+	VkImageView view{};
+	VkSampler sampler{};
+	VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};  // Image format as interpreted by the Vulkan API
+	VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};  // How the GPU sees the image
+	VkImageType type{VK_IMAGE_TYPE_2D};  // Image shape (1D, 2D, 3D)
+	VkImageTiling tiling{VK_IMAGE_TILING_OPTIMAL};  // How the image is stored in GPU memory
+	VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};  // How the program is going to use the image
+	VkImageCreateFlags flags{};  // How should / was the image be created
+	VkImageAspectFlags aspect{VK_IMAGE_ASPECT_NONE};
+	VmaMemoryUsage allocationUsage{};  // How is the allocation going to be used between the CPU and GPU
+	VmaAllocation allocation{};
+	uint32_t width{};
+	uint32_t height{};
+	std::string data{};
+	std::string filename{};
+	IEBuffer *dataSource{};
+	IERenderEngine *linkedRenderEngine{};
+	std::vector<std::function<void()>> deletionQueue{};
 
-    IERenderEngine *linkedRenderEngine{};
-    std::vector<std::function<void()>> deletionQueue{};
-    std::vector<void*> dependents{};
-    VmaAllocation allocation{};
+	IEImage() = default;
 
-    IEImage();
+	IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo);
 
-    IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo);
+	virtual void copyCreateInfo(IEImage::CreateInfo *createInfo) final;
 
-    virtual void copyCreateInfo(IEImage::CreateInfo *createInfo) final;
+	virtual void create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo);
 
-    virtual void create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo);
+	virtual void loadFromDiskToRAM();
 
-    [[maybe_unused]] void toBuffer(const IEBuffer &buffer) const;
+	void toBuffer(const IEBuffer &buffer) const;
 
-    void transitionLayout(VkImageLayout newLayout);
+	void transitionLayout(VkImageLayout newLayout);
 
-    ~IEImage() override;
+	~IEImage() override;
 
-    virtual void destroy() override;
+	void destroy() override;
 };

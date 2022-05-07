@@ -19,24 +19,24 @@ class IERenderEngine;
 
 class IERenderEngine;
 
-class IERenderPass : public IEDependency{
+class IERenderPass : public IEDependency {
 public:
-    struct CreateInfo {
-        uint8_t msaaSamples{1};
-    } createdWith;
+	struct CreateInfo {
+		uint8_t msaaSamples{1};
+	} createdWith;
 
-    VkRenderPass renderPass{};
-    std::vector<IEFramebuffer> framebuffers{};
+	VkRenderPass renderPass{};
+	std::vector<IEFramebuffer> framebuffers{};
 
-    void create(IERenderEngine *engineLink, CreateInfo *createInfo);
+	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-    IERenderPassBeginInfo beginRenderPass(uint32_t framebufferIndex);
+	IERenderPassBeginInfo beginRenderPass(uint32_t framebufferIndex);
 
-    void destroy() final;
+	void destroy() final;
 
-    ~IERenderPass() override;
+	~IERenderPass() override;
 
 private:
-    std::vector<std::function<void()>> deletionQueue{};
-    IERenderEngine *linkedRenderEngine{};
+	std::vector<std::function<void()>> deletionQueue{};
+	IERenderEngine *linkedRenderEngine{};
 };

@@ -9,23 +9,23 @@ class IEDependent {
 protected:
 public:
 
-    std::vector<IEDependency*> dependencies{};
+	std::vector<IEDependency *> dependencies{};
 
-    virtual void destroy();
+	virtual void destroy();
 
-    virtual ~IEDependent();
+	virtual ~IEDependent();
 
-    void addDependency(IEDependency *dependency);
+	void addDependency(IEDependency *dependency);
 
-    void addDependencies(const std::vector<IEDependency *>& newDependencies);
+	void addDependencies(const std::vector<IEDependency *> &newDependencies);
 
-    bool isDependentOn(IEDependency *dependency);
+	bool isDependentOn(IEDependency *dependency);
 
-    void removeDependency(IEDependency *dependency);
+	void removeDependency(IEDependency *dependency);
 
-    void removeAllDependencies();
+	void removeAllDependencies();
 
-    bool hasNoDependencies() const;
+	bool hasNoDependencies() const;
 
-    virtual void wait() = 0;
+	virtual void wait() = 0;
 };

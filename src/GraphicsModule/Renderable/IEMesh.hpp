@@ -12,43 +12,34 @@ class IERenderEngine;
 
 class IEMesh {
 private:
-    std::vector<IEVertex> vertices{};
-    std::vector<uint32_t> indices{};
-    uint32_t triangleCount{};
-    IEDescriptorSet descriptorSet{};
-    IEAccelerationStructure accelerationStructure{};
-    IEBuffer vertexBuffer{};
-    IEBuffer indexBuffer{};
-    IEMaterial material{};
-    IERenderEngine *linkedRenderEngine{};
-    std::vector<std::function<void()>> deletionQueue{};
+	std::vector<IEVertex> vertices{};
+	std::vector<uint32_t> indices{};
+	uint32_t triangleCount{};
+	IEDescriptorSet descriptorSet{};
+	IEAccelerationStructure accelerationStructure{};
+	IEBuffer vertexBuffer{};
+	IEBuffer indexBuffer{};
+	IEMaterial material{};
+	std::vector<std::function<void()>> deletionQueue{};
 
-    static std::function<void(IEMesh &)> _create;
-    void _vulkanCreate() {}
-    void _openglCreate() {}
 
-    static std::function<void(IEMesh &, const std::string &, const aiScene *, aiMesh *)> _import;
-    void _vulkanImport(const std::string &, const aiScene *, aiMesh *);
-    void _openglImport(const std::string &, const aiScene *, aiMesh *);
+	static std::function<void(IEMesh &)> _create;
 
-    static std::function<void(IEMesh &)> _createVertexBuffer;
-    void _openglCreateVertexBuffer() {}
-    void _vulkanCreateVertexBuffer();
+	void _vulkanCreate() {}
 
-    static std::function<void(IEMesh &)> _createIndexBuffer;
-    void _openglCreateIndexBuffer() {}
-    void _vulkanCreateIndexBuffer();
+	void _openglCreate() {}
 
 public:
-    void create(IERenderEngine *engineLink);
+	void create(IERenderEngine *engineLink);
 
-    void import(const std::string &directory, const aiScene *scene, aiMesh *mesh);
+	void loadFromDiskToRAM(const std::string &directory, const aiScene *scene, aiMesh *mesh);
 
-    void createVertexBuffer();
+	void loadFromRAMToVRAM();
 
-    void createIndexBuffer();
 
-    void destroy();
+	void destroy();
 
-    ~IEMesh();
+	~IEMesh();
+
+	IERenderEngine *linkedRenderEngine{};
 };

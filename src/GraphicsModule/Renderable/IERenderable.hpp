@@ -33,91 +33,123 @@ class IECamera;
 
 class IERenderable final : public IEAspect {
 public:
-    std::string modelName{};
-    std::vector<IEMesh> meshes{};
-    VkTransformMatrixKHR transformationMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
-    IEBuffer transformationBuffer{};
-    IEDescriptorSet descriptorSet{};
-    IEPipeline pipeline{};
-    IEAccelerationStructure bottomLevelAccelerationStructure{};
-    std::vector<std::function<void()>> deletionQueue{};
-    IEBuffer modelBuffer{};
-    IERenderEngine *linkedRenderEngine{};
-    IEUniformBufferObject uniformBufferObject{};
-    std::vector<IEShader> shaders{};
-    Assimp::Importer importer{};
-    bool render{true};
-    uint32_t commandBufferIndex{};
-    std::string directory{};
-    VkTransformMatrixKHR identityTransformMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
+	std::string modelName{};
+	std::vector<IEMesh> meshes{};
+	VkTransformMatrixKHR transformationMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
+	IEBuffer transformationBuffer{};
+	IEDescriptorSet descriptorSet{};
+	IEPipeline pipeline{};
+	IEAccelerationStructure bottomLevelAccelerationStructure{};
+	std::vector<std::function<void()>> deletionQueue{};
+	IEBuffer modelBuffer{};
+	IERenderEngine *linkedRenderEngine{};
+	IEUniformBufferObject uniformBufferObject{};
+	std::vector<IEShader> shaders{};
+	Assimp::Importer importer{};
+	bool render{true};
+	uint32_t commandBufferIndex{};
+	std::string directory{};
+	VkTransformMatrixKHR identityTransformMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
 
-    IERenderable(IERenderEngine* engineLink, const std::string& filePath);
+	IERenderable(IERenderEngine *engineLink, const std::string &filePath);
 
-    static void setAPI(const IEAPI &api);
+	static void setAPI(const IEAPI &api);
 
-    void create();
+	void create();
 
-    void loadFromDiskToRAM();
+	void loadFromDiskToRAM();
 
-    void load();
+	void load();
 
-    void update(IEAsset *asset, const IECamera &camera, float time);
+	void update(IEAsset *asset, const IECamera &camera, float time);
 
-    void unload();
+	void unload();
 
-    void destroy() override;
+	void destroy() override;
 
-    virtual ~IERenderable() final;
+	virtual ~IERenderable() final;
 
 private:
-    /* API dependent functions */
-    void createModelBuffer();
+	/* API dependent functions */
+	void createModelBuffer();
 
-    void createDescriptorSet();
+	void createDescriptorSet();
 
-    void createPipeline();
+	void createPipeline();
 
-    void createShaders();
+	void createShaders();
 
-    static std::function<void(IERenderable &)> _create;
-    void _openglCreate();
-    void _vulkanCreate();
 
-    static std::function<void(IERenderable &)> _loadFromDiskToRAM;
-    void _openglLoadFromDiskToRAM();
-    void _vulkanLoadFromDiskToRAM();
+	static std::function<void(IERenderable &)> _create;
 
-    static std::function<void(IERenderable &)> _load;
-    void _openglLoad();
-    void _vulkanLoad();
+	void _openglCreate();
 
-    static std::function<void(IERenderable &)> _createModelBuffers;
-    void _openglCreateModelBuffer();
-    void _vulkanCreateModelBuffer();
+	void _vulkanCreate();
 
-    static std::function<void(IERenderable &)> _createDescriptorSet;
-    void _openglCreateDescriptorSet();
-    void _vulkanCreateDescriptorSet();
 
-    static std::function<void(IERenderable &)> _createPipeline;
-    void _openglCreatePipeline();
-    void _vulkanCreatePipeline();
+	static std::function<void(IERenderable &)> _loadFromDiskToRAM;
 
-    static std::function<void(IERenderable &)> _createShaders;
-    void _openglCreateShaders();
-    void _vulkanCreateShaders();
+	void _openglLoadFromDiskToRAM();
 
-    static std::function<void(IERenderable &, IEAsset *, const IECamera &, float)> _update;
-    void _openglUpdate(IEAsset *, const IECamera &, float);
-    void _vulkanUpdate(IEAsset *, const IECamera &, float);
+	void _vulkanLoadFromDiskToRAM();
 
-    static std::function<void(IERenderable &)> _unload;
-    void _openglUnload();
-    void _vulkanUnload();
 
-    static std::function<void(IERenderable &)> _destroy;
-    void _openglDestroy();
-    void _vulkanDestroy();
+	static std::function<void(IERenderable &)> _load;
 
-    void update() final;
+	void _openglLoad();
+
+	void _vulkanLoad();
+
+
+	static std::function<void(IERenderable &)> _createModelBuffers;
+
+	void _openglCreateModelBuffer();
+
+	void _vulkanCreateModelBuffer();
+
+
+	static std::function<void(IERenderable &)> _createDescriptorSet;
+
+	void _openglCreateDescriptorSet();
+
+	void _vulkanCreateDescriptorSet();
+
+
+	static std::function<void(IERenderable &)> _createPipeline;
+
+	void _openglCreatePipeline();
+
+	void _vulkanCreatePipeline();
+
+
+	static std::function<void(IERenderable &)> _createShaders;
+
+	void _openglCreateShaders();
+
+	void _vulkanCreateShaders();
+
+
+	static std::function<void(IERenderable &, IEAsset *, const IECamera &, float)> _update;
+
+	void _openglUpdate(IEAsset *, const IECamera &, float);
+
+	void _vulkanUpdate(IEAsset *, const IECamera &, float);
+
+
+	static std::function<void(IERenderable &)> _unload;
+
+	void _openglUnload();
+
+	void _vulkanUnload();
+
+
+	static std::function<void(IERenderable &)> _destroy;
+
+	void _openglDestroy();
+
+	void _vulkanDestroy();
+
+	void update() final;
+
+	void loadFromRAMToVRAM();
 };
