@@ -55,7 +55,7 @@ public:
 	VkImageTiling tiling{VK_IMAGE_TILING_OPTIMAL};  // How the image is stored in GPU memory
 	VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};  // How the program is going to use the image
 	VkImageCreateFlags flags{};  // How should / was the image be created
-	VkImageAspectFlags aspect{VK_IMAGE_ASPECT_NONE};
+	VkImageAspectFlags aspect{VK_IMAGE_ASPECT_COLOR_BIT};
 	VmaMemoryUsage allocationUsage{};  // How is the allocation going to be used between the CPU and GPU
 	VmaAllocation allocation{};
 	uint32_t width{};
@@ -81,7 +81,7 @@ public:
 
 	void transitionLayout(VkImageLayout);
 
-	~IEImage() override;
+    ~IEImage();
 
-	virtual void destroy();
+	virtual void destroy(bool=true);
 };

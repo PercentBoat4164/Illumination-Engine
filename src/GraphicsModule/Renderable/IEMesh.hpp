@@ -24,6 +24,7 @@ private:
 	IEBuffer indexBuffer{};
 	IEMaterial material{};  // Should be moved to render engine?
 	std::vector<std::function<void()>> deletionQueue{};
+    IERenderEngine *linkedRenderEngine{};
 
 
 	static std::function<void(IEMesh &)> _create;
@@ -31,6 +32,27 @@ private:
 	void _vulkanCreate() {}
 
 	void _openglCreate() {}
+
+
+    static std::function<void(IEMesh &, const std::string &, const aiScene *, aiMesh *)> _import;
+
+    void _vulkanImport(const std::string &, const aiScene *, aiMesh *);
+
+    void _openglImport(const std::string &, const aiScene *, aiMesh *);
+
+
+    static std::function<void(IEMesh &)> _createVertexBuffer;
+
+    void _openglCreateVertexBuffer() {}
+
+    void _vulkanCreateVertexBuffer();
+
+
+    static std::function<void(IEMesh &)> _createIndexBuffer;
+
+    void _openglCreateIndexBuffer() {}
+
+    void _vulkanCreateIndexBuffer();
 
 public:
 	void create(IERenderEngine *engineLink);
@@ -41,10 +63,7 @@ public:
 
 	void update(uint32_t);
 
-	void destroy();
+    void destroy();
 
-	~IEMesh();
-
-	IERenderEngine *linkedRenderEngine{};
-	IEDescriptorSet descriptorSet{};
+    ~IEMesh();
 };

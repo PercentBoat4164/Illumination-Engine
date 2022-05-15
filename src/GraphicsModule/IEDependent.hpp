@@ -3,29 +3,29 @@
 class IEDependency;
 
 #include <vector>
+#include <memory>
 
 class IEDependent {
+private:
+    std::vector<std::shared_ptr<IEDependency>> dependencies{};
 
 protected:
+    void addDependency(const std::shared_ptr<IEDependency>&);
+
+    void addDependencies(const std::vector<std::shared_ptr<IEDependency>> &);
+
+    void removeDependency(const std::shared_ptr<IEDependency> &);
+
+    void removeDependencies(const std::vector<std::shared_ptr<IEDependency>> &oldDependencies);
+
 public:
+    void clearAllDependencies();
 
-	std::vector<IEDependency *> dependencies{};
+    uint32_t dependencyCount();
 
-	virtual void destroy();
+    virtual bool canBeDestroyed(IEDependency *, bool);;
 
-	virtual ~IEDependent();
+    virtual void freeDependencies() {};
 
-	void addDependency(IEDependency *dependency);
-
-	void addDependencies(const std::vector<IEDependency *> &newDependencies);
-
-	bool isDependentOn(IEDependency *dependency);
-
-	void removeDependency(IEDependency *dependency);
-
-	void removeAllDependencies();
-
-	bool hasNoDependencies() const;
-
-	virtual void wait() = 0;
+    virtual void invalidate() {};
 };

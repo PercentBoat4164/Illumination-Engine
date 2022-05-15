@@ -48,21 +48,21 @@ public:
 	std::vector<std::function<void()>> deletionQueue{};
 	IEBufferStatus status{IE_BUFFER_STATUS_NONE};
 
-	void destroy();
+    void destroy(bool=false);
 
 	IEBuffer();
 
-	IEBuffer(IERenderEngine *, IEBuffer::CreateInfo *);
+    IEBuffer(IERenderEngine *, IEBuffer::CreateInfo *);
 
 	IEBuffer(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
 
-	void create(IERenderEngine *, IEBuffer::CreateInfo *);
+    virtual void create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
 
-	void create(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
+    void uploadData(void *input, uint32_t sizeOfInput);
 
-	void toImage(IEImage *, uint32_t, uint32_t);
+    void toImage(const std::shared_ptr<IEImage>& image, uint32_t width, uint32_t height);
 
-	void toImage(IEImage *);
+    void toImage(const std::shared_ptr<IEImage>& image);
 
 	~IEBuffer() override;
 
@@ -75,8 +75,8 @@ public:
 	void unloadFromVRAM();
 
 protected:
-	IERenderEngine *linkedRenderEngine{};
-	VmaAllocation allocation{};
+    IERenderEngine* linkedRenderEngine{};
+    VmaAllocation allocation{};
 
 private:
 	void *internalBufferData{};

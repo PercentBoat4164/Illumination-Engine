@@ -19,27 +19,26 @@ class IERenderEngine;
 
 class IECommandPool {
 public:
-	struct CreateInfo {
-	public:
-		VkCommandPoolCreateFlagBits flags{
-				static_cast<VkCommandPoolCreateFlagBits>(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)};
-		vkb::QueueType commandQueue;
-	} createdWith{};
+    struct CreateInfo {
+    public:
+        VkCommandPoolCreateFlagBits flags{static_cast<VkCommandPoolCreateFlagBits>(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)};
+        vkb::QueueType commandQueue;
+    } createdWith{};
 
-	VkCommandPool commandPool{};
-	std::vector<IECommandBuffer> commandBuffers{};
-	IERenderEngine *linkedRenderEngine{};
-	VkQueue queue;
-	std::mutex commandPoolMutex{};
-	std::vector<std::function<void()>> deletionQueue{};
+    VkCommandPool commandPool{};
+    std::vector<IECommandBuffer> commandBuffers{};
+    IERenderEngine* linkedRenderEngine{};
+    VkQueue queue;
+    std::mutex commandPoolMutex{};
+    std::vector<std::function<void()>> deletionQueue{};
 
-	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
+    void create(IERenderEngine* engineLink, CreateInfo* createInfo);
 
-	IECommandBuffer &operator[](uint32_t index);
+    IECommandBuffer& operator[](uint32_t index);
 
-	void destroy();
+    void destroy();
 
-	~IECommandPool();
+    ~IECommandPool();
 
-	void prepareCommandBuffers(uint32_t commandBufferCount);
+    void prepareCommandBuffers(uint32_t commandBufferCount);
 };

@@ -17,152 +17,31 @@ class IERenderPass;
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <string>
+#include <memory>
 
 
 class IEDependency {
-protected:
-public:
-
-	std::vector<IEDependent *> dependents{};
-	std::string type;
-
-	void addDependent(IEDependent *dependent);
-
-	bool isDependencyOf(IEDependent *dependent);
-
-	void removeDependent(IEDependent *dependent);
-
-	void removeAllDependents();
-
-	[[nodiscard]] bool hasNoDependents() const;
-
-	virtual ~IEDependency();
-
-	void wait();
-};
-
-
-typedef struct IEImageMemoryBarrier {
-	const void *pNext;
-	VkAccessFlags srcAccessMask;
-	VkAccessFlags dstAccessMask;
-	VkImageLayout newLayout;
-	uint32_t srcQueueFamilyIndex;
-	uint32_t dstQueueFamilyIndex;
-	IEImage *image;
-	VkImageSubresourceRange subresourceRange;
-
-	[[nodiscard]] std::vector<IEBuffer *> getBuffers() const;;
-
-	[[nodiscard]] std::vector<IEImage *> getImages() const;
-
-	[[nodiscard]] std::vector<IEPipeline *> getPipelines() const;
-
-	[[nodiscard]] std::vector<IEDescriptorSet *> getDescriptorSets() const;
-
-	[[nodiscard]] std::vector<IERenderPass *> getRenderPasses() const;
-
-	[[nodiscard]] std::vector<IEDependency *> getDependencies() const;
-
-	explicit operator VkImageMemoryBarrier() const;
-
-	explicit operator VkImageMemoryBarrier2() const;
-} IEImageMemoryBarrier;
-
-typedef struct IEBufferMemoryBarrier {
-	const void *pNext;
-	VkAccessFlags srcAccessMask;
-	VkAccessFlags dstAccessMask;
-	uint32_t srcQueueFamilyIndex;
-	uint32_t dstQueueFamilyIndex;
-	IEBuffer *buffer;
-	VkDeviceSize offset;
-	VkDeviceSize size;
-
-	[[nodiscard]] std::vector<IEBuffer *> getBuffers() const;;
-
-	[[nodiscard]] std::vector<IEImage *> getImages() const;
-
-	[[nodiscard]] std::vector<IEPipeline *> getPipelines() const;
-
-	[[nodiscard]] std::vector<IEDescriptorSet *> getDescriptorSets() const;
-
-	[[nodiscard]] std::vector<IERenderPass *> getRenderPasses() const;
-
-	[[nodiscard]] std::vector<IEDependency *> getDependencies() const;
-
-	explicit operator VkBufferMemoryBarrier() const;
-
-	explicit operator VkBufferMemoryBarrier2() const;
-
-} IEBufferMemoryBarrier;
-
-typedef struct IEDependencyInfo {
-	const void *pNext;
-	VkDependencyFlags dependencyFlags;
-	std::vector<VkMemoryBarrier2> memoryBarriers;
-	std::vector<IEBufferMemoryBarrier> bufferMemoryBarriers;
-	std::vector<IEImageMemoryBarrier> imageMemoryBarriers;
-
-	[[nodiscard]] std::vector<IEBuffer *> getBuffers() const;;
-
-	[[nodiscard]] std::vector<IEImage *> getImages() const;
-
-	[[nodiscard]] std::vector<IEPipeline *> getPipelines() const;
-
-	[[nodiscard]] std::vector<IEDescriptorSet *> getDescriptorSets() const;
-
-	[[nodiscard]] std::vector<IERenderPass *> getRenderPasses() const;
-
-	[[nodiscard]] std::vector<IEDependency *> getDependencies() const;
-
-	explicit operator VkDependencyInfo();
-
 private:
-	std::vector<VkBufferMemoryBarrier2> bufferBarriers{};
-	std::vector<VkImageMemoryBarrier2> imageBarriers{};
-} IEDependencyInfo;
+    std::vector<IEDependent *> dependents{};
 
-typedef struct IECopyBufferToImageInfo {
-	const void *pNext;
-	IEBuffer *srcBuffer;
-	IEImage *dstImage;
-	std::vector<VkBufferImageCopy2> regions;
+public:
+    void addDependent(IEDependent *);
 
-	[[nodiscard]] std::vector<IEBuffer *> getBuffers() const;;
+    void addDependent(IEDependent &);
 
-	[[nodiscard]] std::vector<IEImage *> getImages() const;
+    void addDependents(const std::vector<IEDependent *> &);
 
-	[[nodiscard]] std::vector<IEPipeline *> getPipelines() const;
+    void addDependents(std::vector<IEDependent> &);
 
-	[[nodiscard]] std::vector<IEDescriptorSet *> getDescriptorSets() const;
+    void removeDependent(IEDependent *);
 
-	[[nodiscard]] std::vector<IERenderPass *> getRenderPasses() const;
+    void removeDependent(IEDependent &);
 
-	[[nodiscard]] std::vector<IEDependency *> getDependencies() const;
+    void removeDependents(const std::vector<IEDependent *> &);
 
-	explicit operator VkCopyBufferToImageInfo2() const;
-} IECopyBufferToImageInfo;
+    void removeDependents(std::vector<IEDependent> &);
 
-typedef struct IERenderPassBeginInfo {
-	const void *pNext;
-	IERenderPass *renderPass;
-	IEFramebuffer *framebuffer;
-	VkRect2D renderArea{};
-	uint32_t clearValueCount;
-	const VkClearValue *pClearValues;
+    void invalidateDependents();
 
-	[[nodiscard]] std::vector<IEBuffer *> getBuffers() const;;
-
-	[[nodiscard]] std::vector<IEImage *> getImages() const;
-
-	[[nodiscard]] std::vector<IEPipeline *> getPipelines() const;
-
-	[[nodiscard]] std::vector<IEDescriptorSet *> getDescriptorSets() const;
-
-	[[nodiscard]] std::vector<IERenderPass *> getRenderPasses() const;
-
-	[[nodiscard]] std::vector<IEDependency *> getDependencies() const;
-
-	explicit operator VkRenderPassBeginInfo() const;
-} IERenderPassBeginInfo;
+    bool canBeDestroyed(bool=false);
+};

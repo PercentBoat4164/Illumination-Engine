@@ -23,13 +23,14 @@
 	return std::max(anisotropyLevel, std::min(properties.limits.maxSamplerAnisotropy, requested));
 }
 
-void IEImage::destroy() {
-	if (hasNoDependents()) {
-		for (std::function<void()> &function: deletionQueue) {
-			function();
-		}
-		deletionQueue.clear();
-	}
+void IEImage::destroy(bool force) {
+    if (canBeDestroyed(force)) {
+        for (std::function<void()> &function: deletionQueue) {
+            function();
+        }
+        deletionQueue.clear();
+        invalidateDependents();
+    }
 }
 
 void IEImage::copyCreateInfo(IEImage::CreateInfo *createInfo) {
@@ -117,11 +118,11 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 		vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
 	});
 
-	// Upload data if provided
-	if (dataSource != nullptr) {
-		transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		dataSource->toImage(this);
-	}
+    // Upload data if provided
+    if (dataSource != nullptr) {
+        transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        dataSource->toImage(std::shared_ptr<IEImage>(this), width, height);
+    }
 
 	// Set transition to requested layout from undefined or dst_optimal.
 	if (layout != desiredLayout) {
@@ -157,7 +158,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 			.newLayout=newLayout,
 			.srcQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
 			.dstQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
-			.image=this,
+			.image=std::shared_ptr<IEImage>(this),
 			.subresourceRange={
 					.aspectMask=static_cast<VkImageAspectFlags>(newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
 																newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT |
@@ -215,7 +216,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 }
 
 IEImage::~IEImage() {
-	destroy();
+    destroy(true);
 }
 
 IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
@@ -295,7 +296,7 @@ IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
 	// Upload data if provided
 	if (dataSource != nullptr) {
 		transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		dataSource->toImage(this);
+		dataSource->toImage(std::shared_ptr<IEImage>(this), width, height);
 	}
 
 	// Set transition to requested layout from undefined or dst_optimal.
@@ -307,6 +308,4 @@ IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
 std::function<void(IEImage &)> IEImage::_create = std::function<void(IEImage &)>{[](IEImage &) { return; }};
 std::function<void(IEImage &)> IEImage::_loadFromDiskToRAM = std::function<void(IEImage &)>{[](IEImage &) { return; }};
 
-void IEImage::loadFromDiskToRAM() {
-
-}
+IEImage::IEImage() = default;

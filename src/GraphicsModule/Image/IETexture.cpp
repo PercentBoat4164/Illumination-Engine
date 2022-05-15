@@ -32,7 +32,7 @@ void IETexture::upload(void *data) {
 	}};
 	scratchBuffer.loadFromDiskToRAM(data, scratchBuffer.size);
 	scratchBuffer.loadFromRAMToVRAM();
-	scratchBuffer.toImage(this);
+	scratchBuffer.toImage(std::shared_ptr<IEImage>(this));
 	linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
@@ -157,7 +157,7 @@ void IETexture::loadFromRAMToVRAM() {
 	if (data.empty() && dataSource != nullptr) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create image with raw and buffered data!");
 	}
-	if (!data.empty()) {
+	if (data.empty()) {
 		upload(data.data());
 	}
 	if (dataSource != nullptr) {
@@ -169,6 +169,11 @@ void IETexture::loadFromRAMToVRAM() {
 		transitionLayout(desiredLayout);
 	}
 	linkedRenderEngine->graphicsCommandPool[0].execute();
+}
+
+void IETexture::upload(const std::shared_ptr<IEBuffer>& data) {
+    transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    data->toImage(std::shared_ptr<IEImage>(this));
 }
 
 IETexture::IETexture(IERenderEngine *engineLink, IETexture::CreateInfo *createInfo) {

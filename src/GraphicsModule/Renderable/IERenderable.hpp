@@ -51,34 +51,31 @@ public:
 	std::string directory{};
 	VkTransformMatrixKHR identityTransformMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
 
-	IERenderable(IERenderEngine *, const std::string &);
+    IERenderable(IERenderEngine* , const std::string& );
 
-	static void setAPI(const IEAPI &);
+    static void setAPI(const IEAPI &);
 
-	void create(IERenderEngine *, const std::string &);
+    void create(IERenderEngine *, const std::string &);
 
 	void loadFromDiskToRAM();
 
-	void update(IEAsset *, const IECamera &, float);
+    void update(IEAsset *, const IECamera &, float);
 
-	void destroy() override;
+    void destroy() override;
 
-	~IERenderable() final;
+    ~IERenderable() final;
 
 	void loadFromRAMToVRAM();
 
 	void update(uint32_t) final;
 
 private:
-	/* API dependent functions */
-	void createShaders();
+    /* API dependent functions */
+    void createShaders();
 
-
-	static std::function<void(IERenderable &, IERenderEngine *, const std::string &)> _create;
-
-	void _openglCreate(IERenderEngine *, const std::string &);
-
-	void _vulkanCreate(IERenderEngine *, const std::string &);
+    static std::function<void(IERenderable &, IERenderEngine *, const std::string &)> _create;
+    void _openglCreate(IERenderEngine *, const std::string &);
+    void _vulkanCreate(IERenderEngine *, const std::string &);
 
 
 	static std::function<void(IERenderable &)> _loadFromDiskToRAM;

@@ -6,6 +6,16 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Buffer/IEAccelerationStructure.hpp
         Buffer/IEBuffer.cpp
         Buffer/IEBuffer.hpp
+        CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.cpp
+        CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.hpp
+        CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.cpp
+        CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.hpp
+        CommandBuffer/DependencyStructs/IEDependencyInfo.cpp
+        CommandBuffer/DependencyStructs/IEDependencyInfo.hpp
+        CommandBuffer/DependencyStructs/IEImageMemoryBarrier.cpp
+        CommandBuffer/DependencyStructs/IEImageMemoryBarrier.hpp
+        CommandBuffer/DependencyStructs/IERenderPassBeginInfo.cpp
+        CommandBuffer/DependencyStructs/IERenderPassBeginInfo.hpp
         CommandBuffer/IECommandBuffer.cpp
         CommandBuffer/IECommandBuffer.hpp
         CommandBuffer/IECommandPool.cpp

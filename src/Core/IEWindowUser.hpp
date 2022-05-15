@@ -6,6 +6,6 @@
  */
 class IEWindowUser {
 public:
-	void *IERenderEngine;
-	void *IEKeyboard;
+    void *IERenderEngine;
+    void *IEKeyboard;
 };

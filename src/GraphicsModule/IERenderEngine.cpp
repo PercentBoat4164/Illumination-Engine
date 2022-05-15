@@ -11,17 +11,14 @@
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION  // Must precede GLEW inclusion.
-
 #include <GL/glew.h>  // Not required by this file, but must be included before GLFW which is required.
 
 #include <GLFW/glfw3.h>
 
 #define VMA_IMPLEMENTATION
-
 #include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-
 #include <stb_image.h>
 
 /* Include system dependencies. */
@@ -243,12 +240,12 @@ void IERenderEngine::createCommandPools() {
 }
 
 void IERenderEngine::createRenderPass() {
-	// Create the renderPass
-	graphicsCommandPool.prepareCommandBuffers(swapchainImageViews.size());
-	IERenderPass::CreateInfo renderPassCreateInfo{
-			.msaaSamples=1
-	};
-	renderPass.create(this, &renderPassCreateInfo);
+    // Create the renderPass
+    graphicsCommandPool.prepareCommandBuffers(swapchainImageViews.size());
+    IERenderPass::CreateInfo renderPassCreateInfo {
+            .msaaSamples=1
+    };
+    renderPass.create(this, &renderPassCreateInfo);
 }
 
 /**@note This method works for both OpenGL and Vulkan.*/
@@ -297,9 +294,9 @@ void IERenderEngine::destroyCommandPools() {
 IERenderEngine::IERenderEngine(IESettings *settings) {
 	this->settings = settings;
 
-	// Set the function pointers
-	update = [this] { return vulkanUpdate(); };
-	destroy = [this] { return vulkanDestroy(); };
+    // Set the function pointers
+    update = [this] { return vulkanUpdate(); };
+    destroy = [this] { return vulkanDestroy(); };
 
 	// Create a Vulkan instance
 	createVulkanInstance();
@@ -391,20 +388,18 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
 	renderable->loadFromDiskToRAM();
 	renderable->loadFromRAMToVRAM();
 
-	// Record the destruction of this renderable
-	renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
+    graphicsCommandPool[0].execute();
 
-	graphicsCommandPool[0].wait();
+    // Record the destruction of this renderable
+    renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
+
+    graphicsCommandPool[0].wait();
 }
 
 void IERenderEngine::handleResolutionChange() {
-	createSwapchain(true);
-	renderPass = IERenderPass{};
-	IERenderPass::CreateInfo renderPassCreateInfo{
-			.msaaSamples=1
-	};
-	renderPass.create(this, &renderPassCreateInfo);
-//	createRenderPass();
+    createSwapchain(true);
+    renderPass.destroy();
+    createRenderPass();
 }
 
 bool IERenderEngine::openGLUpdate() {

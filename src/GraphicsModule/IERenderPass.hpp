@@ -3,7 +3,9 @@
 /* Predefine classes used with pointers or as return values for functions. */
 class IERenderEngine;
 
-/* Include classes used as attributes or function arguments. */
+class IERenderPassBeginInfo;
+
+/* Include classes used as attributes or _function arguments. */
 // Internal dependencies
 #include "GraphicsModule/Image/IEFramebuffer.hpp"
 #include "CommandBuffer/IECommandBuffer.hpp"
@@ -34,7 +36,7 @@ public:
 
 	void destroy();
 
-	~IERenderPass() override;
+	~IERenderPass();
 
 private:
 	std::vector<std::function<void()>> deletionQueue{};

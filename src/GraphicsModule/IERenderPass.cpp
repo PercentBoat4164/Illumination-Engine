@@ -1,6 +1,8 @@
 /* Include this file's header. */
 #include "IERenderPass.hpp"
 
+#include <memory>
+
 /* Include dependencies within this module. */
 #include "IERenderEngine.hpp"
 
@@ -104,25 +106,26 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
 	};
 	for (uint32_t i = 0; i < linkedRenderEngine->swapchainImageViews.size(); ++i) {
 		framebufferCreateInfo.swapchainImageView = linkedRenderEngine->swapchainImageViews[i];
-		framebuffers[i].create(linkedRenderEngine, &framebufferCreateInfo);
+        framebuffers[i] = std::make_shared<IEFramebuffer>();
+		framebuffers[i]->create(linkedRenderEngine, &framebufferCreateInfo);
 	}
 	deletionQueue.emplace_back([&] {
-		for (IEFramebuffer &framebuffer: framebuffers) {
-			framebuffer.destroy();
+		for (std::shared_ptr<IEFramebuffer> &framebuffer: framebuffers) {
+			framebuffer->destroy();
 		}
 	});
 }
 
 IERenderPassBeginInfo IERenderPass::beginRenderPass(uint32_t framebufferIndex) {
 	IERenderPassBeginInfo renderPassBeginInfo{
-			.renderPass = this,
-			.framebuffer = &framebuffers[framebufferIndex],
+			.renderPass = std::shared_ptr<IERenderPass>(this),
+			.framebuffer = framebuffers[framebufferIndex],
 			.renderArea{
 					.offset = {0, 0},
 					.extent = linkedRenderEngine->swapchain.extent,
 			},
-			.clearValueCount = static_cast<uint32_t>(framebuffers[framebufferIndex].clearValues.size()),
-			.pClearValues = framebuffers[framebufferIndex].clearValues.data(),
+			.clearValueCount = static_cast<uint32_t>(framebuffers[framebufferIndex]->clearValues.size()),
+			.pClearValues = framebuffers[framebufferIndex]->clearValues.data(),
 	};
 	return renderPassBeginInfo;
 }

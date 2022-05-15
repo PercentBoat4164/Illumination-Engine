@@ -3,47 +3,34 @@
 
 #include "IEDependency.hpp"
 
-void IEDependent::addDependency(IEDependency *dependency) {
-	if (!isDependentOn(dependency)) {
-		dependencies.push_back(dependency);
-	}
-	if (!dependency->isDependencyOf(this)) {
-		dependency->addDependent(this);
-	}
+void IEDependent::addDependency(const std::shared_ptr<IEDependency>& newDependency) {
+    dependencies.push_back(newDependency);
 }
 
-void IEDependent::addDependencies(const std::vector<IEDependency *> &newDependencies) {
-	for (IEDependency *dependency: newDependencies) {
-		addDependency(dependency);
-	}
+void IEDependent::addDependencies(const std::vector<std::shared_ptr<IEDependency>> &newDependencies) {
+    dependencies.insert(dependencies.end(), newDependencies.begin(), newDependencies.end());
 }
 
-bool IEDependent::isDependentOn(IEDependency *dependency) {
-	return std::any_of(dependencies.begin(), dependencies.end(), [dependency](IEDependency *thisDependency) { return thisDependency == dependency; });
+void IEDependent::removeDependency(const std::shared_ptr<IEDependency> &oldDependency) {
+    dependencies.erase(std::find_if(dependencies.begin(), dependencies.end(), [&](const std::shared_ptr<IEDependency> &item) {
+        return item == oldDependency;
+    }));
 }
 
-bool IEDependent::hasNoDependencies() const {
-	return dependencies.empty();
+void IEDependent::removeDependencies(const std::vector<std::shared_ptr<IEDependency>> &oldDependencies) {
+    for (const std::shared_ptr<IEDependency> &oldDependency: oldDependencies) {
+        removeDependency(oldDependency);
+    }
 }
 
-void IEDependent::removeDependency(IEDependency *dependency) {
-	dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), dependency), dependencies.end());
-	if (dependency->isDependencyOf(this)) {
-		dependency->removeDependent(this);
-	}
+uint32_t IEDependent::dependencyCount() {
+    return dependencies.size();
 }
 
-void IEDependent::removeAllDependencies() {
-	for (IEDependency *dependency: dependencies) {
-		dependency->removeDependent(this);
-	}
-	dependencies.clear();
+void IEDependent::clearAllDependencies() {
+    dependencies.clear();
 }
 
-void IEDependent::destroy() {
-	removeAllDependencies();
-}
-
-IEDependent::~IEDependent() {
-	destroy();
+bool IEDependent::canBeDestroyed(IEDependency *, bool) {
+    return false;
 }

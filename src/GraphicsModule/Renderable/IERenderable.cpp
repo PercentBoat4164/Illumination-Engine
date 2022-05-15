@@ -15,7 +15,7 @@
 #include "glm/glm.hpp"
 
 IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
-	create(engineLink, filePath);
+    create(engineLink, filePath);
 }
 
 void IERenderable::setAPI(const IEAPI &api) {
@@ -64,9 +64,9 @@ void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &
 	modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
 	deletionQueue.emplace_back([&] { modelBuffer.destroy(); });
 
-	// Prepare a command buffer for use by this object during creation
-	commandBufferIndex = linkedRenderEngine->graphicsCommandPool.commandBuffers.size();
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex];
+    // Prepare a command buffer for use by this object during creation
+    commandBufferIndex = linkedRenderEngine->graphicsCommandPool.commandBuffers.size();
+    linkedRenderEngine->graphicsCommandPool[commandBufferIndex];
 }
 
 
@@ -136,19 +136,18 @@ void IERenderable::update(IEAsset *asset, const IECamera &camera, float time) {
 }
 
 void IERenderable::_vulkanUpdate(IEAsset *asset, const IECamera &camera, float time) {
-	glm::mat4 modelMatrix = glm::translate(glm::scale(glm::identity<glm::mat4>(), asset->scale), asset->position);
-	glm::quat(asset->rotation);
-	modelMatrix = glm::rotate(modelMatrix, asset->rotation.y, glm::vec3(-1.0F, 0.0F, 0.0F));
-	modelMatrix = glm::rotate(modelMatrix, asset->rotation.x, glm::vec3(0.0F, 1.0F, 0.0F));
-	modelMatrix = glm::rotate(modelMatrix, asset->rotation.z, glm::vec3(0.0F, 0.0F, 1.0F));
-	uniformBufferObject.viewModelMatrix = camera.viewMatrix;
-	uniformBufferObject.modelMatrix = modelMatrix;
-	uniformBufferObject.projectionMatrix = camera.projectionMatrix;
-	uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
-	uniformBufferObject.position = camera.position;
-	uniformBufferObject.time = time;
-	modelBuffer.loadFromDiskToRAM(&uniformBufferObject, sizeof(uniformBufferObject));
-	modelBuffer.loadFromRAMToVRAM();
+    glm::mat4 modelMatrix = glm::translate(glm::scale(glm::identity<glm::mat4>(), asset->scale), asset->position);
+    glm::quat(asset->rotation);
+    modelMatrix = glm::rotate(modelMatrix, asset->rotation.y, glm::vec3(-1.0F, 0.0F, 0.0F));
+    modelMatrix = glm::rotate(modelMatrix, asset->rotation.x, glm::vec3(0.0F, 1.0F, 0.0F));
+    modelMatrix = glm::rotate(modelMatrix, asset->rotation.z, glm::vec3(0.0F, 0.0F, 1.0F));
+    uniformBufferObject.viewModelMatrix = camera.viewMatrix;
+    uniformBufferObject.modelMatrix = modelMatrix;
+    uniformBufferObject.projectionMatrix = camera.projectionMatrix;
+    uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
+    uniformBufferObject.position = camera.position;
+    uniformBufferObject.time = time;
+    modelBuffer.uploadData(&uniformBufferObject, sizeof(uniformBufferObject));
 //    if (linkedRenderEngine->settings->rayTracing) {
 //        transformationMatrix = {
 //                modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2], modelMatrix[3][0],
@@ -199,18 +198,14 @@ IERenderable::~IERenderable() {
 std::function<void(IERenderable &, IERenderEngine *, const std::string &)> IERenderable::_create = std::function<void(IERenderable &,
 																													  IERenderEngine *,
 																													  const std::string &)>{
-		[](const IERenderable &, IERenderEngine *, const std::string &) { return; }
-};
-std::function<void(IERenderable &)> IERenderable::_loadFromDiskToRAM = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
-std::function<void(IERenderable &)> IERenderable::_loadFromRAMToVRAM = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
-std::function<void(IERenderable &)> IERenderable::_createShaders = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
-std::function<void(IERenderable &, IEAsset *, const IECamera &, float)> IERenderable::_update{
-		std::function<void(IERenderable &, IEAsset *, const IECamera &, float)>{
-				[](const IERenderable &, IEAsset *, const IECamera &, float) { return; }
-		}
-};
-std::function<void(IERenderable &)> IERenderable::_unload = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
-std::function<void(IERenderable &)> IERenderable::_destroy = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
+		[](const IERenderable &, IERenderEngine *, const std::string&) { return; }
+ };
+std::function<void(IERenderable &)> IERenderable::_loadFromDiskToRAM = std::function<void(IERenderable &)>{ [] (const IERenderable&) { return; } };
+std::function<void(IERenderable &)> IERenderable::_loadFromRAMToVRAM = std::function<void(IERenderable &)>{ [] (const IERenderable&) { return; } };
+std::function<void(IERenderable &)> IERenderable::_createShaders = std::function<void(IERenderable &)>{ [] (const IERenderable&) { return; } };
+std::function<void(IERenderable &, IEAsset *, const IECamera &, float)> IERenderable::_update = std::function<void(IERenderable &, IEAsset *, const IECamera &, float)>{ [] (const IERenderable &, IEAsset *, const IECamera &, float) { return; } };
+std::function<void(IERenderable &)> IERenderable::_unload = std::function<void(IERenderable &)>{ [] (const IERenderable&) { return; } };
+std::function<void(IERenderable &)> IERenderable::_destroy = std::function<void(IERenderable &)>{ [] (const IERenderable&) { return; } };
 
 void IERenderable::_openglLoadFromDiskToRAM() {
 

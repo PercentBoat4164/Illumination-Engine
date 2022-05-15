@@ -39,11 +39,11 @@ public:
 	CreateInfo createdWith{};
 	VkPipeline pipeline{};
 
-	void destroy();
+    void destroy();
 
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-	~IEPipeline() override;
+	~IEPipeline();
 
 private:
 	IERenderEngine *linkedRenderEngine{};
