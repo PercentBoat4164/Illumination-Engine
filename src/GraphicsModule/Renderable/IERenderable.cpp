@@ -15,20 +15,14 @@
 #include "glm/glm.hpp"
 
 IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
-	linkedRenderEngine = engineLink;
-	directory = filePath.substr(0, filePath.find_last_of('/'));
-	modelName = filePath.substr(filePath.find_last_of('/'));
-	create();
+	create(engineLink, filePath);
 }
 
 void IERenderable::setAPI(const IEAPI &api) {
 	if (api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_create = &IERenderable::_openglCreate;
 		_loadFromDiskToRAM = &IERenderable::_openglLoadFromDiskToRAM;
-		_load = &IERenderable::_openglLoad;
-		_createModelBuffers = &IERenderable::_openglCreateModelBuffer;
-		_createDescriptorSet = &IERenderable::_openglCreateDescriptorSet;
-		_createPipeline = &IERenderable::_openglCreatePipeline;
+		_loadFromRAMToVRAM = &IERenderable::_openglLoad;
 		_createShaders = &IERenderable::_openglCreateShaders;
 		_update = &IERenderable::_openglUpdate;
 		_unload = &IERenderable::_openglUnload;
@@ -36,10 +30,7 @@ void IERenderable::setAPI(const IEAPI &api) {
 	} else if (api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
 		_create = &IERenderable::_vulkanCreate;
 		_loadFromDiskToRAM = &IERenderable::_vulkanLoadFromDiskToRAM;
-		_load = &IERenderable::_vulkanLoad;
-		_createModelBuffers = &IERenderable::_vulkanCreateModelBuffer;
-		_createDescriptorSet = &IERenderable::_vulkanCreateDescriptorSet;
-		_createPipeline = &IERenderable::_vulkanCreatePipeline;
+		_loadFromRAMToVRAM = &IERenderable::_vulkanLoad;
 		_createShaders = &IERenderable::_vulkanCreateShaders;
 		_update = &IERenderable::_vulkanUpdate;
 		_unload = &IERenderable::_vulkanUnload;
@@ -48,15 +39,31 @@ void IERenderable::setAPI(const IEAPI &api) {
 }
 
 
-void IERenderable::create() {
-	return _create(*this);
+void IERenderable::create(IERenderEngine *engineLink, const std::string &filePath) {
+	linkedRenderEngine = engineLink;
+	directory = filePath.substr(0, filePath.find_last_of('/'));
+	modelName = filePath.substr(filePath.find_last_of('/'));
+	return _create(*this, engineLink, filePath);
 }
 
-void IERenderable::_openglCreate() {
+void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &filePath) {
 	// Do nothing
 }
 
-void IERenderable::_vulkanCreate() {
+void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &filePath) {
+	linkedRenderEngine = engineLink;
+	for (IEMesh &mesh: meshes) {
+		mesh.create(linkedRenderEngine);
+	}
+
+	IEBuffer::CreateInfo modelBufferCreateInfo{
+			.size=sizeof(IEUniformBufferObject),
+			.usage=VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
+	};
+	modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
+	deletionQueue.emplace_back([&] { modelBuffer.destroy(); });
+
 	// Prepare a command buffer for use by this object during creation
 	commandBufferIndex = linkedRenderEngine->graphicsCommandPool.commandBuffers.size();
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex];
@@ -79,8 +86,10 @@ void IERenderable::loadFromDiskToRAM() {
 	// import all meshes
 	for (IEMesh &mesh: meshes) {
 		mesh.create(linkedRenderEngine);
-		mesh.loadFromDiskToRAM(directory, scene, scene->mMeshes[meshIndex]);
+		mesh.loadFromDiskToRAM(directory, scene, scene->mMeshes[meshIndex++]);
 	}
+
+	modelBuffer.loadFromDiskToRAM(std::vector<char>{sizeof(glm::mat4)});
 }
 
 void IERenderable::loadFromRAMToVRAM() {
@@ -88,11 +97,6 @@ void IERenderable::loadFromRAMToVRAM() {
 		mesh.loadFromRAMToVRAM();
 	}
 	modelBuffer.loadFromRAMToVRAM();
-}
-
-
-void IERenderable::load() {
-	return _load(*this);
 }
 
 void IERenderable::_openglLoad() {}
@@ -103,65 +107,6 @@ void IERenderable::_vulkanLoad() {
 	textureCreateInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 	textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-}
-
-
-void IERenderable::createModelBuffer() {
-	return _createModelBuffers(*this);
-}
-
-void IERenderable::_openglCreateModelBuffer() {}
-
-void IERenderable::_vulkanCreateModelBuffer() {
-	IEBuffer::CreateInfo modelBufferCreateInfo{
-			.size=sizeof(IEUniformBufferObject),
-			.usage=VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
-	};
-	modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
-	deletionQueue.emplace_back([&] {
-		modelBuffer.destroy();
-	});
-}
-
-
-void IERenderable::createDescriptorSet() {
-	return _createDescriptorSet(*this);
-}
-
-void IERenderable::_openglCreateDescriptorSet() {}
-
-void IERenderable::_vulkanCreateDescriptorSet() {
-	IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
-			.poolSizes={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1},
-						{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1}},
-			.shaderStages={static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT),
-						   VK_SHADER_STAGE_FRAGMENT_BIT},
-//            .data={&modelBuffer, &linkedRenderEngine->textures[diffuseTexture]}
-	};
-	descriptorSet.create(linkedRenderEngine, &descriptorSetCreateInfo);
-	deletionQueue.emplace_back([&] {
-		descriptorSet.destroy();
-	});
-}
-
-
-void IERenderable::createPipeline() {
-	return _createPipeline(*this);
-}
-
-void IERenderable::_openglCreatePipeline() {}
-
-void IERenderable::_vulkanCreatePipeline() {
-	IEPipeline::CreateInfo pipelineCreateInfo{
-			.shaders=&shaders,
-			.descriptorSet=&descriptorSet,
-			.renderPass=&linkedRenderEngine->renderPass
-	};
-	pipeline.create(linkedRenderEngine, &pipelineCreateInfo);
-	deletionQueue.emplace_back([&] {
-		pipeline.destroy();
-	});
 }
 
 
@@ -179,7 +124,13 @@ void IERenderable::_vulkanCreateShaders() {
 	}
 }
 
-void IERenderable::update() {}
+void IERenderable::update(uint32_t renderCommandBufferIndex) {
+	for (IEMesh &mesh: meshes) {
+		mesh.descriptorSet.update({&modelBuffer}, {0});
+		mesh.update(renderCommandBufferIndex);
+	}
+	_update(*this, (IEAsset *) this, linkedRenderEngine->camera, (float)glfwGetTime());
+}
 
 void IERenderable::update(IEAsset *asset, const IECamera &camera, float time) {
 	return _update(*this, asset, camera, time);
@@ -197,7 +148,7 @@ void IERenderable::_vulkanUpdate(IEAsset *asset, const IECamera &camera, float t
 	uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
 	uniformBufferObject.position = camera.position;
 	uniformBufferObject.time = time;
-	modelBuffer.loadFromDiskToRAM(&uniformBufferObject);
+	modelBuffer.loadFromDiskToRAM(&uniformBufferObject, sizeof(uniformBufferObject));
 	modelBuffer.loadFromRAMToVRAM();
 //    if (linkedRenderEngine->settings->rayTracing) {
 //        transformationMatrix = {
@@ -219,11 +170,6 @@ void IERenderable::_vulkanUpdate(IEAsset *asset, const IECamera &camera, float t
 }
 
 void IERenderable::_openglUpdate(IEAsset *asset, const IECamera &camera, float time) {}
-
-
-void IERenderable::unload() {
-	return _unload(*this);
-}
 
 void IERenderable::_openglUnload() {}
 
@@ -251,12 +197,13 @@ IERenderable::~IERenderable() {
 }
 
 
-std::function<void(IERenderable &)> IERenderable::_create = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
+std::function<void(IERenderable &, IERenderEngine *, const std::string &)> IERenderable::_create = std::function<void(IERenderable &,
+																													  IERenderEngine *,
+																													  const std::string &)>{
+		[](const IERenderable &, IERenderEngine *, const std::string &) { return; }
+};
 std::function<void(IERenderable &)> IERenderable::_loadFromDiskToRAM = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
-std::function<void(IERenderable &)> IERenderable::_load = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
-std::function<void(IERenderable &)> IERenderable::_createModelBuffers = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
-std::function<void(IERenderable &)> IERenderable::_createDescriptorSet = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
-std::function<void(IERenderable &)> IERenderable::_createPipeline = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
+std::function<void(IERenderable &)> IERenderable::_loadFromRAMToVRAM = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
 std::function<void(IERenderable &)> IERenderable::_createShaders = std::function<void(IERenderable &)>{[](const IERenderable &) { return; }};
 std::function<void(IERenderable &, IEAsset *, const IECamera &, float)> IERenderable::_update{
 		std::function<void(IERenderable &, IEAsset *, const IECamera &, float)>{

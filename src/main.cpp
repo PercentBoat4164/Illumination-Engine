@@ -46,7 +46,6 @@ int main() {
 	renderEngine.settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", pthread_self()));
 
 	glfwSetTime(0);
-	renderEngine.update = [&] { return glfwWindowShouldClose(renderEngine.window) != 1; };
 	while (renderEngine.update()) {
 		fbx.rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine.frameTime;
 		glfwPollEvents();

@@ -39,5 +39,5 @@ public:
 
 	~IEFramebuffer() override;
 
-	void destroy() override;
+	void destroy();
 };

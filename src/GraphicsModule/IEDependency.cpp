@@ -45,16 +45,8 @@ void IEDependency::wait() {
 	}
 }
 
-void IEDependency::destroy() {
-	removeAllDependents();
-}
-
 IEDependency::~IEDependency() {
-	destroy();
-}
-
-std::vector<IEImage *> IEImageMemoryBarrier::getImages() const {
-	return {image};
+	removeAllDependents();
 }
 
 IEImageMemoryBarrier::operator VkImageMemoryBarrier() const {
@@ -85,8 +77,12 @@ IEImageMemoryBarrier::operator VkImageMemoryBarrier2() const {
 	};
 }
 
+std::vector<IEImage *> IEImageMemoryBarrier::getImages() const {
+	return {image};
+}
+
 std::vector<IEDependency *> IEImageMemoryBarrier::getDependencies() const {
-	return {};
+	return {image};
 }
 
 std::vector<IERenderPass *> IEImageMemoryBarrier::getRenderPasses() const {
@@ -103,10 +99,6 @@ std::vector<IEPipeline *> IEImageMemoryBarrier::getPipelines() const {
 
 std::vector<IEBuffer *> IEImageMemoryBarrier::getBuffers() const {
 	return {};
-}
-
-std::vector<IEBuffer *> IEBufferMemoryBarrier::getBuffers() const {
-	return {buffer};
 }
 
 IEBufferMemoryBarrier::operator VkBufferMemoryBarrier() const {
@@ -154,7 +146,11 @@ std::vector<IERenderPass *> IEBufferMemoryBarrier::getRenderPasses() const {
 }
 
 std::vector<IEDependency *> IEBufferMemoryBarrier::getDependencies() const {
-	return {};
+	return {buffer};
+}
+
+std::vector<IEBuffer *> IEBufferMemoryBarrier::getBuffers() const {
+	return {buffer};
 }
 
 std::vector<IEBuffer *> IEDependencyInfo::getBuffers() const {
@@ -210,7 +206,11 @@ std::vector<IERenderPass *> IEDependencyInfo::getRenderPasses() const {
 }
 
 std::vector<IEDependency *> IEDependencyInfo::getDependencies() const {
-	return {};
+	std::vector<IEBuffer *> buffers = getBuffers();
+	std::vector<IEImage *> images = getImages();
+	std::vector<IEDependency *> dependencies{buffers.begin(), buffers.end()};
+	dependencies.insert(dependencies.end(), images.begin(), images.end());
+	return {dependencies};
 }
 
 std::vector<IEImage *> IECopyBufferToImageInfo::getImages() const {

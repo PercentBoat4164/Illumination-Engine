@@ -16,8 +16,8 @@ IEAsset::~IEAsset() {
 	filename = "";
 }
 
-void IEAsset::update() {
+void IEAsset::update(uint32_t renderCommandBufferIndex) {
 	for (IEAspect *aspect: aspects) {
-		aspect->update();
+		aspect->update(renderCommandBufferIndex);
 	}
 }

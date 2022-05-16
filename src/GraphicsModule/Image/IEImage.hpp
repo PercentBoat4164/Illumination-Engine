@@ -43,7 +43,7 @@ public:
 		VmaMemoryUsage allocationUsage{};
 		uint32_t width{}, height{};
 		IEBuffer *dataSource{};
-		std::string data{};
+		std::vector<char> data{};
 	};
 
 	VkImage image{};
@@ -60,7 +60,8 @@ public:
 	VmaAllocation allocation{};
 	uint32_t width{};
 	uint32_t height{};
-	std::string data{};
+	uint32_t channels{};
+	std::vector<char> data{};
 	std::string filename{};
 	IEBuffer *dataSource{};
 	IERenderEngine *linkedRenderEngine{};
@@ -68,19 +69,19 @@ public:
 
 	IEImage() = default;
 
-	IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo);
+	IEImage(IERenderEngine *, IEImage::CreateInfo *);
 
-	virtual void copyCreateInfo(IEImage::CreateInfo *createInfo) final;
+	virtual void copyCreateInfo(IEImage::CreateInfo *) final;
 
-	virtual void create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo);
+	virtual void create(IERenderEngine *, IEImage::CreateInfo *);
 
 	virtual void loadFromDiskToRAM();
 
-	void toBuffer(const IEBuffer &buffer) const;
+	void toBuffer(const IEBuffer &, uint32_t) const;
 
-	void transitionLayout(VkImageLayout newLayout);
+	void transitionLayout(VkImageLayout);
 
 	~IEImage() override;
 
-	void destroy() override;
+	virtual void destroy();
 };

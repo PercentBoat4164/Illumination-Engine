@@ -39,17 +39,16 @@ public:
 		IE_BUFFER_STATUS_MAX_ENUM = 0xFF
 	} IEBufferStatus;
 
-	std::string data{};
+	std::vector<char> data{};
 	VkBuffer buffer{};
 	VkDeviceAddress deviceAddress{};
 	VkDeviceSize size{};
 	VkBufferUsageFlags usage{};
 	VmaMemoryUsage allocationUsage{};
-	bool created{false};
 	std::vector<std::function<void()>> deletionQueue{};
 	IEBufferStatus status{IE_BUFFER_STATUS_NONE};
 
-	void destroy() final;
+	void destroy();
 
 	IEBuffer();
 
@@ -69,13 +68,16 @@ public:
 
 	void loadFromRAMToVRAM();
 
-	void loadFromDiskToRAM(void *);
+	void loadFromDiskToRAM(void *, uint32_t);
 
-	void loadFromDiskToRAM(const std::string &);
+	void loadFromDiskToRAM(std::vector<char>);
 
 	void unloadFromVRAM();
 
 protected:
 	IERenderEngine *linkedRenderEngine{};
 	VmaAllocation allocation{};
+
+private:
+	void *internalBufferData{};
 };

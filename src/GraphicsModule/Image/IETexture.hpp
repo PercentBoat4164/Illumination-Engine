@@ -6,6 +6,7 @@ class IEBuffer;
 /* Include classes used as attributes or _function arguments. */
 // Internal dependencies
 #include "IEImage.hpp"
+#include "assimp/material.h"
 
 // External dependencies
 #include <vulkan/vulkan.h>
@@ -20,8 +21,6 @@ class aiTexture;
 
 class IETexture : public IEImage {
 public:
-	VkSampler sampler{};
-
 	struct CreateInfo {
 		VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};
 		VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};
@@ -37,7 +36,7 @@ public:
 
 	void create(IERenderEngine *, IETexture::CreateInfo *);
 
-	void loadFromDiskToRAM(const aiTexture *);
+	void loadFromDiskToRAM(aiTexture *);
 
 	void upload(void *);
 

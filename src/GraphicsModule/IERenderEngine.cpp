@@ -300,9 +300,9 @@ void IERenderEngine::destroyCommandPools() {
 IERenderEngine::IERenderEngine(IESettings *settings) {
 	this->settings = settings;
 
-	// Set the _function pointers
+	// Set the function pointers
 	update = [this] { return vulkanUpdate(); };
-	destroy = [this] { vulkanDestroy(); };
+	destroy = [this] { return vulkanDestroy(); };
 
 	// Create a Vulkan instance
 	createVulkanInstance();
@@ -378,9 +378,7 @@ void IERenderEngine::addAsset(IEAsset *asset) {
 	asset->index = assets.size();
 	assets.push_back(asset);
 	for (IEAspect *aspect: asset->aspects) {
-//        if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
-		loadRenderable((IERenderable *) aspect);
-//        }
+		loadRenderable(dynamic_cast<IERenderable *>(aspect));
 	}
 	for (IEAsset *thisAsset: assets) {  // This is necessary because the pointers will become invalid if the vector is forced to move in memory.
 		thisAsset->allAssets = &assets;
@@ -388,11 +386,10 @@ void IERenderEngine::addAsset(IEAsset *asset) {
 }
 
 void IERenderEngine::loadRenderable(IERenderable *renderable) {
-	renderable->create();
-
+	// Build the renderable
+	renderable->create(this, renderable->associatedAssets[0]->filename);
 	renderable->loadFromDiskToRAM();
-
-	renderable->load();
+	renderable->loadFromRAMToVRAM();
 
 	// Record the destruction of this renderable
 	renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
@@ -458,12 +455,10 @@ bool IERenderEngine::vulkanUpdate() {
 		if (settings->rayTracing) {
 			for (IEAsset *asset: assets) {
 				for (IEAspect *aspect: asset->aspects) {
-//                    if (aspect->childType == IE_CHILD_TYPE_RENDERABLE) {
 					auto *renderable = reinterpret_cast<IERenderable *>(aspect);
 					if (renderable->render) {
 						bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress);
 					}
-//                    }
 				}
 			}
 		}
@@ -475,21 +470,7 @@ bool IERenderEngine::vulkanUpdate() {
 		topLevelAccelerationStructure.create(this, &topLevelAccelerationStructureCreateInfo);
 	}
 	for (IEAsset *asset: assets) {
-		asset->update();
-//        for (IEAspect *aspect : asset->aspects) {
-//            auto *renderable = dynamic_cast<IERenderable *>(aspect);
-//            if (renderable->render) {
-//                renderable->update(asset, camera, time);
-//                if (settings->rayTracing) {
-//                    renderable->descriptorSet.update({&topLevelAccelerationStructure}, {2});
-//                }
-//                graphicsCommandPool[imageIndex].recordBindVertexBuffers(0, 1, {&renderable->vertexBuffer}, offsets);
-//                graphicsCommandPool[imageIndex].recordBindIndexBuffer(&renderable->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-//                graphicsCommandPool[imageIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline);
-//                graphicsCommandPool[imageIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, &renderable->pipeline, 0, {&renderable->descriptorSet}, {});
-//                graphicsCommandPool[imageIndex].recordDrawIndexed(renderable->indices.size(), 1, 0, 0, 0);
-//            }
-//        }
+		asset->update(imageIndex);
 	}
 	graphicsCommandPool[imageIndex].recordEndRenderPass();
 	graphicsCommandPool[imageIndex].execute(imageAvailableSemaphores[currentFrame], renderFinishedSemaphores[currentFrame],

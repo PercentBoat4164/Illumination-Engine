@@ -132,7 +132,7 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 	}
 }
 
-void IEImage::toBuffer(const IEBuffer &buffer) const {
+void IEImage::toBuffer(const IEBuffer &buffer, uint32_t commandBufferIndex) const {
 	VkBufferImageCopy region{};
 	region.bufferOffset = 0;
 	region.bufferRowLength = 0;
@@ -143,7 +143,7 @@ void IEImage::toBuffer(const IEBuffer &buffer) const {
 	region.imageSubresource.layerCount = 1;
 	region.imageOffset = {0, 0, 0};
 	region.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
-	vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)[0].commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1,
+	vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)[commandBufferIndex].commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1,
 						   &region);
 }
 

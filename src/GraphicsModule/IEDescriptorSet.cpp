@@ -83,11 +83,6 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 
 void IEDescriptorSet::update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> newData,
 							 std::vector<int> bindings) {
-	if (bindings.empty()) {
-		assert(newData.size() == createdWith.data.size());
-	} else {
-		assert(bindings.size() == newData.size());
-	}
 	std::vector<VkWriteDescriptorSetAccelerationStructureKHR> writeDescriptorSetAccelerationStructures{};
 	writeDescriptorSetAccelerationStructures.reserve(createdWith.poolSizes.size());
 	std::vector<VkDescriptorImageInfo> imageDescriptorInfos{};

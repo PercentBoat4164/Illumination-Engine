@@ -7,7 +7,7 @@
 
 void IEBuffer::destroy() {
 	if (hasNoDependents()) {
-		if (!created) {
+		if ((status & IE_BUFFER_STATUS_CREATED) == 0) {
 			return;
 		}
 		wait();
@@ -16,17 +16,18 @@ void IEBuffer::destroy() {
 		}
 		removeAllDependents();
 		deletionQueue.clear();
-		created = false;
 	}
 }
 
-void IEBuffer::loadFromDiskToRAM(void *pData) {
-	memcpy(data.data(), pData, size);
-	status = static_cast<IEBufferStatus>(IE_BUFFER_STATUS_DATA_IN_RAM | status);
+void IEBuffer::loadFromDiskToRAM(void *pData, uint32_t dataSize) {
+	data = std::vector<char>{(char *) pData, (char *) ((uint64_t) pData + dataSize)};
+	if (!data.empty()) {
+		status = static_cast<IEBufferStatus>(IE_BUFFER_STATUS_DATA_IN_RAM | status);
+	}
 }
 
-void IEBuffer::loadFromDiskToRAM(const std::string &dataString) {
-	data = dataString;
+void IEBuffer::loadFromDiskToRAM(std::vector<char> dataVector) {
+	data = dataVector;
 	status = static_cast<IEBufferStatus>(IE_BUFFER_STATUS_DATA_IN_RAM | status);
 }
 
@@ -40,6 +41,7 @@ void IEBuffer::loadFromRAMToVRAM() {
 				.usage=allocationUsage,
 		};
 		VkBufferCreateInfo bufferCreateInfo{
+				.sType=VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 				.size=size,
 				.usage=usage,
 		};
@@ -50,7 +52,7 @@ void IEBuffer::loadFromRAMToVRAM() {
 		}
 
 		// Create buffer and update status
-		vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, nullptr, nullptr);
+		vmaCreateBuffer(linkedRenderEngine->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr);
 		status = static_cast<IEBufferStatus>(IE_BUFFER_STATUS_DATA_IN_VRAM | status);
 
 		// Get the buffer device address if requested
@@ -62,7 +64,6 @@ void IEBuffer::loadFromRAMToVRAM() {
 	}
 
 	// Upload data in RAM to VRAM
-	void *internalBufferData;
 	vmaMapMemory(linkedRenderEngine->allocator, allocation, &internalBufferData);
 	memcpy(internalBufferData, data.data(), size);
 	vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
@@ -77,9 +78,6 @@ void IEBuffer::unloadFromVRAM() {
 }
 
 void IEBuffer::toImage(IEImage *image, uint32_t width, uint32_t height) {
-	if (!created) {
-		throw std::runtime_error("Calling IEBuffer::toImage() on a IEBuffer for which IEBuffer::create() has not been called is illegal.");
-	}
 	VkBufferImageCopy region{};
 	region.imageSubresource.aspectMask =
 			image->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ?
@@ -99,9 +97,6 @@ void IEBuffer::toImage(IEImage *image, uint32_t width, uint32_t height) {
 }
 
 void IEBuffer::toImage(IEImage *image) {
-	if (!created) {
-		throw std::runtime_error("Calling IEBuffer::toImage() on a IEBuffer for which IEBuffer::create() has not been called is illegal.");
-	}
 	VkBufferImageCopy region{};
 	region.imageSubresource.aspectMask =
 			image->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ?

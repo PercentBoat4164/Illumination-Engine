@@ -25,4 +25,10 @@ public:
 	void loadFromDiskToRAM(const std::string &, const aiScene *, uint32_t);
 
 	void loadFromRAMToVRAM() const;
+
+private:
+	std::vector<std::pair<uint32_t *, aiTextureType>> textureTypes = {
+			{&diffuseTextureIndex, aiTextureType_DIFFUSE},
+			{&diffuseTextureIndex, aiTextureType_BASE_COLOR},
+	};
 };

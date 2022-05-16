@@ -25,15 +25,13 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
 }
 
 void IETexture::upload(void *data) {
-	IEBuffer scratchBuffer{};
-	IEBuffer::CreateInfo scratchBufferCreateInfo{};
-	scratchBufferCreateInfo.size = static_cast<VkDeviceSize>(width * height) * 4;
-	scratchBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-	scratchBufferCreateInfo.allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-	scratchBuffer.create(linkedRenderEngine, &scratchBufferCreateInfo);
-	scratchBuffer.loadFromDiskToRAM(data);
+	IEBuffer scratchBuffer{linkedRenderEngine, new IEBuffer::CreateInfo{
+			.size=static_cast<VkDeviceSize>(width * height) * 4,
+			.usage=VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
+	}};
+	scratchBuffer.loadFromDiskToRAM(data, scratchBuffer.size);
 	scratchBuffer.loadFromRAMToVRAM();
-	transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	scratchBuffer.toImage(this);
 	linkedRenderEngine->graphicsCommandPool[0].execute();
 }
@@ -43,13 +41,18 @@ void IETexture::upload(IEBuffer *data) {
 	data->toImage(this);
 }
 
-void IETexture::loadFromDiskToRAM(const aiTexture *texture) {
-	int channels;
+void IETexture::loadFromDiskToRAM(aiTexture *texture) {
+	stbi_uc *tempData;
 	if (texture->mHeight == 0) {
-		data = (char *) stbi_load_from_memory((unsigned char *) texture->pcData, (int) texture->mWidth, reinterpret_cast<int *>(&width),
-											  reinterpret_cast<int *>(&height), &channels, 4);
+		tempData = stbi_load_from_memory((unsigned char *) texture->pcData, (int) texture->mWidth, reinterpret_cast<int *>(&width),
+										 reinterpret_cast<int *>(&height), reinterpret_cast<int *>(&channels), 4);
 	} else {
-		data = (char *) stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height), &channels, 4);
+		tempData = stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height),
+							 reinterpret_cast<int *>(&channels), 4);
+	}
+	data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
+	if (data.empty()) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to load image data!");
 	}
 }
 

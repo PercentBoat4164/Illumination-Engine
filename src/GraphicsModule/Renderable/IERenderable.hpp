@@ -51,40 +51,34 @@ public:
 	std::string directory{};
 	VkTransformMatrixKHR identityTransformMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
 
-	IERenderable(IERenderEngine *engineLink, const std::string &filePath);
+	IERenderable(IERenderEngine *, const std::string &);
 
-	static void setAPI(const IEAPI &api);
+	static void setAPI(const IEAPI &);
 
-	void create();
+	void create(IERenderEngine *, const std::string &);
 
 	void loadFromDiskToRAM();
 
-	void load();
-
-	void update(IEAsset *asset, const IECamera &camera, float time);
-
-	void unload();
+	void update(IEAsset *, const IECamera &, float);
 
 	void destroy() override;
 
-	virtual ~IERenderable() final;
+	~IERenderable() final;
+
+	void loadFromRAMToVRAM();
+
+	void update(uint32_t) final;
 
 private:
 	/* API dependent functions */
-	void createModelBuffer();
-
-	void createDescriptorSet();
-
-	void createPipeline();
-
 	void createShaders();
 
 
-	static std::function<void(IERenderable &)> _create;
+	static std::function<void(IERenderable &, IERenderEngine *, const std::string &)> _create;
 
-	void _openglCreate();
+	void _openglCreate(IERenderEngine *, const std::string &);
 
-	void _vulkanCreate();
+	void _vulkanCreate(IERenderEngine *, const std::string &);
 
 
 	static std::function<void(IERenderable &)> _loadFromDiskToRAM;
@@ -94,32 +88,11 @@ private:
 	void _vulkanLoadFromDiskToRAM();
 
 
-	static std::function<void(IERenderable &)> _load;
+	static std::function<void(IERenderable &)> _loadFromRAMToVRAM;
 
 	void _openglLoad();
 
 	void _vulkanLoad();
-
-
-	static std::function<void(IERenderable &)> _createModelBuffers;
-
-	void _openglCreateModelBuffer();
-
-	void _vulkanCreateModelBuffer();
-
-
-	static std::function<void(IERenderable &)> _createDescriptorSet;
-
-	void _openglCreateDescriptorSet();
-
-	void _vulkanCreateDescriptorSet();
-
-
-	static std::function<void(IERenderable &)> _createPipeline;
-
-	void _openglCreatePipeline();
-
-	void _vulkanCreatePipeline();
 
 
 	static std::function<void(IERenderable &)> _createShaders;
@@ -148,8 +121,4 @@ private:
 	void _openglDestroy();
 
 	void _vulkanDestroy();
-
-	void update() final;
-
-	void loadFromRAMToVRAM();
 };

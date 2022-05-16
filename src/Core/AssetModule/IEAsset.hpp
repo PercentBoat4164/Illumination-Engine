@@ -21,7 +21,7 @@ public:
 
 	~IEAsset();
 
-	void update();
+	void update(uint32_t);
 };
 
 /*

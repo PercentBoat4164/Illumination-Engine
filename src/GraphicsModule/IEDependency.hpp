@@ -34,11 +34,9 @@ public:
 
 	void removeAllDependents();
 
-	bool hasNoDependents() const;
+	[[nodiscard]] bool hasNoDependents() const;
 
 	virtual ~IEDependency();
-
-	virtual void destroy();
 
 	void wait();
 };

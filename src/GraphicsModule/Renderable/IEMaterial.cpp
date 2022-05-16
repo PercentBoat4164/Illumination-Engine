@@ -12,22 +12,18 @@ void IEMaterial::create(IEMesh *pParentMesh) {
 void IEMaterial::loadFromDiskToRAM(const std::string &directory, const aiScene *scene, uint32_t index) {
 	aiMaterial *material = scene->mMaterials[index];
 
-	// texture types to load
-	std::vector<std::pair<uint32_t *, aiTextureType>> textureTypes{
-			{&diffuseTextureIndex, aiTextureType_BASE_COLOR},
-	};
-
 	// find all textures in scene including embedded textures
+	textureCount = 0;
+	uint32_t thisCount;
 	/**@todo Build a system that tracks duplicate textures and only keeps one copy in memory.*/
 	for (int i = 0; i < textureTypes.size(); ++i) {
-		uint32_t thisCount = material->GetTextureCount(textureTypes[i].second);
+		thisCount = material->GetTextureCount(textureTypes[i].second);
 		if (thisCount == 0) {
 			textureTypes.erase(textureTypes.begin() + i--);
 		}
 		textureCount += thisCount;
 	}
-	parentMesh->linkedRenderEngine->textures.resize(parentMesh->linkedRenderEngine->textures.size() + textureCount,
-													std::make_shared<IETexture>(parentMesh->linkedRenderEngine, new IETexture::CreateInfo));
+	parentMesh->linkedRenderEngine->textures.reserve(parentMesh->linkedRenderEngine->textures.size() + textureCount);
 
 	aiString texturePath{};
 	std::string data{};
@@ -39,10 +35,14 @@ void IEMaterial::loadFromDiskToRAM(const std::string &directory, const aiScene *
 		}
 		auto *embeddedTexture = const_cast<aiTexture *>(scene->GetEmbeddedTexture(texturePath.C_Str()));
 		embeddedTexture->mFilename = directory + embeddedTexture->mFilename.C_Str();
-		parentMesh->linkedRenderEngine->textures[parentMesh->linkedRenderEngine->textures.size()]->loadFromDiskToRAM(embeddedTexture);
+		*textureType.first = parentMesh->linkedRenderEngine->textures.size();
+		parentMesh->linkedRenderEngine->textures.push_back(std::make_shared<IETexture>(parentMesh->linkedRenderEngine, new IETexture::CreateInfo));
+		parentMesh->linkedRenderEngine->textures[*textureType.first]->loadFromDiskToRAM(embeddedTexture);
 	}
 }
 
 void IEMaterial::loadFromRAMToVRAM() const {
-	parentMesh->linkedRenderEngine->textures[diffuseTextureIndex]->loadFromRAMToVRAM();
+	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+		parentMesh->linkedRenderEngine->textures[*textureType.first]->loadFromRAMToVRAM();
+	}
 }

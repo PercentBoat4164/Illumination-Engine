@@ -16,9 +16,11 @@ class IEAsset;
  */
 class IEAspect {
 public:
+	virtual ~IEAspect() = default;
+
 	std::vector<IEAsset *> associatedAssets{};  // A vector of assets that this aspect belongs to
 
-	virtual void update() = 0;
+	virtual void update(uint32_t) = 0;
 
 	virtual void destroy() = 0;
 };
