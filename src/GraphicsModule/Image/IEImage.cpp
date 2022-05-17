@@ -130,7 +130,7 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 	}
 }
 
-void IEImage::toBuffer(const IEBuffer &buffer, uint32_t commandBufferIndex) const {
+void IEImage::toBuffer(const std::shared_ptr<IEBuffer> &buffer, uint32_t commandBufferIndex) const {
 	VkBufferImageCopy region{};
 	region.bufferOffset = 0;
 	region.bufferRowLength = 0;
@@ -141,8 +141,9 @@ void IEImage::toBuffer(const IEBuffer &buffer, uint32_t commandBufferIndex) cons
 	region.imageSubresource.layerCount = 1;
 	region.imageOffset = {0, 0, 0};
 	region.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
-	vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)[commandBufferIndex].commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer.buffer, 1,
+	vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)[commandBufferIndex].commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer->buffer, 1,
 						   &region);
+    /**@todo Needs to be done in a way that these dependencies get added.*/
 }
 
 void IEImage::transitionLayout(VkImageLayout newLayout) {
@@ -307,5 +308,3 @@ IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
 
 std::function<void(IEImage &)> IEImage::_create = std::function<void(IEImage &)>{[](IEImage &) { return; }};
 std::function<void(IEImage &)> IEImage::_loadFromDiskToRAM = std::function<void(IEImage &)>{[](IEImage &) { return; }};
-
-IEImage::IEImage() = default;

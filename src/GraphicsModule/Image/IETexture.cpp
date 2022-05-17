@@ -36,8 +36,8 @@ void IETexture::upload(void *data) {
 	linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
-void IETexture::upload(IEBuffer *data) {
-	data->toImage(this);
+void IETexture::upload(const std::shared_ptr<IEBuffer> &data) {
+	data->toImage(std::shared_ptr<IETexture>(this));
 	linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
@@ -169,11 +169,6 @@ void IETexture::loadFromRAMToVRAM() {
 		transitionLayout(desiredLayout);
 	}
 	linkedRenderEngine->graphicsCommandPool[0].execute();
-}
-
-void IETexture::upload(const std::shared_ptr<IEBuffer>& data) {
-    transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    data->toImage(std::shared_ptr<IEImage>(this));
 }
 
 IETexture::IETexture(IERenderEngine *engineLink, IETexture::CreateInfo *createInfo) {

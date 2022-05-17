@@ -59,35 +59,7 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
     };
 	indexBuffer.create(linkedRenderEngine, &indexBufferCreateInfo);
 	indexBuffer.loadFromDiskToRAM(indices.data(), indexBufferCreateInfo.size);
-    material.index = mesh->mMaterialIndex;
-
-    // texture types to load
-    std::vector<std::pair<uint32_t *, aiTextureType>> textureTypes {
-            {&material.diffuseTextureIndex, aiTextureType_BASE_COLOR},
-    };
-
-    // find all textures in scene including embedded textures
-    /**@todo Build a system that tracks duplicate textures and only keeps one copy in memory.*/
-    for (std::pair<uint32_t *, aiTextureType> textureType : textureTypes) {
-        material.textureCount += scene->mMaterials[material.index]->GetTextureCount(textureType.second);
-    }
-    linkedRenderEngine->textures.resize(linkedRenderEngine->textures.size() + material.textureCount);
-    j = 0;
-    aiString texturePath{};
-    std::string data{};
-    // load all textures despite embedded state
-    for (int i = 0; i < material.textureCount; ++i) {
-        while (texturePath.length == 0) {
-            scene->mMaterials[material.index]->GetTexture(textureTypes[j++].second, i, &texturePath);
-        }
-        const aiTexture *embeddedTexture = scene->GetEmbeddedTexture(texturePath.C_Str());
-        if (embeddedTexture != nullptr && embeddedTexture->mHeight == 0) {
-            data = (char *) stbi_load_from_memory((unsigned char *) embeddedTexture->pcData, (int) embeddedTexture->mWidth, nullptr, nullptr, nullptr, 4);
-        } else {
-            data = (char *) stbi_load((directory + "/" + texturePath.C_Str()).c_str(), nullptr, nullptr, nullptr, 4);
-        }
-    }
-
+	
 	// load material
 	material.loadFromDiskToRAM(directory, scene, mesh->mMaterialIndex);
 
@@ -129,32 +101,6 @@ void IEMesh::loadFromRAMToVRAM() {
 	descriptorSet.update({linkedRenderEngine->textures[material.diffuseTextureIndex].get()}, {1});
 }
 
-void IEMesh::_vulkanCreateVertexBuffer() {
-    IEBuffer::CreateInfo vertexBufferCreateInfo{
-            .size=sizeof(vertices[0]) * vertices.size(),
-            .usage=VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
-            .data=vertices.data(),
-            .sizeOfData=static_cast<uint32_t>(vertices.size() * sizeof(vertices[0])),
-    };
-    vertexBuffer.create(linkedRenderEngine, &vertexBufferCreateInfo);
-    deletionQueue.emplace_back([&] { vertexBuffer.destroy(); });
-}
-
-void IEMesh::_vulkanCreateIndexBuffer() {
-    IEBuffer::CreateInfo indexBufferCreateInfo{
-            .size=sizeof(indices[0]) * indices.size(),
-            .usage=VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-            .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
-            .data=indices.data(),
-            .sizeOfData=static_cast<uint32_t>(indices.size() * sizeof(indices[0])),
-    };
-    indexBuffer.create(linkedRenderEngine, &indexBufferCreateInfo);
-    deletionQueue.emplace_back([&] {
-        indexBuffer.destroy();
-    });
-}
-
 std::function<void(IEMesh &)> IEMesh::_create = std::function<void(IEMesh &)>{[](IEMesh &) { return; }};
 
 void IEMesh::create(IERenderEngine *engineLink) {
@@ -177,20 +123,12 @@ void IEMesh::destroy() {
 void IEMesh::update(uint32_t commandBufferIndex) {
 	VkDeviceSize offsets[]{0};
 //	descriptorSet.update({linkedRenderEngine->textures[material.diffuseTextureIndex].get()}, {1});
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindVertexBuffers(0, 1, {&vertexBuffer}, offsets);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindIndexBuffer(&indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, &pipeline);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, &pipeline, 0,
-																						 {&descriptorSet}, {});
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindVertexBuffers(0, 1, {std::make_shared<IEBuffer>(vertexBuffer)}, offsets);
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindIndexBuffer(std::make_shared<IEBuffer>(indexBuffer), 0, VK_INDEX_TYPE_UINT32);
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, std::make_shared<IEPipeline>(pipeline));
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, std::make_shared<IEPipeline>(pipeline), 0,
+																						 {std::make_shared<IEDescriptorSet>(descriptorSet)}, {});
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordDrawIndexed(indices.size(), 1, 0, 0, 0);
-}
-
-void IEMesh::createVertexBuffer() {
-
-}
-
-void IEMesh::createIndexBuffer() {
-
 }
 
 

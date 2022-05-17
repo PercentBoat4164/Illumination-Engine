@@ -61,7 +61,7 @@ void IEDependency::invalidateDependents() {
 bool IEDependency::canBeDestroyed(bool force) {
     bool result = true;
     for (IEDependent *dependent : dependents) {
-        result |= dependent->canBeDestroyed(this, force);
+        result |= dependent->canBeDestroyed(std::shared_ptr<IEDependency>(this), force);
     }
     return result;
 }

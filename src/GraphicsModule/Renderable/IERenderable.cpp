@@ -147,7 +147,7 @@ void IERenderable::_vulkanUpdate(IEAsset *asset, const IECamera &camera, float t
     uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
     uniformBufferObject.position = camera.position;
     uniformBufferObject.time = time;
-    modelBuffer.uploadData(&uniformBufferObject, sizeof(uniformBufferObject));
+    modelBuffer.loadFromDiskToRAM(&uniformBufferObject, sizeof(uniformBufferObject));
 //    if (linkedRenderEngine->settings->rayTracing) {
 //        transformationMatrix = {
 //                modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2], modelMatrix[3][0],

@@ -23,9 +23,11 @@ public:
 
     uint32_t dependencyCount();
 
-    virtual bool canBeDestroyed(IEDependency *, bool);;
+    virtual bool canBeDestroyed(const std::shared_ptr<IEDependency> &, bool);;
 
     virtual void freeDependencies() {};
 
     virtual void invalidate() {};
+
+    bool isDependentOn(const std::shared_ptr<IEDependency> &dependency);
 };

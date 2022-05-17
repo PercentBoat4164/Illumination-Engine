@@ -40,7 +40,7 @@ public:
 
 	void upload(void *);
 
-	void upload(const std::shared_ptr<IEBuffer>& data);
+	void upload(const std::shared_ptr<IEBuffer>&);
 
 	virtual void loadFromRAMToVRAM();
 };

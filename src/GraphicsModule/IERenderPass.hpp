@@ -28,7 +28,7 @@ public:
 	} createdWith;
 
 	VkRenderPass renderPass{};
-	std::vector<IEFramebuffer> framebuffers{};
+	std::vector<std::shared_ptr<IEFramebuffer>> framebuffers{};
 
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 

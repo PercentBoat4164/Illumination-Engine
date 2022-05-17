@@ -98,7 +98,7 @@ public:
 
     void invalidate() override;
 
-    bool canBeDestroyed(IEDependency *, bool) override;
+    bool canBeDestroyed(const std::shared_ptr<IEDependency> &, bool) override;
 
     void freeDependencies() override;
 };

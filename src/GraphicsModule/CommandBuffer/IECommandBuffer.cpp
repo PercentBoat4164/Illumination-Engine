@@ -433,7 +433,7 @@ void IECommandBuffer::invalidate() {
     clearAllDependencies();
 }
 
-bool IECommandBuffer::canBeDestroyed(IEDependency *, bool) {
+bool IECommandBuffer::canBeDestroyed(const std::shared_ptr<IEDependency> &, bool) {
     return false;
 }
 

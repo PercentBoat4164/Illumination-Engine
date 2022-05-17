@@ -75,13 +75,11 @@ public:
 
 	virtual void create(IERenderEngine *, IEImage::CreateInfo *);
 
-	virtual void loadFromDiskToRAM();
-
-	void toBuffer(const IEBuffer &, uint32_t) const;
+	void toBuffer(const std::shared_ptr<IEBuffer> &, uint32_t) const;
 
 	void transitionLayout(VkImageLayout);
 
     ~IEImage();
 
-	virtual void destroy(bool=true);
+	void destroy(bool=true);
 };

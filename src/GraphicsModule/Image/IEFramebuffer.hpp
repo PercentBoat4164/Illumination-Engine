@@ -37,7 +37,5 @@ public:
 
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-	~IEFramebuffer() override;
-
-	void destroy() final;
+	~IEFramebuffer();
 };

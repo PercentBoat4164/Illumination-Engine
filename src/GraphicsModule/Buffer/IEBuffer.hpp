@@ -56,21 +56,21 @@ public:
 
 	IEBuffer(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
 
-    virtual void create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
+    void create(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
 
-    void uploadData(void *input, uint32_t sizeOfInput);
+    void create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
 
     void toImage(const std::shared_ptr<IEImage>& image, uint32_t width, uint32_t height);
 
     void toImage(const std::shared_ptr<IEImage>& image);
 
-	~IEBuffer() override;
+	~IEBuffer();
 
 	void loadFromRAMToVRAM();
 
 	void loadFromDiskToRAM(void *, uint32_t);
 
-	void loadFromDiskToRAM(std::vector<char>);
+	void loadFromDiskToRAM(const std::vector<char> &);
 
 	void unloadFromVRAM();
 
