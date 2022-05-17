@@ -6,7 +6,7 @@
 #define ILLUMINATION_ENGINE_VERSION_PATCH 0
 #define ILLUMINATION_ENGINE_NAME "Illumination Engine"
 
-/* Include classes used as attributes or _function arguments. */
+/* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEVersion.hpp"
 

@@ -25,7 +25,6 @@
 
 void IEImage::destroy() {
 	if (hasNoDependents()) {
-		removeAllDependents();
 		for (std::function<void()> &function: deletionQueue) {
 			function();
 		}
@@ -80,20 +79,18 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 			.usage=allocationUsage,
 	};
 
-	if (height == 0) {
+	if (width * height == 0) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 "Image height is zero! This may cause Vulkan to fail to create an image.");
-	}
-	if (width == 0) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 "Image width is zero! This may cause Vulkan to fail to create an image.");
+												 "Image width * height is zero! This may cause Vulkan to fail to create the image.");
 	}
 
 	// Create image
 	if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
 	}
-	deletionQueue.emplace_back([&] { vmaDestroyImage(linkedRenderEngine->allocator, image, allocation); });
+	deletionQueue.emplace_back([&] {
+		vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
+	});
 
 	// Set up image view create info
 	VkImageViewCreateInfo imageViewCreateInfo{
@@ -123,7 +120,7 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 	// Upload data if provided
 	if (dataSource != nullptr) {
 		transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		dataSource->toImage(this, width, height);
+		dataSource->toImage(this);
 	}
 
 	// Set transition to requested layout from undefined or dst_optimal.
@@ -298,7 +295,7 @@ IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
 	// Upload data if provided
 	if (dataSource != nullptr) {
 		transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		dataSource->toImage(this, width, height);
+		dataSource->toImage(this);
 	}
 
 	// Set transition to requested layout from undefined or dst_optimal.

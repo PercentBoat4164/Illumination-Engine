@@ -11,7 +11,7 @@ class GLFWmonitor;
 
 class IERenderable;
 
-/* Include classes used as attributes or _function arguments. */
+/* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEAPI.hpp"
 #include "IECamera.hpp"
@@ -232,6 +232,7 @@ public:
 	PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
 	std::vector<std::shared_ptr<IETexture>> textures{};
 	std::vector<VkImageView> swapchainImageViews{};
+	std::vector<IEAsset *> assets{};
 	float frameTime{};
 	int frameNumber{};
 
@@ -256,7 +257,6 @@ private:
 	std::vector<VkFence> imagesInFlight{};
 	std::vector<VkSemaphore> imageAvailableSemaphores{};
 	std::vector<VkSemaphore> renderFinishedSemaphores{};
-	std::vector<IEAsset *> assets{};
 	IEAccelerationStructure topLevelAccelerationStructure{};
 	std::vector<std::function<void()>> fullRecreationDeletionQueue{};
 	std::vector<std::function<void()>> recreationDeletionQueue{};

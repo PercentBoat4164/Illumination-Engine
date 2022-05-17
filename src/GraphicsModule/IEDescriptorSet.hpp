@@ -9,7 +9,7 @@ class IEImage;
 
 class IERenderEngine;
 
-/* Include classes used as attributes or _function arguments. */
+/* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEDependency.hpp"
 

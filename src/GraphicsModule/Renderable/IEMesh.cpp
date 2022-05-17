@@ -34,7 +34,7 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
 	};
 	vertexBuffer.create(linkedRenderEngine, &vertexBufferCreateInfo);
-	vertexBuffer.loadFromDiskToRAM(vertices.data(), vertices.size());
+	vertexBuffer.loadFromDiskToRAM(vertices.data(), vertexBufferCreateInfo.size);
 
 	// assuming all faces are triangles
 	triangleCount = mesh->mNumFaces;
@@ -45,7 +45,7 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 	for (int i = 0; i < triangleCount; ++i) {
 		if (mesh->mFaces[i].mNumIndices != 3) {
 			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-													 "Detected non-triangular face! Try using the aiProcess_Triangulate flag.");
+													 "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.");
 		}
 		for (indexInFace = 0; indexInFace < mesh->mFaces[i].mNumIndices; ++indexInFace) {
 			indices.push_back(mesh->mFaces[i].mIndices[indexInFace]);
@@ -59,7 +59,7 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
 	};
 	indexBuffer.create(linkedRenderEngine, &indexBufferCreateInfo);
-	indexBuffer.loadFromDiskToRAM(vertices.data(), vertices.size());
+	indexBuffer.loadFromDiskToRAM(indices.data(), indexBufferCreateInfo.size);
 
 	// load material
 	material.loadFromDiskToRAM(directory, scene, mesh->mMaterialIndex);
@@ -97,7 +97,9 @@ void IEMesh::loadFromRAMToVRAM() {
 			.renderPass=&linkedRenderEngine->renderPass  /**@todo Make renderPass of pipeline adjustable.*/
 	});
 
+	// Set up descriptor set
 	linkedRenderEngine->textures[material.diffuseTextureIndex]->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	descriptorSet.update({linkedRenderEngine->textures[material.diffuseTextureIndex].get()}, {1});
 }
 
 std::function<void(IEMesh &)> IEMesh::_create = std::function<void(IEMesh &)>{[](IEMesh &) { return; }};
@@ -121,7 +123,7 @@ void IEMesh::destroy() {
 
 void IEMesh::update(uint32_t commandBufferIndex) {
 	VkDeviceSize offsets[]{0};
-	descriptorSet.update({linkedRenderEngine->textures[material.diffuseTextureIndex].get()}, {1});
+//	descriptorSet.update({linkedRenderEngine->textures[material.diffuseTextureIndex].get()}, {1});
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindVertexBuffers(0, 1, {&vertexBuffer}, offsets);
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindIndexBuffer(&indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, &pipeline);

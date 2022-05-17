@@ -83,7 +83,6 @@ IEFramebuffer::~IEFramebuffer() {
 
 void IEFramebuffer::destroy() {
 	if (hasNoDependents()) {
-		removeAllDependents();
 		for (std::function<void()> &function: deletionQueue) {
 			function();
 		}

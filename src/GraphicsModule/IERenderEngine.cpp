@@ -249,9 +249,6 @@ void IERenderEngine::createRenderPass() {
 			.msaaSamples=1
 	};
 	renderPass.create(this, &renderPassCreateInfo);
-	deletionQueue.insert(deletionQueue.begin(), [&] {
-		renderPass.destroy();
-	});
 }
 
 /**@note This method works for both OpenGL and Vulkan.*/
@@ -364,6 +361,9 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 
 	// Create render pass
 	createRenderPass();
+	deletionQueue.insert(deletionQueue.begin(), [&] {
+		renderPass.destroy();
+	});
 
 	graphicsCommandPool[0].execute();
 	camera.create(this);
@@ -399,8 +399,12 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
 
 void IERenderEngine::handleResolutionChange() {
 	createSwapchain(true);
-	renderPass.destroy();
-	createRenderPass();
+	renderPass = IERenderPass{};
+	IERenderPass::CreateInfo renderPassCreateInfo{
+			.msaaSamples=1
+	};
+	renderPass.create(this, &renderPassCreateInfo);
+//	createRenderPass();
 }
 
 bool IERenderEngine::openGLUpdate() {
@@ -418,18 +422,17 @@ bool IERenderEngine::vulkanUpdate() {
 	uint32_t imageIndex{0};
 	VkResult result = vkAcquireNextImageKhr(device.device, swapchain.swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE,
 											&imageIndex);
-	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+	if (result != VK_SUCCESS) {
 		handleResolutionChange();
 		return glfwWindowShouldClose(window) != 1;
 	}
-	if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-		throw std::runtime_error("failed to acquire swapchain image!");
-	}
+//	if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+//		throw std::runtime_error("failed to acquire swapchain image!");
+//	}
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		vkWaitForFences(device.device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
 	}
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
-	VkDeviceSize offsets[] = {0};
 	VkViewport viewport{
 			.x = 0.0F,
 			.y = 0.0F,
@@ -447,28 +450,27 @@ bool IERenderEngine::vulkanUpdate() {
 	IERenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(imageIndex);
 	graphicsCommandPool[imageIndex].recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	camera.update();
-	auto time = static_cast<float>(glfwGetTime());
-	if (settings->rayTracing) {
-		topLevelAccelerationStructure.destroy();
-		std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
-		bottomLevelAccelerationStructureDeviceAddresses.reserve(assets.size());
-		if (settings->rayTracing) {
-			for (IEAsset *asset: assets) {
-				for (IEAspect *aspect: asset->aspects) {
-					auto *renderable = reinterpret_cast<IERenderable *>(aspect);
-					if (renderable->render) {
-						bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress);
-					}
-				}
-			}
-		}
-		IEAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
-		topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
-		topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
-		topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
-		topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddresses = bottomLevelAccelerationStructureDeviceAddresses;
-		topLevelAccelerationStructure.create(this, &topLevelAccelerationStructureCreateInfo);
-	}
+//	if (settings->rayTracing) {
+//		topLevelAccelerationStructure.destroy();
+//		std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
+//		bottomLevelAccelerationStructureDeviceAddresses.reserve(assets.size());
+//		if (settings->rayTracing) {
+//			for (IEAsset *asset: assets) {
+//				for (IEAspect *aspect: asset->aspects) {
+//					auto *renderable = reinterpret_cast<IERenderable *>(aspect);
+//					if (renderable->render) {
+//						bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress);
+//					}
+//				}
+//			}
+//		}
+//		IEAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
+//		topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+//		topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
+//		topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
+//		topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddresses = bottomLevelAccelerationStructureDeviceAddresses;
+//		topLevelAccelerationStructure.create(this, &topLevelAccelerationStructureCreateInfo);
+//	}
 	for (IEAsset *asset: assets) {
 		asset->update(imageIndex);
 	}

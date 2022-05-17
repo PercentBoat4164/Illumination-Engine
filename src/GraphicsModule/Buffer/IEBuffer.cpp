@@ -46,7 +46,7 @@ void IEBuffer::loadFromRAMToVRAM() {
 				.usage=usage,
 		};
 
-		// If usage request device address, then prepare allocation for using device address
+		// If usage requests device address, then prepare allocation for using device address
 		if ((usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U) {
 			allocationCreateInfo.requiredFlags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
 		}
@@ -65,7 +65,7 @@ void IEBuffer::loadFromRAMToVRAM() {
 
 	// Upload data in RAM to VRAM
 	vmaMapMemory(linkedRenderEngine->allocator, allocation, &internalBufferData);
-	memcpy(internalBufferData, data.data(), size);
+	memcpy(internalBufferData, data.data(), data.size());
 	vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 }
 
@@ -108,7 +108,9 @@ void IEBuffer::toImage(IEImage *image) {
 		oldLayout = image->layout;
 		image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(this, image, {region});
-		image->transitionLayout(oldLayout);
+		if (oldLayout != VK_IMAGE_LAYOUT_UNDEFINED) {
+			image->transitionLayout(oldLayout);
+		}
 	} else {
 		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(this, image, {region});
 	}

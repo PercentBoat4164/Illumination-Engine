@@ -5,12 +5,13 @@ class VkVertexInputBindingDescription;
 
 class VkVertexInputAttributeDescription;
 
-/* Include classes used as attributes or _function arguments. */
+/* Include classes used as attributes or function arguments. */
 // External dependencies
 #include "glm/glm.hpp"
 
 // System dependencies
 #include <array>
+#include <string>
 
 struct IEVertex {
 	glm::vec3 position{};
@@ -23,4 +24,8 @@ struct IEVertex {
 	static VkVertexInputBindingDescription getBindingDescription();
 
 	static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
+
+	std::string toString();
+
+	bool operator==(IEVertex &other);
 };

@@ -73,8 +73,7 @@ void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &
 void IERenderable::loadFromDiskToRAM() {
 	// Read input file
 	const aiScene *scene = importer.ReadFile(directory + modelName,
-											 aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords |
-											 aiProcess_GenNormals | aiProcess_RemoveRedundantMaterials);
+											 aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_RemoveRedundantMaterials | aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices);
 	if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
 												 "failed to prepare scene from file: " + std::string(directory + modelName));
@@ -125,11 +124,11 @@ void IERenderable::_vulkanCreateShaders() {
 }
 
 void IERenderable::update(uint32_t renderCommandBufferIndex) {
+	_update(*this, linkedRenderEngine->assets[0], linkedRenderEngine->camera, (float) glfwGetTime());
 	for (IEMesh &mesh: meshes) {
 		mesh.descriptorSet.update({&modelBuffer}, {0});
 		mesh.update(renderCommandBufferIndex);
 	}
-	_update(*this, (IEAsset *) this, linkedRenderEngine->camera, (float)glfwGetTime());
 }
 
 void IERenderable::update(IEAsset *asset, const IECamera &camera, float time) {

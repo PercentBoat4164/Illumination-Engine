@@ -26,7 +26,7 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
 
 void IETexture::upload(void *data) {
 	IEBuffer scratchBuffer{linkedRenderEngine, new IEBuffer::CreateInfo{
-			.size=static_cast<VkDeviceSize>(width * height) * 4,
+			.size=static_cast<VkDeviceSize>(width * height * channels),
 			.usage=VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
 	}};
@@ -37,8 +37,8 @@ void IETexture::upload(void *data) {
 }
 
 void IETexture::upload(IEBuffer *data) {
-	transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	data->toImage(this);
+	linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
 void IETexture::loadFromDiskToRAM(aiTexture *texture) {
@@ -50,9 +50,11 @@ void IETexture::loadFromDiskToRAM(aiTexture *texture) {
 		tempData = stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height),
 							 reinterpret_cast<int *>(&channels), 4);
 	}
+	channels = 4;  /**@todo Make number of channels imported change the number of channels in VRAM.*/
 	data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
 	if (data.empty()) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to load image data!");
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " + stbi_failure_reason());
 	}
 }
 
@@ -74,7 +76,7 @@ void IETexture::loadFromRAMToVRAM() {
 			.arrayLayers=1,
 			.samples=static_cast<VkSampleCountFlagBits>(1),
 			.tiling=VK_IMAGE_TILING_OPTIMAL,
-			.usage=usage,
+			.usage=usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
 			.sharingMode=VK_SHARING_MODE_EXCLUSIVE,
 			.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,
 	};
@@ -155,7 +157,7 @@ void IETexture::loadFromRAMToVRAM() {
 	if (data.empty() && dataSource != nullptr) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create image with raw and buffered data!");
 	}
-	if (data.empty()) {
+	if (!data.empty()) {
 		upload(data.data());
 	}
 	if (dataSource != nullptr) {
@@ -163,7 +165,7 @@ void IETexture::loadFromRAMToVRAM() {
 	}
 
 	// Set transition to requested layout from undefined or dst_optimal.
-	if (layout != desiredLayout) {
+	if (desiredLayout != VK_IMAGE_LAYOUT_UNDEFINED && layout != desiredLayout) {
 		transitionLayout(desiredLayout);
 	}
 	linkedRenderEngine->graphicsCommandPool[0].execute();

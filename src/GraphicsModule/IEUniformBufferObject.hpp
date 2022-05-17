@@ -1,6 +1,6 @@
 #pragma once
 
-/* Include classes used as attributes or _function arguments. */
+/* Include classes used as attributes or function arguments. */
 // External dependencies
 #include <glm/glm.hpp>
 

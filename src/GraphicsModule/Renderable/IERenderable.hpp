@@ -5,7 +5,7 @@ class aiScene;
 
 class IECamera;
 
-/* Include classes used as attributes or _function arguments. */
+/* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "Buffer/IEAccelerationStructure.hpp"
 #include "Buffer/IEBuffer.hpp"

@@ -3,7 +3,7 @@
 /* Predefine classes used with pointers or as return values for functions. */
 class IEAPI;
 
-/* Include classes used as attributes or _function arguments. */
+/* Include classes used as attributes or function arguments. */
 // External dependencies
 #define GLEW_IMPLEMENTATION  // Must precede GLEW inclusion.
 

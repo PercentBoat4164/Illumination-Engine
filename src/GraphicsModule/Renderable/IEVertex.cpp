@@ -3,6 +3,7 @@
 
 /* Include external dependencies. */
 #include <vulkan/vulkan.h>
+#include <string>
 
 VkVertexInputBindingDescription IEVertex::getBindingDescription() {
 	return {
@@ -53,4 +54,12 @@ std::array<VkVertexInputAttributeDescription, 6> IEVertex::getAttributeDescripti
 					}
 			}
 	};
+}
+
+std::string IEVertex::toString() {
+	return "Position: x: " + std::to_string(position.x) + ",\ty: " + std::to_string(position.y) + ",\tz: " + std::to_string(position.z);
+}
+
+bool IEVertex::operator==(IEVertex &other) {
+	return position == other.position && color == other.color && textureCoordinates == other.textureCoordinates && normal == other.normal && tangent == other.tangent && biTangent == other.biTangent;
 }

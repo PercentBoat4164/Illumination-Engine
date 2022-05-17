@@ -41,7 +41,7 @@ int main() {
 	renderEngine.addAsset(&fbx);
 
 	fbx.position = {0.0F, -1.0F, 0.0F};
-	renderEngine.camera.position = {0.0F, 2.0F, 0.0F};
+	renderEngine.camera.position = {0.0F, 2.0F, 0.4F};
 
 	renderEngine.settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", pthread_self()));
 
