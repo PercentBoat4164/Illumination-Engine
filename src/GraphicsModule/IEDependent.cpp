@@ -37,10 +37,6 @@ uint32_t IEDependent::dependencyCount() {
 }
 
 void IEDependent::clearAllDependencies() {
-    for (const std::shared_ptr<IEDependency>& dependency: dependencies) {
-        auto *buffer = static_cast<IEFramebuffer *>(dependency.get());
-        std::cout << abi::__cxa_demangle(typeid(*buffer).name(), nullptr, nullptr, new int) << " " << buffer << std::endl;
-    }
     dependencies.clear();
 }
 

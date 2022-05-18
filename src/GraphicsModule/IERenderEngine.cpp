@@ -336,7 +336,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 
 	// Set up GPU Memory allocator
 	setUpGPUMemoryAllocator();
-
+	
 	// Create swapchain
 	createSwapchain(false);
 	deletionQueue.insert(deletionQueue.begin(), [&] {
@@ -355,7 +355,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	deletionQueue.insert(deletionQueue.begin(), [&] {
 		destroyCommandPools();
 	});
-
+	
 	// Create render pass
 	createRenderPass();
 	deletionQueue.insert(deletionQueue.begin(), [&] {
@@ -394,6 +394,7 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
     renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
 
     graphicsCommandPool[0].wait();
+	graphicsCommandPool[0].reset();
 }
 
 void IERenderEngine::handleResolutionChange() {

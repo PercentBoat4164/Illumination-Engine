@@ -43,7 +43,6 @@ void IEImage::copyCreateInfo(IEImage::CreateInfo *createInfo) {
 	allocationUsage = createInfo->allocationUsage;
 	width = createInfo->width;
 	height = createInfo->height;
-	dataSource = createInfo->dataSource;
 	data = createInfo->data;
 }
 
@@ -117,12 +116,6 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 	deletionQueue.emplace_back([&] {
 		vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
 	});
-
-    // Upload data if provided
-    if (dataSource != nullptr) {
-        transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        dataSource->toImage(std::shared_ptr<IEImage>(this), width, height);
-    }
 
 	// Set transition to requested layout from undefined or dst_optimal.
 	if (layout != desiredLayout) {
@@ -293,12 +286,6 @@ IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
 	deletionQueue.emplace_back([&] {
 		vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
 	});
-
-	// Upload data if provided
-	if (dataSource != nullptr) {
-		transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		dataSource->toImage(std::shared_ptr<IEImage>(this), width, height);
-	}
 
 	// Set transition to requested layout from undefined or dst_optimal.
 	if (layout != desiredLayout) {

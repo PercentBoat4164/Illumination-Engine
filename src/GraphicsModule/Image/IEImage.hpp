@@ -42,7 +42,6 @@ public:
 		VkImageAspectFlags aspect{VK_IMAGE_ASPECT_COLOR_BIT};
 		VmaMemoryUsage allocationUsage{};
 		uint32_t width{}, height{};
-		IEBuffer *dataSource{};
 		std::vector<char> data{};
 	};
 
@@ -63,7 +62,6 @@ public:
 	uint32_t channels{};
 	std::vector<char> data{};
 	std::string filename{};
-	IEBuffer *dataSource{};
 	IERenderEngine *linkedRenderEngine{};
 	std::vector<std::function<void()>> deletionQueue{};
 
@@ -79,7 +77,7 @@ public:
 
 	void transitionLayout(VkImageLayout);
 
-    ~IEImage();
+    ~IEImage() override;
 
 	void destroy(bool=true);
 };

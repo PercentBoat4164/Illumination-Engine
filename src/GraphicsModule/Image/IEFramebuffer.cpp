@@ -45,21 +45,17 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
 	uint8_t msaaSamplesAllowed = getHighestMSAASampleCount(linkedRenderEngine->settings->msaaSamples);
 
 	if (msaaSamplesAllowed > VK_SAMPLE_COUNT_1_BIT) {
-		colorImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
-		deletionQueue.emplace_back([&] {
-			colorImage.destroy();
-		});
+		colorImage = std::make_shared<IEImage>();
+		colorImage->create(linkedRenderEngine, &framebufferImageCreateInfo);
 	}
 	framebufferImageCreateInfo.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
 	framebufferImageCreateInfo.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 	framebufferImageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	framebufferImageCreateInfo.aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
-	depthImage.create(linkedRenderEngine, &framebufferImageCreateInfo);
-	deletionQueue.emplace_back([&] {
-		depthImage.destroy();
-	});
-	std::vector<VkImageView> framebufferAttachments{msaaSamplesAllowed == VK_SAMPLE_COUNT_1_BIT ? swapchainImageView : colorImage.view,
-													depthImage.view, swapchainImageView};
+	depthImage = std::make_shared<IEImage>();
+	depthImage->create(linkedRenderEngine, &framebufferImageCreateInfo);
+	std::vector<VkImageView> framebufferAttachments{msaaSamplesAllowed == VK_SAMPLE_COUNT_1_BIT ? swapchainImageView : colorImage->view,
+													depthImage->view, swapchainImageView};
 	VkFramebufferCreateInfo framebufferCreateInfo{
 			.sType=VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
 			.renderPass = renderPass,
@@ -75,10 +71,6 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
 	deletionQueue.emplace_back([&] {
 		vkDestroyFramebuffer(linkedRenderEngine->device.device, framebuffer, nullptr);
 	});
-}
-
-IEFramebuffer::~IEFramebuffer() {
-	destroy();
 }
 
 IEFramebuffer::IEFramebuffer() = default;

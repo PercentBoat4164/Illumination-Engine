@@ -44,4 +44,6 @@ public:
     void invalidateDependents();
 
     bool canBeDestroyed(bool=false);
+	
+	virtual ~IEDependency() = default;
 };

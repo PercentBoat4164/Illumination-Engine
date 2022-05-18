@@ -65,7 +65,7 @@ void IECommandBuffer::record(bool synchronize, bool oneTimeSubmit) {
         allocate(false);
     }
     if (status >= IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
-        reset(false);
+        reset(!synchronize);
     }
 
     // Begin recording

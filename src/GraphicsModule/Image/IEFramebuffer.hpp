@@ -28,14 +28,12 @@ public:
 	std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
 	VkImageView swapchainImageView{};
 	VkRenderPass renderPass{};
-	IEImage colorImage{};  /**@todo Eliminate this and use the inbuilt image.*/
-	IEImage depthImage{};
+	std::shared_ptr<IEImage> colorImage{};  /**@todo Eliminate this and use the inbuilt image.*/
+	std::shared_ptr<IEImage> depthImage{};
 
 	IEFramebuffer();
 
 	void copyCreateInfo(IEFramebuffer::CreateInfo *createInfo);
 
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
-
-	~IEFramebuffer();
 };

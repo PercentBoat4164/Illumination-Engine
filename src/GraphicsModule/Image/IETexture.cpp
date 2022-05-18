@@ -154,14 +154,8 @@ void IETexture::loadFromRAMToVRAM() {
 	});
 
 	// Upload data if provided
-	if (data.empty() && dataSource != nullptr) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to create image with raw and buffered data!");
-	}
-	if (data.empty()) {
+	if (!data.empty()) {
 		upload(data.data());
-	}
-	if (dataSource != nullptr) {
-		upload(dataSource);
 	}
 
 	// Set transition to requested layout from undefined or dst_optimal.
