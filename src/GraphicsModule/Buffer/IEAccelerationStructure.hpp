@@ -12,28 +12,28 @@ class IERenderEngine;
 
 
 class IEAccelerationStructure : public IEBuffer {
-    struct CreateInfo {
-        // Required
-        VkAccelerationStructureTypeKHR type{};
-        VkTransformMatrixKHR transformMatrix{};
-        uint32_t primitiveCount{1};
+	struct CreateInfo {
+		// Required
+		VkAccelerationStructureTypeKHR type{};
+		VkTransformMatrixKHR transformMatrix{};
+		uint32_t primitiveCount{1};
 
-        // Optional
-        VkAccelerationStructureKHR oldAccelerationStructure{};
+		// Optional
+		VkAccelerationStructureKHR oldAccelerationStructure{};
 
-        // Required if type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR
-        VkDeviceAddress vertexBufferAddress{};
-        VkDeviceAddress indexBufferAddress{};
-        VkDeviceAddress transformationBufferAddress{};
+		// Required if type == VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR
+		VkDeviceAddress vertexBufferAddress{};
+		VkDeviceAddress indexBufferAddress{};
+		VkDeviceAddress transformationBufferAddress{};
 
-        // Required if type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR
-        std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddress{};
-    };
+		// Required if type == VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR
+		std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddress{};
+	};
 
 public:
-    VkAccelerationStructureKHR accelerationStructure{};
+	VkAccelerationStructureKHR accelerationStructure{};
 
-    IEAccelerationStructure();
+	IEAccelerationStructure();
 
-    void create(IERenderEngine *renderEngineLink, IEAccelerationStructure::CreateInfo *createInfo);
+	void create(IERenderEngine *renderEngineLink, IEAccelerationStructure::CreateInfo *createInfo);
 };

@@ -583,12 +583,14 @@ IERenderEngine::~IERenderEngine() {
 }
 
 void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
-	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->renderEngine;
+	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(
+			pWindow))->renderEngine;
 	*renderEngine->settings->currentPosition = {x, y};
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->renderEngine;
+	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(
+			pWindow))->renderEngine;
 	*renderEngine->settings->currentResolution = {width, height};
 	renderEngine->framebufferResized = true;
 }

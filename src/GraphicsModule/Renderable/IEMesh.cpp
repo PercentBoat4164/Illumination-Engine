@@ -124,7 +124,6 @@ void IEMesh::destroy() {
 
 void IEMesh::update(uint32_t commandBufferIndex) {
 	VkDeviceSize offsets[]{0};
-//	descriptorSet.update({linkedRenderEngine->textures[material.diffuseTextureIndex].get()}, {1});
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindVertexBuffers(0, 1, {std::make_shared<IEBuffer>(vertexBuffer)}, offsets);
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindIndexBuffer(std::make_shared<IEBuffer>(indexBuffer), 0,
 																					  VK_INDEX_TYPE_UINT32);

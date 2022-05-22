@@ -54,7 +54,8 @@ void IETexture::loadFromDiskToRAM(aiTexture *texture) {
 	data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
 	if (data.empty()) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " + stbi_failure_reason());
+												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
+												 stbi_failure_reason());
 	}
 }
 

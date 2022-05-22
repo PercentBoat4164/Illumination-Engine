@@ -24,35 +24,35 @@ class IERenderEngine;
 #include <vector>
 
 
-class IEDescriptorSet : public IEDependency{
+class IEDescriptorSet : public IEDependency {
 public:
-    struct CreateInfo {
-        //Required
-        std::vector<VkDescriptorPoolSize> poolSizes{};
-        std::vector<VkShaderStageFlagBits> shaderStages{};
-        std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> data{};
+	struct CreateInfo {
+		//Required
+		std::vector<VkDescriptorPoolSize> poolSizes{};
+		std::vector<VkShaderStageFlagBits> shaderStages{};
+		std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> data{};
 
-        //Optional
-        uint32_t maxIndex{1};
+		//Optional
+		uint32_t maxIndex{1};
 
-        //Required if maxIndex != 1
-        VkDescriptorBindingFlagsEXT flags{0};
-    };
+		//Required if maxIndex != 1
+		VkDescriptorBindingFlagsEXT flags{0};
+	};
 
-    VkDescriptorPool descriptorPool{};
-    VkDescriptorSet descriptorSet{};
-    VkDescriptorSetLayout descriptorSetLayout{};
-    CreateInfo createdWith{};
+	VkDescriptorPool descriptorPool{};
+	VkDescriptorSet descriptorSet{};
+	VkDescriptorSetLayout descriptorSetLayout{};
+	CreateInfo createdWith{};
 
-    void destroy();
+	void destroy();
 
-    void create(IERenderEngine *renderEngineLink, CreateInfo *createInfo);
+	void create(IERenderEngine *renderEngineLink, CreateInfo *createInfo);
 
-    void update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> newData, std::vector<int> bindings = {});
+	void update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> newData, std::vector<int> bindings = {});
 
-    ~IEDescriptorSet();
+	~IEDescriptorSet();
 
 private:
-    IERenderEngine *linkedRenderEngine{};
-    std::vector<std::function<void()>> deletionQueue{};
+	IERenderEngine *linkedRenderEngine{};
+	std::vector<std::function<void()>> deletionQueue{};
 };

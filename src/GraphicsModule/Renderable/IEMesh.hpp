@@ -26,7 +26,7 @@ private:
 	std::vector<std::function<void()>> deletionQueue{};
 
 
-    static std::function<void(IEMesh &)> _create;
+	static std::function<void(IEMesh &)> _create;
 
 	void _vulkanCreate() {}
 
@@ -41,11 +41,11 @@ public:
 
 	void update(uint32_t);
 
-    void destroy();
+	void destroy();
 
-    ~IEMesh();
+	~IEMesh();
 
-    IERenderEngine *linkedRenderEngine{};
+	IERenderEngine *linkedRenderEngine{};
 
-    IEDescriptorSet descriptorSet;
+	IEDescriptorSet descriptorSet;
 };
