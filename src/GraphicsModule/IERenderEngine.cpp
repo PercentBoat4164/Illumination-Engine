@@ -11,14 +11,17 @@
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION  // Must precede GLEW inclusion.
+
 #include <GL/glew.h>  // Not required by this file, but must be included before GLFW which is required.
 
 #include <GLFW/glfw3.h>
 
 #define VMA_IMPLEMENTATION
+
 #include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
 
 /* Include system dependencies. */
@@ -240,12 +243,13 @@ void IERenderEngine::createCommandPools() {
 }
 
 void IERenderEngine::createRenderPass() {
-    // Create the renderPass
-    graphicsCommandPool.prepareCommandBuffers(swapchainImageViews.size());
-    IERenderPass::CreateInfo renderPassCreateInfo {
-            .msaaSamples=1
-    };
-    renderPass.create(this, &renderPassCreateInfo);
+	// Create the renderPass
+	renderPass = std::make_shared<IERenderPass>();
+	graphicsCommandPool.prepareCommandBuffers(swapchainImageViews.size());
+	IERenderPass::CreateInfo renderPassCreateInfo{
+			.msaaSamples=1
+	};
+	renderPass->create(this, &renderPassCreateInfo);
 }
 
 /**@note This method works for both OpenGL and Vulkan.*/
@@ -294,9 +298,9 @@ void IERenderEngine::destroyCommandPools() {
 IERenderEngine::IERenderEngine(IESettings *settings) {
 	this->settings = settings;
 
-    // Set the function pointers
-    update = [this] { return vulkanUpdate(); };
-    destroy = [this] { return vulkanDestroy(); };
+	// Set the function pointers
+	update = [this] { return vulkanUpdate(); };
+	destroy = [this] { return vulkanDestroy(); };
 
 	// Create a Vulkan instance
 	createVulkanInstance();
@@ -336,7 +340,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 
 	// Set up GPU Memory allocator
 	setUpGPUMemoryAllocator();
-	
+
 	// Create swapchain
 	createSwapchain(false);
 	deletionQueue.insert(deletionQueue.begin(), [&] {
@@ -355,11 +359,11 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	deletionQueue.insert(deletionQueue.begin(), [&] {
 		destroyCommandPools();
 	});
-	
+
 	// Create render pass
 	createRenderPass();
 	deletionQueue.insert(deletionQueue.begin(), [&] {
-		renderPass.destroy();
+		renderPass->destroy();
 	});
 
 	graphicsCommandPool[0].execute();
@@ -388,19 +392,19 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
 	renderable->loadFromDiskToRAM();
 	renderable->loadFromRAMToVRAM();
 
-    graphicsCommandPool[0].execute();
+	graphicsCommandPool[0].execute();
 
-    // Record the destruction of this renderable
-    renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
+	// Record the destruction of this renderable
+	renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
 
-    graphicsCommandPool[0].wait();
+	graphicsCommandPool[0].wait();
 	graphicsCommandPool[0].reset();
 }
 
 void IERenderEngine::handleResolutionChange() {
-    createSwapchain(true);
-    renderPass.destroy();
-    createRenderPass();
+	createSwapchain(true);
+	renderPass->destroy();
+	createRenderPass();
 }
 
 bool IERenderEngine::openGLUpdate() {
@@ -443,7 +447,7 @@ bool IERenderEngine::vulkanUpdate() {
 			.extent = swapchain.extent,
 	};
 	graphicsCommandPool[imageIndex].recordSetScissor(0, 1, &scissor);
-	IERenderPassBeginInfo renderPassBeginInfo = renderPass.beginRenderPass(imageIndex);
+	IERenderPassBeginInfo renderPassBeginInfo = renderPass->beginRenderPass(imageIndex);
 	graphicsCommandPool[imageIndex].recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	camera.update();
 //	if (settings->rayTracing) {
@@ -579,16 +583,14 @@ IERenderEngine::~IERenderEngine() {
 }
 
 void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
-	auto *renderEngine = (IERenderEngine *) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->IERenderEngine;
-	(*renderEngine->settings->currentPosition)[0] = x;
-	(*renderEngine->settings->currentPosition)[1] = y;
+	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->renderEngine;
+	*renderEngine->settings->currentPosition = {x, y};
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-	auto *renderEngine = (IERenderEngine *) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->IERenderEngine;
+	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->renderEngine;
+	*renderEngine->settings->currentResolution = {width, height};
 	renderEngine->framebufferResized = true;
-	(*renderEngine->settings->currentResolution)[0] = width;
-	(*renderEngine->settings->currentResolution)[1] = height;
 }
 
 std::string IERenderEngine::translateVkResultCodes(VkResult result) {

@@ -3,6 +3,7 @@
 
 /* Include dependencies within this module. */
 #include "GraphicsModule/IERenderEngine.hpp"
+#include "IERenderPass.hpp"
 
 
 void IEFramebuffer::copyCreateInfo(IEFramebuffer::CreateInfo *createInfo) {
@@ -24,7 +25,7 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
 	if (swapchainImageView == VK_NULL_HANDLE) {
 		throw std::runtime_error("IEFramebuffer::CreateInfo::swapchainImageView cannot be VK_NULL_HANDLE!");
 	}
-	if (renderPass == nullptr) {
+	if (!renderPass.lock()) {
 		throw std::runtime_error("IEFramebuffer::CreateInfo::renderPass cannot be a nullptr!");
 	}
 	clearValues[0].color = VkClearColorValue{defaultColor[0], defaultColor[1], defaultColor[2], defaultColor[3]};
@@ -58,7 +59,7 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
 													depthImage->view, swapchainImageView};
 	VkFramebufferCreateInfo framebufferCreateInfo{
 			.sType=VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.renderPass = renderPass,
+			.renderPass = renderPass.lock()->renderPass,
 			.attachmentCount=msaaSamplesAllowed == VK_SAMPLE_COUNT_1_BIT ? 2u : 3u,
 			.pAttachments=framebufferAttachments.data(),
 			.width=linkedRenderEngine->swapchain.extent.width,

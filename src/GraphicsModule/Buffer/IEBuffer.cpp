@@ -6,13 +6,13 @@
 
 
 void IEBuffer::destroy(bool force) {
-    if (canBeDestroyed(force) && (status & IE_BUFFER_STATUS_CREATED) != 0) {
-        for (std::function<void()> &function: deletionQueue) {
-            function();
-        }
-        deletionQueue.clear();
-        invalidateDependents();
-    }
+	if (canBeDestroyed(force) && (status & IE_BUFFER_STATUS_CREATED) != 0) {
+		for (std::function<void()> &function: deletionQueue) {
+			function();
+		}
+		deletionQueue.clear();
+		invalidateDependents();
+	}
 }
 
 void IEBuffer::loadFromDiskToRAM(void *pData, uint32_t dataSize) {
@@ -65,24 +65,27 @@ void IEBuffer::loadFromRAMToVRAM() {
 	vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 }
 
-void IEBuffer::toImage(const std::shared_ptr<IEImage>& image, uint32_t width, uint32_t height) {
-    if ((status & IE_BUFFER_STATUS_CREATED) == 0) {
-        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to convert a buffer that has not been created to an image.");
-    }
-    VkBufferImageCopy region{};
-    region.imageSubresource.aspectMask = image->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-    region.imageSubresource.layerCount = 1;
-    region.imageExtent = {width, height, 1};
-    VkImageLayout oldLayout;
-    if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-        oldLayout = image->layout;
-        image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(std::shared_ptr<IEBuffer>(this), image, {region});
-        image->transitionLayout(oldLayout);
-    } else {
-        linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(std::shared_ptr<IEBuffer>(this), image, {region});
-    }
-    linkedRenderEngine->graphicsCommandPool[0].execute();
+void IEBuffer::toImage(const std::shared_ptr<IEImage> &image, uint32_t width, uint32_t height) {
+	if ((status & IE_BUFFER_STATUS_CREATED) == 0) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+												 "Attempt to convert a buffer that has not been created to an image.");
+	}
+	VkBufferImageCopy region{};
+	region.imageSubresource.aspectMask =
+			image->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ?
+			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.layerCount = 1;
+	region.imageExtent = {width, height, 1};
+	VkImageLayout oldLayout;
+	if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+		oldLayout = image->layout;
+		image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(shared_from_this(), image, {region});
+		image->transitionLayout(oldLayout);
+	} else {
+		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(shared_from_this(), image, {region});
+	}
+	linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
 void IEBuffer::unloadFromVRAM() {
@@ -93,26 +96,28 @@ void IEBuffer::unloadFromVRAM() {
 	status = static_cast<IEBufferStatus>(~IE_BUFFER_STATUS_DATA_IN_VRAM & status);
 }
 
-void IEBuffer::toImage(const std::shared_ptr<IEImage>& image) {
-    VkBufferImageCopy region{};
-    region.imageSubresource.aspectMask = image->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-    region.imageSubresource.layerCount = 1;
-    region.imageExtent = {image->width, image->height, 1};
-    VkImageLayout oldLayout;
-    if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-        oldLayout = image->layout;
-        image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(std::shared_ptr<IEBuffer>(this), image, {region});
+void IEBuffer::toImage(const std::shared_ptr<IEImage> &image) {
+	VkBufferImageCopy region{};
+	region.imageSubresource.aspectMask =
+			image->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ?
+			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.layerCount = 1;
+	region.imageExtent = {image->width, image->height, 1};
+	VkImageLayout oldLayout;
+	if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+		oldLayout = image->layout;
+		image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(shared_from_this(), image, {region});
 		if (oldLayout != VK_IMAGE_LAYOUT_UNDEFINED) {
-            image->transitionLayout(oldLayout);
-        }
-    } else {
-        linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(std::shared_ptr<IEBuffer>(this), image, {region});
-    }
+			image->transitionLayout(oldLayout);
+		}
+	} else {
+		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(shared_from_this(), image, {region});
+	}
 }
 
 IEBuffer::~IEBuffer() {
-    destroy(true);
+	destroy(true);
 }
 
 IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo) {

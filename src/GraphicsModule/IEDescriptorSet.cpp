@@ -156,8 +156,7 @@ void IEDescriptorSet::update(std::vector<std::optional<std::variant<IEAccelerati
 		}
 	}
 	if (!descriptorWrites.empty()) {
-		vkUpdateDescriptorSets(linkedRenderEngine->device.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0,
-							   nullptr);
+		vkUpdateDescriptorSets(linkedRenderEngine->device.device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 	}
 }
 

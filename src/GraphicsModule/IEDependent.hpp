@@ -30,4 +30,6 @@ public:
     virtual void invalidate() {};
 
     bool isDependentOn(const std::shared_ptr<IEDependency> &dependency);
+
+	bool canBeDestroyed(IEDependency *, bool);
 };

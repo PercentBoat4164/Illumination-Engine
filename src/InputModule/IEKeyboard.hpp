@@ -90,8 +90,6 @@ public:
 	explicit IEKeyboard(GLFWwindow *initialWindow, void *initialAttachment = nullptr) {
 		window = initialWindow;
 		attachment = initialAttachment;
-		windowUser = {this, ((IEWindowUser *) glfwGetWindowUserPointer(window))->IERenderEngine};
-		glfwSetWindowUserPointer(window, this);
 		glfwSetKeyCallback(window, keyCallback);
 	}
 

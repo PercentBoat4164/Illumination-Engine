@@ -20,7 +20,7 @@ class IERenderEngine;
 #include <functional>
 
 
-class IEBuffer : public IEDependency {
+class IEBuffer : public IEDependency, public std::enable_shared_from_this<IEBuffer> {
 public:
 	struct CreateInfo {
 		// Only required for IEBuffer
@@ -48,21 +48,21 @@ public:
 	std::vector<std::function<void()>> deletionQueue{};
 	IEBufferStatus status{IE_BUFFER_STATUS_NONE};
 
-    void destroy(bool=false);
+	void destroy(bool= false);
 
 	IEBuffer();
 
-    IEBuffer(IERenderEngine *, IEBuffer::CreateInfo *);
+	IEBuffer(IERenderEngine *, IEBuffer::CreateInfo *);
 
 	IEBuffer(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
 
-    void create(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
+	void create(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
 
-    void create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
+	void create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
 
-    void toImage(const std::shared_ptr<IEImage>& image, uint32_t width, uint32_t height);
+	void toImage(const std::shared_ptr<IEImage> &image, uint32_t width, uint32_t height);
 
-    void toImage(const std::shared_ptr<IEImage>& image);
+	void toImage(const std::shared_ptr<IEImage> &image);
 
 	~IEBuffer();
 
@@ -75,8 +75,8 @@ public:
 	void unloadFromVRAM();
 
 protected:
-    IERenderEngine* linkedRenderEngine{};
-    VmaAllocation allocation{};
+	IERenderEngine *linkedRenderEngine{};
+	VmaAllocation allocation{};
 
 private:
 	void *internalBufferData{};

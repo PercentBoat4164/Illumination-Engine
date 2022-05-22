@@ -19,7 +19,7 @@ class IEFramebuffer : public IEImage {
 public:
 	struct CreateInfo {
 		VkImageView swapchainImageView{};
-		VkRenderPass renderPass{};
+		std::weak_ptr<IERenderPass> renderPass{};
 		std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
 	};
 
@@ -27,7 +27,7 @@ public:
 	std::vector<VkClearValue> clearValues{3};
 	std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
 	VkImageView swapchainImageView{};
-	VkRenderPass renderPass{};
+	std::weak_ptr<IERenderPass> renderPass{};
 	std::shared_ptr<IEImage> colorImage{};  /**@todo Eliminate this and use the inbuilt image.*/
 	std::shared_ptr<IEImage> depthImage{};
 

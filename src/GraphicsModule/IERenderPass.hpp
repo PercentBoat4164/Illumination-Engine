@@ -21,7 +21,7 @@ class IERenderPassBeginInfo;
 
 class IERenderEngine;
 
-class IERenderPass : public IEDependency {
+class IERenderPass : public IEDependency, public std::enable_shared_from_this<IERenderPass> {
 public:
 	struct CreateInfo {
 		uint8_t msaaSamples{1};

@@ -25,19 +25,19 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
 }
 
 void IETexture::upload(void *data) {
-	IEBuffer scratchBuffer{linkedRenderEngine, new IEBuffer::CreateInfo{
+	std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, new IEBuffer::CreateInfo{
 			.size=static_cast<VkDeviceSize>(width * height * channels),
 			.usage=VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
-	}};
-	scratchBuffer.loadFromDiskToRAM(data, scratchBuffer.size);
-	scratchBuffer.loadFromRAMToVRAM();
-	scratchBuffer.toImage(std::shared_ptr<IEImage>(this));
+	});
+	scratchBuffer->loadFromDiskToRAM(data, scratchBuffer->size);
+	scratchBuffer->loadFromRAMToVRAM();
+	scratchBuffer->toImage(shared_from_this());
 	linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 
 void IETexture::upload(const std::shared_ptr<IEBuffer> &data) {
-	data->toImage(std::shared_ptr<IETexture>(this));
+	data->toImage(shared_from_this());
 	linkedRenderEngine->graphicsCommandPool[0].execute();
 }
 

@@ -22,7 +22,7 @@ class IEBuffer;
 #include <vector>
 #include <functional>
 
-class IEImage : public IEDependency {
+class IEImage : public IEDependency, public std::enable_shared_from_this<IEImage> {
 private:
 	static std::function<void(IEImage &)> _create;
 	static std::function<void(IEImage &)> _loadFromDiskToRAM;
@@ -77,7 +77,7 @@ public:
 
 	void transitionLayout(VkImageLayout);
 
-    ~IEImage() override;
+	~IEImage() override;
 
-	void destroy(bool=true);
+	void destroy();
 };

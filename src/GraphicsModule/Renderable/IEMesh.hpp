@@ -17,7 +17,7 @@ private:
 	std::vector<uint32_t> indices{};
 	uint32_t triangleCount{};
 	// Make all shared pointers
-	IEPipeline pipeline{};  // Should be moved to render engine
+	std::shared_ptr<IEPipeline> pipeline{};  // Should be moved to render engine
 	std::vector<IEShader> shaders{};  // Should be moved to render engine
 	IEAccelerationStructure accelerationStructure{};  // Should be moved to render engine?
 	IEBuffer vertexBuffer{};

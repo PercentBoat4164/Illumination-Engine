@@ -26,7 +26,7 @@ public:
 		//Required
 		std::vector<IEShader> *shaders{};
 		IEDescriptorSet *descriptorSet{};
-		IERenderPass *renderPass{};
+		std::weak_ptr<IERenderPass> renderPass{};
 	};
 
 	#ifndef NDEBUG

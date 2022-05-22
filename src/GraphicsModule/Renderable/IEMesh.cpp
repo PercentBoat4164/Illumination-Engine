@@ -27,7 +27,7 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 		vertices.push_back(temporaryVertex);
 	}
 
-    // Create vertex buffer.
+	// Create vertex buffer.
 	IEBuffer::CreateInfo vertexBufferCreateInfo{
 			.size=sizeof(vertices[0]) * vertices.size(),
 			.usage=VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -40,26 +40,27 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 	triangleCount = mesh->mNumFaces;
 
 	// record vertices
-    indices.reserve(3UL * triangleCount);
-    int j;
-    for (int i = 0; i < triangleCount; ++i) {
-        if (mesh->mFaces[i].mNumIndices != 3) {
-            linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.");
-        }
-        for (j = 0; j < mesh->mFaces[i].mNumIndices; ++j) {
-            indices.push_back(mesh->mFaces[i].mIndices[j]);
-        }
-    }
+	indices.reserve(3UL * triangleCount);
+	int j;
+	for (int i = 0; i < triangleCount; ++i) {
+		if (mesh->mFaces[i].mNumIndices != 3) {
+			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+													 "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.");
+		}
+		for (j = 0; j < mesh->mFaces[i].mNumIndices; ++j) {
+			indices.push_back(mesh->mFaces[i].mIndices[j]);
+		}
+	}
 
-    // Create index buffer
+	// Create index buffer
 	IEBuffer::CreateInfo indexBufferCreateInfo{
 			.size=sizeof(indices[0]) * indices.size(),
 			.usage=VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
-    };
+	};
 	indexBuffer.create(linkedRenderEngine, &indexBufferCreateInfo);
 	indexBuffer.loadFromDiskToRAM(indices.data(), indexBufferCreateInfo.size);
-	
+
 	// load material
 	material.loadFromDiskToRAM(directory, scene, mesh->mMaterialIndex);
 
@@ -90,10 +91,10 @@ void IEMesh::loadFromRAMToVRAM() {
 	shaders[1].create(linkedRenderEngine, new IEFile{"shaders/Rasterize/fragmentShader.frag.spv"});
 
 	// Set up pipeline
-	pipeline.create(linkedRenderEngine, new IEPipeline::CreateInfo{
+	pipeline->create(linkedRenderEngine, new IEPipeline::CreateInfo{
 			.shaders=&shaders,
 			.descriptorSet=&descriptorSet,
-			.renderPass=&linkedRenderEngine->renderPass  /**@todo Make renderPass of pipeline adjustable.*/
+			.renderPass=linkedRenderEngine->renderPass  /**@todo Make renderPass of pipeline adjustable.*/
 	});
 
 	// Set up descriptor set
@@ -106,6 +107,7 @@ std::function<void(IEMesh &)> IEMesh::_create = std::function<void(IEMesh &)>{[]
 void IEMesh::create(IERenderEngine *engineLink) {
 	linkedRenderEngine = engineLink;
 	material.create(this);
+	pipeline = std::make_shared<IEPipeline>();
 	return _create(*this);
 }
 
@@ -124,9 +126,10 @@ void IEMesh::update(uint32_t commandBufferIndex) {
 	VkDeviceSize offsets[]{0};
 //	descriptorSet.update({linkedRenderEngine->textures[material.diffuseTextureIndex].get()}, {1});
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindVertexBuffers(0, 1, {std::make_shared<IEBuffer>(vertexBuffer)}, offsets);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindIndexBuffer(std::make_shared<IEBuffer>(indexBuffer), 0, VK_INDEX_TYPE_UINT32);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, std::make_shared<IEPipeline>(pipeline));
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, std::make_shared<IEPipeline>(pipeline), 0,
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindIndexBuffer(std::make_shared<IEBuffer>(indexBuffer), 0,
+																					  VK_INDEX_TYPE_UINT32);
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline, 0,
 																						 {std::make_shared<IEDescriptorSet>(descriptorSet)}, {});
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordDrawIndexed(indices.size(), 1, 0, 0, 0);
 }

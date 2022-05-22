@@ -5,6 +5,7 @@
 
 /* Include dependencies within this module. */
 #include "IERenderEngine.hpp"
+#include "Image/IEFramebuffer.hpp"
 
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"
@@ -102,7 +103,7 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
 	// Create framebuffers
 	framebuffers.resize(linkedRenderEngine->swapchainImageViews.size());
 	IEFramebuffer::CreateInfo framebufferCreateInfo{
-			.renderPass=renderPass,
+			.renderPass=weak_from_this(),
 	};
 	for (uint32_t i = 0; i < linkedRenderEngine->swapchainImageViews.size(); ++i) {
 		framebufferCreateInfo.swapchainImageView = linkedRenderEngine->swapchainImageViews[i];
@@ -118,14 +119,14 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
 
 IERenderPassBeginInfo IERenderPass::beginRenderPass(uint32_t framebufferIndex) {
 	IERenderPassBeginInfo renderPassBeginInfo{
-			.renderPass = std::shared_ptr<IERenderPass>(this),
-			.framebuffer = framebuffers[framebufferIndex],
+			.renderPass=shared_from_this(),
+			.framebuffer=framebuffers[framebufferIndex],
 			.renderArea{
-					.offset = {0, 0},
-					.extent = linkedRenderEngine->swapchain.extent,
+					.offset={0, 0},
+					.extent=linkedRenderEngine->swapchain.extent,
 			},
-			.clearValueCount = static_cast<uint32_t>(framebuffers[framebufferIndex]->clearValues.size()),
-			.pClearValues = framebuffers[framebufferIndex]->clearValues.data(),
+			.clearValueCount=static_cast<uint32_t>(framebuffers[framebufferIndex]->clearValues.size()),
+			.pClearValues=framebuffers[framebufferIndex]->clearValues.data(),
 	};
 	return renderPassBeginInfo;
 }

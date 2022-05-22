@@ -23,14 +23,12 @@
 	return std::max(anisotropyLevel, std::min(properties.limits.maxSamplerAnisotropy, requested));
 }
 
-void IEImage::destroy(bool force) {
-    if (canBeDestroyed(force)) {
-        for (std::function<void()> &function: deletionQueue) {
-            function();
-        }
-        deletionQueue.clear();
-        invalidateDependents();
-    }
+void IEImage::destroy() {
+	for (std::function<void()> &function: deletionQueue) {
+		function();
+	}
+	deletionQueue.clear();
+	invalidateDependents();
 }
 
 void IEImage::copyCreateInfo(IEImage::CreateInfo *createInfo) {
@@ -136,7 +134,7 @@ void IEImage::toBuffer(const std::shared_ptr<IEBuffer> &buffer, uint32_t command
 	region.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
 	vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)[commandBufferIndex].commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer->buffer, 1,
 						   &region);
-    /**@todo Needs to be done in a way that these dependencies get added.*/
+	/**@todo Needs to be done in a way that these dependencies get added.*/
 }
 
 void IEImage::transitionLayout(VkImageLayout newLayout) {
@@ -152,7 +150,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 			.newLayout=newLayout,
 			.srcQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
 			.dstQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
-			.image=std::shared_ptr<IEImage>(this),
+			.image=shared_from_this(),
 			.subresourceRange={
 					.aspectMask=static_cast<VkImageAspectFlags>(newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
 																newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT |
@@ -210,7 +208,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 }
 
 IEImage::~IEImage() {
-    destroy(true);
+	destroy();
 }
 
 IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {

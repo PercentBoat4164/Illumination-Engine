@@ -200,7 +200,7 @@ public:
     ~IERenderEngine();
 
     IECamera camera{};
-    IERenderPass renderPass{};
+    std::shared_ptr<IERenderPass> renderPass{};
     IESettings *settings;
     IECommandPool graphicsCommandPool{};
     IECommandPool presentCommandPool{};
