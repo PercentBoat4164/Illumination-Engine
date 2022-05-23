@@ -33,8 +33,8 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 			.usage=VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
 	};
-	vertexBuffer.create(linkedRenderEngine, &vertexBufferCreateInfo);
-	vertexBuffer.loadFromDiskToRAM(vertices.data(), vertexBufferCreateInfo.size);
+	vertexBuffer->create(linkedRenderEngine, &vertexBufferCreateInfo);
+	vertexBuffer->loadFromDiskToRAM(vertices.data(), vertexBufferCreateInfo.size);
 
 	// assuming all faces are triangles
 	triangleCount = mesh->mNumFaces;
@@ -58,11 +58,11 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 			.usage=VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
 	};
-	indexBuffer.create(linkedRenderEngine, &indexBufferCreateInfo);
-	indexBuffer.loadFromDiskToRAM(indices.data(), indexBufferCreateInfo.size);
+	indexBuffer->create(linkedRenderEngine, &indexBufferCreateInfo);
+	indexBuffer->loadFromDiskToRAM(indices.data(), indexBufferCreateInfo.size);
 
 	// load material
-	material.loadFromDiskToRAM(directory, scene, mesh->mMaterialIndex);
+	material->loadFromDiskToRAM(directory, scene, mesh->mMaterialIndex);
 
 	// create descriptor set
 	IEDescriptorSet::CreateInfo descriptorSetCreateInfo{
@@ -72,42 +72,48 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 						   VK_SHADER_STAGE_FRAGMENT_BIT},
 			.data={std::nullopt, std::nullopt}
 	};
-	descriptorSet.create(linkedRenderEngine, &descriptorSetCreateInfo);
-	deletionQueue.emplace_back([&] { descriptorSet.destroy(); });
+	descriptorSet->create(linkedRenderEngine, &descriptorSetCreateInfo);
+	deletionQueue.emplace_back([&] { descriptorSet->destroy(); });
 }
 
 void IEMesh::loadFromRAMToVRAM() {
-	material.loadFromRAMToVRAM();
+	material->loadFromRAMToVRAM();
 
-	vertexBuffer.loadFromRAMToVRAM();
-	deletionQueue.emplace_back([&] { vertexBuffer.destroy(); });
+	vertexBuffer->loadFromRAMToVRAM();
+	deletionQueue.emplace_back([&] { vertexBuffer->destroy(); });
 
-	indexBuffer.loadFromRAMToVRAM();
-	deletionQueue.emplace_back([&] { indexBuffer.destroy(); });
+	indexBuffer->loadFromRAMToVRAM();
+	deletionQueue.emplace_back([&] { indexBuffer->destroy(); });
 
 	// Set up shaders
 	shaders.resize(2);
-	shaders[0].create(linkedRenderEngine, new IEFile{"shaders/Rasterize/vertexShader.vert.spv"});
-	shaders[1].create(linkedRenderEngine, new IEFile{"shaders/Rasterize/fragmentShader.frag.spv"});
+	shaders[0] = std::make_shared<IEShader>();
+	shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/Rasterize/vertexShader.vert.spv"});
+	shaders[1] = std::make_shared<IEShader>();
+	shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/Rasterize/fragmentShader.frag.spv"});
 
 	// Set up pipeline
 	pipeline->create(linkedRenderEngine, new IEPipeline::CreateInfo{
-			.shaders=&shaders,
-			.descriptorSet=&descriptorSet,
+			.shaders=shaders,
+			.descriptorSet=descriptorSet,
 			.renderPass=linkedRenderEngine->renderPass  /**@todo Make renderPass of pipeline adjustable.*/
 	});
 
 	// Set up descriptor set
-	linkedRenderEngine->textures[material.diffuseTextureIndex]->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	descriptorSet.update({linkedRenderEngine->textures[material.diffuseTextureIndex].get()}, {1});
+	linkedRenderEngine->textures[material->diffuseTextureIndex]->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	descriptorSet->update({linkedRenderEngine->textures[material->diffuseTextureIndex].get()}, {1});
 }
 
 std::function<void(IEMesh &)> IEMesh::_create = std::function<void(IEMesh &)>{[](IEMesh &) { return; }};
 
 void IEMesh::create(IERenderEngine *engineLink) {
 	linkedRenderEngine = engineLink;
-	material.create(this);
+	vertexBuffer = std::make_shared<IEBuffer>();
+	indexBuffer = std::make_shared<IEBuffer>();
+	descriptorSet = std::make_shared<IEDescriptorSet>();
 	pipeline = std::make_shared<IEPipeline>();
+	material = std::make_shared<IEMaterial>();
+	material->create(linkedRenderEngine);
 	return _create(*this);
 }
 
@@ -124,12 +130,10 @@ void IEMesh::destroy() {
 
 void IEMesh::update(uint32_t commandBufferIndex) {
 	VkDeviceSize offsets[]{0};
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindVertexBuffers(0, 1, {std::make_shared<IEBuffer>(vertexBuffer)}, offsets);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindIndexBuffer(std::make_shared<IEBuffer>(indexBuffer), 0,
-																					  VK_INDEX_TYPE_UINT32);
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindVertexBuffers(0, 1, {vertexBuffer}, offsets);
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindIndexBuffer(indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline, 0,
-																						 {std::make_shared<IEDescriptorSet>(descriptorSet)}, {});
+	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline, 0, {descriptorSet}, {});
 	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordDrawIndexed(indices.size(), 1, 0, 0, 0);
 }
 

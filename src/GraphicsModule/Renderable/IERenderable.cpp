@@ -123,7 +123,7 @@ void IERenderable::_vulkanCreateShaders() {
 void IERenderable::update(uint32_t renderCommandBufferIndex) {
 	_update(*this, linkedRenderEngine->assets[0], linkedRenderEngine->camera, (float) glfwGetTime());
 	for (IEMesh &mesh: meshes) {
-		mesh.descriptorSet.update({&modelBuffer}, {0});
+		mesh.descriptorSet->update({&modelBuffer}, {0});
 		mesh.update(renderCommandBufferIndex);
 	}
 }

@@ -5,8 +5,8 @@
 #include "IERenderEngine.hpp"
 #include "IEMesh.hpp"
 
-void IEMaterial::create(IEMesh *pParentMesh) {
-	parentMesh = pParentMesh;
+void IEMaterial::create(IERenderEngine *engineLink) {
+	linkedRenderEngine = engineLink;
 }
 
 void IEMaterial::loadFromDiskToRAM(const std::string &directory, const aiScene *scene, uint32_t index) {
@@ -23,7 +23,7 @@ void IEMaterial::loadFromDiskToRAM(const std::string &directory, const aiScene *
 		}
 		textureCount += thisCount;
 	}
-	parentMesh->linkedRenderEngine->textures.reserve(parentMesh->linkedRenderEngine->textures.size() + textureCount);
+	linkedRenderEngine->textures.reserve(linkedRenderEngine->textures.size() + textureCount);
 
 	aiString texturePath{};
 	std::string data{};
@@ -41,15 +41,15 @@ void IEMaterial::loadFromDiskToRAM(const std::string &directory, const aiScene *
 			texture->mFilename = directory + "/" + texturePath.C_Str();
 			texture->mHeight = 1;  // flag texture as not embedded
 		}
-		*textureType.first = parentMesh->linkedRenderEngine->textures.size();
-		parentMesh->linkedRenderEngine->textures.push_back(std::make_shared<IETexture>(parentMesh->linkedRenderEngine, new IETexture::CreateInfo));
-		parentMesh->linkedRenderEngine->textures[*textureType.first]->loadFromDiskToRAM(texture);
+		*textureType.first = linkedRenderEngine->textures.size();
+		linkedRenderEngine->textures.push_back(std::make_shared<IETexture>(linkedRenderEngine, new IETexture::CreateInfo));
+		linkedRenderEngine->textures[*textureType.first]->loadFromDiskToRAM(texture);
 	}
 	delete texture;
 }
 
 void IEMaterial::loadFromRAMToVRAM() const {
 	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
-		parentMesh->linkedRenderEngine->textures[*textureType.first]->loadFromRAMToVRAM();
+		linkedRenderEngine->textures[*textureType.first]->loadFromRAMToVRAM();
 	}
 }

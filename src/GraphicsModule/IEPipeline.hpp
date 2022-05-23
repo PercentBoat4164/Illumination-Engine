@@ -24,8 +24,8 @@ class IEPipeline : public IEDependency {
 public:
 	struct CreateInfo {
 		//Required
-		std::vector<IEShader> *shaders{};
-		IEDescriptorSet *descriptorSet{};
+		std::vector<std::shared_ptr<IEShader>> shaders{};
+		std::weak_ptr<IEDescriptorSet> descriptorSet{};
 		std::weak_ptr<IERenderPass> renderPass{};
 	};
 

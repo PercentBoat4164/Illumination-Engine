@@ -18,11 +18,11 @@ private:
 	uint32_t triangleCount{};
 	// Make all shared pointers
 	std::shared_ptr<IEPipeline> pipeline{};  // Should be moved to render engine
-	std::vector<IEShader> shaders{};  // Should be moved to render engine
-	IEAccelerationStructure accelerationStructure{};  // Should be moved to render engine?
-	IEBuffer vertexBuffer{};
-	IEBuffer indexBuffer{};
-	IEMaterial material{};  // Should be moved to render engine?
+	std::vector<std::shared_ptr<IEShader>> shaders{};  // Should be moved to render engine
+	std::shared_ptr<IEAccelerationStructure> accelerationStructure{};  // Should be moved to render engine?
+	std::shared_ptr<IEBuffer> vertexBuffer{};
+	std::shared_ptr<IEBuffer> indexBuffer{};
+	std::shared_ptr<IEMaterial> material{};  // Should be moved to render engine?
 	std::vector<std::function<void()>> deletionQueue{};
 
 
@@ -47,5 +47,5 @@ public:
 
 	IERenderEngine *linkedRenderEngine{};
 
-	IEDescriptorSet descriptorSet;
+	std::shared_ptr<IEDescriptorSet> descriptorSet;
 };

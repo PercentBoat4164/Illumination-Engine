@@ -15,12 +15,12 @@ class IEMesh;
 
 class IEMaterial {
 public:
-	IEMesh *parentMesh{};
 	uint32_t textureCount{};
 	uint32_t diffuseTextureIndex{};
 	glm::vec4 diffuseColor{1.0F, 1.0F, 1.0F, 1.0F};
+	IERenderEngine *linkedRenderEngine{};
 
-	void create(IEMesh *);
+	void create(IERenderEngine *);
 
 	void loadFromDiskToRAM(const std::string &, const aiScene *, uint32_t);
 
