@@ -12,14 +12,14 @@ void IECommandBuffer::allocate(bool synchronize) {
 	// Prepare
 	VkCommandBufferAllocateInfo allocateInfo{
 			.sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-			.commandPool=commandPool->commandPool,
+			.commandPool=commandPool.lock()->commandPool,
 			.level=VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			.commandBufferCount=1
 	};
 
 	// Lock command pool
 	if (synchronize) {
-		commandPool->commandPoolMutex.lock();
+		commandPool.lock()->commandPoolMutex.lock();
 	}
 
 	// Handle any needed state changes
@@ -40,7 +40,7 @@ void IECommandBuffer::allocate(bool synchronize) {
 
 	// Unlock command pool
 	if (synchronize) {  // Unlock this command pool if synchronizing
-		commandPool->commandPoolMutex.unlock();
+		commandPool.lock()->commandPoolMutex.unlock();
 	}
 }
 
@@ -53,13 +53,13 @@ void IECommandBuffer::record(bool synchronize, bool oneTimeSubmit) {
 	};
 
 	if (synchronize) {  // Lock this command pool if synchronizing
-		commandPool->commandPoolMutex.lock();
+		commandPool.lock()->commandPoolMutex.lock();
 	}
 
 	// Handle any needed state changes
 	if (status == IE_COMMAND_BUFFER_STATE_RECORDING) {
 		if (synchronize) {
-			commandPool->commandPoolMutex.unlock();
+			commandPool.lock()->commandPoolMutex.unlock();
 		}
 		return;
 	}
@@ -77,7 +77,7 @@ void IECommandBuffer::record(bool synchronize, bool oneTimeSubmit) {
 	status = IE_COMMAND_BUFFER_STATE_RECORDING;
 
 	if (synchronize) {  // Unlock this command pool if synchronizing
-		commandPool->commandPoolMutex.unlock();
+		commandPool.lock()->commandPoolMutex.unlock();
 	}
 	if (result != VK_SUCCESS) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failure to properly begin command buffer recording! Error: " +
@@ -88,18 +88,18 @@ void IECommandBuffer::record(bool synchronize, bool oneTimeSubmit) {
 void IECommandBuffer::free(bool synchronize) {
 	wait();
 	if (synchronize) {  // Lock this command pool if synchronizing
-		commandPool->commandPoolMutex.lock();
+		commandPool.lock()->commandPoolMutex.lock();
 	}
-	vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool->commandPool, 1, &commandBuffer);
+	vkFreeCommandBuffers(linkedRenderEngine->device.device, commandPool.lock()->commandPool, 1, &commandBuffer);
 	status = IE_COMMAND_BUFFER_STATE_NONE;
 	if (synchronize) {  // Unlock this command pool if synchronizing
-		commandPool->commandPoolMutex.unlock();
+		commandPool.lock()->commandPoolMutex.unlock();
 	}
 }
 
-IECommandBuffer::IECommandBuffer(IERenderEngine *linkedRenderEngine, IECommandPool *commandPool) {
-	this->linkedRenderEngine = linkedRenderEngine;
-	this->commandPool = commandPool;
+IECommandBuffer::IECommandBuffer(IERenderEngine *engineLink, std::weak_ptr<IECommandPool> parentCommandPool) {
+	linkedRenderEngine = engineLink;
+	commandPool = parentCommandPool;
 	status = IE_COMMAND_BUFFER_STATE_NONE;
 }
 
@@ -107,7 +107,7 @@ void IECommandBuffer::reset(bool synchronize) {
 	clearAllDependencies();
 
 	if (synchronize) {  // If synchronizing, lock this command pool
-		commandPool->commandPoolMutex.lock();
+		commandPool.lock()->commandPoolMutex.lock();
 	}
 
 	// Handle any needed state changes
@@ -122,13 +122,13 @@ void IECommandBuffer::reset(bool synchronize) {
 	status = IE_COMMAND_BUFFER_STATE_INITIAL;
 
 	if (synchronize) {  // If synchronizing, unlock this command pool
-		commandPool->commandPoolMutex.unlock();
+		commandPool.lock()->commandPoolMutex.unlock();
 	}
 }
 
 void IECommandBuffer::finish(bool synchronize) {
 	if (synchronize) {  // If synchronizing, lock this command pool
-		commandPool->commandPoolMutex.lock();
+		commandPool.lock()->commandPoolMutex.lock();
 	}
 
 	// Handle any needed state changes
@@ -143,13 +143,13 @@ void IECommandBuffer::finish(bool synchronize) {
 	status = IE_COMMAND_BUFFER_STATE_EXECUTABLE;
 
 	if (synchronize) {  // If synchronizing, unlock this command pool
-		commandPool->commandPoolMutex.unlock();
+		commandPool.lock()->commandPoolMutex.unlock();
 	}
 }
 
 void IECommandBuffer::execute(VkSemaphore input, VkSemaphore output, VkFence fence) {
 	wait();
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	executionThread = std::thread{[this](VkSemaphore thisInput, VkSemaphore thisOutput, VkFence thisFence) {
 		if (status == IE_COMMAND_BUFFER_STATE_RECORDING) {
 			finish(false);
@@ -183,7 +183,7 @@ void IECommandBuffer::execute(VkSemaphore input, VkSemaphore output, VkFence fen
 		status = IE_COMMAND_BUFFER_STATE_PENDING;
 
 		// Submit
-		VkResult result = vkQueueSubmit(commandPool->queue, 1, &submitInfo, thisFence);
+		VkResult result = vkQueueSubmit(commandPool.lock()->queue, 1, &submitInfo, thisFence);
 
 
 		// Wait for GPU to finish then unlock
@@ -204,7 +204,7 @@ void IECommandBuffer::execute(VkSemaphore input, VkSemaphore output, VkFence fen
 		oneTimeSubmission = false;
 
 
-		commandPool->commandPoolMutex.unlock();
+		commandPool.lock()->commandPoolMutex.unlock();
 	}, input, output, fence};
 }
 
@@ -224,7 +224,7 @@ void IECommandBuffer::recordPipelineBarrier(VkPipelineStageFlags srcStageMask, V
 		addDependencies(imageMemoryBarrier.getDependencies());
 		imageBarriers.push_back((VkImageMemoryBarrier) imageMemoryBarrier);
 	}
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -234,12 +234,12 @@ void IECommandBuffer::recordPipelineBarrier(VkPipelineStageFlags srcStageMask, V
 	}
 	vkCmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, dependencyFlags, memoryBarriers.size(), memoryBarriers.data(),
 						 bufferBarriers.size(), bufferBarriers.data(), imageBarriers.size(), imageBarriers.data());
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyInfo) {
 	addDependencies(dependencyInfo->getDependencies());
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status == IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -248,13 +248,13 @@ void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyIn
 		}
 	}
 	vkCmdPipelineBarrier2(commandBuffer, (const VkDependencyInfo *) dependencyInfo);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordCopyBufferToImage(const std::shared_ptr<IEBuffer> &buffer, const std::shared_ptr<IEImage> &image,
 											  std::vector<VkBufferImageCopy> regions) {
 	addDependencies({image, buffer});
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -263,12 +263,12 @@ void IECommandBuffer::recordCopyBufferToImage(const std::shared_ptr<IEBuffer> &b
 		}
 	}
 	vkCmdCopyBufferToImage(commandBuffer, buffer->buffer, image->image, image->layout, regions.size(), regions.data());
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo) {
 	addDependencies(copyInfo->getDependencies());
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -277,7 +277,7 @@ void IECommandBuffer::recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo)
 		}
 	}
 	vkCmdCopyBufferToImage2(commandBuffer, (const VkCopyBufferToImageInfo2 *) copyInfo);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount, std::vector<std::shared_ptr<IEBuffer>> buffers,
@@ -287,7 +287,7 @@ void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bi
 		pVkBuffers[i] = buffers[i]->buffer;
 		addDependency((std::shared_ptr<IEDependency>) buffers[i]);
 	}
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -296,7 +296,7 @@ void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bi
 		}
 	}
 	vkCmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, pVkBuffers, pOffsets);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount, const std::vector<std::shared_ptr<IEBuffer>> &buffers,
@@ -306,7 +306,7 @@ void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bi
 		pVkBuffers[i] = buffers[i]->buffer;
 		addDependency(buffers[i]);
 	}
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -315,12 +315,12 @@ void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bi
 		}
 	}
 	vkCmdBindVertexBuffers2(commandBuffer, firstBinding, bindingCount, pVkBuffers, pOffsets, pSizes, pStrides);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordBindIndexBuffer(const std::shared_ptr<IEBuffer> &buffer, uint32_t offset, VkIndexType indexType) {
 	addDependency(buffer);
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -329,12 +329,12 @@ void IECommandBuffer::recordBindIndexBuffer(const std::shared_ptr<IEBuffer> &buf
 		}
 	}
 	vkCmdBindIndexBuffer(commandBuffer, buffer->buffer, offset, indexType);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordBindPipeline(VkPipelineBindPoint pipelineBindPoint, const std::shared_ptr<IEPipeline> &pipeline) {
 	addDependency(pipeline);
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -343,7 +343,7 @@ void IECommandBuffer::recordBindPipeline(VkPipelineBindPoint pipelineBindPoint, 
 		}
 	}
 	vkCmdBindPipeline(commandBuffer, pipelineBindPoint, pipeline->pipeline);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordBindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, const std::shared_ptr<IEPipeline> &pipeline, uint32_t firstSet,
@@ -355,7 +355,7 @@ void IECommandBuffer::recordBindDescriptorSets(VkPipelineBindPoint pipelineBindP
 		pDescriptorSets[i] = descriptorSets[i]->descriptorSet;
 		addDependency(descriptorSets[i]);
 	}
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -365,12 +365,12 @@ void IECommandBuffer::recordBindDescriptorSets(VkPipelineBindPoint pipelineBindP
 	}
 	vkCmdBindDescriptorSets(commandBuffer, pipelineBindPoint, pipeline->pipelineLayout, firstSet, descriptorSets.size(), pDescriptorSets,
 							dynamicOffsets.size(), dynamicOffsets.data());
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void
 IECommandBuffer::recordDrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) {
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -379,7 +379,7 @@ IECommandBuffer::recordDrawIndexed(uint32_t indexCount, uint32_t instanceCount, 
 		}
 	}
 	vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordBeginRenderPass(IERenderPassBeginInfo *pRenderPassBegin, VkSubpassContents contents) {
@@ -392,7 +392,7 @@ void IECommandBuffer::recordBeginRenderPass(IERenderPassBeginInfo *pRenderPassBe
 	renderPassBeginInfo.renderArea = pRenderPassBegin->renderArea;
 	renderPassBeginInfo.clearValueCount = pRenderPassBegin->clearValueCount;
 	renderPassBeginInfo.pClearValues = pRenderPassBegin->pClearValues;
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -401,11 +401,11 @@ void IECommandBuffer::recordBeginRenderPass(IERenderPassBeginInfo *pRenderPassBe
 		}
 	}
 	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, contents);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordSetViewport(uint32_t firstViewPort, uint32_t viewPortCount, const VkViewport *pViewPorts) {
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -414,11 +414,11 @@ void IECommandBuffer::recordSetViewport(uint32_t firstViewPort, uint32_t viewPor
 		}
 	}
 	vkCmdSetViewport(commandBuffer, firstViewPort, viewPortCount, pViewPorts);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordSetScissor(uint32_t firstScissor, uint32_t scissorCount, const VkRect2D *pScissors) {
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -427,11 +427,11 @@ void IECommandBuffer::recordSetScissor(uint32_t firstScissor, uint32_t scissorCo
 		}
 	}
 	vkCmdSetScissor(commandBuffer, firstScissor, scissorCount, pScissors);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::recordEndRenderPass() {
-	commandPool->commandPoolMutex.lock();
+	commandPool.lock()->commandPoolMutex.lock();
 	if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
 		record(false);
 		if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -440,7 +440,7 @@ void IECommandBuffer::recordEndRenderPass() {
 		}
 	}
 	vkCmdEndRenderPass(commandBuffer);
-	commandPool->commandPoolMutex.unlock();
+	commandPool.lock()->commandPoolMutex.unlock();
 }
 
 void IECommandBuffer::wait() {

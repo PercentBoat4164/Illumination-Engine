@@ -130,11 +130,12 @@ void IEMesh::destroy() {
 
 void IEMesh::update(uint32_t commandBufferIndex) {
 	VkDeviceSize offsets[]{0};
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindVertexBuffers(0, 1, {vertexBuffer}, offsets);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindIndexBuffer(indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline, 0, {descriptorSet}, {});
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex].recordDrawIndexed(indices.size(), 1, 0, 0, 0);
+	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindVertexBuffers(0, 1, {vertexBuffer}, offsets);
+	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindIndexBuffer(indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline, 0,
+																								 {descriptorSet}, {});
+	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordDrawIndexed(indices.size(), 1, 0, 0, 0);
 }
 
 

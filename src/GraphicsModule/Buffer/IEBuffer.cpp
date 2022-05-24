@@ -80,12 +80,12 @@ void IEBuffer::toImage(const std::shared_ptr<IEImage> &image, uint32_t width, ui
 	if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		oldLayout = image->layout;
 		image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(shared_from_this(), image, {region});
+		linkedRenderEngine->graphicsCommandPool->index(0)->recordCopyBufferToImage(shared_from_this(), image, {region});
 		image->transitionLayout(oldLayout);
 	} else {
-		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(shared_from_this(), image, {region});
+		linkedRenderEngine->graphicsCommandPool->index(0)->recordCopyBufferToImage(shared_from_this(), image, {region});
 	}
-	linkedRenderEngine->graphicsCommandPool[0].execute();
+	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
 }
 
 void IEBuffer::unloadFromVRAM() {
@@ -107,12 +107,12 @@ void IEBuffer::toImage(const std::shared_ptr<IEImage> &image) {
 	if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		oldLayout = image->layout;
 		image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(shared_from_this(), image, {region});
+		linkedRenderEngine->graphicsCommandPool->index(0)->recordCopyBufferToImage(shared_from_this(), image, {region});
 		if (oldLayout != VK_IMAGE_LAYOUT_UNDEFINED) {
 			image->transitionLayout(oldLayout);
 		}
 	} else {
-		linkedRenderEngine->graphicsCommandPool[0].recordCopyBufferToImage(shared_from_this(), image, {region});
+		linkedRenderEngine->graphicsCommandPool->index(0)->recordCopyBufferToImage(shared_from_this(), image, {region});
 	}
 }
 

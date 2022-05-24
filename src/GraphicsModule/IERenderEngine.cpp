@@ -211,41 +211,37 @@ void IERenderEngine::createCommandPools() {
 	vkb::detail::Result<VkQueue> graphicsQueueDetails = device.get_queue(vkb::QueueType::graphics);
 	if (graphicsQueueDetails.has_value()) {
 		graphicsQueue = graphicsQueueDetails.value();
-	}
-	if (graphicsQueue != nullptr) {
+		graphicsCommandPool = std::make_shared<IECommandPool>();
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::graphics;
-		graphicsCommandPool.create(this, &commandPoolCreateInfo);
+		graphicsCommandPool->create(this, &commandPoolCreateInfo);
 	}
 	vkb::detail::Result<VkQueue> presentQueueDetails = device.get_queue(vkb::QueueType::present);
 	if (presentQueueDetails.has_value()) {
 		presentQueue = presentQueueDetails.value();
-	}
-	if (presentQueue != nullptr) {
+		presentCommandPool = std::make_shared<IECommandPool>();
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::present;
-		presentCommandPool.create(this, &commandPoolCreateInfo);
+		presentCommandPool->create(this, &commandPoolCreateInfo);
 	}
 	vkb::detail::Result<VkQueue> transferQueueDetails = device.get_queue(vkb::QueueType::transfer);
 	if (transferQueueDetails.has_value()) {
 		transferQueue = transferQueueDetails.value();
-	}
-	if (transferQueue != nullptr) {
+		transferCommandPool = std::make_shared<IECommandPool>();
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::transfer;
-		transferCommandPool.create(this, &commandPoolCreateInfo);
+		transferCommandPool->create(this, &commandPoolCreateInfo);
 	}
 	vkb::detail::Result<VkQueue> computeQueueDetails = device.get_queue(vkb::QueueType::compute);
 	if (computeQueueDetails.has_value()) {
 		computeQueue = computeQueueDetails.value();
-	}
-	if (computeQueue != nullptr) {
+		computeCommandPool = std::make_shared<IECommandPool>();
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::compute;
-		computeCommandPool.create(this, &commandPoolCreateInfo);
+		computeCommandPool->create(this, &commandPoolCreateInfo);
 	}
 }
 
 void IERenderEngine::createRenderPass() {
 	// Create the renderPass
 	renderPass = std::make_shared<IERenderPass>();
-	graphicsCommandPool.prepareCommandBuffers(swapchainImageViews.size());
+	graphicsCommandPool->prepareCommandBuffers(swapchainImageViews.size());
 	IERenderPass::CreateInfo renderPassCreateInfo{
 			.msaaSamples=1
 	};
@@ -289,10 +285,10 @@ void IERenderEngine::destroySwapchain() {
 }
 
 void IERenderEngine::destroyCommandPools() {
-	graphicsCommandPool.destroy();
-	presentCommandPool.destroy();
-	transferCommandPool.destroy();
-	computeCommandPool.destroy();
+	graphicsCommandPool->destroy();
+	presentCommandPool->destroy();
+	transferCommandPool->destroy();
+	computeCommandPool->destroy();
 }
 
 IERenderEngine::IERenderEngine(IESettings *settings) {
@@ -366,7 +362,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 		renderPass->destroy();
 	});
 
-	graphicsCommandPool[0].execute();
+	graphicsCommandPool->index(0)->execute();
 	camera.create(this);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
@@ -392,13 +388,13 @@ void IERenderEngine::loadRenderable(IERenderable *renderable) {
 	renderable->loadFromDiskToRAM();
 	renderable->loadFromRAMToVRAM();
 
-	graphicsCommandPool[0].execute();
+	graphicsCommandPool->index(0)->execute();
 
 	// Record the destruction of this renderable
 	renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
 
-	graphicsCommandPool[0].wait();
-	graphicsCommandPool[0].reset();
+	graphicsCommandPool->index(0)->wait();
+	graphicsCommandPool->index(0)->reset();
 }
 
 void IERenderEngine::handleResolutionChange() {
@@ -441,14 +437,14 @@ bool IERenderEngine::vulkanUpdate() {
 			.minDepth = 0.0F,
 			.maxDepth = 1.0F
 	};
-	graphicsCommandPool[imageIndex].recordSetViewport(0, 1, &viewport);
+	graphicsCommandPool->index(imageIndex)->recordSetViewport(0, 1, &viewport);
 	VkRect2D scissor{
 			.offset = {0, 0},
 			.extent = swapchain.extent,
 	};
-	graphicsCommandPool[imageIndex].recordSetScissor(0, 1, &scissor);
+	graphicsCommandPool->index(imageIndex)->recordSetScissor(0, 1, &scissor);
 	IERenderPassBeginInfo renderPassBeginInfo = renderPass->beginRenderPass(imageIndex);
-	graphicsCommandPool[imageIndex].recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	graphicsCommandPool->index(imageIndex)->recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	camera.update();
 //	if (settings->rayTracing) {
 //		topLevelAccelerationStructure.destroy();
@@ -474,9 +470,9 @@ bool IERenderEngine::vulkanUpdate() {
 	for (IEAsset *asset: assets) {
 		asset->update(imageIndex);
 	}
-	graphicsCommandPool[imageIndex].recordEndRenderPass();
-	graphicsCommandPool[imageIndex].execute(imageAvailableSemaphores[currentFrame], renderFinishedSemaphores[currentFrame],
-											inFlightFences[currentFrame]);
+	graphicsCommandPool->index(imageIndex)->recordEndRenderPass();
+	graphicsCommandPool->index(imageIndex)->execute(imageAvailableSemaphores[currentFrame], renderFinishedSemaphores[currentFrame],
+													inFlightFences[currentFrame]);
 	VkPresentInfoKHR presentInfo{
 			.sType=VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 			.waitSemaphoreCount = 1,
@@ -485,9 +481,9 @@ bool IERenderEngine::vulkanUpdate() {
 			.pSwapchains = &swapchain.swapchain,
 			.pImageIndices = &imageIndex,
 	};
-	graphicsCommandPool[imageIndex].commandPool->commandPoolMutex.lock();
+	graphicsCommandPool->index(imageIndex)->commandPool.lock()->commandPoolMutex.lock();
 	result = vkQueuePresentKHR(presentQueue, &presentInfo);
-	graphicsCommandPool[imageIndex].commandPool->commandPoolMutex.unlock();
+	graphicsCommandPool->index(imageIndex)->commandPool.lock()->commandPoolMutex.unlock();
 	auto currentTime = (float) glfwGetTime();
 	frameTime = currentTime - previousTime;
 	previousTime = currentTime;
@@ -560,8 +556,8 @@ void IERenderEngine::toggleFullscreen() {
 }
 
 void IERenderEngine::vulkanDestroy() {
-	for (IECommandBuffer &commandBuffer: graphicsCommandPool.commandBuffers) {
-		commandBuffer.wait();
+	for (std::shared_ptr<IECommandBuffer> commandBuffer: graphicsCommandPool->commandBuffers) {
+		commandBuffer->wait();
 	}
 	destroySyncObjects();
 	destroySwapchain();

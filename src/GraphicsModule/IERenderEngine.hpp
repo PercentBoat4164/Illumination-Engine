@@ -205,10 +205,10 @@ public:
 	IECamera camera{};
 	std::shared_ptr<IERenderPass> renderPass{};
 	IESettings *settings;
-	IECommandPool graphicsCommandPool{};
-	IECommandPool presentCommandPool{};
-	IECommandPool transferCommandPool{};
-	IECommandPool computeCommandPool{};
+	std::shared_ptr<IECommandPool> graphicsCommandPool{};
+	std::shared_ptr<IECommandPool> presentCommandPool{};
+	std::shared_ptr<IECommandPool> transferCommandPool{};
+	std::shared_ptr<IECommandPool> computeCommandPool{};
 	IEAPI API;
 	ExtensionAndFeatureInfo extensionAndFeatureInfo{};
 	GLFWmonitor *monitor{};

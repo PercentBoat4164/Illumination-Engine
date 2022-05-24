@@ -61,8 +61,8 @@ void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &
 	deletionQueue.emplace_back([&] { modelBuffer.destroy(); });
 
 	// Prepare a command buffer for use by this object during creation
-	commandBufferIndex = linkedRenderEngine->graphicsCommandPool.commandBuffers.size();
-	linkedRenderEngine->graphicsCommandPool[commandBufferIndex];
+	commandBufferIndex = linkedRenderEngine->graphicsCommandPool->commandBuffers.size();
+	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex);
 }
 
 

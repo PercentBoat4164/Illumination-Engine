@@ -17,7 +17,7 @@ class IERenderEngine;
 #include <cstdint>
 
 
-class IECommandPool {
+class IECommandPool : std::enable_shared_from_this<IECommandPool> {
 public:
 	struct CreateInfo {
 	public:
@@ -27,7 +27,7 @@ public:
 	} createdWith{};
 
 	VkCommandPool commandPool{};
-	std::vector<IECommandBuffer> commandBuffers{};
+	std::vector<std::shared_ptr<IECommandBuffer>> commandBuffers{};
 	IERenderEngine *linkedRenderEngine{};
 	VkQueue queue;
 	std::mutex commandPoolMutex{};
@@ -35,11 +35,11 @@ public:
 
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-	IECommandBuffer &operator[](uint32_t index);
-
 	void destroy();
 
 	~IECommandPool();
 
 	void prepareCommandBuffers(uint32_t commandBufferCount);
+
+	std::shared_ptr<IECommandBuffer> index(uint32_t index);
 };

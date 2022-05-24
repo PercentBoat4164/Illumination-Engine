@@ -33,12 +33,12 @@ void IETexture::upload(void *data) {
 	scratchBuffer->loadFromDiskToRAM(data, scratchBuffer->size);
 	scratchBuffer->loadFromRAMToVRAM();
 	scratchBuffer->toImage(shared_from_this());
-	linkedRenderEngine->graphicsCommandPool[0].execute();
+	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
 }
 
 void IETexture::upload(const std::shared_ptr<IEBuffer> &data) {
 	data->toImage(shared_from_this());
-	linkedRenderEngine->graphicsCommandPool[0].execute();
+	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
 }
 
 void IETexture::loadFromDiskToRAM(aiTexture *texture) {
@@ -163,7 +163,7 @@ void IETexture::loadFromRAMToVRAM() {
 	if (desiredLayout != VK_IMAGE_LAYOUT_UNDEFINED && layout != desiredLayout) {
 		transitionLayout(desiredLayout);
 	}
-	linkedRenderEngine->graphicsCommandPool[0].execute();
+	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
 }
 
 IETexture::IETexture(IERenderEngine *engineLink, IETexture::CreateInfo *createInfo) {

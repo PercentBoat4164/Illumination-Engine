@@ -26,13 +26,17 @@ void IECommandPool::create(IERenderEngine *engineLink, IECommandPool::CreateInfo
 }
 
 void IECommandPool::prepareCommandBuffers(uint32_t commandBufferCount) {
+	uint32_t startIndex = commandBuffers.size();
 	commandBuffers.reserve(commandBufferCount);
+	for (; startIndex < commandBufferCount; ++startIndex) {
+		commandBuffers.push_back(std::make_shared<IECommandBuffer>(linkedRenderEngine, shared_from_this()));
+	}
 }
 
-IECommandBuffer &IECommandPool::operator[](uint32_t index) {
+std::shared_ptr<IECommandBuffer> IECommandPool::index(uint32_t index) {
 	if (index <= commandBuffers.size()) {
 		if (index == commandBuffers.size()) {
-			commandBuffers.emplace_back(linkedRenderEngine, this);
+			commandBuffers.emplace_back(std::make_shared<IECommandBuffer>(linkedRenderEngine, shared_from_this()));
 		}
 		return commandBuffers[index];
 	}
@@ -41,8 +45,8 @@ IECommandBuffer &IECommandPool::operator[](uint32_t index) {
 }
 
 void IECommandPool::destroy() {
-	for (IECommandBuffer &commandBuffer: commandBuffers) {
-		commandBuffer.destroy();
+	for (std::shared_ptr<IECommandBuffer> commandBuffer: commandBuffers) {
+		commandBuffer->destroy();
 	}
 	commandBuffers.clear();
 	for (const std::function<void()> &function: deletionQueue) {

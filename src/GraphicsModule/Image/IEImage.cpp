@@ -132,7 +132,7 @@ void IEImage::toBuffer(const std::shared_ptr<IEBuffer> &buffer, uint32_t command
 	region.imageSubresource.layerCount = 1;
 	region.imageOffset = {0, 0, 0};
 	region.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
-	vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)[commandBufferIndex].commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+	vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)->index(commandBufferIndex)->commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 						   buffer->buffer, 1,
 						   &region);
 	/**@todo Needs to be done in a way that these dependencies get added.*/
@@ -204,7 +204,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to transition with unknown parameters!");
 		return;
 	}
-	linkedRenderEngine->graphicsCommandPool[0].recordPipelineBarrier(sourceStage, destinationStage, 0, {}, {}, {imageMemoryBarrier});
+	linkedRenderEngine->graphicsCommandPool->index(0)->recordPipelineBarrier(sourceStage, destinationStage, 0, {}, {}, {imageMemoryBarrier});
 	layout = newLayout;
 }
 
