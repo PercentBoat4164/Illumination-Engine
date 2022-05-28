@@ -145,23 +145,6 @@ void IERenderable::_vulkanUpdate(IEAsset *asset, const IECamera &camera, float t
 	uniformBufferObject.position = camera.position;
 	uniformBufferObject.time = time;
 	modelBuffer.loadFromDiskToRAM(&uniformBufferObject, sizeof(uniformBufferObject));
-//    if (linkedRenderEngine->settings->rayTracing) {
-//        transformationMatrix = {
-//                modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2], modelMatrix[3][0],
-//                modelMatrix[1][0], modelMatrix[1][1], modelMatrix[1][2], modelMatrix[3][1],
-//                modelMatrix[2][0], modelMatrix[2][1], modelMatrix[2][2], modelMatrix[3][2]
-//        };
-//        transformationBuffer.uploadData(&transformationMatrix, sizeof(transformationMatrix));
-//        bottomLevelAccelerationStructure.destroy();
-//        IEAccelerationStructure::CreateInfo renderableBottomLevelAccelerationStructureCreateInfo{};
-//        renderableBottomLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
-//        renderableBottomLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
-//        renderableBottomLevelAccelerationStructureCreateInfo.primitiveCount = triangleCount;
-//        renderableBottomLevelAccelerationStructureCreateInfo.vertexBufferAddress = vertexBuffer.deviceAddress;
-//        renderableBottomLevelAccelerationStructureCreateInfo.indexBufferAddress = indexBuffer.deviceAddress;
-//        renderableBottomLevelAccelerationStructureCreateInfo.transformationBufferAddress = transformationBuffer.deviceAddress;
-//        bottomLevelAccelerationStructure.create(linkedRenderEngine, &renderableBottomLevelAccelerationStructureCreateInfo);
-//    }
 }
 
 void IERenderable::_openglUpdate(IEAsset *asset, const IECamera &camera, float time) {}

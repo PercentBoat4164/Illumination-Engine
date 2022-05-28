@@ -2,8 +2,6 @@
 add_subdirectory(DefaultShaders)
 
 set(IEGraphicsModuleSourceFiles  # Gather sources
-        Buffer/IEAccelerationStructure.cpp
-        Buffer/IEAccelerationStructure.hpp
         Buffer/IEBuffer.cpp
         Buffer/IEBuffer.hpp
         CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.cpp

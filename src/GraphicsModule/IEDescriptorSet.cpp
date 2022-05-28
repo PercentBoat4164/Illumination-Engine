@@ -2,7 +2,6 @@
 #include "IEDescriptorSet.hpp"
 
 /* Include dependencies within this module. */
-#include "GraphicsModule/Buffer/IEAccelerationStructure.hpp"
 #include "GraphicsModule/Buffer/IEBuffer.hpp"
 #include "IERenderEngine.hpp"
 
@@ -70,7 +69,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 		VK_SUCCESS) { throw std::runtime_error("failed to allocate descriptor set!"); }
 	std::vector<int> bindings{};
 	bindings.reserve(createdWith.data.size());
-	std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> data{};
+	std::vector<std::optional<std::variant<IEImage *, IEBuffer *>>> data{};
 	data.reserve(createdWith.data.size());
 	for (int i = 0; i < createdWith.data.size(); ++i) {
 		if (createdWith.data[i].has_value()) {
@@ -81,10 +80,8 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 	update(data, bindings);
 }
 
-void IEDescriptorSet::update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> newData,
+void IEDescriptorSet::update(std::vector<std::optional<std::variant<IEImage *, IEBuffer *>>> newData,
 							 std::vector<int> bindings) {
-	std::vector<VkWriteDescriptorSetAccelerationStructureKHR> writeDescriptorSetAccelerationStructures{};
-	writeDescriptorSetAccelerationStructures.reserve(createdWith.poolSizes.size());
 	std::vector<VkDescriptorImageInfo> imageDescriptorInfos{};
 	imageDescriptorInfos.reserve(createdWith.poolSizes.size());
 	std::vector<VkDescriptorBufferInfo> bufferDescriptorInfos{};
@@ -101,15 +98,7 @@ void IEDescriptorSet::update(std::vector<std::optional<std::variant<IEAccelerati
 			writeDescriptorSet.descriptorType = createdWith.poolSizes[bindings[i]].type;
 			writeDescriptorSet.dstBinding = bindings[i];
 			writeDescriptorSet.descriptorCount = writeDescriptorSet.dstBinding == createdWith.data.size() ? createdWith.maxIndex : 1;
-			if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
-				VkWriteDescriptorSetAccelerationStructureKHR writeDescriptorSetAccelerationStructure{
-						VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR};
-				writeDescriptorSetAccelerationStructure.accelerationStructureCount = 1;
-				writeDescriptorSetAccelerationStructure.pAccelerationStructures = &std::get<IEAccelerationStructure *>(
-						newData[i].value())->accelerationStructure;
-				writeDescriptorSetAccelerationStructures.push_back(writeDescriptorSetAccelerationStructure);
-				writeDescriptorSet.pNext = &writeDescriptorSetAccelerationStructures[writeDescriptorSetAccelerationStructures.size() - 1];
-			} else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
+			if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
 				VkDescriptorImageInfo storageImageDescriptorInfo{};
 				storageImageDescriptorInfo.imageView = std::get<IEImage *>(newData[i].value())->view;
 				storageImageDescriptorInfo.sampler = std::get<IEImage *>(newData[i].value())->sampler;

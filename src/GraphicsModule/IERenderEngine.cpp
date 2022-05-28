@@ -212,8 +212,8 @@ void IERenderEngine::createCommandPools() {
 	if (graphicsQueueDetails.has_value()) {
 		graphicsQueue = graphicsQueueDetails.value();
 	}
-	graphicsCommandPool = std::make_shared<IECommandPool>();
 	if (graphicsQueue != nullptr) {
+		graphicsCommandPool = std::make_shared<IECommandPool>();
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::graphics;
 		graphicsCommandPool->create(this, &commandPoolCreateInfo);
 	}
@@ -221,8 +221,8 @@ void IERenderEngine::createCommandPools() {
 	if (presentQueueDetails.has_value()) {
 		presentQueue = presentQueueDetails.value();
 	}
-	presentCommandPool = std::make_shared<IECommandPool>();
 	if (presentQueue != nullptr) {
+		presentCommandPool = std::make_shared<IECommandPool>();
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::present;
 		presentCommandPool->create(this, &commandPoolCreateInfo);
 	}
@@ -230,8 +230,8 @@ void IERenderEngine::createCommandPools() {
 	if (transferQueueDetails.has_value()) {
 		transferQueue = transferQueueDetails.value();
 	}
-	transferCommandPool = std::make_shared<IECommandPool>();
 	if (transferQueue != nullptr) {
+		transferCommandPool = std::make_shared<IECommandPool>();
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::transfer;
 		transferCommandPool->create(this, &commandPoolCreateInfo);
 	}
@@ -239,8 +239,8 @@ void IERenderEngine::createCommandPools() {
 	if (computeQueueDetails.has_value()) {
 		computeQueue = computeQueueDetails.value();
 	}
-	computeCommandPool = std::make_shared<IECommandPool>();
 	if (computeQueue != nullptr) {
+		computeCommandPool = std::make_shared<IECommandPool>();
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::compute;
 		computeCommandPool->create(this, &commandPoolCreateInfo);
 	}
@@ -374,9 +374,6 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	camera.create(this);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
-	deletionQueue.insert(deletionQueue.begin(), [&] {
-		topLevelAccelerationStructure.destroy();
-	});
 }
 
 void IERenderEngine::addAsset(IEAsset *asset) {
@@ -430,9 +427,6 @@ bool IERenderEngine::vulkanUpdate() {
 		handleResolutionChange();
 		return glfwWindowShouldClose(window) != 1;
 	}
-//	if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-//		throw std::runtime_error("failed to acquire swapchain image!");
-//	}
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		vkWaitForFences(device.device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
 	}
@@ -454,27 +448,6 @@ bool IERenderEngine::vulkanUpdate() {
 	IERenderPassBeginInfo renderPassBeginInfo = renderPass->beginRenderPass(imageIndex);
 	graphicsCommandPool->index(imageIndex)->recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	camera.update();
-//	if (settings->rayTracing) {
-//		topLevelAccelerationStructure.destroy();
-//		std::vector<VkDeviceAddress> bottomLevelAccelerationStructureDeviceAddresses{};
-//		bottomLevelAccelerationStructureDeviceAddresses.reserve(assets.size());
-//		if (settings->rayTracing) {
-//			for (IEAsset *asset: assets) {
-//				for (IEAspect *aspect: asset->aspects) {
-//					auto *renderable = reinterpret_cast<IERenderable *>(aspect);
-//					if (renderable->render) {
-//						bottomLevelAccelerationStructureDeviceAddresses.push_back(renderable->bottomLevelAccelerationStructure.deviceAddress);
-//					}
-//				}
-//			}
-//		}
-//		IEAccelerationStructure::CreateInfo topLevelAccelerationStructureCreateInfo{};
-//		topLevelAccelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
-//		topLevelAccelerationStructureCreateInfo.transformationMatrix = &identityTransformMatrix;
-//		topLevelAccelerationStructureCreateInfo.primitiveCount = 1;
-//		topLevelAccelerationStructureCreateInfo.bottomLevelAccelerationStructureDeviceAddresses = bottomLevelAccelerationStructureDeviceAddresses;
-//		topLevelAccelerationStructure.create(this, &topLevelAccelerationStructureCreateInfo);
-//	}
 	for (IEAsset *asset: assets) {
 		asset->update(imageIndex);
 	}

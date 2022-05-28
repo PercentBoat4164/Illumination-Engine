@@ -18,8 +18,6 @@ class IERenderable;
 #include "IERenderPass.hpp"
 #include "IESettings.hpp"
 
-#include "Buffer/IEAccelerationStructure.hpp"
-
 #include "CommandBuffer/IECommandPool.hpp"
 
 #include "Image/IEFramebuffer.hpp"
@@ -258,7 +256,6 @@ private:
 	std::vector<VkSemaphore> imageAvailableSemaphores{};
 	std::vector<VkSemaphore> renderFinishedSemaphores{};
 
-	IEAccelerationStructure topLevelAccelerationStructure{};
 	std::vector<std::function<void()>> fullRecreationDeletionQueue{};
 	std::vector<std::function<void()>> recreationDeletionQueue{};
 	std::vector<std::function<void()>> renderableDeletionQueue{};

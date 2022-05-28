@@ -7,7 +7,6 @@ class IECamera;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "Buffer/IEAccelerationStructure.hpp"
 #include "Buffer/IEBuffer.hpp"
 #include "Image/IETexture.hpp"
 #include "IEDescriptorSet.hpp"
@@ -39,7 +38,6 @@ public:
 	IEBuffer transformationBuffer{};
 	IEDescriptorSet descriptorSet{};
 	IEPipeline pipeline{};
-	IEAccelerationStructure bottomLevelAccelerationStructure{};
 	std::vector<std::function<void()>> deletionQueue{};
 	IEBuffer modelBuffer{};
 	IERenderEngine *linkedRenderEngine{};
@@ -63,7 +61,7 @@ public:
 
 	void destroy() override;
 
-	~IERenderable();
+	~IERenderable() override;
 
 	void loadFromRAMToVRAM();
 

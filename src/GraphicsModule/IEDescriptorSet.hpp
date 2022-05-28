@@ -1,7 +1,6 @@
 #pragma once
 
 /* Predefine classes used with pointers or as return values for functions. */
-class IEAccelerationStructure;
 
 class IEBuffer;
 
@@ -30,7 +29,7 @@ public:
 		//Required
 		std::vector<VkDescriptorPoolSize> poolSizes{};
 		std::vector<VkShaderStageFlagBits> shaderStages{};
-		std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> data{};
+		std::vector<std::optional<std::variant<IEImage *, IEBuffer *>>> data{};
 
 		//Optional
 		uint32_t maxIndex{1};
@@ -48,7 +47,7 @@ public:
 
 	void create(IERenderEngine *renderEngineLink, CreateInfo *createInfo);
 
-	void update(std::vector<std::optional<std::variant<IEAccelerationStructure *, IEImage *, IEBuffer *>>> newData, std::vector<int> bindings = {});
+	void update(std::vector<std::optional<std::variant<IEImage *, IEBuffer *>>> newData, std::vector<int> bindings = {});
 
 	~IEDescriptorSet();
 

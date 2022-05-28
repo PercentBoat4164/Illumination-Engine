@@ -6,7 +6,6 @@
 #include "IEMaterial.hpp"
 #include "IEDescriptorSet.hpp"
 #include "IEPipeline.hpp"
-#include "Buffer/IEAccelerationStructure.hpp"
 #include "Buffer/IEBuffer.hpp"
 
 class IERenderEngine;
@@ -19,7 +18,6 @@ private:
 	// Make all shared pointers
 	std::shared_ptr<IEPipeline> pipeline{};  // Should be moved to render engine
 	std::vector<std::shared_ptr<IEShader>> shaders{};  // Should be moved to render engine
-	std::shared_ptr<IEAccelerationStructure> accelerationStructure{};  // Should be moved to render engine?
 	std::shared_ptr<IEBuffer> vertexBuffer{};
 	std::shared_ptr<IEBuffer> indexBuffer{};
 	std::shared_ptr<IEMaterial> material{};  // Should be moved to render engine?
