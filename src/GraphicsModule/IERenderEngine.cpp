@@ -211,28 +211,36 @@ void IERenderEngine::createCommandPools() {
 	vkb::detail::Result<VkQueue> graphicsQueueDetails = device.get_queue(vkb::QueueType::graphics);
 	if (graphicsQueueDetails.has_value()) {
 		graphicsQueue = graphicsQueueDetails.value();
-		graphicsCommandPool = std::make_shared<IECommandPool>();
+	}
+	graphicsCommandPool = std::make_shared<IECommandPool>();
+	if (graphicsQueue != nullptr) {
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::graphics;
 		graphicsCommandPool->create(this, &commandPoolCreateInfo);
 	}
 	vkb::detail::Result<VkQueue> presentQueueDetails = device.get_queue(vkb::QueueType::present);
 	if (presentQueueDetails.has_value()) {
 		presentQueue = presentQueueDetails.value();
-		presentCommandPool = std::make_shared<IECommandPool>();
+	}
+	presentCommandPool = std::make_shared<IECommandPool>();
+	if (presentQueue != nullptr) {
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::present;
 		presentCommandPool->create(this, &commandPoolCreateInfo);
 	}
 	vkb::detail::Result<VkQueue> transferQueueDetails = device.get_queue(vkb::QueueType::transfer);
 	if (transferQueueDetails.has_value()) {
 		transferQueue = transferQueueDetails.value();
-		transferCommandPool = std::make_shared<IECommandPool>();
+	}
+	transferCommandPool = std::make_shared<IECommandPool>();
+	if (transferQueue != nullptr) {
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::transfer;
 		transferCommandPool->create(this, &commandPoolCreateInfo);
 	}
 	vkb::detail::Result<VkQueue> computeQueueDetails = device.get_queue(vkb::QueueType::compute);
 	if (computeQueueDetails.has_value()) {
 		computeQueue = computeQueueDetails.value();
-		computeCommandPool = std::make_shared<IECommandPool>();
+	}
+	computeCommandPool = std::make_shared<IECommandPool>();
+	if (computeQueue != nullptr) {
 		commandPoolCreateInfo.commandQueue = vkb::QueueType::compute;
 		computeCommandPool->create(this, &commandPoolCreateInfo);
 	}
@@ -481,9 +489,9 @@ bool IERenderEngine::vulkanUpdate() {
 			.pSwapchains = &swapchain.swapchain,
 			.pImageIndices = &imageIndex,
 	};
-	graphicsCommandPool->index(imageIndex)->commandPool.lock()->commandPoolMutex.lock();
+	graphicsCommandPool->index(imageIndex)->commandPool->commandPoolMutex.lock();
 	result = vkQueuePresentKHR(presentQueue, &presentInfo);
-	graphicsCommandPool->index(imageIndex)->commandPool.lock()->commandPoolMutex.unlock();
+	graphicsCommandPool->index(imageIndex)->commandPool->commandPoolMutex.unlock();
 	auto currentTime = (float) glfwGetTime();
 	frameTime = currentTime - previousTime;
 	previousTime = currentTime;

@@ -17,7 +17,7 @@ class IERenderEngine;
 #include <cstdint>
 
 
-class IECommandPool : std::enable_shared_from_this<IECommandPool> {
+class IECommandPool : public std::enable_shared_from_this<IECommandPool> {
 public:
 	struct CreateInfo {
 	public:

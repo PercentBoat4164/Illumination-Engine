@@ -32,13 +32,13 @@ typedef enum IECommandBufferStatus {
 class IECommandBuffer : public IEDependent {
 public:
 	VkCommandBuffer commandBuffer{};
-	std::weak_ptr<IECommandPool> commandPool{};
+	std::shared_ptr<IECommandPool> commandPool{};
 	IERenderEngine *linkedRenderEngine{};
 	IECommandBufferStatus status{};
 	bool oneTimeSubmission{false};
 	std::thread executionThread{};
 
-	IECommandBuffer(IERenderEngine *linkedRenderEngine, std::weak_ptr<IECommandPool> parentCommandPool);
+	IECommandBuffer(IERenderEngine *linkedRenderEngine, std::shared_ptr<IECommandPool> parentCommandPool);
 
 	void wait();
 

@@ -7,7 +7,6 @@
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"
 
-
 void IECommandPool::create(IERenderEngine *engineLink, IECommandPool::CreateInfo *createInfo) {
 	linkedRenderEngine = engineLink;
 	createdWith = *createInfo;
