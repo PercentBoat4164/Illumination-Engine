@@ -145,6 +145,7 @@ void IERenderable::_vulkanUpdate(IEAsset *asset, const IECamera &camera, float t
 	uniformBufferObject.position = camera.position;
 	uniformBufferObject.time = time;
 	modelBuffer.loadFromDiskToRAM(&uniformBufferObject, sizeof(uniformBufferObject));
+	modelBuffer.loadFromRAMToVRAM();
 }
 
 void IERenderable::_openglUpdate(IEAsset *asset, const IECamera &camera, float time) {}
