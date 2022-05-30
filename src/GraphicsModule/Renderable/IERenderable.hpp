@@ -36,7 +36,7 @@ public:
 	std::vector<IEMesh> meshes{};
 	VkTransformMatrixKHR transformationMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
 	IEBuffer transformationBuffer{};
-	IEDescriptorSet descriptorSet{};
+	std::shared_ptr<IEDescriptorSet> descriptorSet{};
 	IEPipeline pipeline{};
 	std::vector<std::function<void()>> deletionQueue{};
 	IEBuffer modelBuffer{};
@@ -47,6 +47,7 @@ public:
 	bool render{true};
 	uint32_t commandBufferIndex{};
 	std::string directory{};
+	std::vector<glm::mat4> modelMatrices{};
 	VkTransformMatrixKHR identityTransformMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
 
 	IERenderable(IERenderEngine *, const std::string &);
@@ -57,7 +58,7 @@ public:
 
 	void loadFromDiskToRAM();
 
-	void update(IEAsset *, const IECamera &, float);
+	void update(const IECamera &camera, float time);
 
 	void destroy() override;
 
@@ -99,11 +100,11 @@ private:
 	void _vulkanCreateShaders();
 
 
-	static std::function<void(IERenderable &, IEAsset *, const IECamera &, float)> _update;
+	static std::function<void(IERenderable &, const IECamera &, float)> _update;
 
-	void _openglUpdate(IEAsset *, const IECamera &, float);
+	bool _openglUpdate(const IECamera &, float);
 
-	void _vulkanUpdate(IEAsset *, const IECamera &, float);
+	void _vulkanUpdate(const IECamera &camera, float time);
 
 
 	static std::function<void(IERenderable &)> _unload;

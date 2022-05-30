@@ -190,13 +190,9 @@ public:
 
 	void loadRenderable(IERenderable *renderable);
 
-	bool vulkanUpdate();
-
 	void toggleFullscreen();
 
 	static std::string translateVkResultCodes(VkResult result);
-
-	void vulkanDestroy();
 
 	~IERenderEngine();
 
@@ -230,32 +226,21 @@ public:
 	PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
 	std::vector<std::shared_ptr<IETexture>> textures{};
 	std::vector<VkImageView> swapchainImageViews{};
-	std::vector<IEAsset *> assets{};
+	std::vector<std::weak_ptr<IERenderable>> renderables{};
 	float frameTime{};
 	int frameNumber{};
 
-	// Function pointers
-	std::function<bool()> update{[this] { return vulkanUpdate(); }};
-	std::function<void()> destroy{[this] { vulkanDestroy(); }};
-
-	void openGLDestroy() {
-		glFinish();
-		glfwTerminate();
-	}
-
-	void addAsset(IEAsset *asset);
-
-	bool openGLUpdate();
-
+	void addAsset(const std::shared_ptr<IEAsset>& asset);
+	
 	explicit IERenderEngine(IESettings &settings);
+	
+	bool update();
 
 private:
-	VkTransformMatrixKHR identityTransformMatrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f};
 	std::vector<VkFence> inFlightFences{};
 	std::vector<VkFence> imagesInFlight{};
 	std::vector<VkSemaphore> imageAvailableSemaphores{};
 	std::vector<VkSemaphore> renderFinishedSemaphores{};
-
 	std::vector<std::function<void()>> fullRecreationDeletionQueue{};
 	std::vector<std::function<void()>> recreationDeletionQueue{};
 	std::vector<std::function<void()>> renderableDeletionQueue{};
@@ -263,7 +248,24 @@ private:
 	size_t currentFrame{};
 	bool framebufferResized{false};
 	float previousTime{};
+	
+	
+	static std::function<bool(IERenderEngine &)> _update;
+	
+	bool _openGLUpdate();
+	
+	bool _vulkanUpdate();
+	
+	
+	static std::function<void(IERenderEngine &)> _destroy;
+	
+	void _openGLDestroy();
+	
+	void _vulkanDestroy();
+	
+	void destroy();
 
+	
 	static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height);
 
 	void createRenderPass();
@@ -276,4 +278,6 @@ public:
 
 	static void
 	glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam);
+	
+	static void setAPI(const IEAPI &API);
 };

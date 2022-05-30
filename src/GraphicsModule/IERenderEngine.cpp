@@ -256,10 +256,24 @@ void IERenderEngine::createRenderPass() {
 	renderPass->create(this, &renderPassCreateInfo);
 }
 
+void IERenderEngine::setAPI(const IEAPI& API) {
+	IERenderable::setAPI(API);
+	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+		_update = &IERenderEngine::_openGLUpdate;
+	}
+	else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		_update = &IERenderEngine::_vulkanUpdate;
+	}
+	else {
+		std::cout << "Attempt to set current Graphics API to an invalid API. Valid APIs: Vulkan, OpenGL" << std::endl;
+	}
+}
+
 /**@note This method works for both OpenGL and Vulkan.*/
 IEAPI *IERenderEngine::autoDetectAPIVersion(const std::string &api) {
 	API = IEAPI{api};
 	API.version = API.getHighestSupportedVersion(this);
+	setAPI(API);
 	return &API;
 }
 
@@ -301,10 +315,6 @@ void IERenderEngine::destroyCommandPools() {
 
 IERenderEngine::IERenderEngine(IESettings *settings) {
 	this->settings = settings;
-
-	// Set the function pointers
-	update = [this] { return vulkanUpdate(); };
-	destroy = [this] { return vulkanDestroy(); };
 
 	// Create a Vulkan instance
 	createVulkanInstance();
@@ -376,30 +386,18 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
 }
 
-void IERenderEngine::addAsset(IEAsset *asset) {
-	asset->index = assets.size();
-	assets.push_back(asset);
-	for (IEAspect *aspect: asset->aspects) {
-		loadRenderable(dynamic_cast<IERenderable *>(aspect));
+void IERenderEngine::addAsset(const std::shared_ptr<IEAsset>& asset) {
+	for (std::shared_ptr<IEAspect>& aspect : asset->aspects) {
+		// If aspect is downcast-able to a renderable
+		if (auto *renderable = dynamic_cast<IERenderable *>(aspect.get())) {
+			renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
+			/**@todo Make this asset agnostic*/
+			renderable->create(this, asset->filename);
+			renderable->loadFromDiskToRAM();
+			renderable->loadFromRAMToVRAM();
+		}
 	}
-	for (IEAsset *thisAsset: assets) {  // This is necessary because the pointers will become invalid if the vector is forced to move in memory.
-		thisAsset->allAssets = &assets;
-	}
-}
-
-void IERenderEngine::loadRenderable(IERenderable *renderable) {
-	// Build the renderable
-	renderable->create(this, renderable->associatedAssets[0]->filename);
-	renderable->loadFromDiskToRAM();
-	renderable->loadFromRAMToVRAM();
-
 	graphicsCommandPool->index(0)->execute();
-
-	// Record the destruction of this renderable
-	renderableDeletionQueue.emplace_back([renderable] { renderable->destroy(); });
-
-	graphicsCommandPool->index(0)->wait();
-	graphicsCommandPool->index(0)->reset();
 }
 
 void IERenderEngine::handleResolutionChange() {
@@ -408,15 +406,19 @@ void IERenderEngine::handleResolutionChange() {
 	createRenderPass();
 }
 
-bool IERenderEngine::openGLUpdate() {
+bool IERenderEngine::_openGLUpdate() {
 	return glfwWindowShouldClose(window) != 1;
 }
 
-bool IERenderEngine::vulkanUpdate() {
+bool IERenderEngine::update() {
+	return _update(*this);
+}
+
+bool IERenderEngine::_vulkanUpdate() {
 	if (window == nullptr) {
 		return false;
 	}
-	if (assets.empty()) {
+	if (renderables.empty()) {
 		return glfwWindowShouldClose(window) != 1;
 	}
 	vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -448,8 +450,8 @@ bool IERenderEngine::vulkanUpdate() {
 	IERenderPassBeginInfo renderPassBeginInfo = renderPass->beginRenderPass(imageIndex);
 	graphicsCommandPool->index(imageIndex)->recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	camera.update();
-	for (IEAsset *asset: assets) {
-		asset->update(imageIndex);
+	for (const std::weak_ptr<IERenderable>& renderable: renderables) {
+		renderable.lock()->update(imageIndex);
 	}
 	graphicsCommandPool->index(imageIndex)->recordEndRenderPass();
 	graphicsCommandPool->index(imageIndex)->execute(imageAvailableSemaphores[currentFrame], renderFinishedSemaphores[currentFrame],
@@ -536,8 +538,8 @@ void IERenderEngine::toggleFullscreen() {
 	glfwSetWindowTitle(window, settings->applicationName.c_str());
 }
 
-void IERenderEngine::vulkanDestroy() {
-	for (std::shared_ptr<IECommandBuffer> commandBuffer: graphicsCommandPool->commandBuffers) {
+void IERenderEngine::_vulkanDestroy() {
+	for (const std::shared_ptr<IECommandBuffer>& commandBuffer: graphicsCommandPool->commandBuffers) {
 		commandBuffer->wait();
 	}
 	destroySyncObjects();
@@ -704,7 +706,6 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	window = createWindow();
 	setWindowIcons("res/icons");
 	glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -728,7 +729,8 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 	autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);
 
 	/*
-	 * This is where a lot of setup would happen it has been excluded here because it includes features like default fullscreen, msaa, and vsync which are not necessary for a rudimentary implementation. In the future these should be handled by the GUI module.
+	 * This is where a lot of setup would happen it has been excluded here because it includes features like default fullscreen, msaa, and vsync which
+	 * are not necessary for a rudimentary implementation. In the future these should be handled by the GUI module.
 	 */
 
 	int flags;
@@ -743,8 +745,8 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 	camera.create(this);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
-	settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
+	this->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
+	this->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
 }
 
 void APIENTRY IERenderEngine::glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message,
@@ -831,3 +833,15 @@ void APIENTRY IERenderEngine::glDebugOutput(GLenum source, GLenum type, unsigned
 	std::cout << std::endl;
 	std::cout << std::endl;
 }
+
+void IERenderEngine::destroy() {
+	_destroy(*this);
+}
+
+void IERenderEngine::_openGLDestroy() {
+	glFinish();
+	glfwTerminate();
+}
+
+std::function<bool(IERenderEngine &)> IERenderEngine::_update = std::function<bool(IERenderEngine &)>{[](IERenderEngine &) { return true; }};
+std::function<void(IERenderEngine &)> IERenderEngine::_destroy = std::function<void(IERenderEngine &)>{[](IERenderEngine &) { return; }};
