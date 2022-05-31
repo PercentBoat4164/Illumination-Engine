@@ -51,7 +51,9 @@ void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &
 
 	IEBuffer::CreateInfo modelBufferCreateInfo{.size=sizeof(IEUniformBufferObject), .usage=VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, .allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU};
 	modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
-	deletionQueue.emplace_back([&] { modelBuffer.destroy(); });
+	deletionQueue.emplace_back([&] {
+		modelBuffer.destroy();
+	});
 
 	// Prepare a command buffer for use by this object during creation
 	commandBufferIndex = linkedRenderEngine->graphicsCommandPool->commandBuffers.size();
@@ -90,13 +92,7 @@ void IERenderable::loadFromRAMToVRAM() {
 
 void IERenderable::_openglLoad() {}
 
-void IERenderable::_vulkanLoad() {
-	IETexture::CreateInfo textureCreateInfo{};
-	textureCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-	textureCreateInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	textureCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-	textureCreateInfo.allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-}
+void IERenderable::_vulkanLoad() {}
 
 
 void IERenderable::createShaders() {

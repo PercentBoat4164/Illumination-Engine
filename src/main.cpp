@@ -39,7 +39,7 @@ int main() {
 	
 	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
 	fbx->filename = "res/Models/AncientStatue/ancientStatue.fbx";
-	fbx->addAspect(new IERenderable(renderEngine.get(), "res/Models/AncientStatue/ancientStatue.fbx"));
+	fbx->addAspect(new IERenderable{});
 	renderEngine->addAsset(fbx);
 
 	fbx->position = {0.0F, -1.0F, 0.0F};

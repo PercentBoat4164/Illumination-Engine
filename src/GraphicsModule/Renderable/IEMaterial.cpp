@@ -45,7 +45,6 @@ void IEMaterial::loadFromDiskToRAM(const std::string &directory, const aiScene *
 		linkedRenderEngine->textures.push_back(std::make_shared<IETexture>(linkedRenderEngine, new IETexture::CreateInfo));
 		linkedRenderEngine->textures[*textureType.first]->loadFromDiskToRAM(texture);
 	}
-	delete texture;
 }
 
 void IEMaterial::loadFromRAMToVRAM() const {

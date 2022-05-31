@@ -46,6 +46,8 @@ public:
 	std::vector<glm::mat4> modelMatrices{};
 
 	IERenderable(IERenderEngine *, const std::string &);
+	
+	IERenderable() = default;
 
 	static void setAPI(const IEAPI &);
 
