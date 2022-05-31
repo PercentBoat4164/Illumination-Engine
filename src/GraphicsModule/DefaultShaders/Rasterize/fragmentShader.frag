@@ -37,9 +37,9 @@ void main() {
     vec3 diffuse = vec3(texture(diffuseTexture, fragmentTextureCoordinates)) * max(dot(normalizedInterpolatedNormal, lightDirection), 0.0f) * lightColor * lightIntensityAfterAttenuation;
     vec3 ambient = ambientStrength * lightColor;
     vec3 viewDirection = normalize(cameraData.position - fragmentPosition);
-    //    vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
-    //    fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f));
-    //    fragmentColor = aces(vec4((ambient + diffuse), 1.0f));
+//    vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
+//    fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f));
+//    fragmentColor = aces(vec4((ambient + diffuse), 1.0f));
     fragmentColor = aces(vec4(texture(diffuseTexture, fragmentTextureCoordinates)));
-    //    fragmentColor = aces(vec4(1));
+//    fragmentColor = aces(vec4(1));
 }

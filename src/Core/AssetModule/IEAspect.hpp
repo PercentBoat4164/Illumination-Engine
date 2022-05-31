@@ -20,8 +20,4 @@ public:
 	virtual ~IEAspect() = default;
 
 	std::vector<std::weak_ptr<IEAsset>> associatedAssets{};  // A vector of assets that this aspect belongs to
-
-    virtual void update(uint32_t) = 0;
-
-    virtual void destroy() = 0;
 };

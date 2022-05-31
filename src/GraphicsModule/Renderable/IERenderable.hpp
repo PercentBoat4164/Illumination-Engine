@@ -45,9 +45,9 @@ public:
 	std::string directory{};
 	std::vector<glm::mat4> modelMatrices{};
 
-	IERenderable(IERenderEngine *, const std::string &);
-	
 	IERenderable() = default;
+
+	IERenderable(IERenderEngine *, const std::string &);
 
 	static void setAPI(const IEAPI &);
 
@@ -55,20 +55,14 @@ public:
 
 	void loadFromDiskToRAM();
 
-	void update(const IECamera &camera, float time);
-
-	void destroy() final;
-
-	~IERenderable() override;
-
 	void loadFromRAMToVRAM();
 
-	void update(uint32_t) final;
+	void update(uint32_t);
+
+	void createShaders();
 
 private:
 	/* API dependent functions */
-	void createShaders();
-
 	static std::function<void(IERenderable &, IERenderEngine *, const std::string &)> _create;
 
 	void _openglCreate(IERenderEngine *, const std::string &);
@@ -85,9 +79,9 @@ private:
 
 	static std::function<void(IERenderable &)> _loadFromRAMToVRAM;
 
-	void _openglLoad();
+	void _openglLoadFromRAMToVRAM();
 
-	void _vulkanLoad();
+	void _vulkanLoadFromRAMToVRAM();
 
 
 	static std::function<void(IERenderable &)> _createShaders;
@@ -104,16 +98,9 @@ private:
 	void _vulkanUpdate(const IECamera &camera, float time);
 
 
-	static std::function<void(IERenderable &)> _unload;
+	static std::function<void(IERenderable &)> _unloadFromVRAM;
 
-	void _openglUnload();
+	void _openglUnloadFromVRAM();
 
-	void _vulkanUnload();
-
-
-	static std::function<void(IERenderable &)> _destroy;
-
-	void _openglDestroy();
-
-	void _vulkanDestroy();
+	void _vulkanUnloadFromVRAM();
 };

@@ -260,9 +260,11 @@ void IERenderEngine::setAPI(const IEAPI& API) {
 	IERenderable::setAPI(API);
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_update = &IERenderEngine::_openGLUpdate;
+		_destroy = &IERenderEngine::_openGLDestroy;
 	}
 	else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
 		_update = &IERenderEngine::_vulkanUpdate;
+		_destroy = &IERenderEngine::_vulkanDestroy;
 	}
 	else {
 		std::cout << "Attempt to set current Graphics API to an invalid API. Valid APIs: Vulkan, OpenGL" << std::endl;

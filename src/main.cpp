@@ -7,7 +7,7 @@ int main() {
 	IESettings settings{};
 	// RenderEngine must be allocated on the heap.
 	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(&settings);
-	
+
 	IERenderEngine::setAPI(renderEngine->API);
 
 	IEKeyboard keyboard{renderEngine->window};
@@ -36,13 +36,13 @@ int main() {
 
 	IEWindowUser windowUser{std::shared_ptr<IERenderEngine>(renderEngine), &keyboard};
 	glfwSetWindowUserPointer(renderEngine->window, &windowUser);
-	
+
 	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
 	fbx->filename = "res/Models/AncientStatue/ancientStatue.fbx";
 	fbx->addAspect(new IERenderable{});
+	fbx->position = {0.0F, -1.0F, 0.0F};
 	renderEngine->addAsset(fbx);
 
-	fbx->position = {0.0F, -1.0F, 0.0F};
 	renderEngine->camera.position = {0.0F, 2.0F, 0.0F};
 
 	renderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", pthread_self()));
