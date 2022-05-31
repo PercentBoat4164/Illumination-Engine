@@ -5,6 +5,7 @@
 #include "IERenderEngine.hpp"
 
 /* Include external dependencies. */
+#define GLM_FORCE_RADIANS
 #include <glm/ext/matrix_clip_space.hpp>
 
 

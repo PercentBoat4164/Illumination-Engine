@@ -6,13 +6,14 @@
 #include "IEMesh.hpp"
 
 /* Include external dependencies. */
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
-#include "stb_image.h"
-
-#include "glm/detail/type_quat.hpp"
-#include "glm/glm.hpp"
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/detail/type_quat.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
 	create(engineLink, filePath);
@@ -127,11 +128,8 @@ void IERenderable::update(const IECamera &camera, float time) {
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time) {
 	modelMatrices.resize(associatedAssets.size());
 	for (int i = 0; i < associatedAssets.size(); ++i) {
-		modelMatrices[i] = glm::translate(glm::scale(glm::identity<glm::mat4>(), associatedAssets[i].lock()->scale), associatedAssets[i].lock()->position);
-		glm::quat(associatedAssets[i].lock()->rotation);
-		modelMatrices[i] = glm::rotate(modelMatrices[i], associatedAssets[i].lock()->rotation.y, glm::vec3(-1.0F, 0.0F, 0.0F));
-		modelMatrices[i] = glm::rotate(modelMatrices[i], associatedAssets[i].lock()->rotation.x, glm::vec3(0.0F, 1.0F, 0.0F));
-		modelMatrices[i] = glm::rotate(modelMatrices[i], associatedAssets[i].lock()->rotation.z, glm::vec3(0.0F, 0.0F, 1.0F));
+		glm::quat quaternion = glm::yawPitchRoll(associatedAssets[i].lock()->rotation.x, associatedAssets[i].lock()->rotation.y, associatedAssets[i].lock()->rotation.z);
+		modelMatrices[i] = glm::rotate(glm::translate(glm::scale(glm::identity<glm::mat4>(), associatedAssets[i].lock()->scale), associatedAssets[i].lock()->position), glm::angle(quaternion), glm::axis(quaternion));
 	}
 	uniformBufferObject.viewModelMatrix = camera.viewMatrix;
 	uniformBufferObject.modelMatrix = modelMatrices[0];
@@ -155,12 +153,10 @@ void IERenderable::destroy() {
 }
 
 void IERenderable::_vulkanDestroy() {
-	if (associatedAssets.empty()) {
-		for (const std::function<void()> &function: deletionQueue) {
-			function();
-		}
-		deletionQueue.clear();
+	for (const std::function<void()> &function: deletionQueue) {
+		function();
 	}
+	deletionQueue.clear();
 }
 
 void IERenderable::_openglDestroy() {}

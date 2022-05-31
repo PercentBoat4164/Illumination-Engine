@@ -9,7 +9,9 @@
 #include <string>
 #include "Image/IETexture.hpp"
 #include "IERenderableSettings.hpp"
-#include "glm/glm.hpp"
+
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
 
 class IEMesh;
 

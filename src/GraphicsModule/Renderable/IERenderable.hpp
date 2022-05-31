@@ -34,10 +34,6 @@ class IERenderable : public IEAspect {
 public:
 	std::string modelName{};
 	std::vector<IEMesh> meshes{};
-	VkTransformMatrixKHR transformationMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
-	IEBuffer transformationBuffer{};
-	std::shared_ptr<IEDescriptorSet> descriptorSet{};
-	IEPipeline pipeline{};
 	std::vector<std::function<void()>> deletionQueue{};
 	IEBuffer modelBuffer{};
 	IERenderEngine *linkedRenderEngine{};
@@ -48,7 +44,6 @@ public:
 	uint32_t commandBufferIndex{};
 	std::string directory{};
 	std::vector<glm::mat4> modelMatrices{};
-	VkTransformMatrixKHR identityTransformMatrix{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F};
 
 	IERenderable(IERenderEngine *, const std::string &);
 
@@ -60,7 +55,7 @@ public:
 
 	void update(const IECamera &camera, float time);
 
-	void destroy() override;
+	void destroy() final;
 
 	~IERenderable() override;
 
