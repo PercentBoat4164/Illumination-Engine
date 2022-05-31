@@ -79,6 +79,8 @@ void IERenderable::loadFromDiskToRAM() {
 		mesh.create(linkedRenderEngine);
 		mesh.loadFromDiskToRAM(directory, scene, scene->mMeshes[meshIndex++]);
 	}
+	
+	importer.FreeScene();
 
 	modelBuffer.loadFromDiskToRAM(std::vector<char>{sizeof(glm::mat4)});
 }
