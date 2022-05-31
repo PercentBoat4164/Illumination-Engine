@@ -117,17 +117,6 @@ void IEMesh::create(IERenderEngine *engineLink) {
 	return _create(*this);
 }
 
-IEMesh::~IEMesh() {
-	destroy();
-}
-
-void IEMesh::destroy() {
-	for (const std::function<void()> &function: deletionQueue) {
-		function();
-	}
-	deletionQueue.clear();
-}
-
 void IEMesh::update(uint32_t commandBufferIndex) {
 	VkDeviceSize offsets[]{0};
 	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindVertexBuffers(0, 1, {vertexBuffer}, offsets);

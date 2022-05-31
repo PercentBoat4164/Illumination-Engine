@@ -30,6 +30,13 @@ class IECamera;
 #include <functional>
 
 
+typedef enum IERenderableStatus {
+	IE_RENDERABLE_STATE_UNKNOWN = 0x0,
+	IE_RENDERABLE_STATE_UNLOADED = 0x1,
+	IE_RENDERABLE_STATE_IN_RAM = 0x2,
+	IE_RENDERABLE_STATE_IN_VRAM = 0x4
+} IERenderableStatus;
+
 class IERenderable : public IEAspect {
 public:
 	std::string modelName{};
@@ -44,6 +51,7 @@ public:
 	uint32_t commandBufferIndex{};
 	std::string directory{};
 	std::vector<glm::mat4> modelMatrices{};
+	IERenderableStatus status;
 
 	IERenderable() = default;
 
@@ -60,6 +68,10 @@ public:
 	void update(uint32_t);
 
 	void createShaders();
+
+	void unloadFromVRAM();
+
+	void unloadFromRAM();
 
 private:
 	/* API dependent functions */
@@ -103,4 +115,11 @@ private:
 	void _openglUnloadFromVRAM();
 
 	void _vulkanUnloadFromVRAM();
+
+
+	static std::function<void(IERenderable &)> _unloadFromRAM;
+
+	void _openglUnloadFromRAM();
+
+	void _vulkanUnloadFromRAM();
 };

@@ -213,12 +213,49 @@ bool IERenderable::_openglUpdate(const IECamera &camera, float time) {
 }
 
 
+std::function<void(IERenderable &)> IERenderable::_unloadFromVRAM{
+		[](IERenderable &) {
+			return;
+		}
+};
 
+void IERenderable::unloadFromVRAM() {
+	return _unloadFromVRAM(*this);
+}
 
 void IERenderable::_openglUnloadFromVRAM() {
-
+	for (IEMesh &mesh: meshes) {
+		mesh.unloadFromVRAM();
+	}
+	modelBuffer.unloadFromVRAM();
 }
 
 void IERenderable::_vulkanUnloadFromVRAM() {
+	for (IEMesh &mesh: meshes) {
+		mesh.unloadFromVRAM();
+	}
+	modelBuffer.unloadFromVRAM();
+}
 
+
+std::function<void(IERenderable &)> IERenderable::_unloadFromRAM{
+		[](IERenderable &) {
+			return;
+		}
+};
+
+void IERenderable::unloadFromRAM() {
+	return _unloadFromRAM(*this);
+}
+
+void IERenderable::_openglUnloadFromRAM() {
+	for (IEMesh &mesh: meshes) {
+		mesh.unloadFromRAM();
+	}
+}
+
+void IERenderable::_vulkanUnloadFromRAM() {
+	for (IEMesh &mesh: meshes) {
+		mesh.unloadFromRAM();
+	}
 }

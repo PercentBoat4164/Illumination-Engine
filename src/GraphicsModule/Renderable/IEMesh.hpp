@@ -37,11 +37,11 @@ public:
 
 	void loadFromRAMToVRAM();
 
+	void unloadFromVRAM() {}
+
+	void unloadFromRAM() {}
+
 	void update(uint32_t);
-
-	void destroy();
-
-	~IEMesh();
 
 	IERenderEngine *linkedRenderEngine{};
 

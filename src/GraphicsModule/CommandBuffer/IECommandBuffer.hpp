@@ -26,7 +26,7 @@ typedef enum IECommandBufferStatus {
 	IE_COMMAND_BUFFER_STATE_EXECUTABLE = 0x3,
 	IE_COMMAND_BUFFER_STATE_PENDING = 0x4,
 	IE_COMMAND_BUFFER_STATE_INVALID = 0x5
-} IECommandBufferState;
+} IECommandBufferStatus;
 
 
 class IECommandBuffer : public IEDependent {
