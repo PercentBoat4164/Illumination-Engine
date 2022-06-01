@@ -3,7 +3,62 @@
 #include "Core/LogModule/IELogger.hpp"
 #include "IERenderEngine.hpp"
 
+IEMesh::IEMesh(IERenderEngine *engineLink) {
+	create(engineLink);
+}
+
+void IEMesh::setAPI(const IEAPI &API) {
+	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+		_create = &IEMesh::_openglCreate;
+		_loadFromDiskToRAM = &IEMesh::_openglLoadFromDiskToRAM;
+		_loadFromRAMToVRAM = &IEMesh::_openglLoadFromRAMToVRAM;
+		_update = &IEMesh::_openglUpdate;
+		_unloadFromVRAM = &IEMesh::_openglUnloadFromVRAM;
+		_unloadFromRAM = &IEMesh::_openglUnloadFromRAM;
+	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		_create = &IEMesh::_vulkanCreate;
+		_loadFromDiskToRAM = &IEMesh::_vulkanLoadFromDiskToRAM;
+		_loadFromRAMToVRAM = &IEMesh::_vulkanLoadFromRAMToVRAM;
+		_update = &IEMesh::_vulkanUpdate;
+		_unloadFromVRAM = &IEMesh::_vulkanUnloadFromVRAM;
+		_unloadFromRAM = &IEMesh::_vulkanUnloadFromRAM;
+	}
+}
+
+
+std::function<void(IEMesh &)> IEMesh::_create{nullptr};
+
+void IEMesh::create(IERenderEngine *engineLink) {
+	linkedRenderEngine = engineLink;
+	_create(*this);
+	material->create(linkedRenderEngine);
+}
+
+void IEMesh::_openglCreate() {
+
+}
+
+void IEMesh::_vulkanCreate() {
+	vertexBuffer = std::make_shared<IEBuffer>();
+	indexBuffer = std::make_shared<IEBuffer>();
+	descriptorSet = std::make_shared<IEDescriptorSet>();
+	pipeline = std::make_shared<IEPipeline>();
+	material = std::make_shared<IEMaterial>();
+	material->create(linkedRenderEngine);
+}
+
+
+std::function<void(IEMesh &, const std::string &, const aiScene *, aiMesh *)> IEMesh::_loadFromDiskToRAM{nullptr};
+
 void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scene, aiMesh *mesh) {
+	_loadFromDiskToRAM(*this, directory, scene, mesh);
+}
+
+void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScene *scene, aiMesh *mesh) {
+
+}
+
+void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScene *scene, aiMesh *mesh) {
 	// record indices
 	vertices.reserve(mesh->mNumVertices);
 	IEVertex temporaryVertex{};
@@ -76,7 +131,18 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 	deletionQueue.emplace_back([&] { descriptorSet->destroy(); });
 }
 
+
+std::function<void(IEMesh &)> IEMesh::_loadFromRAMToVRAM{nullptr};
+
 void IEMesh::loadFromRAMToVRAM() {
+	_loadFromRAMToVRAM(*this);
+}
+
+void IEMesh::_openglLoadFromRAMToVRAM() {
+
+}
+
+void IEMesh::_vulkanLoadFromRAMToVRAM() {
 	material->loadFromRAMToVRAM();
 
 	vertexBuffer->loadFromRAMToVRAM();
@@ -88,9 +154,9 @@ void IEMesh::loadFromRAMToVRAM() {
 	// Set up shaders
 	shaders.resize(2);
 	shaders[0] = std::make_shared<IEShader>();
-	shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/Rasterize/vertexShader.vert.spv"});
+	shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/Rasterize/vertexShader.vert"});
 	shaders[1] = std::make_shared<IEShader>();
-	shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/Rasterize/fragmentShader.frag.spv"});
+	shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/Rasterize/fragmentShader.frag"});
 
 	// Set up pipeline
 	pipeline->create(linkedRenderEngine, new IEPipeline::CreateInfo{
@@ -104,20 +170,18 @@ void IEMesh::loadFromRAMToVRAM() {
 	descriptorSet->update({linkedRenderEngine->textures[material->diffuseTextureIndex].get()}, {1});
 }
 
-std::function<void(IEMesh &)> IEMesh::_create = std::function<void(IEMesh &)>{[](IEMesh &) { return; }};
 
-void IEMesh::create(IERenderEngine *engineLink) {
-	linkedRenderEngine = engineLink;
-	vertexBuffer = std::make_shared<IEBuffer>();
-	indexBuffer = std::make_shared<IEBuffer>();
-	descriptorSet = std::make_shared<IEDescriptorSet>();
-	pipeline = std::make_shared<IEPipeline>();
-	material = std::make_shared<IEMaterial>();
-	material->create(linkedRenderEngine);
-	return _create(*this);
-}
+std::function<void(IEMesh &, uint32_t)> IEMesh::_update{nullptr};
 
 void IEMesh::update(uint32_t commandBufferIndex) {
+	_update(*this, commandBufferIndex);
+}
+
+void IEMesh::_openglUpdate(uint32_t commandBufferIndex) {
+
+}
+
+void IEMesh::_vulkanUpdate(uint32_t commandBufferIndex) {
 	VkDeviceSize offsets[]{0};
 	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindVertexBuffers(0, 1, {vertexBuffer}, offsets);
 	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindIndexBuffer(indexBuffer, 0, VK_INDEX_TYPE_UINT32);
@@ -128,3 +192,33 @@ void IEMesh::update(uint32_t commandBufferIndex) {
 }
 
 
+std::function<void(IEMesh &)> IEMesh::_unloadFromVRAM{nullptr};
+
+void IEMesh::unloadFromVRAM() {
+	_unloadFromVRAM(*this);
+}
+
+void IEMesh::_openglUnloadFromVRAM() {
+
+}
+
+void IEMesh::_vulkanUnloadFromVRAM() {
+	vertexBuffer->unloadFromVRAM();
+	indexBuffer->unloadFromVRAM();
+}
+
+
+std::function<void(IEMesh &)> IEMesh::_unloadFromRAM{nullptr};
+
+void IEMesh::unloadFromRAM() {
+	_unloadFromRAM(*this);
+}
+
+void IEMesh::_openglUnloadFromRAM() {
+
+}
+
+void IEMesh::_vulkanUnloadFromRAM() {
+	vertices.clear();
+	indices.clear();
+}

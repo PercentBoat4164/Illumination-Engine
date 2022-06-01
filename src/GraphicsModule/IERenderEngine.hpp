@@ -188,8 +188,6 @@ public:
 
 	explicit IERenderEngine(IESettings *settings = new IESettings{});
 
-	void loadRenderable(IERenderable *renderable);
-
 	void toggleFullscreen();
 
 	static std::string translateVkResultCodes(VkResult result);
@@ -230,10 +228,10 @@ public:
 	float frameTime{};
 	int frameNumber{};
 
-	void addAsset(const std::shared_ptr<IEAsset>& asset);
-	
+	void addAsset(const std::shared_ptr<IEAsset> &asset);
+
 	explicit IERenderEngine(IESettings &settings);
-	
+
 	bool update();
 
 private:
@@ -248,24 +246,24 @@ private:
 	size_t currentFrame{};
 	bool framebufferResized{false};
 	float previousTime{};
-	
-	
+
+
 	static std::function<bool(IERenderEngine &)> _update;
-	
+
 	bool _openGLUpdate();
-	
+
 	bool _vulkanUpdate();
-	
-	
+
+
 	static std::function<void(IERenderEngine &)> _destroy;
-	
+
 	void _openGLDestroy();
-	
+
 	void _vulkanDestroy();
-	
+
 	void destroy();
 
-	
+
 	static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height);
 
 	void createRenderPass();
@@ -278,6 +276,6 @@ public:
 
 	static void
 	glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam);
-	
+
 	static void setAPI(const IEAPI &API);
 };

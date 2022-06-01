@@ -67,8 +67,6 @@ public:
 
 	void update(uint32_t);
 
-	void createShaders();
-
 	void unloadFromVRAM();
 
 	void unloadFromRAM();

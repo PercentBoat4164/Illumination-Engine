@@ -19,12 +19,18 @@ void IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
 	file = shaderFile;
 	linkedRenderEngine = renderEngineLink;
 	std::vector<std::string> extensions = file->extensions();
+	std::string fileContents;
 	if (std::find(extensions.begin(), extensions.end(), "spv") == extensions.end()) {
 		compile(file->path, file->path + ".spv");
+		file = new IEFile{file->path + ".spv"};
+		file->open();
+		fileContents = file->read(file->length, 0);
+		file->close();
+	} else {
+		file->open();
+		fileContents = file->read(file->length, 0);
+		file->close();
 	}
-	file->open();
-	std::string fileContents = file->read(file->length, 0);
-	file->close();
 	VkShaderModuleCreateInfo shaderModuleCreateInfo{
 			.sType=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
 			.codeSize=static_cast<size_t>(file->length),

@@ -256,17 +256,17 @@ void IERenderEngine::createRenderPass() {
 	renderPass->create(this, &renderPassCreateInfo);
 }
 
-void IERenderEngine::setAPI(const IEAPI& API) {
+void IERenderEngine::setAPI(const IEAPI &API) {
 	IERenderable::setAPI(API);
+	IEMesh::setAPI(API);
+	IEMaterial::setAPI(API);
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_update = &IERenderEngine::_openGLUpdate;
 		_destroy = &IERenderEngine::_openGLDestroy;
-	}
-	else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
 		_update = &IERenderEngine::_vulkanUpdate;
 		_destroy = &IERenderEngine::_vulkanDestroy;
-	}
-	else {
+	} else {
 		std::cout << "Attempt to set current Graphics API to an invalid API. Valid APIs: Vulkan, OpenGL" << std::endl;
 	}
 }
@@ -388,8 +388,8 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
 }
 
-void IERenderEngine::addAsset(const std::shared_ptr<IEAsset>& asset) {
-	for (std::shared_ptr<IEAspect>& aspect : asset->aspects) {
+void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
+	for (std::shared_ptr<IEAspect> &aspect: asset->aspects) {
 		// If aspect is downcast-able to a renderable
 		if (dynamic_cast<IERenderable *>(aspect.get())) {
 			renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
@@ -451,7 +451,7 @@ bool IERenderEngine::_vulkanUpdate() {
 	IERenderPassBeginInfo renderPassBeginInfo = renderPass->beginRenderPass(imageIndex);
 	graphicsCommandPool->index(imageIndex)->recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	camera.update();
-	for (const std::weak_ptr<IERenderable>& renderable: renderables) {
+	for (const std::weak_ptr<IERenderable> &renderable: renderables) {
 		renderable.lock()->update(imageIndex);
 	}
 	graphicsCommandPool->index(imageIndex)->recordEndRenderPass();
@@ -540,7 +540,7 @@ void IERenderEngine::toggleFullscreen() {
 }
 
 void IERenderEngine::_vulkanDestroy() {
-	for (const std::shared_ptr<IECommandBuffer>& commandBuffer: graphicsCommandPool->commandBuffers) {
+	for (const std::shared_ptr<IECommandBuffer> &commandBuffer: graphicsCommandPool->commandBuffers) {
 		commandBuffer->wait();
 	}
 	destroySyncObjects();

@@ -19,28 +19,26 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
 	create(engineLink, filePath);
 }
 
-void IERenderable::setAPI(const IEAPI &api) {
-	if (api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+void IERenderable::setAPI(const IEAPI &API) {
+	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_create = &IERenderable::_openglCreate;
 		_update = &IERenderable::_openglUpdate;
 		_loadFromDiskToRAM = &IERenderable::_openglLoadFromDiskToRAM;
 		_loadFromRAMToVRAM = &IERenderable::_openglLoadFromRAMToVRAM;
-		_createShaders = &IERenderable::_openglCreateShaders;
-	} else if (api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		_unloadFromVRAM = &IERenderable::_openglUnloadFromVRAM;
+		_unloadFromRAM = &IERenderable::_openglUnloadFromRAM;
+	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
 		_create = &IERenderable::_vulkanCreate;
 		_update = &::IERenderable::_vulkanUpdate;
 		_loadFromDiskToRAM = &IERenderable::_vulkanLoadFromDiskToRAM;
 		_loadFromRAMToVRAM = &IERenderable::_vulkanLoadFromRAMToVRAM;
-		_createShaders = &IERenderable::_vulkanCreateShaders;
+		_unloadFromVRAM = &IERenderable::_vulkanUnloadFromVRAM;
+		_unloadFromRAM = &IERenderable::_vulkanUnloadFromRAM;
 	}
 }
 
 
-std::function<void(IERenderable &, IERenderEngine *, const std::string &)> IERenderable::_create{
-		[](const IERenderable &, IERenderEngine *, const std::string &) {
-			return;
-		}
-};
+std::function<void(IERenderable &, IERenderEngine *, const std::string &)> IERenderable::_create{nullptr};
 
 void IERenderable::create(IERenderEngine *engineLink, const std::string &filePath) {
 	linkedRenderEngine = engineLink;
@@ -50,7 +48,6 @@ void IERenderable::create(IERenderEngine *engineLink, const std::string &filePat
 }
 
 void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &filePath) {
-	// Do nothing
 }
 
 void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &filePath) {
@@ -75,11 +72,7 @@ void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &
 }
 
 
-std::function<void(IERenderable &)> IERenderable::_loadFromDiskToRAM{
-		[](IERenderable &) {
-			return;
-		}
-};
+std::function<void(IERenderable &)> IERenderable::_loadFromDiskToRAM{nullptr};
 
 void IERenderable::loadFromDiskToRAM() {
 	_loadFromDiskToRAM(*this);
@@ -130,11 +123,7 @@ void IERenderable::_vulkanLoadFromDiskToRAM() {
 }
 
 
-std::function<void(IERenderable &)> IERenderable::_loadFromRAMToVRAM{
-		[](IERenderable &) {
-			return;
-		}
-};
+std::function<void(IERenderable &)> IERenderable::_loadFromRAMToVRAM{nullptr};
 
 void IERenderable::loadFromRAMToVRAM() {
 	_loadFromRAMToVRAM(*this);
@@ -155,34 +144,7 @@ void IERenderable::_vulkanLoadFromRAMToVRAM() {
 }
 
 
-std::function<void(IERenderable &)> IERenderable::_createShaders{
-		[](const IERenderable &) {
-			return;
-		}
-};
-
-void IERenderable::createShaders() {
-	return _createShaders(*this);
-}
-
-void IERenderable::_openglCreateShaders() {
-	return;
-}
-
-void IERenderable::_vulkanCreateShaders() {
-	std::vector<std::string> shaderFileNames = {"shaders/Rasterize/vertexShader.vert.spv", "shaders/Rasterize/fragmentShader.frag.spv"};
-	shaders.resize(shaderFileNames.size());
-	for (int i = 0; i < shaders.size(); ++i) {
-		shaders[i].create(linkedRenderEngine, new IEFile(shaderFileNames[i]));
-	}
-}
-
-
-std::function<void(IERenderable &, const IECamera &, float)> IERenderable::_update{
-		[](const IERenderable &, const IECamera &, float) {
-			return;
-		}
-};
+std::function<void(IERenderable &, const IECamera &, float)> IERenderable::_update{nullptr};
 
 void IERenderable::update(uint32_t renderCommandBufferIndex) {
 	for (IEMesh &mesh: meshes) {
@@ -213,11 +175,7 @@ bool IERenderable::_openglUpdate(const IECamera &camera, float time) {
 }
 
 
-std::function<void(IERenderable &)> IERenderable::_unloadFromVRAM{
-		[](IERenderable &) {
-			return;
-		}
-};
+std::function<void(IERenderable &)> IERenderable::_unloadFromVRAM{nullptr};
 
 void IERenderable::unloadFromVRAM() {
 	return _unloadFromVRAM(*this);
@@ -238,11 +196,7 @@ void IERenderable::_vulkanUnloadFromVRAM() {
 }
 
 
-std::function<void(IERenderable &)> IERenderable::_unloadFromRAM{
-		[](IERenderable &) {
-			return;
-		}
-};
+std::function<void(IERenderable &)> IERenderable::_unloadFromRAM{nullptr};
 
 void IERenderable::unloadFromRAM() {
 	return _unloadFromRAM(*this);
