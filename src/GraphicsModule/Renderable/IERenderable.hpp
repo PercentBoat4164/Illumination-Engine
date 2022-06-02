@@ -51,7 +51,7 @@ public:
 	uint32_t commandBufferIndex{};
 	std::string directory{};
 	std::vector<glm::mat4> modelMatrices{};
-	IERenderableStatus status;
+	int status;
 
 	IERenderable() = default;
 

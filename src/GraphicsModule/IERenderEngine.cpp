@@ -260,6 +260,7 @@ void IERenderEngine::setAPI(const IEAPI &API) {
 	IERenderable::setAPI(API);
 	IEMesh::setAPI(API);
 	IEMaterial::setAPI(API);
+	IEImage::setAPI(API);
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_update = &IERenderEngine::_openGLUpdate;
 		_destroy = &IERenderEngine::_openGLDestroy;

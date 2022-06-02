@@ -23,10 +23,6 @@ class IEBuffer;
 #include <functional>
 
 class IEImage : public IEDependency, public std::enable_shared_from_this<IEImage> {
-private:
-	static std::function<void(IEImage &)> _create;
-	static std::function<void(IEImage &)> _loadFromDiskToRAM;
-
 protected:
 	[[nodiscard]] uint8_t getHighestMSAASampleCount(uint8_t requested) const;
 
@@ -69,15 +65,67 @@ public:
 
 	IEImage(IERenderEngine *, IEImage::CreateInfo *);
 
-	virtual void copyCreateInfo(IEImage::CreateInfo *) final;
+	~IEImage() override;
 
-	virtual void create(IERenderEngine *, IEImage::CreateInfo *);
+	static void setAPI(const IEAPI &API);
+
+
+	static std::function<void(IEImage &)> _create;
+
+	void create(IERenderEngine *, IEImage::CreateInfo *);
+
+	void _openglCreate();
+
+	void _vulkanCreate();
+
+
+	static std::function<void(IEImage &)> _loadFromDiskToRAM;
+
+	void loadFromDiskToRAM();
+
+	void _openglLoadFromDiskToRAM();
+
+	void _vulkanLoadFromDiskToRAM();
+
+
+	static std::function<void(IEImage &)> _loadFromRAMToVRAM;
+
+	void loadFromRAMToVRAM();
+
+	void _openglLoadFromRAMToVRAM();
+
+	void _vulkanLoadFromRAMToVRAM();
+
+
+	static std::function<void(IEImage &)> _unloadFromVRAM;
+
+	void unloadFromVRAM();
+
+	void _openglUnloadFromVRAM();
+
+	void _vulkanUnloadFromVRAM();
+
+
+	static std::function<void(IEImage &)> _unloadFromRAM;
+
+	void unloadFromRAM();
+
+	void _openglUnloadFromRAM();
+
+	void _vulkanUnloadFromRAM();
+
+
+	static std::function<void(IEImage &)> _destroy;
+
+	void destroy();
+
+	void _openglDestroy();
+
+	void _vulkanDestroy();
+
 
 	void toBuffer(const std::shared_ptr<IEBuffer> &, uint32_t) const;
 
+	// VULKAN ONLY FUNCTIONS
 	void transitionLayout(VkImageLayout);
-
-	~IEImage() override;
-
-	void destroy();
 };
