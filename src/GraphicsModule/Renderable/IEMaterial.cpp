@@ -119,7 +119,9 @@ void IEMaterial::_openglUnloadFromVRAM() {
 }
 
 void IEMaterial::_vulkanUnloadFromVRAM() {
-
+	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+//		linkedRenderEngine->textures[*textureType.first];
+	}
 }
 
 
@@ -136,6 +138,8 @@ void IEMaterial::_openglUnloadFromRAM() {
 }
 
 void IEMaterial::_vulkanUnloadFromRAM() {
-
+	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+//		linkedRenderEngine->textures[*textureType.first];
+	}
 }
 

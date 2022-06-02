@@ -23,15 +23,38 @@
 	return std::max(anisotropyLevel, std::min(properties.limits.maxSamplerAnisotropy, requested));
 }
 
-void IEImage::destroy() {
-	for (std::function<void()> &function: deletionQueue) {
-		function();
-	}
-	deletionQueue.clear();
-	invalidateDependents();
+IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
+	create(engineLink, createInfo);
 }
 
-void IEImage::copyCreateInfo(IEImage::CreateInfo *createInfo) {
+IEImage::~IEImage() {
+	/**@todo Switch to using status enum as opposed to queuing up deletion actions.*/
+	destroy();
+}
+
+void IEImage::setAPI(const IEAPI &API) {
+	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+		_create = &IEImage::_openglCreate;
+		_loadFromRAMToVRAM_vector = &IEImage::_openglLoadFromRAMToVRAM_vector;
+		_loadFromRAMToVRAM_voidPtr = &IEImage::_openglLoadFromRAMToVRAM_voidPtr;
+		_unloadFromVRAM = &IEImage::_openglUnloadFromVRAM;
+		_destroy = &IEImage::_openglDestroy;
+	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		_create = &IEImage::_vulkanCreate;
+		_loadFromRAMToVRAM_vector = &IEImage::_vulkanLoadFromRAMToVRAM_vector;
+		_loadFromRAMToVRAM_voidPtr = &IEImage::_vulkanLoadFromRAMToVRAM_voidPtr;
+		_unloadFromVRAM = &IEImage::_vulkanUnloadFromVRAM;
+		_destroy = &IEImage::_vulkanDestroy;
+	}
+}
+
+
+std::function<void(IEImage &)> IEImage::_create{nullptr};
+
+void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
+	linkedRenderEngine = engineLink;
+
+	// Copy createInfo data into this image
 	format = createInfo->format;
 	layout = createInfo->layout;
 	type = createInfo->type;
@@ -41,15 +64,14 @@ void IEImage::copyCreateInfo(IEImage::CreateInfo *createInfo) {
 	allocationUsage = createInfo->allocationUsage;
 	width = createInfo->width;
 	height = createInfo->height;
-	data = createInfo->data;
+	_create(*this);
 }
 
-void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
-	linkedRenderEngine = engineLink;
+void IEImage::_openglCreate() {
 
-	// Copy createInfo data into this image
-	copyCreateInfo(createInfo);
+}
 
+void IEImage::_vulkanCreate() {
 	VkImageLayout desiredLayout = layout;
 	layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
@@ -86,9 +108,6 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 	if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
 	}
-	deletionQueue.emplace_back([&] {
-		vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
-	});
 
 	// Set up image view create info
 	VkImageViewCreateInfo imageViewCreateInfo{
@@ -111,15 +130,90 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 	if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture image view!");
 	}
-	deletionQueue.emplace_back([&] {
-		vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
-	});
 
 	// Set transition to requested layout from undefined or dst_optimal.
 	if (layout != desiredLayout) {
 		transitionLayout(desiredLayout);
 	}
 }
+
+
+std::function<void(IEImage &, const std::vector<char> &)> IEImage::_loadFromRAMToVRAM_vector{nullptr};
+
+void IEImage::loadFromRAMToVRAM(const std::vector<char> &data) {
+	_loadFromRAMToVRAM_vector(*this, data);
+}
+
+void IEImage::_openglLoadFromRAMToVRAM_vector(const std::vector<char> &data) {
+
+}
+
+void IEImage::_vulkanLoadFromRAMToVRAM_vector(const std::vector<char> &data) {
+	// Used to build the image in memory.
+	std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, data.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+																		 VMA_MEMORY_USAGE_CPU_TO_GPU);
+	scratchBuffer->loadFromDiskToRAM(data);
+	scratchBuffer->loadFromRAMToVRAM();
+	scratchBuffer->toImage(shared_from_this());
+	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
+}
+
+std::function<void(IEImage &, void *, uint64_t)> IEImage::_loadFromRAMToVRAM_voidPtr{nullptr};
+
+void IEImage::loadFromRAMToVRAM(void *data, uint64_t size) {
+	_loadFromRAMToVRAM_voidPtr(*this, data, size);
+}
+
+void IEImage::_openglLoadFromRAMToVRAM_voidPtr(void *data, uint64_t size) {
+
+}
+
+void IEImage::_vulkanLoadFromRAMToVRAM_voidPtr(void *data, uint64_t size) {
+	// Used to build the image in memory.
+	std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+																		 VMA_MEMORY_USAGE_CPU_TO_GPU);
+	scratchBuffer->loadFromDiskToRAM(data, size);
+	scratchBuffer->loadFromRAMToVRAM();
+	scratchBuffer->toImage(shared_from_this());
+	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
+}
+
+
+std::function<void(IEImage &)> IEImage::_unloadFromVRAM{nullptr};
+
+void IEImage::unloadFromVRAM() {
+	_unloadFromVRAM(*this);
+}
+
+void IEImage::_openglUnloadFromVRAM() {
+
+}
+
+void IEImage::_vulkanUnloadFromVRAM() {
+	vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
+	vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
+	vkDestroySampler(linkedRenderEngine->device.device, sampler, nullptr);
+	invalidateDependents();
+}
+
+
+std::function<void(IEImage &)> IEImage::_destroy{nullptr};
+
+void IEImage::destroy() {
+	_destroy(*this);
+}
+
+void IEImage::_openglDestroy() {
+
+}
+
+void IEImage::_vulkanDestroy() {
+	vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
+	vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
+	vkDestroySampler(linkedRenderEngine->device.device, sampler, nullptr);
+	invalidateDependents();
+}
+
 
 void IEImage::toBuffer(const std::shared_ptr<IEBuffer> &buffer, uint32_t commandBufferIndex) const {
 	VkBufferImageCopy region{};
@@ -207,90 +301,3 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 	linkedRenderEngine->graphicsCommandPool->index(0)->recordPipelineBarrier(sourceStage, destinationStage, 0, {}, {}, {imageMemoryBarrier});
 	layout = newLayout;
 }
-
-IEImage::~IEImage() {
-	destroy();
-}
-
-IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
-	linkedRenderEngine = engineLink;
-
-	// Copy createInfo data into this image
-	copyCreateInfo(createInfo);
-	VkImageLayout desiredLayout = layout;
-	layout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-	// Set up image create info.
-	VkImageCreateInfo imageCreateInfo{
-			.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-			.imageType=type,
-			.format=format,
-			.extent=VkExtent3D{
-					.width=width,
-					.height=height,
-					.depth=1
-			},
-			.mipLevels=1, // mipLevels, Unused due to no implementation of mip-mapping support yet.
-			.arrayLayers=1,
-			.samples=static_cast<VkSampleCountFlagBits>(1),
-			.tiling=tiling,
-			.usage=usage,
-			.sharingMode=VK_SHARING_MODE_EXCLUSIVE,
-			.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,
-	};
-
-	// Set up allocation create info
-	VmaAllocationCreateInfo allocationCreateInfo{
-			.usage=allocationUsage,
-	};
-
-	if (height == 0) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 "Image height is zero! This may cause Vulkan to fail to create an image.");
-	}
-	if (width == 0) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 "Image width is zero! This may cause Vulkan to fail to create an image.");
-	}
-
-	// Create image
-	if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
-	}
-	deletionQueue.emplace_back([&] {
-		vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
-	});
-
-	// Set up image view create info
-	VkImageViewCreateInfo imageViewCreateInfo{
-			.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.image=image,
-			.viewType=VK_IMAGE_VIEW_TYPE_2D, /**@todo Add support for more than just 2D images.*/
-			.format=format,
-			.components=VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-										   VK_COMPONENT_SWIZZLE_IDENTITY},  // Unused. All components are mapped to default data.
-			.subresourceRange=VkImageSubresourceRange{
-					.aspectMask=aspect,
-					.baseMipLevel=0,
-					.levelCount=1,  // Unused. Mip-mapping is not yet implemented.
-					.baseArrayLayer=0,
-					.layerCount=1,
-			},
-	};
-
-	// Create image view
-	if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create texture image view!");
-	}
-	deletionQueue.emplace_back([&] {
-		vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
-	});
-
-	// Set transition to requested layout from undefined or dst_optimal.
-	if (layout != desiredLayout) {
-		transitionLayout(desiredLayout);
-	}
-}
-
-std::function<void(IEImage &)> IEImage::_create = std::function<void(IEImage &)>{[](IEImage &) { return; }};
-std::function<void(IEImage &)> IEImage::_loadFromDiskToRAM = std::function<void(IEImage &)>{[](IEImage &) { return; }};

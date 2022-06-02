@@ -41,7 +41,6 @@ class IERenderable : public IEAspect {
 public:
 	std::string modelName{};
 	std::vector<IEMesh> meshes{};
-	std::vector<std::function<void()>> deletionQueue{};
 	IEBuffer modelBuffer{};
 	IERenderEngine *linkedRenderEngine{};
 	IEUniformBufferObject uniformBufferObject{};
@@ -51,7 +50,7 @@ public:
 	uint32_t commandBufferIndex{};
 	std::string directory{};
 	std::vector<glm::mat4> modelMatrices{};
-	IERenderableStatus status;
+	int status{IE_RENDERABLE_STATE_UNKNOWN};
 
 	IERenderable() = default;
 
@@ -59,21 +58,10 @@ public:
 
 	static void setAPI(const IEAPI &);
 
-	void create(IERenderEngine *, const std::string &);
-
-	void loadFromDiskToRAM();
-
-	void loadFromRAMToVRAM();
-
-	void update(uint32_t);
-
-	void unloadFromVRAM();
-
-	void unloadFromRAM();
-
-private:
 	/* API dependent functions */
 	static std::function<void(IERenderable &, IERenderEngine *, const std::string &)> _create;
+
+	void create(IERenderEngine *, const std::string &);
 
 	void _openglCreate(IERenderEngine *, const std::string &);
 
@@ -82,6 +70,8 @@ private:
 
 	static std::function<void(IERenderable &)> _loadFromDiskToRAM;
 
+	void loadFromDiskToRAM();
+
 	void _openglLoadFromDiskToRAM();
 
 	void _vulkanLoadFromDiskToRAM();
@@ -89,19 +79,16 @@ private:
 
 	static std::function<void(IERenderable &)> _loadFromRAMToVRAM;
 
+	void loadFromRAMToVRAM();
+
 	void _openglLoadFromRAMToVRAM();
 
 	void _vulkanLoadFromRAMToVRAM();
 
 
-	static std::function<void(IERenderable &)> _createShaders;
-
-	void _openglCreateShaders();
-
-	void _vulkanCreateShaders();
-
-
 	static std::function<void(IERenderable &, const IECamera &, float)> _update;
+
+	void update(uint32_t);
 
 	bool _openglUpdate(const IECamera &, float);
 
@@ -110,12 +97,16 @@ private:
 
 	static std::function<void(IERenderable &)> _unloadFromVRAM;
 
+	void unloadFromVRAM();
+
 	void _openglUnloadFromVRAM();
 
 	void _vulkanUnloadFromVRAM();
 
 
 	static std::function<void(IERenderable &)> _unloadFromRAM;
+
+	void unloadFromRAM();
 
 	void _openglUnloadFromRAM();
 

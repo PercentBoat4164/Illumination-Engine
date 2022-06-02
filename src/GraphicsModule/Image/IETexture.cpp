@@ -51,12 +51,12 @@ void IETexture::loadFromDiskToRAM(aiTexture *texture) {
 							 reinterpret_cast<int *>(&channels), 4);
 	}
 	channels = 4;  /**@todo Make number of channels imported change the number of channels in VRAM.*/
-	data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
-	if (data.empty()) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
-												 stbi_failure_reason());
-	}
+//	data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
+//	if (data.empty()) {
+//		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+//												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
+//												 stbi_failure_reason());
+//	}
 }
 
 void IETexture::loadFromRAMToVRAM() {
@@ -155,9 +155,9 @@ void IETexture::loadFromRAMToVRAM() {
 	});
 
 	// Upload data if provided
-	if (!data.empty()) {
-		upload(data.data());
-	}
+//	if (!data.empty()) {
+//		upload(data.data());
+//	}
 
 	// Set transition to requested layout from undefined or dst_optimal.
 	if (desiredLayout != VK_IMAGE_LAYOUT_UNDEFINED && layout != desiredLayout) {

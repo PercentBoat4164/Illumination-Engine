@@ -44,7 +44,8 @@ void IERenderable::create(IERenderEngine *engineLink, const std::string &filePat
 	linkedRenderEngine = engineLink;
 	directory = filePath.substr(0, filePath.find_last_of('/'));
 	modelName = filePath.substr(filePath.find_last_of('/'));
-	return _create(*this, engineLink, filePath);
+	_create(*this, engineLink, filePath);
+	status = IE_RENDERABLE_STATE_UNLOADED;
 }
 
 void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &filePath) {
@@ -62,9 +63,6 @@ void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU
 	};
 	modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
-	deletionQueue.emplace_back([&] {
-		modelBuffer.destroy();
-	});
 
 	// Prepare a command buffer for use by this object during creation
 	commandBufferIndex = linkedRenderEngine->graphicsCommandPool->commandBuffers.size();
@@ -75,7 +73,10 @@ void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &
 std::function<void(IERenderable &)> IERenderable::_loadFromDiskToRAM{nullptr};
 
 void IERenderable::loadFromDiskToRAM() {
-	_loadFromDiskToRAM(*this);
+	if (status == IE_RENDERABLE_STATE_UNLOADED) {
+		_loadFromDiskToRAM(*this);
+		status = IE_RENDERABLE_STATE_IN_RAM;
+	}
 }
 
 void IERenderable::_openglLoadFromDiskToRAM() {
@@ -126,7 +127,10 @@ void IERenderable::_vulkanLoadFromDiskToRAM() {
 std::function<void(IERenderable &)> IERenderable::_loadFromRAMToVRAM{nullptr};
 
 void IERenderable::loadFromRAMToVRAM() {
-	_loadFromRAMToVRAM(*this);
+	if (status == IE_RENDERABLE_STATE_IN_RAM) {
+		_loadFromRAMToVRAM(*this);
+		status |= IE_RENDERABLE_STATE_IN_VRAM;
+	}
 }
 
 void IERenderable::_openglLoadFromRAMToVRAM() {
@@ -147,11 +151,13 @@ void IERenderable::_vulkanLoadFromRAMToVRAM() {
 std::function<void(IERenderable &, const IECamera &, float)> IERenderable::_update{nullptr};
 
 void IERenderable::update(uint32_t renderCommandBufferIndex) {
-	for (IEMesh &mesh: meshes) {
-		mesh.descriptorSet->update({&modelBuffer}, {0});
-		mesh.update(renderCommandBufferIndex);
+	if (status & IE_RENDERABLE_STATE_IN_VRAM) {
+		for (IEMesh &mesh: meshes) {
+			mesh.descriptorSet->update({&modelBuffer}, {0});
+			mesh.update(renderCommandBufferIndex);
+		}
+		_update(*this, linkedRenderEngine->camera, (float) glfwGetTime());
 	}
-	_update(*this, linkedRenderEngine->camera, (float) glfwGetTime());
 }
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time) {
@@ -178,7 +184,9 @@ bool IERenderable::_openglUpdate(const IECamera &camera, float time) {
 std::function<void(IERenderable &)> IERenderable::_unloadFromVRAM{nullptr};
 
 void IERenderable::unloadFromVRAM() {
-	return _unloadFromVRAM(*this);
+	if (status & IE_RENDERABLE_STATE_IN_VRAM) {
+		_unloadFromVRAM(*this);
+	}
 }
 
 void IERenderable::_openglUnloadFromVRAM() {
@@ -199,7 +207,9 @@ void IERenderable::_vulkanUnloadFromVRAM() {
 std::function<void(IERenderable &)> IERenderable::_unloadFromRAM{nullptr};
 
 void IERenderable::unloadFromRAM() {
-	return _unloadFromRAM(*this);
+	if (status & IE_RENDERABLE_STATE_IN_RAM) {
+		_unloadFromRAM(*this);
+	}
 }
 
 void IERenderable::_openglUnloadFromRAM() {

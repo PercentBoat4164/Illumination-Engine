@@ -8,6 +8,7 @@ class IEBuffer;
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEDependency.hpp"
+#include "IEAPI.hpp"
 
 // External dependencies
 #include <vk_mem_alloc.h>
@@ -23,10 +24,6 @@ class IEBuffer;
 #include <functional>
 
 class IEImage : public IEDependency, public std::enable_shared_from_this<IEImage> {
-private:
-	static std::function<void(IEImage &)> _create;
-	static std::function<void(IEImage &)> _loadFromDiskToRAM;
-
 protected:
 	[[nodiscard]] uint8_t getHighestMSAASampleCount(uint8_t requested) const;
 
@@ -60,24 +57,66 @@ public:
 	uint32_t width{};
 	uint32_t height{};
 	uint32_t channels{};
-	std::vector<char> data{};
 	std::string filename{};
 	IERenderEngine *linkedRenderEngine{};
+	// Remove this.
 	std::vector<std::function<void()>> deletionQueue{};
 
 	IEImage() = default;
 
 	IEImage(IERenderEngine *, IEImage::CreateInfo *);
 
-	virtual void copyCreateInfo(IEImage::CreateInfo *) final;
+	~IEImage() override;
 
-	virtual void create(IERenderEngine *, IEImage::CreateInfo *);
+	static void setAPI(const IEAPI &API);
+
+
+	static std::function<void(IEImage &)> _create;
+
+	void create(IERenderEngine *, IEImage::CreateInfo *);
+
+	void _openglCreate();
+
+	void _vulkanCreate();
+
+
+	static std::function<void(IEImage &, const std::vector<char> &)> _loadFromRAMToVRAM_vector;
+
+	void loadFromRAMToVRAM(const std::vector<char> &);
+
+	void _openglLoadFromRAMToVRAM_vector(const std::vector<char> &);
+
+	void _vulkanLoadFromRAMToVRAM_vector(const std::vector<char> &);
+
+	static std::function<void(IEImage &, void *, uint64_t)> _loadFromRAMToVRAM_voidPtr;
+
+	void loadFromRAMToVRAM(void *, uint64_t);
+
+	void _openglLoadFromRAMToVRAM_voidPtr(void *, uint64_t);
+
+	void _vulkanLoadFromRAMToVRAM_voidPtr(void *, uint64_t);
+
+
+	static std::function<void(IEImage &)> _unloadFromVRAM;
+
+	void unloadFromVRAM();
+
+	void _openglUnloadFromVRAM();
+
+	void _vulkanUnloadFromVRAM();
+
+
+	static std::function<void(IEImage &)> _destroy;
+
+	void destroy();
+
+	void _openglDestroy();
+
+	void _vulkanDestroy();
+
 
 	void toBuffer(const std::shared_ptr<IEBuffer> &, uint32_t) const;
 
+	// VULKAN ONLY FUNCTIONS
 	void transitionLayout(VkImageLayout);
-
-	~IEImage() override;
-
-	void destroy();
 };
