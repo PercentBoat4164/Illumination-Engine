@@ -6,9 +6,9 @@ class IEBuffer;
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEImage.hpp"
-#include "assimp/material.h"
 
 // External dependencies
+#include <assimp/material.h>
 #include <vulkan/vulkan.h>
 
 #include <stb_image.h>
@@ -34,13 +34,51 @@ public:
 
 	IETexture(IERenderEngine *, IETexture::CreateInfo *);
 
+	static void setAPI(const IEAPI &);
+
+
 	void create(IERenderEngine *, IETexture::CreateInfo *);
 
-	void loadFromDiskToRAM(aiTexture *);
+private:
+	static std::function<void(IETexture &)> _uploadToVRAM;
 
-	void upload(void *);
+	static std::function<void(IETexture &, const std::vector<char> &)> _update_vector;
+	static std::function<void(IETexture &, void *, uint64_t)> _update_voidPtr;
+	static std::function<void(IETexture &, aiTexture *)> _update_aiTexture;
 
-	void upload(const std::shared_ptr<IEBuffer> &);
+	static std::function<void(IETexture &)> _unloadFromVRAM;
 
-	virtual void loadFromRAMToVRAM();
+	static std::function<void(IETexture &)> _destroy;
+
+protected:
+	void _openglUploadToVRAM() override;
+
+	void _vulkanUploadToVRAM() override;
+
+
+	virtual void _openglUpdate_aiTexture(aiTexture *);
+
+	virtual void _vulkanUpdate_aiTexture(aiTexture *);
+
+public:
+	void uploadToVRAM() override;
+
+	void uploadToVRAM(const std::vector<char> &) override;
+
+	void uploadToVRAM(void *, uint64_t) override;
+
+	void uploadToVRAM(aiTexture *texture);
+
+
+	void update(const std::vector<char> &) override;
+
+	void update(void *, uint64_t) override;
+
+	virtual void update(aiTexture *);
+
+
+	void unloadFromVRAM() override;
+
+
+	void destroy() override;
 };

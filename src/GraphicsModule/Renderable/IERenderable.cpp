@@ -129,7 +129,7 @@ std::function<void(IERenderable &)> IERenderable::_loadFromRAMToVRAM{nullptr};
 void IERenderable::loadFromRAMToVRAM() {
 	if (status == IE_RENDERABLE_STATE_IN_RAM) {
 		_loadFromRAMToVRAM(*this);
-		status |= IE_RENDERABLE_STATE_IN_VRAM;
+		status = static_cast<IERenderableStatus>(status | IE_RENDERABLE_STATE_IN_VRAM);
 	}
 }
 

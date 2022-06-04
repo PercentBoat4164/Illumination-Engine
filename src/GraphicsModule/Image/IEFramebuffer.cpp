@@ -69,9 +69,10 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
 	if (vkCreateFramebuffer(linkedRenderEngine->device.device, &framebufferCreateInfo, nullptr, &framebuffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create framebuffers!");
 	}
-	deletionQueue.emplace_back([&] {
-		vkDestroyFramebuffer(linkedRenderEngine->device.device, framebuffer, nullptr);
-	});
 }
 
 IEFramebuffer::IEFramebuffer() = default;
+
+IEFramebuffer::~IEFramebuffer() {
+	vkDestroyFramebuffer(linkedRenderEngine->device.device, framebuffer, nullptr);
+}

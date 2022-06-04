@@ -4,9 +4,9 @@
 - [x] OpenGL implementation
 - [x] Add basic shading
 - [ ] Merged implementation
-  - [X] Rewrite Vulkan render engine implementation (Work will never be done on this front)
-  - [ ] Integrate bare-bones OpenGL implementation
-  - [ ] Remove Vulkan SDK requirement
-  - [ ] Finish OpenGL integration
+    - [X] Rewrite Vulkan render engine implementation (Work will never be done on this front)
+    - [ ] Integrate bare-bones OpenGL implementation
+    - [ ] Remove Vulkan SDK requirement
+    - [ ] Finish OpenGL integration
 - [ ] Cleanup
-  - [ ] Bring the code up to stylistic standards
+    - [ ] Bring the code up to stylistic standards

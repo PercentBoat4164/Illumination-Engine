@@ -86,7 +86,7 @@ void IEMaterial::_vulkanLoadFromDiskToRAM(const std::string &directory, const ai
 		}
 		*textureType.first = linkedRenderEngine->textures.size();
 		linkedRenderEngine->textures.push_back(std::make_shared<IETexture>(linkedRenderEngine, new IETexture::CreateInfo));
-		linkedRenderEngine->textures[*textureType.first]->loadFromDiskToRAM(texture);
+		linkedRenderEngine->textures[*textureType.first]->update(texture);
 	}
 }
 
@@ -103,7 +103,7 @@ void IEMaterial::_openglLoadFromRAMToVRAM() {
 
 void IEMaterial::_vulkanLoadFromRAMToVRAM() {
 	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
-		linkedRenderEngine->textures[*textureType.first]->loadFromRAMToVRAM();
+		linkedRenderEngine->textures[*textureType.first]->uploadToVRAM();
 	}
 }
 
@@ -120,7 +120,7 @@ void IEMaterial::_openglUnloadFromVRAM() {
 
 void IEMaterial::_vulkanUnloadFromVRAM() {
 	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
-//		linkedRenderEngine->textures[*textureType.first];
+		linkedRenderEngine->textures[*textureType.first]->unloadFromVRAM();
 	}
 }
 
@@ -139,7 +139,7 @@ void IEMaterial::_openglUnloadFromRAM() {
 
 void IEMaterial::_vulkanUnloadFromRAM() {
 	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
-//		linkedRenderEngine->textures[*textureType.first];
+		linkedRenderEngine->textures[*textureType.first]->data.clear();
 	}
 }
 

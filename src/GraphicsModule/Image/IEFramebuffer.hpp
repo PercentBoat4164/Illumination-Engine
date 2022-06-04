@@ -33,6 +33,8 @@ public:
 
 	IEFramebuffer();
 
+	~IEFramebuffer();
+
 	void copyCreateInfo(IEFramebuffer::CreateInfo *createInfo);
 
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);

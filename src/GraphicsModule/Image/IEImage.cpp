@@ -34,22 +34,20 @@ IEImage::~IEImage() {
 
 void IEImage::setAPI(const IEAPI &API) {
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-		_create = &IEImage::_openglCreate;
-		_loadFromRAMToVRAM_vector = &IEImage::_openglLoadFromRAMToVRAM_vector;
-		_loadFromRAMToVRAM_voidPtr = &IEImage::_openglLoadFromRAMToVRAM_voidPtr;
+		_uploadToVRAM = &IEImage::_openglUploadToVRAM;
+		_update_vector = &IEImage::_openglUpdate_vector;
+		_update_voidPtr = &IEImage::_openglUpdate_voidPtr;
 		_unloadFromVRAM = &IEImage::_openglUnloadFromVRAM;
 		_destroy = &IEImage::_openglDestroy;
 	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-		_create = &IEImage::_vulkanCreate;
-		_loadFromRAMToVRAM_vector = &IEImage::_vulkanLoadFromRAMToVRAM_vector;
-		_loadFromRAMToVRAM_voidPtr = &IEImage::_vulkanLoadFromRAMToVRAM_voidPtr;
+		_uploadToVRAM = &IEImage::_vulkanUploadToVRAM;
+		_update_vector = &IEImage::_vulkanUpdate_vector;
+		_update_voidPtr = &IEImage::_vulkanUpdate_voidPtr;
 		_unloadFromVRAM = &IEImage::_vulkanUnloadFromVRAM;
 		_destroy = &IEImage::_vulkanDestroy;
 	}
 }
 
-
-std::function<void(IEImage &)> IEImage::_create{nullptr};
 
 void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
 	linkedRenderEngine = engineLink;
@@ -64,14 +62,24 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 	allocationUsage = createInfo->allocationUsage;
 	width = createInfo->width;
 	height = createInfo->height;
-	_create(*this);
+	data = createInfo->data;
+
+	status = IE_IMAGE_STATUS_UNLOADED;
 }
 
-void IEImage::_openglCreate() {
+
+std::function<void(IEImage &)> IEImage::_uploadToVRAM{nullptr};
+
+void IEImage::uploadToVRAM() {
+	_uploadToVRAM(*this);
+	status = static_cast<IEImageStatus>(status | IE_IMAGE_STATUS_IN_VRAM);
+}
+
+void IEImage::_openglUploadToVRAM() {
 
 }
 
-void IEImage::_vulkanCreate() {
+void IEImage::_vulkanUploadToVRAM() {
 	VkImageLayout desiredLayout = layout;
 	layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
@@ -137,45 +145,69 @@ void IEImage::_vulkanCreate() {
 	}
 }
 
+void IEImage::uploadToVRAM(const std::vector<char> &data) {
+	uploadToVRAM();
 
-std::function<void(IEImage &, const std::vector<char> &)> IEImage::_loadFromRAMToVRAM_vector{nullptr};
-
-void IEImage::loadFromRAMToVRAM(const std::vector<char> &data) {
-	_loadFromRAMToVRAM_vector(*this, data);
+	// load data
+	update(data);
 }
 
-void IEImage::_openglLoadFromRAMToVRAM_vector(const std::vector<char> &data) {
+void IEImage::uploadToVRAM(void *data, uint64_t size) {
+	uploadToVRAM();
 
+	// load data
+	update(data, size);
 }
 
-void IEImage::_vulkanLoadFromRAMToVRAM_vector(const std::vector<char> &data) {
-	// Used to build the image in memory.
-	std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, data.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-																		 VMA_MEMORY_USAGE_CPU_TO_GPU);
-	scratchBuffer->loadFromDiskToRAM(data);
-	scratchBuffer->loadFromRAMToVRAM();
-	scratchBuffer->toImage(shared_from_this());
-	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
+
+std::function<void(IEImage &, const std::vector<char> &)> IEImage::_update_vector{nullptr};
+
+void IEImage::update(const std::vector<char> &data) {
+	_update_vector(*this, data);
 }
 
-std::function<void(IEImage &, void *, uint64_t)> IEImage::_loadFromRAMToVRAM_voidPtr{nullptr};
-
-void IEImage::loadFromRAMToVRAM(void *data, uint64_t size) {
-	_loadFromRAMToVRAM_voidPtr(*this, data, size);
-}
-
-void IEImage::_openglLoadFromRAMToVRAM_voidPtr(void *data, uint64_t size) {
+void IEImage::_openglUpdate_vector(const std::vector<char> &data) {
 
 }
 
-void IEImage::_vulkanLoadFromRAMToVRAM_voidPtr(void *data, uint64_t size) {
-	// Used to build the image in memory.
-	std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-																		 VMA_MEMORY_USAGE_CPU_TO_GPU);
-	scratchBuffer->loadFromDiskToRAM(data, size);
-	scratchBuffer->loadFromRAMToVRAM();
-	scratchBuffer->toImage(shared_from_this());
-	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
+void IEImage::_vulkanUpdate_vector(const std::vector<char> &data) {
+	if (status & IE_IMAGE_STATUS_IN_RAM) {
+		this->data = data;
+	}
+	if (status & IE_IMAGE_STATUS_IN_VRAM) {
+		// Used to build the image in video memory.
+		std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, data.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+																			 VMA_MEMORY_USAGE_CPU_TO_GPU);
+		scratchBuffer->loadFromDiskToRAM(data);
+		scratchBuffer->loadFromRAMToVRAM();
+		scratchBuffer->toImage(shared_from_this());
+		linkedRenderEngine->graphicsCommandPool->index(0)->execute();
+	}
+}
+
+std::function<void(IEImage &, void *, uint64_t)> IEImage::_update_voidPtr{nullptr};
+
+void IEImage::update(void *data, uint64_t size) {
+	_update_voidPtr(*this, data, size);
+}
+
+void IEImage::_openglUpdate_voidPtr(void *data, uint64_t size) {
+
+}
+
+void IEImage::_vulkanUpdate_voidPtr(void *data, uint64_t size) {
+	if (status & IE_IMAGE_STATUS_IN_RAM) {
+		this->data = std::vector<char>{(char *) data, (char *) data + size};
+	}
+	if (status & IE_IMAGE_STATUS_IN_VRAM) {
+		// Used to build the image in video memory.
+		std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+																			 VMA_MEMORY_USAGE_CPU_TO_GPU);
+		scratchBuffer->loadFromDiskToRAM(data, size);
+		scratchBuffer->loadFromRAMToVRAM();
+		scratchBuffer->toImage(shared_from_this());
+		linkedRenderEngine->graphicsCommandPool->index(0)->execute();
+	}
 }
 
 
@@ -200,7 +232,9 @@ void IEImage::_vulkanUnloadFromVRAM() {
 std::function<void(IEImage &)> IEImage::_destroy{nullptr};
 
 void IEImage::destroy() {
-	_destroy(*this);
+	if (status != IE_IMAGE_STATUS_UNLOADED) {
+		_destroy(*this);
+	}
 }
 
 void IEImage::_openglDestroy() {
@@ -208,10 +242,7 @@ void IEImage::_openglDestroy() {
 }
 
 void IEImage::_vulkanDestroy() {
-	vmaDestroyImage(linkedRenderEngine->allocator, image, allocation);
-	vkDestroyImageView(linkedRenderEngine->device.device, view, nullptr);
-	vkDestroySampler(linkedRenderEngine->device.device, sampler, nullptr);
-	invalidateDependents();
+	_vulkanUnloadFromVRAM();
 }
 
 

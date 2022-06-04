@@ -30,12 +30,12 @@ class IECamera;
 #include <functional>
 
 
-typedef enum IERenderableStatus {
+enum IERenderableStatus {
 	IE_RENDERABLE_STATE_UNKNOWN = 0x0,
 	IE_RENDERABLE_STATE_UNLOADED = 0x1,
 	IE_RENDERABLE_STATE_IN_RAM = 0x2,
 	IE_RENDERABLE_STATE_IN_VRAM = 0x4
-} IERenderableStatus;
+};
 
 class IERenderable : public IEAspect {
 public:
@@ -50,7 +50,7 @@ public:
 	uint32_t commandBufferIndex{};
 	std::string directory{};
 	std::vector<glm::mat4> modelMatrices{};
-	int status{IE_RENDERABLE_STATE_UNKNOWN};
+	IERenderableStatus status{IE_RENDERABLE_STATE_UNKNOWN};
 
 	IERenderable() = default;
 
