@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "Image/IEFramebuffer.hpp"
+#include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
 
 class IERenderPassBeginInfo {
 public:
@@ -12,7 +12,7 @@ public:
 	uint32_t clearValueCount{};
 	const VkClearValue *pClearValues{};
 
-	[[nodiscard]] std::vector<std::shared_ptr<IEImage>> getFramebuffers() const;
+	[[nodiscard]] std::vector<std::shared_ptr<IEFramebuffer>> getFramebuffers() const;
 
 	[[nodiscard]] std::vector<std::shared_ptr<IERenderPass>> getRenderPasses() const;
 

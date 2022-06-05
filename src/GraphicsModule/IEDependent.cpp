@@ -4,7 +4,7 @@
 #include <cxxabi.h>
 #include "IEDependent.hpp"
 #include "Buffer/IEBuffer.hpp"
-#include "Image/IEFramebuffer.hpp"
+#include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
 
 #include "IEDependency.hpp"
 

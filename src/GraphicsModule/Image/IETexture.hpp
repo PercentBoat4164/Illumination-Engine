@@ -29,7 +29,9 @@ public:
 		VkImageCreateFlags flags{};
 		VmaMemoryUsage allocationUsage{};
 	};
-
+	
+	std::string filename{};
+	
 	IETexture() = default;
 
 	IETexture(IERenderEngine *, IETexture::CreateInfo *);

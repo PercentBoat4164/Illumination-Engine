@@ -5,7 +5,7 @@
 
 /* Include dependencies within this module. */
 #include "IERenderEngine.hpp"
-#include "Image/IEFramebuffer.hpp"
+#include "IEFramebuffer.hpp"
 
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"
@@ -104,17 +104,13 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
 	framebuffers.resize(linkedRenderEngine->swapchainImageViews.size());
 	IEFramebuffer::CreateInfo framebufferCreateInfo{
 			.renderPass=weak_from_this(),
+			.attachments={}
 	};
 	for (uint32_t i = 0; i < linkedRenderEngine->swapchainImageViews.size(); ++i) {
-		framebufferCreateInfo.swapchainImageView = linkedRenderEngine->swapchainImageViews[i];
+		framebufferCreateInfo.swapchainImageViews = linkedRenderEngine->swapchainImageViews;
 		framebuffers[i] = std::make_shared<IEFramebuffer>();
 		framebuffers[i]->create(linkedRenderEngine, &framebufferCreateInfo);
 	}
-	deletionQueue.emplace_back([&] {
-		for (std::shared_ptr<IEFramebuffer> &framebuffer: framebuffers) {
-			framebuffer->destroy();
-		}
-	});
 }
 
 IERenderPassBeginInfo IERenderPass::beginRenderPass(uint32_t framebufferIndex) {

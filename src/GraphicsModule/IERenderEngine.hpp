@@ -15,12 +15,12 @@ class IERenderable;
 // Internal dependencies
 #include "IEAPI.hpp"
 #include "IECamera.hpp"
-#include "IERenderPass.hpp"
+#include "GraphicsModule/RenderPass/IERenderPass.hpp"
 #include "IESettings.hpp"
 
 #include "CommandBuffer/IECommandPool.hpp"
 
-#include "Image/IEFramebuffer.hpp"
+#include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
 #include "Image/IETexture.hpp"
 #include "Core/AssetModule/IEAsset.hpp"
 
@@ -227,6 +227,8 @@ public:
 	std::vector<std::weak_ptr<IERenderable>> renderables{};
 	float frameTime{};
 	int frameNumber{};
+	// global depth image used by all framebuffers. Should this be here?
+	std::shared_ptr<IEImage> depthImage{};
 
 	void addAsset(const std::shared_ptr<IEAsset> &asset);
 

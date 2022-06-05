@@ -388,7 +388,7 @@ void IECommandBuffer::recordBeginRenderPass(IERenderPassBeginInfo *pRenderPassBe
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassBeginInfo.pNext = pRenderPassBegin->pNext;
 	renderPassBeginInfo.renderPass = pRenderPassBegin->renderPass->renderPass;
-	renderPassBeginInfo.framebuffer = pRenderPassBegin->framebuffer->framebuffer;
+	renderPassBeginInfo.framebuffer = pRenderPassBegin->framebuffer->getThisFramebuffer();
 	renderPassBeginInfo.renderArea = pRenderPassBegin->renderArea;
 	renderPassBeginInfo.clearValueCount = pRenderPassBegin->clearValueCount;
 	renderPassBeginInfo.pClearValues = pRenderPassBegin->pClearValues;

@@ -7,7 +7,7 @@ class IERenderPassBeginInfo;
 
 /* Include classes used as attributes or _function arguments. */
 // Internal dependencies
-#include "GraphicsModule/Image/IEFramebuffer.hpp"
+#include "IEFramebuffer.hpp"
 #include "CommandBuffer/IECommandBuffer.hpp"
 
 // External dependencies

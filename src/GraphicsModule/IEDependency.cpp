@@ -7,7 +7,7 @@
 #include "Buffer/IEBuffer.hpp"
 #include "IEPipeline.hpp"
 #include "IEDescriptorSet.hpp"
-#include "IERenderPass.hpp"
+#include "GraphicsModule/RenderPass/IERenderPass.hpp"
 
 void IEDependency::addDependent(IEDependent *newDependent) {
 	dependents.push_back(newDependent);

@@ -1,8 +1,8 @@
 #include "IERenderPassBeginInfo.hpp"
 
-#include "IERenderPass.hpp"
+#include "GraphicsModule/RenderPass/IERenderPass.hpp"
 
-std::vector<std::shared_ptr<IEImage>> IERenderPassBeginInfo::getFramebuffers() const {
+std::vector<std::shared_ptr<IEFramebuffer>> IERenderPassBeginInfo::getFramebuffers() const {
 	return {framebuffer};
 }
 
@@ -19,7 +19,7 @@ IERenderPassBeginInfo::operator VkRenderPassBeginInfo() const {
 			.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
 			.pNext=pNext,
 			.renderPass=renderPass->renderPass,
-			.framebuffer=framebuffer->framebuffer,
+			.framebuffer=framebuffer->getNextFramebuffer(),
 			.renderArea=renderArea,
 			.clearValueCount=clearValueCount,
 			.pClearValues=pClearValues

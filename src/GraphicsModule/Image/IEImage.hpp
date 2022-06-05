@@ -66,7 +66,6 @@ public:
 	uint32_t width{};
 	uint32_t height{};
 	uint32_t channels{};
-	std::string filename{};
 	IERenderEngine *linkedRenderEngine{};
 	std::vector<char> data{};
 	IEImageStatus status{IE_IMAGE_STATUS_UNKNOWN};

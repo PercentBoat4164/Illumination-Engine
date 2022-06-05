@@ -5,7 +5,7 @@ class IERenderEngine;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "IEImage.hpp"
+#include "GraphicsModule/Image/IEImage.hpp"
 
 // External dependencies
 #include <vulkan/vulkan.h>
@@ -15,27 +15,39 @@ class IERenderEngine;
 #include <vector>
 
 
-class IEFramebuffer : public IEImage {
+class IEFramebuffer : public IEDependency {
 public:
+	class Attachment {
+	public:
+		std::shared_ptr<IEImage> image{};
+		VkImageLayout forceLayout{};
+		uint8_t location{};
+	};
+	
 	struct CreateInfo {
-		VkImageView swapchainImageView{};
+		std::vector<VkImageView> swapchainImageViews{};
 		std::weak_ptr<IERenderPass> renderPass{};
 		std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
+		std::vector<Attachment> attachments{};
 	};
-
-	VkFramebuffer framebuffer{};
+	
+	std::vector<VkFramebuffer> framebuffers{};
 	std::vector<VkClearValue> clearValues{3};
 	std::vector<float> defaultColor{0.0F, 0.0F, 0.0F, 1.0F};
-	VkImageView swapchainImageView{};
 	std::weak_ptr<IERenderPass> renderPass{};
-	std::shared_ptr<IEImage> colorImage{};  /**@todo Eliminate this and use the inbuilt image.*/
-	std::shared_ptr<IEImage> depthImage{};
+	std::vector<std::shared_ptr<IEImage>> attachments{};
+	IERenderEngine *linkedRenderEngine{};
+	uint16_t width{};
+	uint16_t height{};
+	uint8_t framebufferNumber{};
+	
+	VkFramebuffer getNextFramebuffer();
+	
+	VkFramebuffer getThisFramebuffer();
 
 	IEFramebuffer();
 
-	~IEFramebuffer();
-
-	void copyCreateInfo(IEFramebuffer::CreateInfo *createInfo);
-
+	~IEFramebuffer() override;
+	
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 };

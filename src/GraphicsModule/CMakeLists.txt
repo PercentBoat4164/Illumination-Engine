@@ -18,8 +18,8 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         CommandBuffer/IECommandBuffer.hpp
         CommandBuffer/IECommandPool.cpp
         CommandBuffer/IECommandPool.hpp
-        Image/IEFramebuffer.cpp
-        Image/IEFramebuffer.hpp
+		RenderPass/IEFramebuffer.cpp
+		RenderPass/IEFramebuffer.hpp
         Image/IEImage.cpp
         Image/IEImage.hpp
         Image/IETexture.cpp
@@ -50,8 +50,8 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IEPipeline.hpp
         IERenderEngine.cpp
         IERenderEngine.hpp
-        IERenderPass.cpp
-        IERenderPass.hpp
+		RenderPass/IERenderPass.cpp
+		RenderPass/IERenderPass.hpp
         IERenderableSettings.cpp
         IERenderableSettings.hpp
         IESettings.cpp
@@ -60,7 +60,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IEUniformBufferObject.hpp
         IEVersion.cpp
         IEVersion.hpp
-        )
+		RenderPass/SubPass.cpp RenderPass/SubPass.hpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})
