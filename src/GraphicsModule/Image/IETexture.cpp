@@ -40,6 +40,7 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
 	format = createInfo->format;
 	type = createInfo->type;
 	usage = createInfo->usage;
+	status = IE_IMAGE_STATUS_UNLOADED;
 
 	/**@todo Implement mip-mapping again.*/
 	// Determine image data based on settings and input data
@@ -54,7 +55,7 @@ void IETexture::uploadToVRAM() {
 	_uploadToVRAM(*this);
 
 	// Update status
-	status = static_cast<IEImageStatus>(status | IE_IMAGE_STATUS_IN_VRAM);
+	status = static_cast<IEImageStatus>(status & IE_IMAGE_STATUS_IN_RAM | IE_IMAGE_STATUS_IN_VRAM);
 }
 
 void IETexture::_openglUploadToVRAM() {
@@ -83,7 +84,11 @@ void IETexture::_vulkanUploadToVRAM() {
 			.sharingMode=VK_SHARING_MODE_EXCLUSIVE,
 			.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,
 	};
-
+	
+	if (width * height == 0) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+												 "Image width * height is zero! This may cause Vulkan to fail to create the image. This may have been caused by uploading to VRAM before updating.");
+	}
 	// Set up allocation create info
 	VmaAllocationCreateInfo allocationCreateInfo{
 			.usage=allocationUsage,
@@ -143,30 +148,14 @@ void IETexture::_vulkanUploadToVRAM() {
 	if (vkCreateSampler(linkedRenderEngine->device.device, &samplerCreateInfo, nullptr, &sampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");
 	}
+	
+	update(data);
 
 	// Set transition to requested layout from undefined or dst_optimal.
 	if (desiredLayout != VK_IMAGE_LAYOUT_UNDEFINED && layout != desiredLayout) {
 		transitionLayout(desiredLayout);
 	}
 	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
-}
-
-void IETexture::uploadToVRAM(const std::vector<char> &data) {
-	uploadToVRAM();
-
-	update(data);
-}
-
-void IETexture::uploadToVRAM(void *data, uint64_t size) {
-	uploadToVRAM();
-
-	update(data, size);
-}
-
-void IETexture::uploadToVRAM(aiTexture *texture) {
-	uploadToVRAM();
-
-	update(texture);
 }
 
 

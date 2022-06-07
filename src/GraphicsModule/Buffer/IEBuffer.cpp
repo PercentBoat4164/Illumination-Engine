@@ -145,4 +145,8 @@ IEBuffer::IEBuffer(IERenderEngine *engineLink, VkDeviceSize bufferSize, VkBuffer
 	create(engineLink, bufferSize, usageFlags, memoryUsage);
 }
 
+void IEBuffer::uploadToRAM() {
+
+}
+
 IEBuffer::IEBuffer() = default;

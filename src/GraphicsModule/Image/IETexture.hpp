@@ -65,13 +65,7 @@ protected:
 public:
 	void uploadToVRAM() override;
 
-	void uploadToVRAM(const std::vector<char> &) override;
-
-	void uploadToVRAM(void *, uint64_t) override;
-
-	void uploadToVRAM(aiTexture *texture);
-
-
+	
 	void update(const std::vector<char> &) override;
 
 	void update(void *, uint64_t) override;

@@ -395,7 +395,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 		renderPass->destroy();
 	});
 	
-//	graphicsCommandPool->index(0)->execute();
+	graphicsCommandPool->index(0)->execute();
 	camera.create(this);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);

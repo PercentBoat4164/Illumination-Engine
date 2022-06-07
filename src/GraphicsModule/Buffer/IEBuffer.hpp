@@ -65,6 +65,8 @@ public:
 	void toImage(const std::shared_ptr<IEImage> &image);
 
 	~IEBuffer();
+	
+	void uploadToRAM();
 
 	void loadFromRAMToVRAM();
 

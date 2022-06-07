@@ -82,6 +82,8 @@ public:
 	void create(IERenderEngine *, IEImage::CreateInfo *);
 
 private:
+	static std::function<void(IEImage &)> _uploadToRAM;
+	
 	static std::function<void(IEImage &)> _uploadToVRAM;
 
 	static std::function<void(IEImage &, const std::vector<char> &)> _update_vector;
@@ -92,6 +94,11 @@ private:
 	static std::function<void(IEImage &)> _destroy;
 
 protected:
+	virtual void _openglUploadToRAM();
+	
+	virtual void _vulkanUploadToRAM();
+	
+	
 	virtual void _openglUploadToVRAM();
 
 	virtual void _vulkanUploadToVRAM();
@@ -116,11 +123,10 @@ protected:
 	virtual void _vulkanDestroy();
 
 public:
+	virtual void uploadToRAM();
+	
+	
 	virtual void uploadToVRAM();
-
-	virtual void uploadToVRAM(const std::vector<char> &);
-
-	virtual void uploadToVRAM(void *, uint64_t);
 
 
 	virtual void update(const std::vector<char> &);

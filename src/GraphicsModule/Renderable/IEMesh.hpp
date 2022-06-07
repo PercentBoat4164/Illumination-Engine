@@ -25,7 +25,7 @@ private:
 public:
 	IEMesh() = default;
 
-	IEMesh(IERenderEngine *);
+	explicit IEMesh(IERenderEngine *);
 
 	static void setAPI(const IEAPI &API);
 

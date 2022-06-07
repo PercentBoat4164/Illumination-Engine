@@ -36,12 +36,14 @@ IEImage::~IEImage() {
 void IEImage::setAPI(const IEAPI &API) {
 	IETexture::setAPI(API);
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+		_uploadToRAM = &IEImage::_openglUploadToRAM;
 		_uploadToVRAM = &IEImage::_openglUploadToVRAM;
 		_update_vector = &IEImage::_openglUpdate_vector;
 		_update_voidPtr = &IEImage::_openglUpdate_voidPtr;
 		_unloadFromVRAM = &IEImage::_openglUnloadFromVRAM;
 		_destroy = &IEImage::_openglDestroy;
 	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		_uploadToRAM = &IEImage::_vulkanUploadToRAM;
 		_uploadToVRAM = &IEImage::_vulkanUploadToVRAM;
 		_update_vector = &IEImage::_vulkanUpdate_vector;
 		_update_voidPtr = &IEImage::_vulkanUpdate_voidPtr;
@@ -67,6 +69,27 @@ void IEImage::create(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo
 	data = createInfo->data;
 
 	status = IE_IMAGE_STATUS_UNLOADED;
+}
+
+
+std::function<void(IEImage &)> IEImage::_uploadToRAM{nullptr};
+
+void IEImage::uploadToRAM() {
+	status = static_cast<IEImageStatus>(status & IE_IMAGE_STATUS_IN_VRAM | IE_IMAGE_STATUS_IN_RAM);
+	if (status & IE_IMAGE_STATUS_IN_VRAM) {
+		_uploadToRAM(*this);
+	}
+}
+
+void IEImage::_openglUploadToRAM() {
+
+}
+
+void IEImage::_vulkanUploadToRAM() {
+	std::shared_ptr<IEBuffer>stagingBuffer = std::make_shared<IEBuffer>();
+	toBuffer(stagingBuffer, width * height * channels);
+	stagingBuffer->uploadToRAM();
+	data = stagingBuffer->data;
 }
 
 
@@ -111,7 +134,7 @@ void IEImage::_vulkanUploadToVRAM() {
 
 	if (width * height == 0) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 "Image width * height is zero! This may cause Vulkan to fail to create the image.");
+												 "Image width * height is zero! This may cause Vulkan to fail to create the image. This may have been caused by uploading to VRAM before updating.");
 	}
 
 	// Create image
@@ -145,20 +168,6 @@ void IEImage::_vulkanUploadToVRAM() {
 	if (layout != desiredLayout) {
 		transitionLayout(desiredLayout);
 	}
-}
-
-void IEImage::uploadToVRAM(const std::vector<char> &data) {
-	uploadToVRAM();
-
-	// load data
-	update(data);
-}
-
-void IEImage::uploadToVRAM(void *data, uint64_t size) {
-	uploadToVRAM();
-
-	// load data
-	update(data, size);
 }
 
 
