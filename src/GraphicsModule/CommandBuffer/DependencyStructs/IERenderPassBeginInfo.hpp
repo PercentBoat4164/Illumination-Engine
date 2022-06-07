@@ -8,6 +8,7 @@ public:
 	const void *pNext{};
 	std::shared_ptr<IERenderPass> renderPass{};
 	std::shared_ptr<IEFramebuffer> framebuffer{};
+	uint8_t framebufferIndex{};
 	VkRect2D renderArea{};
 	uint32_t clearValueCount{};
 	const VkClearValue *pClearValues{};

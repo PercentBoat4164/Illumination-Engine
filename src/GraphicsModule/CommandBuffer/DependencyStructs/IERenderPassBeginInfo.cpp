@@ -19,7 +19,7 @@ IERenderPassBeginInfo::operator VkRenderPassBeginInfo() const {
 			.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
 			.pNext=pNext,
 			.renderPass=renderPass->renderPass,
-			.framebuffer=framebuffer->getNextFramebuffer(),
+			.framebuffer=framebuffer->getFramebuffer(framebufferIndex),
 			.renderArea=renderArea,
 			.clearValueCount=clearValueCount,
 			.pClearValues=pClearValues

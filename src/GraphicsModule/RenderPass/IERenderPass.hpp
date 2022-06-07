@@ -28,15 +28,15 @@ public:
 	} createdWith;
 
 	VkRenderPass renderPass{};
-	std::vector<std::shared_ptr<IEFramebuffer>> framebuffers{};
+	std::shared_ptr<IEFramebuffer> framebuffer{};
 
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-	IERenderPassBeginInfo beginRenderPass(uint32_t framebufferIndex);
+	IERenderPassBeginInfo beginRenderPass(uint8_t index);
 
 	void destroy();
 
-	~IERenderPass();
+	~IERenderPass() override;
 
 private:
 	std::vector<std::function<void()>> deletionQueue{};

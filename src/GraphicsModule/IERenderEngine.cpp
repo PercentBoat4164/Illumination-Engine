@@ -376,14 +376,26 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	deletionQueue.insert(deletionQueue.begin(), [&] {
 		destroyCommandPools();
 	});
-
+	
+	IEImage::CreateInfo depthImageCreateInfo {
+			.format=VK_FORMAT_D32_SFLOAT_S8_UINT,
+			.layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			.aspect=VK_IMAGE_ASPECT_DEPTH_BIT,
+			.allocationUsage=VMA_MEMORY_USAGE_GPU_ONLY,
+			.width=swapchain.extent.width,
+			.height=swapchain.extent.height,
+	};
+	depthImage = std::make_shared<IEImage>(this, &depthImageCreateInfo);
+	depthImage->uploadToVRAM();
+	
 	// Create render pass
 	createRenderPass();
 	deletionQueue.insert(deletionQueue.begin(), [&] {
 		renderPass->destroy();
 	});
-
-	graphicsCommandPool->index(0)->execute();
+	
+//	graphicsCommandPool->index(0)->execute();
 	camera.create(this);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
@@ -460,11 +472,11 @@ bool IERenderEngine::_vulkanUpdate() {
 													inFlightFences[currentFrame]);
 	VkPresentInfoKHR presentInfo{
 			.sType=VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &renderFinishedSemaphores[currentFrame],
-			.swapchainCount = 1,
-			.pSwapchains = &swapchain.swapchain,
-			.pImageIndices = &imageIndex,
+			.waitSemaphoreCount=1,
+			.pWaitSemaphores=&renderFinishedSemaphores[currentFrame],
+			.swapchainCount=1,
+			.pSwapchains=&swapchain.swapchain,
+			.pImageIndices=&imageIndex,
 	};
 	graphicsCommandPool->index(imageIndex)->commandPool->commandPoolMutex.lock();
 	result = vkQueuePresentKHR(presentQueue, &presentInfo);
@@ -574,6 +586,16 @@ void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, i
 			pWindow))->renderEngine;
 	*renderEngine->settings->currentResolution = {width, height};
 	renderEngine->framebufferResized = true;
+	IEImage::CreateInfo depthImageCreateInfo {
+			.format=VK_FORMAT_D32_SFLOAT_S8_UINT,
+			.layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			.aspect=VK_IMAGE_ASPECT_DEPTH_BIT,
+			.allocationUsage=VMA_MEMORY_USAGE_GPU_ONLY,
+			.width=renderEngine->swapchain.extent.width,
+			.height=renderEngine->swapchain.extent.height,
+	};
+	renderEngine->depthImage = std::make_shared<IEImage>(renderEngine.get(), &depthImageCreateInfo);
 }
 
 std::string IERenderEngine::translateVkResultCodes(VkResult result) {

@@ -15,6 +15,8 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
 	createdWith = *createInfo;
 	linkedRenderEngine = engineLink;
 
+	linkedRenderEngine->settings->msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+	
 	// Generate attachment descriptions
 	uint8_t thisAttachmentMsaaSampleCount = std::max(static_cast<uint8_t>(1),
 													 std::min(linkedRenderEngine->settings->msaaSamples, createdWith.msaaSamples));
@@ -101,33 +103,31 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
 	});
 
 	// Create framebuffers
-	framebuffers.resize(linkedRenderEngine->swapchainImageViews.size());
 	IEFramebuffer::CreateInfo framebufferCreateInfo{
 			.renderPass=weak_from_this(),
 			.attachments={}
 	};
-	for (uint32_t i = 0; i < linkedRenderEngine->swapchainImageViews.size(); ++i) {
-		framebufferCreateInfo.swapchainImageViews = linkedRenderEngine->swapchainImageViews;
-		framebuffers[i] = std::make_shared<IEFramebuffer>();
-		framebuffers[i]->create(linkedRenderEngine, &framebufferCreateInfo);
-	}
+	framebuffer = std::make_shared<IEFramebuffer>();
+	framebuffer->create(linkedRenderEngine, &framebufferCreateInfo);
 }
 
-IERenderPassBeginInfo IERenderPass::beginRenderPass(uint32_t framebufferIndex) {
+IERenderPassBeginInfo IERenderPass::beginRenderPass(uint8_t index) {
 	IERenderPassBeginInfo renderPassBeginInfo{
 			.renderPass=shared_from_this(),
-			.framebuffer=framebuffers[framebufferIndex],
+			.framebuffer=framebuffer,
+			.framebufferIndex=index,
 			.renderArea{
 					.offset={0, 0},
 					.extent=linkedRenderEngine->swapchain.extent,
 			},
-			.clearValueCount=static_cast<uint32_t>(framebuffers[framebufferIndex]->clearValues.size()),
-			.pClearValues=framebuffers[framebufferIndex]->clearValues.data(),
+			.clearValueCount=static_cast<uint32_t>(framebuffer->clearValues.size()),
+			.pClearValues=framebuffer->clearValues.data(),
 	};
 	return renderPassBeginInfo;
 }
 
 void IERenderPass::destroy() {
+	invalidateDependents();
 	for (std::function<void()> &function: deletionQueue) {
 		function();
 	}

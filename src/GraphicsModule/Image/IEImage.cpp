@@ -28,11 +28,13 @@ IEImage::IEImage(IERenderEngine *engineLink, IEImage::CreateInfo *createInfo) {
 }
 
 IEImage::~IEImage() {
-	/**@todo Switch to using status enum as opposed to queuing up deletion actions.*/
-	destroy();
+	if (status != IE_IMAGE_STATUS_UNLOADED) {
+		_destroy(*this);
+	}
 }
 
 void IEImage::setAPI(const IEAPI &API) {
+	IETexture::setAPI(API);
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_uploadToVRAM = &IEImage::_openglUploadToVRAM;
 		_update_vector = &IEImage::_openglUpdate_vector;
