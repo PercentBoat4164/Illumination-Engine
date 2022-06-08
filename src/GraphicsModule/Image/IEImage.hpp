@@ -7,7 +7,7 @@ class IEBuffer;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "IEDependency.hpp"
+#include "GraphicsModule/CommandBuffer/IEDependency.hpp"
 #include "IEAPI.hpp"
 
 // External dependencies

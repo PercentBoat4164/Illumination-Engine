@@ -87,8 +87,8 @@ void IEMaterial::_vulkanLoadFromDiskToRAM(const std::string &directory, const ai
 		*textureType.first = linkedRenderEngine->textures.size();
 		linkedRenderEngine->textures.push_back(std::make_shared<IETexture>(linkedRenderEngine, new IETexture::CreateInfo));
 		linkedRenderEngine->textures[*textureType.first]->uploadToRAM();
-		linkedRenderEngine->textures[*textureType.first]->update(texture);
 		linkedRenderEngine->textures[*textureType.first]->uploadToVRAM();
+		linkedRenderEngine->textures[*textureType.first]->update(texture);
 	}
 }
 

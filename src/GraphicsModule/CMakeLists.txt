@@ -38,10 +38,10 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IEAPI.hpp
         IECamera.cpp
         IECamera.hpp
-        IEDependency.cpp
-        IEDependency.hpp
-        IEDependent.cpp
-        IEDependent.hpp
+		CommandBuffer/IEDependency.cpp
+		CommandBuffer/IEDependency.hpp
+		CommandBuffer/IEDependent.cpp
+		CommandBuffer/IEDependent.hpp
         IEDescriptorSet.cpp
         IEDescriptorSet.hpp
         IEMonitor.cpp
