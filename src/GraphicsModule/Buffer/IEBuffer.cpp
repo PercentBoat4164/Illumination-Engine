@@ -65,29 +65,6 @@ void IEBuffer::loadFromRAMToVRAM() {
 	vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 }
 
-void IEBuffer::toImage(const std::shared_ptr<IEImage> &image, uint32_t width, uint32_t height) {
-	if ((status & IE_BUFFER_STATUS_CREATED) == 0) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 "Attempt to convert a buffer that has not been created to an image.");
-	}
-	VkBufferImageCopy region{};
-	region.imageSubresource.aspectMask =
-			image->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ?
-			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	region.imageSubresource.layerCount = 1;
-	region.imageExtent = {width, height, 1};
-	VkImageLayout oldLayout;
-	if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-		oldLayout = image->layout;
-		image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		linkedRenderEngine->graphicsCommandPool->index(0)->recordCopyBufferToImage(shared_from_this(), image, {region});
-		image->transitionLayout(oldLayout);
-	} else {
-		linkedRenderEngine->graphicsCommandPool->index(0)->recordCopyBufferToImage(shared_from_this(), image, {region});
-	}
-	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
-}
-
 void IEBuffer::unloadFromVRAM() {
 	if ((status & IE_BUFFER_STATUS_DATA_IN_VRAM) == 0) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to unload buffer from VRAM when buffer not in VRAM.");
@@ -125,7 +102,6 @@ IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo)
 }
 
 void IEBuffer::create(IERenderEngine *engineLink, VkDeviceSize bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage) {
-	if ((status & IE_BUFFER_STATUS_CREATED) != 0) {}
 	linkedRenderEngine = engineLink;
 	size = bufferSize;
 	usage = usageFlags;
@@ -138,7 +114,7 @@ void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createIn
 	size = createInfo->size;
 	usage = createInfo->usage;
 	allocationUsage = createInfo->allocationUsage;
-	status = IE_BUFFER_STATUS_CREATED;
+	status = IE_BUFFER_STATUS_UNLOADED;
 }
 
 IEBuffer::IEBuffer(IERenderEngine *engineLink, VkDeviceSize bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage) {

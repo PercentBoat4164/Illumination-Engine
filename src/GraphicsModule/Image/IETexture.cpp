@@ -155,7 +155,6 @@ void IETexture::_vulkanUploadToVRAM() {
 	if (desiredLayout != VK_IMAGE_LAYOUT_UNDEFINED && layout != desiredLayout) {
 		transitionLayout(desiredLayout);
 	}
-	linkedRenderEngine->graphicsCommandPool->index(0)->execute();
 }
 
 
