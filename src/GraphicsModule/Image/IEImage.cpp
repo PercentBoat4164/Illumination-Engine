@@ -192,7 +192,6 @@ void IEImage::_vulkanUpdate_vector(const std::vector<char> &data) {
 		scratchBuffer->loadFromDiskToRAM(data);
 		scratchBuffer->loadFromRAMToVRAM();
 		scratchBuffer->toImage(shared_from_this());
-		linkedRenderEngine->graphicsCommandPool->index(0)->execute();
 	}
 }
 
@@ -217,7 +216,6 @@ void IEImage::_vulkanUpdate_voidPtr(void *data, uint64_t size) {
 		scratchBuffer->loadFromDiskToRAM(data, size);
 		scratchBuffer->loadFromRAMToVRAM();
 		scratchBuffer->toImage(shared_from_this());
-		linkedRenderEngine->graphicsCommandPool->index(0)->execute();
 	}
 }
 
