@@ -52,7 +52,11 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
 std::function<void(IETexture &)> IETexture::_uploadToVRAM{nullptr};
 
 void IETexture::uploadToVRAM() {
-	_uploadToVRAM(*this);
+	if (width * height * channels > 0) {
+		_uploadToVRAM(*this);
+	} else {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to load image with size of zero into VRAM");
+	}
 
 	// Update status
 	status = static_cast<IEImageStatus>(status & IE_IMAGE_STATUS_IN_RAM | IE_IMAGE_STATUS_IN_VRAM);
@@ -196,7 +200,6 @@ void IETexture::_vulkanUpdate_aiTexture(aiTexture *texture) {
 												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
 												 stbi_failure_reason());
 	}
-
 	_vulkanUpdate_vector(data);
 }
 

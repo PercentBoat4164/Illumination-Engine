@@ -79,7 +79,7 @@ void IEBuffer::toImage(const std::shared_ptr<IEImage> &image) {
 			image->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ?
 			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	region.imageSubresource.layerCount = 1;
-	region.imageExtent = {image->width, image->height, 1};
+	region.imageExtent = {image->width, image->height, image->channels};
 	VkImageLayout oldLayout;
 	if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		oldLayout = image->layout;

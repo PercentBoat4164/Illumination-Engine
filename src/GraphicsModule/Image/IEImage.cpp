@@ -191,6 +191,7 @@ void IEImage::_vulkanUpdate_vector(const std::vector<char> &data) {
 																			 VMA_MEMORY_USAGE_CPU_TO_GPU);
 		scratchBuffer->loadFromDiskToRAM(data);
 		scratchBuffer->loadFromRAMToVRAM();
+		uploadToVRAM();
 		scratchBuffer->toImage(shared_from_this());
 	}
 }

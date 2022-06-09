@@ -64,7 +64,7 @@ protected:
 
 public:
 	void uploadToVRAM() override;
-
+	
 	
 	void update(const std::vector<char> &) override;
 

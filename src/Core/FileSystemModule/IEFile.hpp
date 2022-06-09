@@ -62,7 +62,7 @@ public:
         file.close();
     }
 
-    std::string read(std::streamsize numBytes, std::streamsize startPosition=-1) {
+    virtual std::string read(std::streamsize numBytes, std::streamsize startPosition=-1) {
         if (startPosition == -1) {  // If no starting position
             startPosition = file.tellg();  // Start here
         }

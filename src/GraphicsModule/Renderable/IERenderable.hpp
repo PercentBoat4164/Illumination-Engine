@@ -22,6 +22,7 @@ class IECamera;
 
 // External dependencies
 #include <assimp/Importer.hpp>
+#include <assimp/BaseImporter.h>
 
 #include <vulkan/vulkan.h>
 
@@ -46,6 +47,7 @@ public:
 	IEUniformBufferObject uniformBufferObject{};
 	std::vector<IEShader> shaders{};
 	Assimp::Importer importer{};
+//	Assimp::BaseImporter baseImporter{};
 	bool render{true};
 	uint32_t commandBufferIndex{};
 	std::string directory{};
