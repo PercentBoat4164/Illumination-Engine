@@ -10,30 +10,39 @@
 
 
 /**
- * A collection of data stored in RAM intended to be written to a file on disk when saved
+ * A collection of data stored in RAM
  */
 class IETempFile {
 public:
     std::string name{}; // the filename
     std::string data{}; // the data in the file
     std::fstream fileIO{}; // fstream used to read and write to real files
+    int size{}; // the number of chars in the data string
 
-    //Creates a TempFile with an associated real file
-    IETempFile(std::string filename) {
+    // Create a TempFile from a file on disk
+    explicit IETempFile(const std::string& filename) {
         fileIO.open(filename);
         if(fileIO.is_open()) {
             data = readFileData();
             name = filename;
+            size = data.size();
             std::cout << "Opened file";
         } else {
             std::cout << "File failed to open!";
         }
     }
 
-    //change the file that this object is associated with
-    void setAssociatedFile(std::string filePath) {
-        fileIO.close();
-        fileIO.open(filePath);
+    // Read data from the TempFile
+    std::string read(int startPosition, std::streamsize numBytes) {
+
+        std::string output;
+
+        // Add all the bytes to the output string
+        for(int i = startPosition; i < startPosition + numBytes && i < size; i++) {
+            output += data[i];
+        }
+
+        return output;
     }
 
 private:
