@@ -97,7 +97,7 @@ void IECommandBuffer::free(bool synchronize) {
 	}
 }
 
-IECommandBuffer::IECommandBuffer(IERenderEngine *engineLink, std::shared_ptr<IECommandPool> parentCommandPool) {
+IECommandBuffer::IECommandBuffer(IERenderEngine *engineLink, const std::shared_ptr<IECommandPool> &parentCommandPool) {
 	linkedRenderEngine = engineLink;
 	commandPool = parentCommandPool;
 	status = IE_COMMAND_BUFFER_STATE_NONE;

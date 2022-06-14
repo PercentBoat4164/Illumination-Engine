@@ -57,12 +57,14 @@ void IEBuffer::loadFromRAMToVRAM() {
 			bufferDeviceAddressInfo.buffer = buffer;
 			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
 		}
+		
+		// Upload data in RAM to VRAM
+		void *internalBufferData;
+		vmaMapMemory(linkedRenderEngine->allocator, allocation, &internalBufferData);
+		memcpy(internalBufferData, data.data(), data.size());
+		vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 	}
 
-	// Upload data in RAM to VRAM
-	vmaMapMemory(linkedRenderEngine->allocator, allocation, &internalBufferData);
-	memcpy(internalBufferData, data.data(), data.size());
-	vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 }
 
 void IEBuffer::unloadFromVRAM() {
@@ -75,14 +77,11 @@ void IEBuffer::unloadFromVRAM() {
 
 void IEBuffer::toImage(const std::shared_ptr<IEImage> &image) {
 	VkBufferImageCopy region{};
-	region.imageSubresource.aspectMask =
-			image->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || image->layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ?
-			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.aspectMask = image->aspect & (VK_IMAGE_ASPECT_COLOR_BIT | VK_IMAGE_ASPECT_DEPTH_BIT);
 	region.imageSubresource.layerCount = 1;
-	region.imageExtent = {image->width, image->height, image->channels};
-	VkImageLayout oldLayout;
+	region.imageExtent = {image->width, image->height, 1};
 	if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-		oldLayout = image->layout;
+		VkImageLayout oldLayout = image->layout;
 		image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		linkedRenderEngine->graphicsCommandPool->index(0)->recordCopyBufferToImage(shared_from_this(), image, {region});
 		if (oldLayout != VK_IMAGE_LAYOUT_UNDEFINED) {

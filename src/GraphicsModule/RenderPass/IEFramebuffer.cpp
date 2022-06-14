@@ -74,3 +74,11 @@ IEFramebuffer::~IEFramebuffer() {
 		attachment->destroy();
 	}
 }
+
+VkFramebuffer IEFramebuffer::operator[](uint8_t index) {
+	return framebuffers[index];
+}
+
+VkFramebuffer IEFramebuffer::getFramebuffer(uint8_t index) {
+	return framebuffers[index];
+}

@@ -380,11 +380,12 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	IEImage::CreateInfo depthImageCreateInfo {
 			.format=VK_FORMAT_D32_SFLOAT_S8_UINT,
 			.layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
-			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			.aspect=VK_IMAGE_ASPECT_DEPTH_BIT,
+			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+			.aspect=VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
 			.allocationUsage=VMA_MEMORY_USAGE_GPU_ONLY,
 			.width=swapchain.extent.width,
 			.height=swapchain.extent.height,
+			.channels=1,
 	};
 	depthImage = std::make_shared<IEImage>(this, &depthImageCreateInfo);
 	depthImage->uploadToVRAM();

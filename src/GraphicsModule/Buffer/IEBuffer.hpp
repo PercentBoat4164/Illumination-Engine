@@ -74,7 +74,4 @@ public:
 protected:
 	IERenderEngine *linkedRenderEngine{};
 	VmaAllocation allocation{};
-
-private:
-	void *internalBufferData{};
 };

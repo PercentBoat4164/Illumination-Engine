@@ -17,19 +17,15 @@ IETexture::IETexture(IERenderEngine *engineLink, IETexture::CreateInfo *createIn
 
 void IETexture::setAPI(const IEAPI &API) {
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+		_update_texture = &IETexture::_openglUpdate_aiTexture;
+		_uploadToRAM_texture = &IETexture::_openglUploadToRAM_texture;
 		_uploadToVRAM = &IETexture::_openglUploadToVRAM;
-		_update_vector = &IETexture::_openglUpdate_vector;
-		_update_voidPtr = &IETexture::_openglUpdate_voidPtr;
-		_update_aiTexture = &IETexture::_openglUpdate_aiTexture;
-		_unloadFromVRAM = &IETexture::_openglUnloadFromVRAM;
-		_destroy = &IETexture::_openglDestroy;
+		_uploadToVRAM_texture = &IETexture::_openglUploadToVRAM_texture;
 	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		_update_texture = &IETexture::_vulkanUpdate_aiTexture;
+		_uploadToRAM_texture = &IETexture::_vulkanUploadToRAM_texture;
 		_uploadToVRAM = &IETexture::_vulkanUploadToVRAM;
-		_update_vector = &IETexture::_vulkanUpdate_vector;
-		_update_voidPtr = &IETexture::_vulkanUpdate_voidPtr;
-		_update_aiTexture = &IETexture::_vulkanUpdate_aiTexture;
-		_unloadFromVRAM = &IETexture::_vulkanUnloadFromVRAM;
-		_destroy = &IETexture::_vulkanDestroy;
+		_uploadToVRAM_texture = &IETexture::_vulkanUploadToVRAM_texture;
 	}
 }
 
@@ -39,8 +35,8 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
 	layout = createInfo->layout;
 	format = createInfo->format;
 	type = createInfo->type;
-	usage = createInfo->usage;
-	status = IE_IMAGE_STATUS_UNLOADED;
+	usage = createInfo->usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	status = static_cast<IEImageStatus>(IE_IMAGE_STATUS_UNLOADED | IE_IMAGE_STATUS_QUEUED_RAM | IE_IMAGE_STATUS_QUEUED_VRAM);
 
 	/**@todo Implement mip-mapping again.*/
 	// Determine image data based on settings and input data
@@ -52,14 +48,15 @@ void IETexture::create(IERenderEngine *engineLink, IETexture::CreateInfo *create
 std::function<void(IETexture &)> IETexture::_uploadToVRAM{nullptr};
 
 void IETexture::uploadToVRAM() {
-	if (width * height * channels > 0) {
+	if (width * height * channels == 0) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Attempt to load image with size of zero into VRAM");
+	}
+	if (status & IE_IMAGE_STATUS_QUEUED_VRAM) {
 		_uploadToVRAM(*this);
-	} else {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Attempt to load image with size of zero into VRAM");
 	}
 
 	// Update status
-	status = static_cast<IEImageStatus>(status & IE_IMAGE_STATUS_IN_RAM | IE_IMAGE_STATUS_IN_VRAM);
+	status = static_cast<IEImageStatus>(status & ~IE_IMAGE_STATUS_QUEUED_VRAM | IE_IMAGE_STATUS_IN_VRAM);
 }
 
 void IETexture::_openglUploadToVRAM() {
@@ -69,115 +66,24 @@ void IETexture::_openglUploadToVRAM() {
 void IETexture::_vulkanUploadToVRAM() {
 	VkImageLayout desiredLayout = layout;
 	layout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-	// Set up image create info.
-	VkImageCreateInfo imageCreateInfo{
-			.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-			.imageType=type,
-			.format=format,
-			.extent=VkExtent3D{
-					.width=width,
-					.height=height,
-					.depth=1
-			},
-			.mipLevels=1, // mipLevels, Unused due to no implementation of mip-mapping support yet.
-			.arrayLayers=1,
-			.samples=static_cast<VkSampleCountFlagBits>(1),
-			.tiling=VK_IMAGE_TILING_OPTIMAL,
-			.usage=usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-			.sharingMode=VK_SHARING_MODE_EXCLUSIVE,
-			.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,
-	};
 	
-	if (width * height == 0) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 "Image width * height is zero! This may cause Vulkan to fail to create the image. This may have been caused by uploading to VRAM before updating.");
-	}
-	// Set up allocation create info
-	VmaAllocationCreateInfo allocationCreateInfo{
-			.usage=allocationUsage,
-	};
-
-	// Create image
-	if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create texture image!");
-	}
-
-	// Set up image view create info.
-	VkImageViewCreateInfo imageViewCreateInfo{
-			.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.image=image,
-			.viewType=VK_IMAGE_VIEW_TYPE_2D, /**@todo Add support for more than just 2D images.*/
-			.format=format,
-			.components=VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-										   VK_COMPONENT_SWIZZLE_IDENTITY},  // Unused. All components are mapped to default data.
-			.subresourceRange=VkImageSubresourceRange{
-					.aspectMask=VK_IMAGE_ASPECT_COLOR_BIT,
-					.baseMipLevel=0,
-					.levelCount=1,  // Unused. Mip-mapping is not yet implemented.
-					.baseArrayLayer=0,
-					.layerCount=1,
-			},
-	};
-
-	// Create image view
-	if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create texture image view!");
-	}
-
-	// Determine the anisotropy level to use.
-//        anisotropyLevel = linkedRenderEngine->settings.anisotropicFilterLevel > 0 * std::min(anisotropyLevel, linkedRenderEngine->device.physical_device.properties.limits.maxSamplerAnisotropy);
-
-	// Set up image sampler create info.
-	VkSamplerCreateInfo samplerCreateInfo{
-			.sType=VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-			.magFilter=VK_FILTER_NEAREST,
-			.minFilter=VK_FILTER_NEAREST,
-			.mipmapMode=VK_SAMPLER_MIPMAP_MODE_LINEAR,
-			.addressModeU=VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			.addressModeV=VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			.addressModeW=VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			.mipLodBias=linkedRenderEngine->settings->mipMapLevel,
-//                .anisotropyEnable=linkedRenderEngine->settings.anisotropicFilterLevel > 0,
-//                .maxAnisotropy=anisotropyLevel,
-			.compareEnable=VK_FALSE,
-			.compareOp=VK_COMPARE_OP_ALWAYS,
-			.minLod=0.0F,
-//                .maxLod=static_cast<float>(mipLevels),
-			.borderColor=VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-			.unnormalizedCoordinates=VK_FALSE,
-	};
-
-	// Create image sampler
-	if (vkCreateSampler(linkedRenderEngine->device.device, &samplerCreateInfo, nullptr, &sampler) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create texture sampler!");
-	}
+	_vulkanCreateImage();
+	_vulkanCreateImageView();
+	_vulkanCreateImageSampler();
 	
 	update(data);
-
+	
 	// Set transition to requested layout from undefined or dst_optimal.
-	if (desiredLayout != VK_IMAGE_LAYOUT_UNDEFINED && layout != desiredLayout) {
+	if (layout != desiredLayout) {
 		transitionLayout(desiredLayout);
 	}
 }
 
 
-std::function<void(IETexture &, const std::vector<char> &)> IETexture::_update_vector{nullptr};
-
-void IETexture::update(const std::vector<char> &data) {
-	_update_vector(*this, data);
-}
-
-std::function<void(IETexture &, void *, uint64_t)> IETexture::_update_voidPtr{nullptr};
-
-void IETexture::update(void *data, uint64_t size) {
-	_update_voidPtr(*this, data, size);
-}
-
-std::function<void(IETexture &, aiTexture *)> IETexture::_update_aiTexture{nullptr};
+std::function<void(IETexture &, aiTexture *)> IETexture::_update_texture{nullptr};
 
 void IETexture::update(aiTexture *texture) {
-	_update_aiTexture(*this, texture);
+	_update_texture(*this, texture);
 }
 
 void IETexture::_openglUpdate_aiTexture(aiTexture *texture) {
@@ -204,17 +110,98 @@ void IETexture::_vulkanUpdate_aiTexture(aiTexture *texture) {
 }
 
 
-std::function<void(IETexture &)> IETexture::_unloadFromVRAM{nullptr};
+std::function<void(IETexture &, aiTexture *)> IETexture::_uploadToVRAM_texture{nullptr};
 
-void IETexture::unloadFromVRAM() {
-	_unloadFromVRAM(*this);
+void IETexture::uploadToVRAM(aiTexture *texture) {
+	_uploadToVRAM_texture(*this, texture);
+}
+
+void IETexture::_openglUploadToVRAM_texture(aiTexture *texture) {
+
+}
+
+void IETexture::_vulkanUploadToVRAM_texture(aiTexture *texture) {
+	stbi_uc *tempData;
+	if (texture->mHeight == 0) {
+		tempData = stbi_load_from_memory((unsigned char *) texture->pcData, (int) texture->mWidth, reinterpret_cast<int *>(&width),
+										 reinterpret_cast<int *>(&height), reinterpret_cast<int *>(&channels), 4);
+	} else {
+		tempData = stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height),
+							 reinterpret_cast<int *>(&channels), 4);
+	}
+	channels = 4;  /**@todo Make number of channels imported change the number of channels in VRAM.*/
+	std::vector<char> data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
+	if (data.empty()) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
+												 stbi_failure_reason());
+	}
+	
+	_vulkanCreateImage();
+	_vulkanCreateImageView();
+	_vulkanCreateImageSampler();
+	
+	IEImageStatus originalStatus = status;
+	status = IE_IMAGE_STATUS_QUEUED_VRAM;
+	
+	
+	status = static_cast<IEImageStatus>(originalStatus | IE_IMAGE_STATUS_IN_VRAM);
+	
+	
 }
 
 
-std::function<void(IETexture &)> IETexture::_destroy{nullptr};
-
-void IETexture::destroy() {
-	if (status != IE_IMAGE_STATUS_UNLOADED) {
-		_destroy(*this);
+void IETexture::_vulkanCreateImageSampler() {
+	// Set up image sampler create info.
+	VkSamplerCreateInfo samplerCreateInfo{
+			.sType=VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+			.magFilter=VK_FILTER_NEAREST,
+			.minFilter=VK_FILTER_NEAREST,
+			.mipmapMode=VK_SAMPLER_MIPMAP_MODE_LINEAR,
+			.addressModeU=VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			.addressModeV=VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			.addressModeW=VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			.mipLodBias=linkedRenderEngine->settings->mipMapLevel,
+//                .anisotropyEnable=linkedRenderEngine->settings.anisotropicFilterLevel > 0,
+//                .maxAnisotropy=anisotropyLevel,
+			.compareEnable=VK_FALSE,
+			.compareOp=VK_COMPARE_OP_ALWAYS,
+			.minLod=0.0F,
+//                .maxLod=static_cast<float>(mipLevels),
+			.borderColor=VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+			.unnormalizedCoordinates=VK_FALSE,
+	};
+	
+	// Create image sampler
+	if (vkCreateSampler(linkedRenderEngine->device.device, &samplerCreateInfo, nullptr, &sampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create texture sampler!");
 	}
+}
+
+std::function<void(IETexture &, aiTexture *)> IETexture::_uploadToRAM_texture{nullptr};
+
+void IETexture::_openglUploadToRAM_texture(aiTexture *texture) {
+
+}
+
+void IETexture::_vulkanUploadToRAM_texture(aiTexture *texture) {
+	stbi_uc *tempData;
+	if (texture->mHeight == 0) {
+		tempData = stbi_load_from_memory((unsigned char *) texture->pcData, (int) texture->mWidth, reinterpret_cast<int *>(&width),
+										 reinterpret_cast<int *>(&height), reinterpret_cast<int *>(&channels), 4);
+	} else {
+		tempData = stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height),
+							 reinterpret_cast<int *>(&channels), 4);
+	}
+	channels = 4;  /**@todo Make number of channels imported change the number of channels in VRAM.*/
+	data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
+	if (data.empty()) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
+												 stbi_failure_reason());
+	}
+}
+
+void IETexture::uploadToRAM(aiTexture *texture) {
+	_uploadToRAM_texture(*this, texture);
 }

@@ -39,9 +39,7 @@ public:
 	uint16_t width{};
 	uint16_t height{};
 	
-	VkFramebuffer getFramebuffer(uint8_t index) {
-		return framebuffers[index];
-	}
+	VkFramebuffer getFramebuffer(uint8_t index);
 
 	IEFramebuffer();
 
@@ -49,7 +47,5 @@ public:
 	
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 	
-	VkFramebuffer operator[](uint8_t index) {
-		return framebuffers[index];
-	}
+	VkFramebuffer operator[](uint8_t index);
 };

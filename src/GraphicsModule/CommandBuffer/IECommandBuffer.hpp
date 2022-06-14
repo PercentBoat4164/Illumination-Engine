@@ -38,7 +38,7 @@ public:
 	bool oneTimeSubmission{false};
 	std::thread executionThread{};
 
-	IECommandBuffer(IERenderEngine *linkedRenderEngine, std::shared_ptr<IECommandPool> parentCommandPool);
+	IECommandBuffer(IERenderEngine *linkedRenderEngine, const std::shared_ptr<IECommandPool> &parentCommandPool);
 
 	void wait();
 

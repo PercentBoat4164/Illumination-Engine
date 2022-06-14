@@ -23,7 +23,7 @@ class IETexture : public IEImage {
 public:
 	struct CreateInfo {
 		VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};
-		VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};
+		VkImageLayout layout{VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
 		VkImageType type{VK_IMAGE_TYPE_2D};
 		VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
 		VkImageCreateFlags flags{};
@@ -43,15 +43,13 @@ public:
 
 private:
 	static std::function<void(IETexture &)> _uploadToVRAM;
-
-	static std::function<void(IETexture &, const std::vector<char> &)> _update_vector;
-	static std::function<void(IETexture &, void *, uint64_t)> _update_voidPtr;
-	static std::function<void(IETexture &, aiTexture *)> _update_aiTexture;
-
-	static std::function<void(IETexture &)> _unloadFromVRAM;
-
-	static std::function<void(IETexture &)> _destroy;
-
+	
+	static std::function<void(IETexture &, aiTexture *)> _uploadToRAM_texture;
+	
+	static std::function<void(IETexture &, aiTexture *)> _uploadToVRAM_texture;
+	
+	static std::function<void(IETexture &, aiTexture *)> _update_texture;
+	
 protected:
 	void _openglUploadToVRAM() override;
 
@@ -61,20 +59,39 @@ protected:
 	virtual void _openglUpdate_aiTexture(aiTexture *);
 
 	virtual void _vulkanUpdate_aiTexture(aiTexture *);
-
+	
+	
+	virtual void _openglUploadToRAM_texture(aiTexture *);
+	
+	virtual void _vulkanUploadToRAM_texture(aiTexture *);
+	
+	
+	virtual void _openglUploadToVRAM_texture(aiTexture *);
+	
+	virtual void _vulkanUploadToVRAM_texture(aiTexture *);
+	
+	
+	void _vulkanCreateImageSampler();
+	
 public:
+	using IEImage::uploadToRAM;
+	
+	void uploadToRAM(aiTexture *);
+	
+	using IEImage::uploadToVRAM;
+	
+	void uploadToVRAM(aiTexture *);
+	
+	
 	void uploadToVRAM() override;
 	
+	using IEImage::update;
 	
-	void update(const std::vector<char> &) override;
-
-	void update(void *, uint64_t) override;
-
-	virtual void update(aiTexture *);
-
-
-	void unloadFromVRAM() override;
-
-
-	void destroy() override;
+	
+	void update(aiTexture *);
+	
+	
+	using IEImage::unloadFromVRAM;
+	
+	using IEImage::destroy;
 };

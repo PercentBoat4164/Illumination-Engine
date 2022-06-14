@@ -27,8 +27,11 @@ class IEBuffer;
 enum IEImageStatus {
 	IE_IMAGE_STATUS_UNKNOWN = 0x0,
 	IE_IMAGE_STATUS_UNLOADED = 0x1,
-	IE_IMAGE_STATUS_IN_RAM = 0x2,
-	IE_IMAGE_STATUS_IN_VRAM = 0x4,
+	IE_IMAGE_STATUS_LOADED = 0x2,
+	IE_IMAGE_STATUS_QUEUED_RAM = 0x4,
+	IE_IMAGE_STATUS_IN_RAM = 0x8,
+	IE_IMAGE_STATUS_QUEUED_VRAM = 0x10,
+	IE_IMAGE_STATUS_IN_VRAM = 0x11,
 };
 
 
@@ -47,13 +50,14 @@ public:
 		VkImageCreateFlags flags{};
 		VkImageAspectFlags aspect{VK_IMAGE_ASPECT_COLOR_BIT};
 		VmaMemoryUsage allocationUsage{};
-		uint32_t width{}, height{};
+		uint32_t width{}, height{}, channels{};
 		std::vector<char> data{};
 	};
 
 	VkImage image{};
 	VkImageView view{};
 	VkSampler sampler{};
+	/**@todo Add proper format checks.*/
 	VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};  // Image format as interpreted by the Vulkan API
 	VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};  // How the GPU sees the image
 	VkImageType type{VK_IMAGE_TYPE_2D};  // Image shape (1D, 2D, 3D)
@@ -83,11 +87,15 @@ public:
 
 private:
 	static std::function<void(IEImage &)> _uploadToRAM;
+	static std::function<void(IEImage &, const std::vector<char> &)> _uploadToRAM_vector;
+	static std::function<void(IEImage &, void *, std::size_t)> _uploadToRAM_void;
 	
 	static std::function<void(IEImage &)> _uploadToVRAM;
+	static std::function<void(IEImage &, const std::vector<char> &)> _uploadToVRAM_vector;
+	static std::function<void(IEImage &, void *, std::size_t)> _uploadToVRAM_void;
 
 	static std::function<void(IEImage &, const std::vector<char> &)> _update_vector;
-	static std::function<void(IEImage &, void *, uint64_t)> _update_voidPtr;
+	static std::function<void(IEImage &, void *, std::size_t)> _update_void;
 
 	static std::function<void(IEImage &)> _unloadFromVRAM;
 
@@ -98,50 +106,89 @@ protected:
 	
 	virtual void _vulkanUploadToRAM();
 	
+	virtual void _openglUploadToRAM_vector(const std::vector<char> &);
+	
+	virtual void _vulkanUploadToRAM_vector(const std::vector<char> &);
+	
+	virtual void _openglUploadToRAM_void(void *, std::size_t);
+	
+	virtual void _vulkanUploadToRAM_void(void *, std::size_t);
+	
 	
 	virtual void _openglUploadToVRAM();
-
+	
 	virtual void _vulkanUploadToVRAM();
-
-
+	
+	virtual void _openglUploadToVRAM_vector(const std::vector<char> &);
+	
+	virtual void _vulkanUploadToVRAM_vector(const std::vector<char> &);
+	
+	virtual void _openglUploadToVRAM_void(void *, std::size_t);
+	
+	virtual void _vulkanUploadToVRAM_void(void *, std::size_t);
+	
+	
 	virtual void _openglUpdate_vector(const std::vector<char> &);
-
+	
 	virtual void _vulkanUpdate_vector(const std::vector<char> &);
-
-	virtual void _openglUpdate_voidPtr(void *, uint64_t);
-
-	virtual void _vulkanUpdate_voidPtr(void *, uint64_t);
-
-
+	
+	virtual void _openglUpdate_voidPtr(void *, std::size_t);
+	
+	virtual void _vulkanUpdate_voidPtr(void *, std::size_t);
+	
+	
 	virtual void _openglUnloadFromVRAM();
-
+	
 	virtual void _vulkanUnloadFromVRAM();
-
-
+	
+	
+//	virtual void _openglUnloadFromRAM();
+//
+//	virtual void _vulkanUnloadFromRAM();
+	
+	
 	virtual void _openglDestroy();
-
+	
 	virtual void _vulkanDestroy();
+	
+	
+	virtual void _vulkanCreateImage();
+	
+	virtual void _vulkanCreateImageView();
 
 public:
-	virtual void uploadToRAM();
+	void uploadToRAM();
+	
+	void uploadToRAM(const std::vector<char> &);
+	
+	void uploadToRAM(void *, uint64_t);
 	
 	
 	virtual void uploadToVRAM();
+	
+	void uploadToVRAM(const std::vector<char> &);
+	
+	void uploadToVRAM(void *, uint64_t);
+	
+
+	void update(const std::vector<char> &);
+
+	void update(void *, uint64_t);
 
 
-	virtual void update(const std::vector<char> &);
-
-	virtual void update(void *, uint64_t);
+	void unloadFromVRAM();
 
 
-	virtual void unloadFromVRAM();
-
-
-	virtual void destroy();
+	void destroy();
 
 
 	void toBuffer(const std::shared_ptr<IEBuffer> &, uint32_t) const;
-
+	
+	
 	// VULKAN ONLY FUNCTIONS
+	
+	
+	uint8_t getBytesInFormat() const;
+	
 	void transitionLayout(VkImageLayout);
 };
