@@ -168,7 +168,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
 			.set_desired_format(
 					{VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})  // This may have to change in the event that HDR is to be supported.
 			.set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-	if (useOldSwapchain) {  // Use the old swapchain if it exists and that was requested.
+	if (useOldSwapchain) {  // Use the old swapchain if it exists and its usage was requested.
 		swapchainBuilder.set_old_swapchain(swapchain);
 	}
 	vkb::detail::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
@@ -416,7 +416,19 @@ void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
 }
 
 void IERenderEngine::handleResolutionChange() {
-	createSwapchain(true);
+	createSwapchain();
+	IEImage::CreateInfo depthImageCreateInfo {
+			.format=VK_FORMAT_D32_SFLOAT_S8_UINT,
+			.layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+			.aspect=VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+			.allocationUsage=VMA_MEMORY_USAGE_GPU_ONLY,
+			.width=swapchain.extent.width,
+			.height=swapchain.extent.height,
+			.channels=1,
+	};
+	depthImage = std::make_shared<IEImage>(this, &depthImageCreateInfo);
+	depthImage->uploadToVRAM();
 	renderPass->destroy();
 	createRenderPass();
 }
@@ -587,16 +599,6 @@ void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, i
 			pWindow))->renderEngine;
 	*renderEngine->settings->currentResolution = {width, height};
 	renderEngine->framebufferResized = true;
-	IEImage::CreateInfo depthImageCreateInfo {
-			.format=VK_FORMAT_D32_SFLOAT_S8_UINT,
-			.layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
-			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			.aspect=VK_IMAGE_ASPECT_DEPTH_BIT,
-			.allocationUsage=VMA_MEMORY_USAGE_GPU_ONLY,
-			.width=renderEngine->swapchain.extent.width,
-			.height=renderEngine->swapchain.extent.height,
-	};
-	renderEngine->depthImage = std::make_shared<IEImage>(renderEngine.get(), &depthImageCreateInfo);
 }
 
 std::string IERenderEngine::translateVkResultCodes(VkResult result) {
