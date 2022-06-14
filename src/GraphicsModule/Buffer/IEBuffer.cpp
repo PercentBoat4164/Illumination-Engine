@@ -57,13 +57,13 @@ void IEBuffer::loadFromRAMToVRAM() {
 			bufferDeviceAddressInfo.buffer = buffer;
 			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
 		}
-		
-		// Upload data in RAM to VRAM
-		void *internalBufferData;
-		vmaMapMemory(linkedRenderEngine->allocator, allocation, &internalBufferData);
-		memcpy(internalBufferData, data.data(), data.size());
-		vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 	}
+	
+	// Upload data in RAM to VRAM
+	void *internalBufferData;
+	vmaMapMemory(linkedRenderEngine->allocator, allocation, &internalBufferData);
+	memcpy(internalBufferData, data.data(), data.size());
+	vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 
 }
 
