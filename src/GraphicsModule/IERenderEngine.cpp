@@ -352,7 +352,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	// Get API Version
 	autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_VULKAN);
 
-	// Build _function pointers and generate queues
+	// Build function pointers and generate queues
 	buildFunctionPointers();
 
 	// Set up GPU Memory allocator

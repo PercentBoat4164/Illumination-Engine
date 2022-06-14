@@ -198,7 +198,7 @@ void IECommandBuffer::execute(VkSemaphore input, VkSemaphore output, VkFence fen
 		// Delete to avoid a memory leak
 		delete submitInfo.pWaitDstStageMask;
 
-		if (fenceWasNullptr) {  // destroy the fence if it was created in this _function
+		if (fenceWasNullptr) {  // destroy the fence if it was created in this function
 			vkDestroyFence(linkedRenderEngine->device.device, thisFence, nullptr);
 		}
 		oneTimeSubmission = false;

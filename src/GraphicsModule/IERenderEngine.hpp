@@ -41,7 +41,7 @@ class IERenderEngine {
 private:
 
 /**
-     * @brief Private helper _function that creates a Vulkan instance.
+     * @brief Private helper function that creates a Vulkan instance.
      * @return The newly created Vulkan instance.
      */
 	vkb::Instance createVulkanInstance();
@@ -98,7 +98,7 @@ private:
 	IEAPI *autoDetectAPIVersion(const std::string &api);
 
 	/**
-	 * @brief Replaces the only IEGraphicsLink::build() _function.
+	 * @brief Replaces the only IEGraphicsLink::build() function.
 	 */
 	void buildFunctionPointers();
 
