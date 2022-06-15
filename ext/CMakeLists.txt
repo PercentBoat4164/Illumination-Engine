@@ -8,8 +8,8 @@ set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 set(ASSIMP_BUILD_SAMPLES OFF)
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_BUILD_ZLIB ON)
-message("Downloading AssImp v5.1.4")
-FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG v5.1.4 GIT_PROGRESS ON)
+message("Downloading AssImp master")
+FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG master GIT_PROGRESS ON)
 
 #Get GLM
 message("Downloading GLM 0.9.9.8")
