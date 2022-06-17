@@ -35,7 +35,7 @@ void IECommandPool::prepareCommandBuffers(uint32_t commandBufferCount) {
 std::shared_ptr<IECommandBuffer> IECommandPool::index(uint32_t index) {
 	if (index <= commandBuffers.size()) {
 		if (index == commandBuffers.size()) {
-			commandBuffers.emplace_back(std::make_shared<IECommandBuffer>(linkedRenderEngine, shared_from_this()));
+			commandBuffers.push_back(std::make_shared<IECommandBuffer>(linkedRenderEngine, shared_from_this()));
 		}
 		return commandBuffers[index];
 	}
@@ -44,7 +44,7 @@ std::shared_ptr<IECommandBuffer> IECommandPool::index(uint32_t index) {
 }
 
 void IECommandPool::destroy() {
-	for (std::shared_ptr<IECommandBuffer> commandBuffer: commandBuffers) {
+	for (const std::shared_ptr<IECommandBuffer>& commandBuffer: commandBuffers) {
 		commandBuffer->destroy();
 	}
 	commandBuffers.clear();

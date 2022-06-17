@@ -1,10 +1,12 @@
+#include <memory>
+
 #include "GraphicsModule/IERenderEngine.cpp"
 #include "InputModule/IEKeyboard.hpp"
 #include "Core/AssetModule/IEAsset.hpp"
 #include "Core/FileSystemModule/IEFileSystem.hpp"
 
 int main() {
-	IESettings settings{};
+	IESettings settings = IESettings();
 	// RenderEngine must be allocated on the heap.
 	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(&settings);
 

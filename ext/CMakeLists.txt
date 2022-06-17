@@ -10,16 +10,16 @@ set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 set(ASSIMP_BUILD_SAMPLES OFF)
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_BUILD_ZLIB ON)
-message("Downloading AssImp v5.2.2")
-FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG v5.2.2)
+message("Downloading AssImp master")
+FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG master)
 
 # Get GLM
-message("Downloading GLM 0.9.9.8")
-FetchContent_Declare(glm GIT_REPOSITORY https://github.com/g-truc/glm GIT_TAG 0.9.9.8)
+message("Downloading GLM master")
+FetchContent_Declare(glm GIT_REPOSITORY https://github.com/g-truc/glm GIT_TAG master)
 
 # Get spdlog
-message("Downloading spdlog  v1.9.2")
-FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog GIT_TAG v1.9.2)
+message("Downloading spdlog v1.x")
+FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog GIT_TAG v1.x)
 
 if (OpenGL_FOUND)
     # Get GLFW
@@ -27,8 +27,8 @@ if (OpenGL_FOUND)
     set(GLFW_BUILD_TESTS OFF)
     set(GLFW_INSTALL OFF)
     set(GLFW_BUILD_EXAMPLES OFF)
-    message("Downloading GLFW  3.3.6")
-    FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw GIT_TAG 3.3.6)
+    message("Downloading GLFW master")
+    FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw GIT_TAG master)
 
     # Get GLEW
     if (BUILD_SHARED_LIBS)
@@ -51,8 +51,8 @@ endif ()
 
 if (Vulkan_FOUND)
     # Get vk-bootstrap
-    message("Downloading vk-bootstrap v0.5")
-    FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG v0.5)
+    message("Downloading vk-bootstrap master")
+    FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG master)
 
     # Get VMA from master because latest release was from 2017. Master is generally considered stable.
     message("Downloading VMA from master")

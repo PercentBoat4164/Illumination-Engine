@@ -49,7 +49,7 @@ public:
 
 	void update(std::vector<std::optional<std::variant<IEImage *, IEBuffer *>>> newData, std::vector<int> bindings = {});
 
-	~IEDescriptorSet();
+	~IEDescriptorSet() override;
 
 private:
 	IERenderEngine *linkedRenderEngine{};
