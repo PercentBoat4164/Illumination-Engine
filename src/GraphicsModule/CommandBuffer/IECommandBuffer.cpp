@@ -3,9 +3,9 @@
 #include "IECommandBuffer.hpp"
 #include "IEDependency.hpp"
 #include "IERenderEngine.hpp"
-#include "IEDescriptorSet.hpp"
+#include "GraphicsModule/Shader/IEDescriptorSet.hpp"
 #include "Core/LogModule/IELogger.hpp"
-#include "IEPipeline.hpp"
+#include "GraphicsModule/Shader/IEPipeline.hpp"
 
 
 void IECommandBuffer::allocate(bool synchronize) {

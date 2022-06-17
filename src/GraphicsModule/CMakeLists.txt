@@ -30,8 +30,8 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Renderable/IEMesh.hpp
         Renderable/IERenderable.cpp
         Renderable/IERenderable.hpp
-        Renderable/IEShader.cpp
-        Renderable/IEShader.hpp
+		Shader/IEShader.cpp
+		Shader/IEShader.hpp
         Renderable/IEVertex.cpp
         Renderable/IEVertex.hpp
         IEAPI.cpp
@@ -42,12 +42,12 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 		CommandBuffer/IEDependency.hpp
 		CommandBuffer/IEDependent.cpp
 		CommandBuffer/IEDependent.hpp
-        IEDescriptorSet.cpp
-        IEDescriptorSet.hpp
+		Shader/IEDescriptorSet.cpp
+		Shader/IEDescriptorSet.hpp
         IEMonitor.cpp
         IEMonitor.hpp
-        IEPipeline.cpp
-        IEPipeline.hpp
+		Shader/IEPipeline.cpp
+		Shader/IEPipeline.hpp
         IERenderEngine.cpp
         IERenderEngine.hpp
 		RenderPass/IERenderPass.cpp
@@ -56,8 +56,8 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IERenderableSettings.hpp
         IESettings.cpp
         IESettings.hpp
-        IEUniformBufferObject.cpp
-        IEUniformBufferObject.hpp
+		Shader/IEUniformBufferObject.cpp
+		Shader/IEUniformBufferObject.hpp
         IEVersion.cpp
         IEVersion.hpp
 		RenderPass/SubPass.cpp RenderPass/SubPass.hpp)

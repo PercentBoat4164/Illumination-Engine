@@ -5,8 +5,8 @@
 
 #include "Image/IEImage.hpp"
 #include "Buffer/IEBuffer.hpp"
-#include "IEPipeline.hpp"
-#include "IEDescriptorSet.hpp"
+#include "GraphicsModule/Shader/IEPipeline.hpp"
+#include "GraphicsModule/Shader/IEDescriptorSet.hpp"
 #include "GraphicsModule/RenderPass/IERenderPass.hpp"
 
 void IEDependency::addDependent(IEDependent *newDependent) {

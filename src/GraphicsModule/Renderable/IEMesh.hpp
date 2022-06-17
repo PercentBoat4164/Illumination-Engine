@@ -4,8 +4,8 @@
 #include <vector>
 #include "IEVertex.hpp"
 #include "IEMaterial.hpp"
-#include "IEDescriptorSet.hpp"
-#include "IEPipeline.hpp"
+#include "GraphicsModule/Shader/IEDescriptorSet.hpp"
+#include "GraphicsModule/Shader/IEPipeline.hpp"
 #include "Buffer/IEBuffer.hpp"
 
 class IERenderEngine;
