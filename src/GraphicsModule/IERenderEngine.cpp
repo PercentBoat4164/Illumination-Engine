@@ -434,7 +434,9 @@ void IERenderEngine::handleResolutionChange() {
 }
 
 bool IERenderEngine::_openGLUpdate() {
-	return glfwWindowShouldClose(window) != 1;
+	glClear(GL_COLOR_BUFFER_BIT);
+	glfwSwapBuffers(window);
+	return !glfwWindowShouldClose(window);
 }
 
 bool IERenderEngine::update() {
@@ -730,9 +732,14 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 	if (glfwInit() != GLFW_TRUE) {
 		settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to initialize GLFW!");
 	}
+	glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+	#ifndef NDEBUG
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+	#endif
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only code block.
+	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
 	window = createWindow();
 	setWindowIcons("res/icons");
 	glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -744,7 +751,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
 	// Make context current
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1);
+	glfwSwapInterval(settings.vSync ? 1 : 0);
 
 	// Initialize glew
 	glewExperimental = GL_TRUE;
@@ -754,24 +761,15 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
 	// Get API Version
 	autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);
-
-	/*
-	 * This is where a lot of setup would happen it has been excluded here because it includes features like default fullscreen, msaa, and vsync which
-	 * are not necessary for a rudimentary implementation. In the future these should be handled by the GUI module.
-	 */
-
-	int flags;
-	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-		glEnable(GL_DEBUG_OUTPUT);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // makes sure errors are displayed synchronously
-		glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-	}
+	
+	#ifndef NDEBUG
+			glEnable(GL_DEBUG_OUTPUT);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronously
+			glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+	#endif
 
 	camera.create(this);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
 	this->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
 	this->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
 }

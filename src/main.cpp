@@ -8,7 +8,7 @@
 int main() {
 	IESettings settings = IESettings();
 	// RenderEngine must be allocated on the heap.
-	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(&settings);
+	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(settings);
 
 	IEKeyboard keyboard{renderEngine->window};
 	keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow *) {
@@ -37,11 +37,11 @@ int main() {
 	IEWindowUser windowUser{std::shared_ptr<IERenderEngine>(renderEngine), &keyboard};
 	glfwSetWindowUserPointer(renderEngine->window, &windowUser);
 
-	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
-	fbx->filename = "res/Models/AncientStatue/ancientStatue.fbx";
-	fbx->addAspect(new IERenderable{});
-	fbx->position = {0.0F, -1.0F, 0.0F};
-	renderEngine->addAsset(fbx);
+//	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
+//	fbx->filename = "res/Models/AncientStatue/ancientStatue.fbx";
+//	fbx->addAspect(new IERenderable{});
+//	fbx->position = {0.0F, -1.0F, 0.0F};
+//	renderEngine->addAsset(fbx);
 
 	renderEngine->camera.position = {0.0F, 2.0F, 0.4F};
 
@@ -49,7 +49,7 @@ int main() {
 
 	glfwSetTime(0);
 	while (renderEngine->update()) {
-		fbx->rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine->frameTime;
+//		fbx->rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine->frameTime;
 		glfwPollEvents();
 		keyboard.handleQueue();
 	}
