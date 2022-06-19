@@ -100,12 +100,8 @@ IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo)
 	create(engineLink, createInfo);
 }
 
-void IEBuffer::create(IERenderEngine *engineLink, VkDeviceSize bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage) {
-	linkedRenderEngine = engineLink;
-	size = bufferSize;
-	usage = usageFlags;
-	allocationUsage = memoryUsage;
-	status = IE_BUFFER_STATUS_UNLOADED;
+IEBuffer::IEBuffer(IERenderEngine *engineLink, VkDeviceSize bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage) {
+	create(engineLink, bufferSize, usageFlags, memoryUsage);
 }
 
 void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo) {
@@ -116,12 +112,109 @@ void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createIn
 	status = IE_BUFFER_STATUS_UNLOADED;
 }
 
-IEBuffer::IEBuffer(IERenderEngine *engineLink, VkDeviceSize bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage) {
-	create(engineLink, bufferSize, usageFlags, memoryUsage);
+void IEBuffer::create(IERenderEngine *engineLink, VkDeviceSize bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage) {
+	linkedRenderEngine = engineLink;
+	size = bufferSize;
+	usage = usageFlags;
+	allocationUsage = memoryUsage;
+	status = IE_BUFFER_STATUS_UNLOADED;
 }
 
 void IEBuffer::uploadToRAM() {
 
 }
+
+void IEBuffer::_openglUploadToVRAM() {
+	if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM
+		glGenBuffers(1, &bufferID);  // Put it in VRAM
+	}
+}
+
+void IEBuffer::_vulkanUploadToVRAM() {
+
+}
+
+void IEBuffer::_openglUploadToVRAM_vector(const std::vector<char> &data) {
+	if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM
+		glGenBuffers(1, &bufferID);  // Put it in VRAM
+	}
+	
+	// Upload data
+	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) data.size() * (GLsizeiptr) sizeof(data[0]), data.data(), GL_STATIC_DRAW);
+}
+
+void IEBuffer::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
+
+}
+
+void IEBuffer::_openglUploadToVRAM_void(void *data, std::size_t size) {
+	if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM?
+		glGenBuffers(1, &bufferID);  // Put it in VRAM
+	}
+	
+	// Upload data
+	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) size, data, GL_STATIC_DRAW);
+}
+
+void IEBuffer::_vulkanUploadToVRAM_void(void *data, std::size_t size) {
+
+}
+
+void IEBuffer::_openglUpdate_vector(const std::vector<char> &data) {
+	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
+		glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+		glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) data.size() * (GLsizeiptr) sizeof(data[0]), data.data(), GL_STATIC_DRAW);
+	}
+	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {  // In RAM?
+		this->data = data;
+	}
+}
+
+void IEBuffer::_vulkanUpdate_vector(const std::vector<char> &) {
+
+}
+
+void IEBuffer::_openglUpdate_voidPtr(void *data, std::size_t size) {
+	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
+		glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+		glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) size, data, GL_STATIC_DRAW);
+	}
+	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {  // In RAM?
+		this->data = std::vector<char>{(char *)data, (char *)((size_t)data + size)};
+	}
+}
+
+void IEBuffer::_vulkanUpdate_voidPtr(void *, std::size_t) {
+
+}
+
+void IEBuffer::_openglUnloadFromVRAM() {
+	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
+		glDeleteBuffers(1, &bufferID);
+		status = static_cast<IEBufferStatus>(status & ~IE_BUFFER_STATUS_DATA_IN_VRAM);  // Not in VRAM
+	}
+}
+
+void IEBuffer::_vulkanUnloadFromVRAM() {
+
+}
+
+void IEBuffer::_openglDestroy() {
+	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
+		glDeleteBuffers(1, &bufferID);
+		status = static_cast<IEBufferStatus>(status & ~IE_BUFFER_STATUS_DATA_IN_VRAM);  // Not in VRAM
+	}
+	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {  // In RAM?
+		data = {};
+		status = static_cast<IEBufferStatus>(status & ~IE_BUFFER_STATUS_DATA_IN_RAM);  // Not in RAM
+	}
+}
+
+void IEBuffer::_vulkanDestroy() {
+
+}
+
 
 IEBuffer::IEBuffer() = default;

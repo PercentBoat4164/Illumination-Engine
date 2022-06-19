@@ -774,8 +774,8 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 	this->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
 }
 
-void APIENTRY IERenderEngine::glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message,
-											const void *userParam) {
+void APIENTRY IERenderEngine::glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei, const char *message,
+											const void *) {
 	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) {
 		return; // ignore these non-significant error codes
 	}
