@@ -24,7 +24,6 @@ class IERenderEngine;
 class IEBuffer : public IEDependency, public std::enable_shared_from_this<IEBuffer> {
 public:
 	struct CreateInfo {
-		// Only required for IEBuffer
 		VkDeviceSize size{};
 		VkBufferUsageFlags usage{};
 		VmaMemoryUsage allocationUsage{};

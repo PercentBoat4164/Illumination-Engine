@@ -51,22 +51,42 @@ IEShader::~IEShader() {
 	destroy();
 }
 
-void IEShader::compile(const std::string &input, std::string output) const {
+std::function<void(IEShader &, const std::string &, std::string)> IEShader::_compile{nullptr};
+
+void IEShader::compile(const std::string &input, std::string output) {
+	_compile(*this, input, output);
+}
+
+void IEShader::_vulkanCompile(const std::string &input, std::string output) {
 	std::ifstream rawFile(input, std::ios::ate | std::ios::binary);
 	if (!rawFile.is_open()) {
-		throw std::runtime_error("failed to open file: " + input);
+		throw std::runtime_error("failed to open shader file: " + input);
 	}
 	rawFile.close();
 	if (output.empty()) {
 		output = input + ".spv";
 	}
-	if (linkedRenderEngine->settings->rayTracing) {
-		if (system((GLSLC + input + " -o " + output + " --target-env=vulkan1.2").c_str()) != 0) {
-			throw std::runtime_error("failed to compile shaders: " + input);
-		}
-	} else {
-		if (system((GLSLC + input + " -o " + output).c_str()) != 0) {
-			throw std::runtime_error("failed to compile shaders: " + input);
-		}
+	if (system((GLSLC + input + " -o " + output).c_str()) != 0) {
+		throw std::runtime_error("failed to compile shaders: " + input);
 	}
+}
+
+void IEShader::_openglCompile(const std::string &input, std::string output) {
+	// This should be replaced by the filesystem
+	std::ifstream rawFile(input, std::ios::ate | std::ios::binary);
+	if (!rawFile.is_open()) {
+		throw std::runtime_error("failed to open shader file: " + input);
+	}
+	std::stringstream sstr;
+	sstr << rawFile.rdbuf();
+	std::string source = sstr.str();
+	
+	// Compile shader
+	GLint result = GL_FALSE;
+	int infoLogLength;
+	char const *sourcePointer = source.c_str();
+	glShaderSource(shaderID, 1, &sourcePointer, nullptr);
+	glCompileShader(shaderID);
+	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
+	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
 }

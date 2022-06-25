@@ -19,6 +19,7 @@ class IERenderEngine;
 #include <vector>
 #include <functional>
 #include "Core/FileSystemModule/IEFile.hpp"
+#include <GL/glew.h>
 
 
 class IEShader {
@@ -28,12 +29,23 @@ public:
 	VkShaderModule module;
 	IERenderEngine *linkedRenderEngine;
 	IEFile *file;
-
+	GLuint shaderID;
+	
+private:
+	static std::function<void(IEShader &, IERenderEngine *, IEFile *)> _create;
+	static std::function<void(IEShader &, const std::string &, std::string)> _compile;
+	
+protected:
+	void _openglCompile(const std::string &, std::string);
+	
+	void _vulkanCompile(const std::string &, std::string);
+	
+public:
 	void destroy();
 
 	~IEShader();
 
-	void compile(const std::string& input, std::string output = "") const;
+	void compile(const std::string& input, std::string output = "");
 
 	void create(IERenderEngine *renderEngineLink, IEFile *shaderFile);
 };

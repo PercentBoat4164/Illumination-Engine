@@ -37,9 +37,9 @@ int main() {
 	IEWindowUser windowUser{std::shared_ptr<IERenderEngine>(renderEngine), &keyboard};
 	glfwSetWindowUserPointer(renderEngine->window, &windowUser);
 
-//	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
-//	fbx->filename = "res/Models/AncientStatue/ancientStatue.fbx";
-//	fbx->addAspect(new IERenderable{});
+	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
+	fbx->filename = "res/assets/AncientStatue/model/ancientStatue.fbx";
+	fbx->addAspect(new IERenderable{});
 //	fbx->position = {0.0F, -1.0F, 0.0F};
 //	renderEngine->addAsset(fbx);
 

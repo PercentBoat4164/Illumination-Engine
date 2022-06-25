@@ -43,7 +43,7 @@ public:
 
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-	~IEPipeline();
+	~IEPipeline() override;
 
 private:
 	IERenderEngine *linkedRenderEngine{};
