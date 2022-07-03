@@ -9,14 +9,12 @@ IEMesh::IEMesh(IERenderEngine *engineLink) {
 
 void IEMesh::setAPI(const IEAPI &API) {
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-		_create = &IEMesh::_openglCreate;
 		_loadFromDiskToRAM = &IEMesh::_openglLoadFromDiskToRAM;
 		_loadFromRAMToVRAM = &IEMesh::_openglLoadFromRAMToVRAM;
 		_update = &IEMesh::_openglUpdate;
 		_unloadFromVRAM = &IEMesh::_openglUnloadFromVRAM;
 		_unloadFromRAM = &IEMesh::_openglUnloadFromRAM;
 	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-		_create = &IEMesh::_vulkanCreate;
 		_loadFromDiskToRAM = &IEMesh::_vulkanLoadFromDiskToRAM;
 		_loadFromRAMToVRAM = &IEMesh::_vulkanLoadFromRAMToVRAM;
 		_update = &IEMesh::_vulkanUpdate;
@@ -25,20 +23,8 @@ void IEMesh::setAPI(const IEAPI &API) {
 	}
 }
 
-
-std::function<void(IEMesh &)> IEMesh::_create{nullptr};
-
 void IEMesh::create(IERenderEngine *engineLink) {
 	linkedRenderEngine = engineLink;
-	_create(*this);
-	material->create(linkedRenderEngine);
-}
-
-void IEMesh::_openglCreate() {
-
-}
-
-void IEMesh::_vulkanCreate() {
 	vertexBuffer = std::make_shared<IEBuffer>();
 	indexBuffer = std::make_shared<IEBuffer>();
 	descriptorSet = std::make_shared<IEDescriptorSet>();
@@ -89,7 +75,7 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
 	};
 	vertexBuffer->create(linkedRenderEngine, &vertexBufferCreateInfo);
-	vertexBuffer->loadFromDiskToRAM(vertices.data(), vertexBufferCreateInfo.size);
+	vertexBuffer->uploadToRAM(vertices.data(), vertexBufferCreateInfo.size);
 
 	// assuming all faces are triangles
 	triangleCount = mesh->mNumFaces;
@@ -114,7 +100,7 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
 			.allocationUsage=VMA_MEMORY_USAGE_CPU_TO_GPU,
 	};
 	indexBuffer->create(linkedRenderEngine, &indexBufferCreateInfo);
-	indexBuffer->loadFromDiskToRAM(indices.data(), indexBufferCreateInfo.size);
+	indexBuffer->uploadToRAM(indices.data(), indexBufferCreateInfo.size);
 
 	// load material
 	material->loadFromDiskToRAM(directory, scene, mesh->mMaterialIndex);
@@ -139,24 +125,38 @@ void IEMesh::loadFromRAMToVRAM() {
 }
 
 void IEMesh::_openglLoadFromRAMToVRAM() {
+	material->loadFromRAMToVRAM();
 
+	vertexBuffer->uploadToVRAM();
+
+	indexBuffer->uploadToVRAM();
+
+	shaders.resize(2);
+	shaders[0] = std::make_shared<IEShader>();
+	shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/OpenGL/vertexShader.vert"});
+	shaders[1] = std::make_shared<IEShader>();
+	shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/OpenGL/fragmentShader.frag"});
+
+	pipeline->create(linkedRenderEngine, new IEPipeline::CreateInfo{
+			.shaders=shaders,
+	});
 }
 
 void IEMesh::_vulkanLoadFromRAMToVRAM() {
 	material->loadFromRAMToVRAM();
 
-	vertexBuffer->loadFromRAMToVRAM();
+	vertexBuffer->uploadToVRAM();
 	deletionQueue.emplace_back([&] { vertexBuffer->destroy(); });
 
-	indexBuffer->loadFromRAMToVRAM();
+	indexBuffer->uploadToVRAM();
 	deletionQueue.emplace_back([&] { indexBuffer->destroy(); });
 
 	// Set up shaders
 	shaders.resize(2);
 	shaders[0] = std::make_shared<IEShader>();
-	shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/Rasterize/vertexShader.vert"});
+	shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/Vulkan/vertexShader.vert"});
 	shaders[1] = std::make_shared<IEShader>();
-	shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/Rasterize/fragmentShader.frag"});
+	shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/Vulkan/fragmentShader.frag"});
 
 	// Set up pipeline
 	pipeline->create(linkedRenderEngine, new IEPipeline::CreateInfo{

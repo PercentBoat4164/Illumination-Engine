@@ -8,6 +8,16 @@
 /* Include dependencies from Core. */
 #include "Core/FileSystemModule/IEFile.hpp"
 
+void IEShader::setAPI(const IEAPI &API) {
+	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+		_create = &IEShader::_openglCreate;
+		_compile = &IEShader::_openglCompile;
+	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		_create = &IEShader::_openglCreate;
+		_compile = &IEShader::_vulkanCompile;
+	}
+}
+
 void IEShader::destroy() {
 	for (const std::function<void()> &function: deletionQueue) {
 		function();
@@ -15,7 +25,23 @@ void IEShader::destroy() {
 	deletionQueue.clear();
 }
 
-void IEShader::create(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
+
+std::function<void(IEShader &, IERenderEngine *, IEFile *)> IEShader::_create = nullptr;
+
+void IEShader::create(IERenderEngine *engineLink, IEFile *shaderFile) {
+	_create(*this, engineLink, shaderFile);
+}
+
+void IEShader::_openglCreate(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
+	file = shaderFile;
+	linkedRenderEngine = renderEngineLink;
+	GLenum shaderType = GL_VERTEX_SHADER;
+	if (file->extensions()[0] == "frag") shaderType = GL_FRAGMENT_SHADER;
+	shaderID = glCreateShader(shaderType);
+	compile(file->path, "");
+}
+
+void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
 	file = shaderFile;
 	linkedRenderEngine = renderEngineLink;
 	std::vector<std::string> extensions = file->extensions();
@@ -57,36 +83,30 @@ void IEShader::compile(const std::string &input, std::string output) {
 	_compile(*this, input, output);
 }
 
-void IEShader::_vulkanCompile(const std::string &input, std::string output) {
-	std::ifstream rawFile(input, std::ios::ate | std::ios::binary);
-	if (!rawFile.is_open()) {
-		throw std::runtime_error("failed to open shader file: " + input);
+void IEShader::_openglCompile(const std::string &input, std::string) {
+	file->open();
+	std::string contents = file->read(file->length, 0);
+
+	// Compile shader
+	GLint result = GL_FALSE;
+	int infoLogLength;
+	const GLchar *shader = contents.c_str();
+	glShaderSource(shaderID, 1, &shader, NULL);
+	glCompileShader(shaderID);
+	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
+	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+	if (infoLogLength > 0) {
+		std::vector<char> shaderErrorMessage(infoLogLength + 1);
+		glGetShaderInfoLog(shaderID, infoLogLength, NULL, &shaderErrorMessage[0]);
+		printf("%s\n", &shaderErrorMessage[0]);
 	}
-	rawFile.close();
+}
+
+void IEShader::_vulkanCompile(const std::string &input, std::string output) {
 	if (output.empty()) {
 		output = input + ".spv";
 	}
 	if (system((GLSLC + input + " -o " + output).c_str()) != 0) {
 		throw std::runtime_error("failed to compile shaders: " + input);
 	}
-}
-
-void IEShader::_openglCompile(const std::string &input, std::string output) {
-	// This should be replaced by the filesystem
-	std::ifstream rawFile(input, std::ios::ate | std::ios::binary);
-	if (!rawFile.is_open()) {
-		throw std::runtime_error("failed to open shader file: " + input);
-	}
-	std::stringstream sstr;
-	sstr << rawFile.rdbuf();
-	std::string source = sstr.str();
-	
-	// Compile shader
-	GLint result = GL_FALSE;
-	int infoLogLength;
-	char const *sourcePointer = source.c_str();
-	glShaderSource(shaderID, 1, &sourcePointer, nullptr);
-	glCompileShader(shaderID);
-	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
-	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
 }

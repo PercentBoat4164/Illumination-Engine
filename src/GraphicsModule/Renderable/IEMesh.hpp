@@ -11,17 +11,6 @@
 class IERenderEngine;
 
 class IEMesh {
-private:
-	std::vector<IEVertex> vertices{};
-	std::vector<uint32_t> indices{};
-	uint32_t triangleCount{};
-	std::shared_ptr<IEPipeline> pipeline{};
-	std::vector<std::shared_ptr<IEShader>> shaders{};  // Should be moved to material
-	std::shared_ptr<IEBuffer> vertexBuffer{};
-	std::shared_ptr<IEBuffer> indexBuffer{};
-	std::shared_ptr<IEMaterial> material{};
-	std::vector<std::function<void()>> deletionQueue{};
-
 public:
 	IEMesh() = default;
 
@@ -30,13 +19,7 @@ public:
 	static void setAPI(const IEAPI &API);
 
 
-	static std::function<void(IEMesh &)> _create;
-
 	void create(IERenderEngine *);
-
-	void _openglCreate();
-
-	void _vulkanCreate();
 
 
 	static std::function<void(IEMesh &, const std::string &, const aiScene *, aiMesh *)> _loadFromDiskToRAM;
@@ -86,4 +69,13 @@ public:
 
 	IERenderEngine *linkedRenderEngine{};
 	std::shared_ptr<IEDescriptorSet> descriptorSet{};
+	std::shared_ptr<IEPipeline> pipeline{};
+	std::vector<IEVertex> vertices{};
+	std::vector<uint32_t> indices{};
+	std::shared_ptr<IEBuffer> vertexBuffer{};
+	uint32_t triangleCount{};
+	std::vector<std::shared_ptr<IEShader>> shaders{};  // Should be moved to material
+	std::shared_ptr<IEBuffer> indexBuffer{};
+	std::shared_ptr<IEMaterial> material{};
+	std::vector<std::function<void()>> deletionQueue{};
 };

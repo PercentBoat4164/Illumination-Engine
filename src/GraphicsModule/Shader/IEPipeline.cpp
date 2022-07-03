@@ -9,6 +9,16 @@
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"
 
+#include <memory>
+
+
+void IEPipeline::setAPI(const IEAPI &API) {
+	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+		_create = &IEPipeline::_openglCreate;
+	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		_create = &IEPipeline::_vulkanCreate;
+	}
+}
 
 void IEPipeline::destroy() {
 	for (const std::function<void()> &function: deletionQueue) {
@@ -17,7 +27,14 @@ void IEPipeline::destroy() {
 	deletionQueue.clear();
 }
 
+std::function<void(IEPipeline &, IERenderEngine *, IEPipeline::CreateInfo *)> IEPipeline::_create = nullptr;
+
 void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *createInfo) {
+	linkedRenderEngine = engineLink;
+	_create(*this, engineLink, createInfo);
+}
+
+void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInfo *createInfo) {
 	linkedRenderEngine = engineLink;
 	createdWith = *createInfo;
 	// Create pipelineLayout
@@ -164,6 +181,30 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
 		vkDestroyPipeline(linkedRenderEngine->device.device, pipeline, nullptr);
 	});
 }
+
+void IEPipeline::_openglCreate(IERenderEngine *engineLink, IEPipeline::CreateInfo *createInfo) {
+	programID = glCreateProgram();
+	for (std::shared_ptr<IEShader> &shader: createInfo->shaders) {
+		glAttachShader(programID, shader->shaderID);
+	}
+	glLinkProgram(programID);
+
+	GLint result;
+	GLint infoLogLength;
+	glGetProgramiv(programID, GL_LINK_STATUS, &result);
+	glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
+	if (infoLogLength > 0) {
+		std::vector<char> programErrorMessage(infoLogLength + 1);
+		glGetProgramInfoLog(programID, infoLogLength, NULL, &programErrorMessage[0]);
+		printf("%s\n", &programErrorMessage[0]);
+	}
+
+	for (std::shared_ptr<IEShader> &shader: createInfo->shaders) {
+		glDetachShader(programID, shader->shaderID);
+		glDeleteShader(shader->shaderID);
+	}
+}
+
 
 IEPipeline::~IEPipeline() {
 	destroy();

@@ -40,8 +40,8 @@ int main() {
 	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
 	fbx->filename = "res/assets/AncientStatue/model/ancientStatue.fbx";
 	fbx->addAspect(new IERenderable{});
-//	fbx->position = {0.0F, -1.0F, 0.0F};
-//	renderEngine->addAsset(fbx);
+	fbx->position = {0.0F, -1.0F, 0.0F};
+	renderEngine->addAsset(fbx);
 
 	renderEngine->camera.position = {0.0F, 2.0F, 0.4F};
 
@@ -49,7 +49,7 @@ int main() {
 
 	glfwSetTime(0);
 	while (renderEngine->update()) {
-//		fbx->rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine->frameTime;
+		fbx->rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine->frameTime;
 		glfwPollEvents();
 		keyboard.handleQueue();
 	}

@@ -38,6 +38,7 @@ public:
 	VkPipelineLayout pipelineLayout{};
 	CreateInfo createdWith{};
 	VkPipeline pipeline{};
+	GLuint programID{};
 
 	void destroy();
 
@@ -45,7 +46,16 @@ public:
 
 	~IEPipeline() override;
 
+	static void setAPI(const IEAPI &API);
+
 private:
+	static std::function<void(IEPipeline &, IERenderEngine *, IEPipeline::CreateInfo *)> _create;
+
+protected:
+	void _vulkanCreate(IERenderEngine *, IEPipeline::CreateInfo *);
+
+	void _openglCreate(IERenderEngine *, IEPipeline::CreateInfo *);
+
 	IERenderEngine *linkedRenderEngine{};
 	std::vector<std::function<void()>> deletionQueue{};
 };

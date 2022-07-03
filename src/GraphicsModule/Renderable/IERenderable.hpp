@@ -47,7 +47,6 @@ public:
 	IEUniformBufferObject uniformBufferObject{};
 	std::vector<IEShader> shaders{};
 	Assimp::Importer importer{};
-//	Assimp::BaseImporter baseImporter{};
 	bool render{true};
 	uint32_t commandBufferIndex{};
 	std::string directory{};
@@ -88,13 +87,13 @@ public:
 	void _vulkanLoadFromRAMToVRAM();
 
 
-	static std::function<void(IERenderable &, const IECamera &, float)> _update;
+	static std::function<void(IERenderable &, const IECamera &, float, uint32_t)> _update;
 
 	void update(uint32_t);
 
-	bool _openglUpdate(const IECamera &, float);
+	void _openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex);
 
-	void _vulkanUpdate(const IECamera &camera, float time);
+	void _vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex);
 
 
 	static std::function<void(IERenderable &)> _unloadFromVRAM;

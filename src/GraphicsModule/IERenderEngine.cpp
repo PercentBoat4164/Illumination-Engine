@@ -261,6 +261,9 @@ void IERenderEngine::setAPI(const IEAPI &API) {
 	IEMesh::setAPI(API);
 	IEMaterial::setAPI(API);
 	IEImage::setAPI(API);
+	IEBuffer::setAPI(API);
+	IEShader::setAPI(API);
+	IEPipeline::setAPI(API);
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_update = &IERenderEngine::_openGLUpdate;
 		_destroy = &IERenderEngine::_openGLDestroy;
@@ -376,8 +379,8 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	deletionQueue.insert(deletionQueue.begin(), [&] {
 		destroyCommandPools();
 	});
-	
-	IEImage::CreateInfo depthImageCreateInfo {
+
+	IEImage::CreateInfo depthImageCreateInfo{
 			.format=VK_FORMAT_D32_SFLOAT_S8_UINT,
 			.layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
 			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
@@ -389,13 +392,13 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	};
 	depthImage = std::make_shared<IEImage>(this, &depthImageCreateInfo);
 	depthImage->uploadToVRAM();
-	
+
 	// Create render pass
 	createRenderPass();
 	deletionQueue.insert(deletionQueue.begin(), [&] {
 		renderPass->destroy();
 	});
-	
+
 	graphicsCommandPool->index(0)->execute();
 	camera.create(this);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
@@ -412,12 +415,14 @@ void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
 			std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
 		}
 	}
-	graphicsCommandPool->index(0)->execute();
+	if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		graphicsCommandPool->index(0)->execute();
+	}
 }
 
 void IERenderEngine::handleResolutionChange() {
 	createSwapchain();
-	IEImage::CreateInfo depthImageCreateInfo {
+	IEImage::CreateInfo depthImageCreateInfo{
 			.format=VK_FORMAT_D32_SFLOAT_S8_UINT,
 			.layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
 			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
@@ -435,6 +440,28 @@ void IERenderEngine::handleResolutionChange() {
 
 bool IERenderEngine::_openGLUpdate() {
 	glClear(GL_COLOR_BUFFER_BIT);
+	for (const std::weak_ptr<IERenderable> &renderable: renderables) {
+		renderable.lock()->update(0);
+		for (int i = 0; i < renderable.lock()->associatedAssets.size(); ++i) {
+			for (const IEMesh &mesh: renderable.lock()->meshes) {
+				glUseProgram(mesh.pipeline->programID);
+				glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBuffer->bufferID);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.indexBuffer->bufferID);
+				glBindBuffer(GL_TEXTURE_BUFFER, textures[mesh.material->diffuseTextureIndex]->textureID);
+				glUniformBlockBinding(mesh.shaders[0]->shaderID, glGetUniformBlockIndex(mesh.shaders[0]->shaderID, "cameraData"),
+									  renderable.lock()->modelBuffer.bufferID);
+				glUniformMatrix4fv(glGetUniformLocation(mesh.pipeline->programID, "projectionMatrix"), 1, GL_FALSE, &camera.projectionMatrix[0][0]);
+				glUniformMatrix3fv(glGetUniformLocation(mesh.pipeline->programID, "normalMatrix"), 1, GL_FALSE,
+								   &glm::mat3(glm::transpose(glm::inverse(renderable.lock()->modelMatrices[i])))[0][0]);
+				glUniformMatrix4fv(glGetUniformLocation(mesh.pipeline->programID, "viewModelMatrix"), 1, GL_FALSE,
+								   &(camera.viewMatrix * renderable.lock()->modelMatrices[i])[0][0]);
+				glUniformMatrix4fv(glGetUniformLocation(mesh.pipeline->programID, "modelMatrix"), 1, GL_FALSE, &renderable.lock()->modelMatrices[i][0][0]);
+				glUniform1i(glGetUniformLocation(mesh.pipeline->programID, "diffuseTexture"), 0);
+				glUniform3fv(glGetUniformLocation(mesh.pipeline->programID, "cameraPosition"), 1, &camera.position[0]);
+				glDrawElements(GL_TRIANGLES, mesh.vertices.size(), GL_UNSIGNED_INT, mesh.indices.data());
+			}
+		}
+	}
 	glfwSwapBuffers(window);
 	return !glfwWindowShouldClose(window);
 }
@@ -736,7 +763,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	#ifndef NDEBUG
-		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	#endif
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only code block.
 	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
@@ -761,12 +788,12 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
 	// Get API Version
 	autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);
-	
+
 	#ifndef NDEBUG
-			glEnable(GL_DEBUG_OUTPUT);
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronously
-			glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronously
+	glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 	#endif
 
 	camera.create(this);

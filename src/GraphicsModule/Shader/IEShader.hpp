@@ -11,6 +11,8 @@
 class IERenderEngine;
 
 /* Include classes used as attributes or function arguments. */
+#include "IEAPI.hpp"
+
 // External dependencies
 #include <vulkan/vulkan.h>
 
@@ -30,22 +32,29 @@ public:
 	IERenderEngine *linkedRenderEngine;
 	IEFile *file;
 	GLuint shaderID;
-	
+
 private:
 	static std::function<void(IEShader &, IERenderEngine *, IEFile *)> _create;
 	static std::function<void(IEShader &, const std::string &, std::string)> _compile;
-	
+
 protected:
 	void _openglCompile(const std::string &, std::string);
-	
+
 	void _vulkanCompile(const std::string &, std::string);
-	
+
+
+	void _openglCreate(IERenderEngine *, IEFile *);
+
+	void _vulkanCreate(IERenderEngine *, IEFile *);
+
 public:
 	void destroy();
 
 	~IEShader();
 
-	void compile(const std::string& input, std::string output = "");
+	void compile(const std::string &, std::string = "");
 
-	void create(IERenderEngine *renderEngineLink, IEFile *shaderFile);
+	void create(IERenderEngine *, IEFile *);
+
+	static void setAPI(const IEAPI &);
 };

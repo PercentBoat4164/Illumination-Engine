@@ -80,6 +80,7 @@ void IEImage::uploadToRAM() {
 	if (status & IE_IMAGE_STATUS_IN_VRAM) {
 		_uploadToRAM(*this);
 	}
+	status = static_cast<IEImageStatus>(status & ~IE_IMAGE_STATUS_QUEUED_RAM | IE_IMAGE_STATUS_IN_RAM);
 }
 
 void IEImage::_openglUploadToRAM() {
@@ -87,13 +88,11 @@ void IEImage::_openglUploadToRAM() {
 }
 
 void IEImage::_vulkanUploadToRAM() {
-	std::shared_ptr<IEBuffer>stagingBuffer = std::make_shared<IEBuffer>();
+	std::shared_ptr<IEBuffer> stagingBuffer = std::make_shared<IEBuffer>();
 	toBuffer(stagingBuffer, width * height * channels);
 	stagingBuffer->uploadToRAM();
 	data = stagingBuffer->data;
 }
-
-std::function<void(IEImage &, const std::vector<char> &)> IEImage::_uploadToRAM_vector{nullptr};
 
 void IEImage::uploadToRAM(const std::vector<char> &data) {
 	if (data.empty() && this->data.empty()) {
@@ -104,33 +103,28 @@ void IEImage::uploadToRAM(const std::vector<char> &data) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to load in more data to RAM than can fit in image!");
 	}
 	if (status & IE_IMAGE_STATUS_QUEUED_RAM || status & IE_IMAGE_STATUS_IN_RAM) {
-		_uploadToRAM_vector(*this, data);
+		if (data.size() > width * height * channels) {
+			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "");
+		}
+		this->data = data;
 	}
 }
-
-void IEImage::_openglUploadToRAM_vector(const std::vector<char> &data) {
-
-}
-
-void IEImage::_vulkanUploadToRAM_vector(const std::vector<char> &data) {
-	if (data.size() > width * height * channels) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "");
-	}
-	this->data = data;
-}
-
-std::function<void(IEImage &, void *, std::size_t)> IEImage::_uploadToRAM_void{nullptr};
 
 void IEImage::uploadToRAM(void *data, std::size_t size) {
-
-}
-
-void IEImage::_openglUploadToRAM_void(void *data, std::size_t size) {
-
-}
-
-void IEImage::_vulkanUploadToRAM_void(void *data, std::size_t size) {
-
+	if (size == 0) {
+		status = static_cast<IEImageStatus>(status | IE_IMAGE_STATUS_QUEUED_RAM);
+		return;
+	}
+	if (size > width * height * channels) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to load in more data to RAM than can fit in image!");
+	}
+	if (status & IE_IMAGE_STATUS_QUEUED_RAM || status & IE_IMAGE_STATUS_IN_RAM) {
+		if (size > width * height * channels) {
+			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "");
+		}
+		std::size_t i = 0;
+		std::generate(this->data.begin(), this->data.end(), [&] -> char { return *(char *) ((std::size_t) data + i++); });
+	}
 }
 
 
@@ -142,25 +136,24 @@ void IEImage::uploadToVRAM() {
 }
 
 void IEImage::_openglUploadToVRAM() {
-
+	glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
 void IEImage::_vulkanUploadToVRAM() {
 	VkImageLayout desiredLayout = layout;
 	layout = VK_IMAGE_LAYOUT_UNDEFINED;
-	
+
 	_vulkanCreateImage();
 	_vulkanCreateImageView();
-	
+
 	if (aspect & VK_IMAGE_ASPECT_COLOR_BIT) {
-		
+
 		// Used to build the image in video memory.
 		std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, width * height * channels * getBytesInFormat(),
 																			 VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-		scratchBuffer->loadFromDiskToRAM(data);
-		scratchBuffer->loadFromRAMToVRAM();
+		scratchBuffer->uploadToVRAM(data);
 		scratchBuffer->toImage(shared_from_this());
-		
+
 	}
 	// Set transition to requested layout from undefined or dst_optimal.
 	if (layout != desiredLayout) {
@@ -212,14 +205,13 @@ void IEImage::_vulkanUpdate_vector(const std::vector<char> &data) {
 		this->data = data;
 	}
 	if (status & IE_IMAGE_STATUS_QUEUED_VRAM) {
-	
+
 	}
 	if (status & IE_IMAGE_STATUS_IN_VRAM) {
 		// Used to build the image in video memory.
 		std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, data.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 																			 VMA_MEMORY_USAGE_CPU_TO_GPU);
-		scratchBuffer->loadFromDiskToRAM(data);
-		scratchBuffer->loadFromRAMToVRAM();
+		scratchBuffer->uploadToVRAM(data);
 		scratchBuffer->toImage(shared_from_this());
 	}
 }
@@ -242,8 +234,7 @@ void IEImage::_vulkanUpdate_voidPtr(void *data, uint64_t size) {
 		// Used to build the image in video memory.
 		std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 																			 VMA_MEMORY_USAGE_CPU_TO_GPU);
-		scratchBuffer->loadFromDiskToRAM(data, size);
-		scratchBuffer->loadFromRAMToVRAM();
+		scratchBuffer->uploadToVRAM(data, size);
 		scratchBuffer->toImage(shared_from_this());
 	}
 }
@@ -295,9 +286,8 @@ void IEImage::toBuffer(const std::shared_ptr<IEBuffer> &buffer, uint32_t command
 	region.imageSubresource.layerCount = 1;
 	region.imageOffset = {0, 0, 0};
 	region.imageExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
-	vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)->index(commandBufferIndex)->commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-						   buffer->buffer, 1,
-						   &region);
+	vkCmdCopyImageToBuffer((linkedRenderEngine->graphicsCommandPool)->index(commandBufferIndex)->commandBuffer, image,
+						   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer->buffer, 1, &region);
 	/**@todo Needs to be done in a way that these dependencies get added.*/
 }
 
@@ -310,18 +300,8 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 												 "Attempt to transition to an undefined layout (VK_IMAGE_LAYOUT_UNDEFINED)!");
 		return;
 	}
-	IEImageMemoryBarrier imageMemoryBarrier{
-			.newLayout=newLayout,
-			.srcQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
-			.dstQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
-			.image=shared_from_this(),
-			.subresourceRange={
-					.aspectMask=aspect,
-					.baseMipLevel=0,
-					.levelCount=1,  // Will be used for mip mapping in the future
-					.layerCount=1
-			}
-	};
+	IEImageMemoryBarrier imageMemoryBarrier{.newLayout=newLayout, .srcQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED, .dstQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED, .image=shared_from_this(), .subresourceRange={.aspectMask=aspect, .baseMipLevel=0, .levelCount=1,  // Will be used for mip mapping in the future
+			.layerCount=1}};
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
 	if (layout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
@@ -370,34 +350,17 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 
 void IEImage::_vulkanCreateImage() {
 	// Set up image create info.
-	VkImageCreateInfo imageCreateInfo{
-			.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-			.imageType=type,
-			.format=format,
-			.extent=VkExtent3D{
-					.width=width,
-					.height=height,
-					.depth=1
-			},
-			.mipLevels=1, // mipLevels, Unused due to no implementation of mip-mapping support yet.
-			.arrayLayers=1,
-			.samples=static_cast<VkSampleCountFlagBits>(1),
-			.tiling=tiling,
-			.usage=usage,
-			.sharingMode=VK_SHARING_MODE_EXCLUSIVE,
-			.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,
-	};
-	
+	VkImageCreateInfo imageCreateInfo{.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, .imageType=type, .format=format, .extent=VkExtent3D{.width=width, .height=height, .depth=1}, .mipLevels=1, // mipLevels, Unused due to no implementation of mip-mapping support yet.
+			.arrayLayers=1, .samples=static_cast<VkSampleCountFlagBits>(1), .tiling=tiling, .usage=usage, .sharingMode=VK_SHARING_MODE_EXCLUSIVE, .initialLayout=VK_IMAGE_LAYOUT_UNDEFINED,};
+
 	// Set up allocation create info
-	VmaAllocationCreateInfo allocationCreateInfo{
-			.usage=allocationUsage,
-	};
-	
+	VmaAllocationCreateInfo allocationCreateInfo{.usage=allocationUsage,};
+
 	if (width * height == 0) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
 												 "Image width * height is zero! This may cause Vulkan to fail to create the image. This may have been caused by uploading to VRAM before updating.");
 	}
-	
+
 	// Create image
 	if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
@@ -406,22 +369,12 @@ void IEImage::_vulkanCreateImage() {
 
 void IEImage::_vulkanCreateImageView() {
 	// Set up image view create info
-	VkImageViewCreateInfo imageViewCreateInfo{
-			.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.image=image,
-			.viewType=VK_IMAGE_VIEW_TYPE_2D, /**@todo Add support for more than just 2D images.*/
-			.format=format,
-			.components=VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-										   VK_COMPONENT_SWIZZLE_IDENTITY},  // Unused. All components are mapped to default data.
-			.subresourceRange=VkImageSubresourceRange{
-					.aspectMask=aspect,
-					.baseMipLevel=0,
-					.levelCount=1,  // Unused. Mip-mapping is not yet implemented.
-					.baseArrayLayer=0,
-					.layerCount=1,
-			},
-	};
-	
+	VkImageViewCreateInfo imageViewCreateInfo{.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, .image=image, .viewType=VK_IMAGE_VIEW_TYPE_2D, /**@todo Add support for more than just 2D images.*/
+			.format=format, .components=VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+														   VK_COMPONENT_SWIZZLE_IDENTITY},  // Unused. All components are mapped to default data.
+			.subresourceRange=VkImageSubresourceRange{.aspectMask=aspect, .baseMipLevel=0, .levelCount=1,  // Unused. Mip-mapping is not yet implemented.
+					.baseArrayLayer=0, .layerCount=1,},};
+
 	// Create image view
 	if (vkCreateImageView(linkedRenderEngine->device.device, &imageViewCreateInfo, nullptr, &view) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture image view!");
@@ -433,7 +386,8 @@ uint8_t IEImage::getBytesInFormat() const {
 		case VK_FORMAT_UNDEFINED:
 		case VK_FORMAT_MAX_ENUM:
 		default:
-			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!");
+			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+													 "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!");
 			return 0x0;
 		case VK_FORMAT_R8_UNORM:
 		case VK_FORMAT_R8_SNORM:

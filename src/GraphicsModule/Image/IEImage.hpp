@@ -9,6 +9,7 @@ class IEBuffer;
 // Internal dependencies
 #include "GraphicsModule/CommandBuffer/IEDependency.hpp"
 #include "IEAPI.hpp"
+#include "GL/glew.h"
 
 // External dependencies
 #include <vk_mem_alloc.h>
@@ -73,6 +74,7 @@ public:
 	IERenderEngine *linkedRenderEngine{};
 	std::vector<char> data{};
 	IEImageStatus status{IE_IMAGE_STATUS_UNKNOWN};
+	GLuint textureID{};
 
 	IEImage() = default;
 
@@ -87,9 +89,7 @@ public:
 
 private:
 	static std::function<void(IEImage &)> _uploadToRAM;
-	static std::function<void(IEImage &, const std::vector<char> &)> _uploadToRAM_vector;
-	static std::function<void(IEImage &, void *, std::size_t)> _uploadToRAM_void;
-	
+
 	static std::function<void(IEImage &)> _uploadToVRAM;
 	static std::function<void(IEImage &, const std::vector<char> &)> _uploadToVRAM_vector;
 	static std::function<void(IEImage &, void *, std::size_t)> _uploadToVRAM_void;
@@ -103,73 +103,60 @@ private:
 
 protected:
 	virtual void _openglUploadToRAM();
-	
+
 	virtual void _vulkanUploadToRAM();
-	
-	virtual void _openglUploadToRAM_vector(const std::vector<char> &);
-	
-	virtual void _vulkanUploadToRAM_vector(const std::vector<char> &);
-	
-	virtual void _openglUploadToRAM_void(void *, std::size_t);
-	
-	virtual void _vulkanUploadToRAM_void(void *, std::size_t);
-	
-	
+
+
 	virtual void _openglUploadToVRAM();
-	
+
 	virtual void _vulkanUploadToVRAM();
-	
+
 	virtual void _openglUploadToVRAM_vector(const std::vector<char> &);
-	
+
 	virtual void _vulkanUploadToVRAM_vector(const std::vector<char> &);
-	
+
 	virtual void _openglUploadToVRAM_void(void *, std::size_t);
-	
+
 	virtual void _vulkanUploadToVRAM_void(void *, std::size_t);
-	
-	
+
+
 	virtual void _openglUpdate_vector(const std::vector<char> &);
-	
+
 	virtual void _vulkanUpdate_vector(const std::vector<char> &);
-	
+
 	virtual void _openglUpdate_voidPtr(void *, std::size_t);
-	
+
 	virtual void _vulkanUpdate_voidPtr(void *, std::size_t);
-	
-	
+
+
 	virtual void _openglUnloadFromVRAM();
-	
+
 	virtual void _vulkanUnloadFromVRAM();
-	
-	
-//	virtual void _openglUnloadFromRAM();
-//
-//	virtual void _vulkanUnloadFromRAM();
-	
-	
+
+
 	virtual void _openglDestroy();
-	
+
 	virtual void _vulkanDestroy();
-	
-	
+
+
 	virtual void _vulkanCreateImage();
-	
+
 	virtual void _vulkanCreateImageView();
 
 public:
 	void uploadToRAM();
-	
+
 	void uploadToRAM(const std::vector<char> &);
-	
+
 	void uploadToRAM(void *, uint64_t);
-	
-	
+
+
 	virtual void uploadToVRAM();
-	
+
 	void uploadToVRAM(const std::vector<char> &);
-	
+
 	void uploadToVRAM(void *, uint64_t);
-	
+
 
 	void update(const std::vector<char> &);
 
@@ -183,12 +170,12 @@ public:
 
 
 	void toBuffer(const std::shared_ptr<IEBuffer> &, uint32_t) const;
-	
-	
+
+
 	// VULKAN ONLY FUNCTIONS
-	
-	
+
+
 	uint8_t getBytesInFormat() const;
-	
+
 	void transitionLayout(VkImageLayout);
 };
