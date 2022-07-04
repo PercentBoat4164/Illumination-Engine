@@ -10,6 +10,52 @@
 
 class IEFile {
 public:
+
+    std::string name{};
+    std::filesystem::path path{};
+    std::fstream fileIO{};
+    std::streamsize size{};
+    std::string extension{};
+
+    IEFile(IEFile& file) {
+        name = file.name;
+        path = file.path;
+        size = file.size;
+        extension = file.extension;
+    }
+
+    IEFile(std::filesystem::path filePath) {
+        path = filePath;
+        fileIO.open(filePath);
+        size = fileIO.tellg();
+        extension = filePath.extension().string();
+        fileIO.close();
+    }
+
+    //returns the file's data
+    std::string read() {
+        fileIO.open(path);
+        std::string data((std::istreambuf_iterator<char>(fileIO)),
+                            (std::istreambuf_iterator<char>()));
+        fileIO.close();
+        return data;
+    }
+
+    //overwrites the file
+    void write(const std::string& data) {
+        fileIO.clear();
+        fileIO << data;
+    }
+
+    void append(const std::string& data) {
+        fileIO << data;
+    }
+
+private:
+};
+
+
+/* old version:
     IEFile() = default;
 
     explicit IEFile(const std::string& initialPath) {
@@ -25,28 +71,11 @@ public:
         return path.substr(0, path.find_last_of('/'));
     }
 
-    void createDirectory() const {
-        std::string thisDirectory{getDirectory()};
-        for (int i = 0; i < thisDirectory.size(); ++i) {
-            if (thisDirectory[i] == '/') {
-                std::filesystem::create_directory(thisDirectory.substr(0, i));
-            }
-        }
-        std::filesystem::create_directory(thisDirectory);
-    }
-
     void open() {
         if (file.is_open()) {
             return;
         }
         file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::ate);
-        if (!file.is_open()) {
-            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
-        }
-        if (!file.is_open()) {
-            createDirectory();
-            file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
-        }
         length = file.tellg();
     }
 
@@ -154,4 +183,4 @@ public:
         open();
         return *this;
     }
-};
+};*/

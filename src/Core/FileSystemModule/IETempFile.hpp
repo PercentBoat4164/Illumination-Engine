@@ -8,10 +8,18 @@
 #include <string>
 #include <fstream>
 
-
 /**
  * A collection of data stored in RAM
  */
+
+class IETempFile {
+public:
+    std::string name{}; // the filename
+    std::string data{}; // the data in the file
+    int size{};
+};
+
+/* old version:
 class IETempFile {
 public:
     std::string name{}; // the filename
@@ -54,3 +62,4 @@ private:
         return content;
     }
 };
+ */

@@ -1,13 +1,30 @@
 #include "IEFile.hpp"
-#include "IEDirectory.hpp"
+#include "IETempFile.hpp"
+//#include "IEImporter.hpp"
 
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <variant>
 
-#define ILLUMINATION_ENGINE_ASSET_FILE_EXTENSION "iea"
+class IEFileSystem {
+public:
+    std::string path;
+    std::unordered_map<std::string, IEFile> files;
+    std::unordered_map<std::string, IETempFile> tempFiles;
 
+    //constructor
+    IEFileSystem(std::string FileSystemPath) {
+        path = FileSystemPath;
+    }
+};
+
+
+
+
+/* old version
+
+#define ILLUMINATION_ENGINE_ASSET_FILE_EXTENSION "iea"
 enum IEPathName {
     IE_FILE_BIT = 0x1,
     IE_DIRECTORY_BIT = 0x10,
@@ -21,9 +38,6 @@ enum IEPathName {
 class IEFileSystem {
 private:
     std::unordered_map<std::string, IEFile> files{};
-    std::unordered_map<std::string, IEDirectory> directories{};
-    std::vector<std::variant<IEFile, IEDirectory>> trash{};
-    IEDirectory baseDirectory{};
 
 public:
     explicit IEFileSystem(const std::string& initialAssetDirectory) {
@@ -85,4 +99,4 @@ public:
         }
         return directory;
     }
-};
+};*/
