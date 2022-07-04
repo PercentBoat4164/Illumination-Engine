@@ -1,8 +1,12 @@
 #include <iostream>
 #include "Core/LogModule/IELogger.hpp"
-#include "Core/FileSystemModule/IETempFile.hpp"
+#include "Core/FileSystemModule/IEImporter.hpp"
 
 int main() {
-    IETempFile myFile(R"(C:\Users\ethan\CLionProjects\Illumination-Engine\src\testFile.txt)");
-    std::cout << "\n" <<myFile.read(0, 50);
+    //IEFileSystem{"C:/Users/ethan/CLionProjects/Illumination-Engine/src"};
+    IEFile testFile("C:/Users/ethan/CLionProjects/Illumination-Engine/src/testFile.txt");
+
+    IEImporter fileImporter = IEImporter();
+    std::cout << "Imported data: \n" << fileImporter.import(testFile, 0) << "\n";
+    return 0;
 }
