@@ -11,47 +11,110 @@
 class IEFile {
 public:
 
-    std::string name{};
-    std::filesystem::path path{};
-    std::fstream fileIO{};
-    std::streamsize size{};
-    std::string extension{};
+    std::string name;
+    std::filesystem::path path;
+    std::fstream fileIO;
+    std::streamsize size;
+    std::string extension;
 
-    IEFile(IEFile& file) {
+    // constructor
+    explicit IEFile(const std::filesystem::path& filePath) {
+        path = filePath;
+        open(fileIO.out);
+        size = fileIO.tellg();
+        extension = filePath.extension().string();
+        close();
+    }
+
+    // copy constructor and = overload must be defined explicitly because fstream has no defaults for them
+    IEFile(const IEFile& file) {
         name = file.name;
         path = file.path;
         size = file.size;
         extension = file.extension;
     }
 
-    IEFile(std::filesystem::path filePath) {
-        path = filePath;
-        fileIO.open(filePath);
-        size = fileIO.tellg();
-        extension = filePath.extension().string();
-        fileIO.close();
+    IEFile operator = (IEFile &file) {
+        if(this == &file) {
+            return *this;
+        }
+        name = file.name;
+        path = file.path;
+        size = file.size;
+        extension = file.extension;
+        return *this;
     }
 
-    //returns the file's data
+    // read the entire file
     std::string read() {
-        fileIO.open(path);
+        open();
         std::string data((std::istreambuf_iterator<char>(fileIO)),
                             (std::istreambuf_iterator<char>()));
-        fileIO.close();
+        close();
         return data;
     }
 
-    //overwrites the file
-    void write(const std::string& data) {
-        fileIO.clear();
-        fileIO << data;
+    // read data from the file
+    std::string read(std::streamsize numBytes, std::streamsize startPosition=-1) {
+        open();
+        fileIO.seekg(startPosition);
+        char data[numBytes];
+        fileIO.read(data, numBytes);
+        fileIO.close();
+        close();
+        return data;
     }
 
-    void append(const std::string& data) {
-        fileIO << data;
+    //write to a file. Clears any old data.
+    void write(const std::string& data) {
+        std::cout << "writing to file\n" << path.generic_string() << "\n";
+        open();
+        if(fileIO.is_open()) {
+            std::cout << "file opened\n";
+            fileIO.clear();
+            fileIO << data;
+            size = fileIO.tellg();
+            close();
+        }else{
+            std::cout << "file failed to open\n";
+        }
+    }
+
+    //overwrite a section of the file
+    void overwrite(const std::string& data, std::streamsize startPosition=-1) {
+        open();
+        if (startPosition == -1) {  // If no starting position
+            startPosition = fileIO.tellg();  // Start here
+        }
+
+        // Go to starting position
+        fileIO.seekg(startPosition);
+
+        // Write to file
+        auto dataSize = static_cast<std::streamsize>(data.size());
+        fileIO.write(data.data(), dataSize);
+
+        // Update file length
+        size = std::max(dataSize + startPosition, size);
+        close();
     }
 
 private:
+
+    //open a file for reading and writing
+    void open(std::_Ios_Openmode mode = std::ios::in | std::ios::out | std::ios::binary) {
+        if(!fileIO.is_open()) {
+            fileIO.open(path, mode);
+            size = fileIO.tellg();
+        }
+    }
+
+    //close the file
+    void close() {
+        if(fileIO.is_open()) {
+            fileIO.close();
+        }
+    }
 };
 
 

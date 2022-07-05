@@ -1,12 +1,14 @@
 #include <iostream>
 #include "Core/LogModule/IELogger.hpp"
-#include "Core/FileSystemModule/IEImporter.hpp"
+#include "Core/FileSystemModule/IEFileSystem.hpp"
 
 int main() {
-    //IEFileSystem{"C:/Users/ethan/CLionProjects/Illumination-Engine/src"};
-    IEFile testFile("C:/Users/ethan/CLionProjects/Illumination-Engine/src/testFile.txt");
+    IEFileSystem fileSystem{"C:/Users/ethan/CLionProjects/Illumination-Engine/src"};
+    //IEFile testFile("C:/Users/ethan/CLionProjects/Illumination-Engine/src/testFile.txt");
 
-    IEImporter fileImporter = IEImporter();
-    std::cout << "Imported data: \n" << fileImporter.import(testFile, 0) << "\n";
+    fileSystem.addFile("newTestFile.txt");
+    fileSystem.exportData("newTestFile.txt", "this was exported!");
+    std::cout << fileSystem.importFile("newTestFile.txt");
+    fileSystem.deleteFile("newTestFile.txt");
     return 0;
 }

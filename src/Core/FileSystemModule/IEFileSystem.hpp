@@ -1,26 +1,48 @@
+#pragma once
+
 #include "IEFile.hpp"
 #include "IETempFile.hpp"
-//#include "IEImporter.hpp"
+#include "IEImporter.hpp"
 
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <variant>
+#include <iostream>
 
 class IEFileSystem {
 public:
-    std::string path;
+    std::filesystem::path path;
+    IEImporter importer;
     std::unordered_map<std::string, IEFile> files;
     std::unordered_map<std::string, IETempFile> tempFiles;
 
     //constructor
-    IEFileSystem(std::string FileSystemPath) {
-        path = FileSystemPath;
+    IEFileSystem(std::filesystem::path fileSystemPath) {
+        path = fileSystemPath.string();
+    }
+
+    //create a new IEFile with the given relative path
+    void addFile(std::string filePath) {
+        files.insert(std::make_pair(filePath, IEFile(path / filePath)));
+    }
+
+    //export data to an IEFile
+    void exportData(std::string filePath, std::string data) {
+        files.find(filePath)->second.write(data);
+    }
+
+    //delete a file
+    void deleteFile(std::string filePath) {
+        files.erase(files.find(filePath));
+        std::filesystem::remove(path / filePath);
+    }
+
+    //import a file
+    std::string importFile(std::string filePath) {
+        return importer.import(files.find(filePath)->second);
     }
 };
-
-
-
 
 /* old version
 
