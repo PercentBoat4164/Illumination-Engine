@@ -20,6 +20,7 @@ public:
     // constructor
     explicit IEFile(const std::filesystem::path& filePath) {
         path = filePath;
+        name = filePath.filename().string();
         open(fileIO.out);
         size = fileIO.tellg();
         extension = filePath.extension().string();
