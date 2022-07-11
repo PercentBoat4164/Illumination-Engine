@@ -1,165 +1,279 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- HTML header for doxygen 1.9.4-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta charset="UTF-8" />
-  <title>OpenGLShader class | Illumination Engine A Game Development Engine Written In C++</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,600,600i%7CSource+Code+Pro:400,400i,600" />
-  <link rel="stylesheet" href="m-dark+documentation.compiled.css" />
-  <link rel="icon" href="IlluminationEngineLogo128.png" type="image/png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#22272e" />
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.9.4"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Illumination Engine: OpenGLShader Class Reference</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<! -- <script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+<! -- <script type="text/javascript">
+<! -- DoxygenAwesomeDarkModeToggle.init() -->
+<! -- </script>
+<script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+<script type="text/javascript">
+DoxygenAwesomeFragmentCopyButton.init()
+</script>
+<html xmlns="http://www.w3.org/1999/xhtml" class="dark-mode">
 </head>
 <body>
-<header><nav id="navigation">
-  <div class="m-container">
-    <div class="m-row">
-      <a href="index.html" id="m-navbar-brand" class="m-col-t-8 m-col-m-none m-left-m"><img src="IlluminationEngineLogo128.png" alt="" />Illumination Engine <span class="m-thin">A Game Development Engine Written In C++</span></a>
-      <div class="m-col-t-4 m-hide-m m-text-right m-nopadr">
-        <a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
-          <path id="m-doc-search-icon-path" d="m6 0c-3.31 0-6 2.69-6 6 0 3.31 2.69 6 6 6 1.49 0 2.85-0.541 3.89-1.44-0.0164 0.338 0.147 0.759 0.5 1.15l3.22 3.79c0.552 0.614 1.45 0.665 2 0.115 0.55-0.55 0.499-1.45-0.115-2l-3.79-3.22c-0.392-0.353-0.812-0.515-1.15-0.5 0.895-1.05 1.44-2.41 1.44-3.89 0-3.31-2.69-6-6-6zm0 1.56a4.44 4.44 0 0 1 4.44 4.44 4.44 4.44 0 0 1-4.44 4.44 4.44 4.44 0 0 1-4.44-4.44 4.44 4.44 0 0 1 4.44-4.44z"/>
-        </svg></a>
-        <a id="m-navbar-show" href="#navigation" title="Show navigation"></a>
-        <a id="m-navbar-hide" href="#" title="Hide navigation"></a>
-      </div>
-      <div id="m-navbar-collapse" class="m-col-t-12 m-show-m m-col-m-none m-right-m">
-        <div class="m-row">
-          <ol class="m-col-t-6 m-col-m-none">
-            <li><a href="https://percentboat4164.github.io/Illumination-Engine">Main Page</a></li>
-            <li><a href="pages.html">Pages</a></li>
-          </ol>
-          <ol class="m-col-t-6 m-col-m-none" start="3">
-            <li><a href="annotated.html">Classes</a></li>
-            <li><a href="files.html">Files</a></li>
-            <li class="m-show-m"><a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
-              <use href="#m-doc-search-icon-path" />
-            </svg></a></li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </div>
-</nav></header>
-<main><article>
-  <div class="m-container m-container-inflatable">
-    <div class="m-row">
-      <div class="m-col-l-10 m-push-l-1">
-        <h1>
-          OpenGLShader <span class="m-thin">class</span>
-          <div class="m-doc-include m-code m-inverted m-text-right"><span class="cp">#include</span> <a class="cpf" href="opengl_shader_8hpp.html">&lt;Illumination-Engine/src/GraphicsModule/OpenGL/openglShader.hpp&gt;</a></div>
-        </h1>
-        <p><span></span></p>
-        <nav class="m-block m-default">
-          <h3>Contents</h3>
-          <ul>
-            <li>
-              Reference
-              <ul>
-                <li><a href="#pub-types">Public types</a></li>
-                <li><a href="#pub-methods">Public functions</a></li>
-                <li><a href="#pub-attribs">Public variables</a></li>
-              </ul>
-            </li>
-          </ul>
-        </nav>
-        <section id="pub-types">
-          <h2><a href="#pub-types">Public types</a></h2>
-          <dl class="m-doc">
-            <dt>
-              struct <a href="struct_open_g_l_shader_1_1_create_info.html" class="m-doc">CreateInfo</a>
-            </dt>
-            <dd><span></span></dd>
-          </dl>
-        </section>
-        <section id="pub-methods">
-          <h2><a href="#pub-methods">Public functions</a></h2>
-          <dl class="m-doc">
-            <dt id="a59a9c02d17756089262195fe3380f29a">
-              <span class="m-doc-wrap-bumper">void <a href="#a59a9c02d17756089262195fe3380f29a" class="m-doc-self">create</a>(</span><span class="m-doc-wrap"><a href="struct_open_g_l_shader_1_1_create_info.html" class="m-doc">CreateInfo</a>* createInfo)</span>
-            </dt>
-            <dd><span></span></dd>
-            <dt id="ac1822d2b0abd897ea31fff069a695944">
-              <span class="m-doc-wrap-bumper">void <a href="#ac1822d2b0abd897ea31fff069a695944" class="m-doc-self">compile</a>(</span><span class="m-doc-wrap">)</span>
-            </dt>
-            <dd><span></span></dd>
-            <dt id="a7b03677f944df46dc7f11217d90d5aa3">
-              <span class="m-doc-wrap-bumper">void <a href="#a7b03677f944df46dc7f11217d90d5aa3" class="m-doc-self">destroy</a>(</span><span class="m-doc-wrap">)</span>
-            </dt>
-            <dd><span></span></dd>
-          </dl>
-        </section>
-        <section id="pub-attribs">
-          <h2><a href="#pub-attribs">Public variables</a></h2>
-          <dl class="m-doc">
-            <dt id="a51bd7657e8a5b02b40b1c5993dbcf109">
-              <a href="struct_open_g_l_shader_1_1_create_info.html" class="m-doc">CreateInfo</a> <a href="#a51bd7657e8a5b02b40b1c5993dbcf109" class="m-doc-self">createdWith</a>
-            </dt>
-            <dd><span></span></dd>
-            <dt id="a201d92f02c5263bef33807abe3f542aa">
-              std::string <a href="#a201d92f02c5263bef33807abe3f542aa" class="m-doc-self">data</a>
-            </dt>
-            <dd><span></span></dd>
-            <dt id="aac502a06f65f402ceb8f2edbacd786bf">
-              uint32_t <a href="#aac502a06f65f402ceb8f2edbacd786bf" class="m-doc-self">ID</a>
-            </dt>
-            <dd><span></span></dd>
-            <dt id="ab18c4445ef82495372bdf5cdbd3e0694">
-              bool <a href="#ab18c4445ef82495372bdf5cdbd3e0694" class="m-doc-self">compiled</a>
-            </dt>
-            <dd><span></span></dd>
-            <dt id="a7f4a44e3c231338a827afc0a6673bde6">
-              std::string <a href="#a7f4a44e3c231338a827afc0a6673bde6" class="m-doc-self">oldData</a>
-            </dt>
-            <dd><span></span></dd>
-          </dl>
-        </section>
-      </div>
-    </div>
-  </div>
-</article></main>
-<div class="m-doc-search" id="search">
-  <a href="#!" onclick="return hideSearch()"></a>
-  <div class="m-container">
-    <div class="m-row">
-      <div class="m-col-m-8 m-push-m-2">
-        <div class="m-doc-search-header m-text m-small">
-          <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
-          <div id="search-symbolcount">&hellip;</div>
-        </div>
-        <div class="m-doc-search-content">
-          <form>
-            <input type="search" name="q" id="search-input" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
-          </form>
-          <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.</noscript>
-          <div id="search-help" class="m-text m-dim m-text-center">
-            <p class="m-noindent">Search for symbols, directories, files, pages or
-            modules. You can omit any prefix from the symbol or file path; adding a
-            <code>:</code> or <code>/</code> suffix lists all members of given symbol or
-            directory.</p>
-            <p class="m-noindent">Use <span class="m-label m-dim">&darr;</span>
-            / <span class="m-label m-dim">&uarr;</span> to navigate through the list,
-            <span class="m-label m-dim">Enter</span> to go.
-            <span class="m-label m-dim">Tab</span> autocompletes common prefix, you can
-            copy a link to the result using <span class="m-label m-dim">⌘</span>
-            <span class="m-label m-dim">L</span> while <span class="m-label m-dim">⌘</span>
-            <span class="m-label m-dim">M</span> produces a Markdown link.</p>
-          </div>
-          <div id="search-notfound" class="m-text m-warning m-text-center">Sorry, nothing was found.</div>
-          <ul id="search-results"></ul>
-        </div>
-      </div>
-    </div>
-  </div>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo128.png"/></td>
+  <td id="projectalign">
+   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
+   </div>
+   <div id="projectbrief">A Game Development Engine Written In C++</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
 </div>
-<script src="search-v2.js"></script>
-<script src="searchdata-v2.js" async="async"></script>
-<footer><nav>
-  <div class="m-container">
-    <div class="m-row">
-      <div class="m-col-l-10 m-push-l-1">
-        <p>Illumination Engine A Game Development Engine Written In C++. Created with <a href="https://doxygen.org/">Doxygen</a> 1.9.4 and <a href="https://mcss.mosra.cz/">m.css</a>.</p>
-      </div>
-    </div>
-  </div>
-</nav></footer>
+<!-- end header part -->
+<!-- Generated by Doxygen 1.9.4 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search",'Search','.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="class_open_g_l_shader-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">OpenGLShader Class Reference</div></div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="opengl_shader_8hpp_source.html">openglShader.hpp</a>&gt;</code></p>
+<div class="dynheader">
+Collaboration diagram for OpenGLShader:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="class_open_g_l_shader__coll__graph.svg" width="274" height="155"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_open_g_l_shader_1_1_create_info.html">CreateInfo</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a59a9c02d17756089262195fe3380f29a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_open_g_l_shader.html#a59a9c02d17756089262195fe3380f29a">create</a> (<a class="el" href="struct_open_g_l_shader_1_1_create_info.html">CreateInfo</a> *createInfo)</td></tr>
+<tr class="separator:a59a9c02d17756089262195fe3380f29a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1822d2b0abd897ea31fff069a695944"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_open_g_l_shader.html#ac1822d2b0abd897ea31fff069a695944">compile</a> ()</td></tr>
+<tr class="separator:ac1822d2b0abd897ea31fff069a695944"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b03677f944df46dc7f11217d90d5aa3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_open_g_l_shader.html#a7b03677f944df46dc7f11217d90d5aa3">destroy</a> ()</td></tr>
+<tr class="separator:a7b03677f944df46dc7f11217d90d5aa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a51bd7657e8a5b02b40b1c5993dbcf109"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_open_g_l_shader_1_1_create_info.html">CreateInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_open_g_l_shader.html#a51bd7657e8a5b02b40b1c5993dbcf109">createdWith</a> {}</td></tr>
+<tr class="separator:a51bd7657e8a5b02b40b1c5993dbcf109"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a201d92f02c5263bef33807abe3f542aa"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_open_g_l_shader.html#a201d92f02c5263bef33807abe3f542aa">data</a> {}</td></tr>
+<tr class="separator:a201d92f02c5263bef33807abe3f542aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac502a06f65f402ceb8f2edbacd786bf"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_open_g_l_shader.html#aac502a06f65f402ceb8f2edbacd786bf">ID</a> {}</td></tr>
+<tr class="separator:aac502a06f65f402ceb8f2edbacd786bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab18c4445ef82495372bdf5cdbd3e0694"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_open_g_l_shader.html#ab18c4445ef82495372bdf5cdbd3e0694">compiled</a> {false}</td></tr>
+<tr class="separator:ab18c4445ef82495372bdf5cdbd3e0694"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f4a44e3c231338a827afc0a6673bde6"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_open_g_l_shader.html#a7f4a44e3c231338a827afc0a6673bde6">oldData</a> {}</td></tr>
+<tr class="separator:a7f4a44e3c231338a827afc0a6673bde6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="ac1822d2b0abd897ea31fff069a695944" name="ac1822d2b0abd897ea31fff069a695944"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1822d2b0abd897ea31fff069a695944">&#9670;&nbsp;</a></span>compile()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void OpenGLShader::compile </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a59a9c02d17756089262195fe3380f29a" name="a59a9c02d17756089262195fe3380f29a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59a9c02d17756089262195fe3380f29a">&#9670;&nbsp;</a></span>create()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void OpenGLShader::create </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_open_g_l_shader_1_1_create_info.html">CreateInfo</a> *&#160;</td>
+          <td class="paramname"><em>createInfo</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7b03677f944df46dc7f11217d90d5aa3" name="a7b03677f944df46dc7f11217d90d5aa3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b03677f944df46dc7f11217d90d5aa3">&#9670;&nbsp;</a></span>destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void OpenGLShader::destroy </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="ab18c4445ef82495372bdf5cdbd3e0694" name="ab18c4445ef82495372bdf5cdbd3e0694"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab18c4445ef82495372bdf5cdbd3e0694">&#9670;&nbsp;</a></span>compiled</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool OpenGLShader::compiled {false}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a51bd7657e8a5b02b40b1c5993dbcf109" name="a51bd7657e8a5b02b40b1c5993dbcf109"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51bd7657e8a5b02b40b1c5993dbcf109">&#9670;&nbsp;</a></span>createdWith</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="struct_open_g_l_shader_1_1_create_info.html">CreateInfo</a> OpenGLShader::createdWith {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a201d92f02c5263bef33807abe3f542aa" name="a201d92f02c5263bef33807abe3f542aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a201d92f02c5263bef33807abe3f542aa">&#9670;&nbsp;</a></span>data</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string OpenGLShader::data {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aac502a06f65f402ceb8f2edbacd786bf" name="aac502a06f65f402ceb8f2edbacd786bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac502a06f65f402ceb8f2edbacd786bf">&#9670;&nbsp;</a></span>ID</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t OpenGLShader::ID {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7f4a44e3c231338a827afc0a6673bde6" name="a7f4a44e3c231338a827afc0a6673bde6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f4a44e3c231338a827afc0a6673bde6">&#9670;&nbsp;</a></span>oldData</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string OpenGLShader::oldData {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>Illumination-Engine/src/GraphicsModule/OpenGL/<a class="el" href="opengl_shader_8hpp_source.html">openglShader.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.4
+</small></address>
 </body>
 </html>

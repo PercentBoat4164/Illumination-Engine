@@ -1,235 +1,303 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- HTML header for doxygen 1.9.4-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta charset="UTF-8" />
-  <title>IeKeyPressDescription struct | Illumination Engine A Game Development Engine Written In C++</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,600,600i%7CSource+Code+Pro:400,400i,600" />
-  <link rel="stylesheet" href="m-dark+documentation.compiled.css" />
-  <link rel="icon" href="IlluminationEngineLogo128.png" type="image/png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#22272e" />
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.9.4"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Illumination Engine: IeKeyPressDescription Struct Reference</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<! -- <script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+<! -- <script type="text/javascript">
+<! -- DoxygenAwesomeDarkModeToggle.init() -->
+<! -- </script>
+<script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+<script type="text/javascript">
+DoxygenAwesomeFragmentCopyButton.init()
+</script>
+<html xmlns="http://www.w3.org/1999/xhtml" class="dark-mode">
 </head>
 <body>
-<header><nav id="navigation">
-  <div class="m-container">
-    <div class="m-row">
-      <a href="index.html" id="m-navbar-brand" class="m-col-t-8 m-col-m-none m-left-m"><img src="IlluminationEngineLogo128.png" alt="" />Illumination Engine <span class="m-thin">A Game Development Engine Written In C++</span></a>
-      <div class="m-col-t-4 m-hide-m m-text-right m-nopadr">
-        <a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
-          <path id="m-doc-search-icon-path" d="m6 0c-3.31 0-6 2.69-6 6 0 3.31 2.69 6 6 6 1.49 0 2.85-0.541 3.89-1.44-0.0164 0.338 0.147 0.759 0.5 1.15l3.22 3.79c0.552 0.614 1.45 0.665 2 0.115 0.55-0.55 0.499-1.45-0.115-2l-3.79-3.22c-0.392-0.353-0.812-0.515-1.15-0.5 0.895-1.05 1.44-2.41 1.44-3.89 0-3.31-2.69-6-6-6zm0 1.56a4.44 4.44 0 0 1 4.44 4.44 4.44 4.44 0 0 1-4.44 4.44 4.44 4.44 0 0 1-4.44-4.44 4.44 4.44 0 0 1 4.44-4.44z"/>
-        </svg></a>
-        <a id="m-navbar-show" href="#navigation" title="Show navigation"></a>
-        <a id="m-navbar-hide" href="#" title="Hide navigation"></a>
-      </div>
-      <div id="m-navbar-collapse" class="m-col-t-12 m-show-m m-col-m-none m-right-m">
-        <div class="m-row">
-          <ol class="m-col-t-6 m-col-m-none">
-            <li><a href="https://percentboat4164.github.io/Illumination-Engine">Main Page</a></li>
-            <li><a href="pages.html">Pages</a></li>
-          </ol>
-          <ol class="m-col-t-6 m-col-m-none" start="3">
-            <li><a href="annotated.html">Classes</a></li>
-            <li><a href="files.html">Files</a></li>
-            <li class="m-show-m"><a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()"><svg style="height: 0.9rem;" viewBox="0 0 16 16">
-              <use href="#m-doc-search-icon-path" />
-            </svg></a></li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </div>
-</nav></header>
-<main><article>
-  <div class="m-container m-container-inflatable">
-    <div class="m-row">
-      <div class="m-col-l-10 m-push-l-1">
-        <h1>
-          IeKeyPressDescription <span class="m-thin">struct</span>
-          <div class="m-doc-include m-code m-inverted m-text-right"><span class="cp">#include</span> <a class="cpf" href="_i_e_keyboard_8hpp.html">&lt;Illumination-Engine/src/InputModule/IEKeyboard.hpp&gt;</a></div>
-        </h1>
-        <p>A class that stores the data related to a key press action.</p>
-        <nav class="m-block m-default">
-          <h3>Contents</h3>
-          <ul>
-            <li>
-              Reference
-              <ul>
-                <li><a href="#typeless-methods">Constructors, destructors, conversion operators</a></li>
-                <li><a href="#pub-methods">Public functions</a></li>
-                <li><a href="#pub-attribs">Public variables</a></li>
-              </ul>
-            </li>
-          </ul>
-        </nav>
-        <section id="typeless-methods">
-          <h2><a href="#typeless-methods">Constructors, destructors, conversion operators</a></h2>
-          <dl class="m-doc">
-            <dt>
-              <span class="m-doc-wrap-bumper"><a href="#a620edac7ff55cc20558a7b4718758d38" class="m-doc">IeKeyPressDescription</a>(</span><span class="m-doc-wrap">int initialKey,
-              int initialAction,
-              int initialModifiers = 0)</span>
-            </dt>
-            <dd>Constructs a KeyPressDescription from a key, action and modifiers.</dd>
-            <dt>
-              <span class="m-doc-wrap-bumper"><a href="#a0bcf28c05d572b881aec078a3e1d557c" class="m-doc">IeKeyPressDescription</a>(</span><span class="m-doc-wrap">int initialKey) <span class="m-label m-flat m-info">explicit</span> </span>
-            </dt>
-            <dd></dd>
-          </dl>
-        </section>
-        <section id="pub-methods">
-          <h2><a href="#pub-methods">Public functions</a></h2>
-          <dl class="m-doc">
-            <dt>
-              <span class="m-doc-wrap-bumper">auto <a href="#a7b271f7b71a6f02302594e1ccd764195" class="m-doc">operator==</a>(</span><span class="m-doc-wrap">const <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a>&amp; other) const -&gt; bool</span>
-            </dt>
-            <dd>The == operator for the <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a> structure.</dd>
-          </dl>
-        </section>
-        <section id="pub-attribs">
-          <h2><a href="#pub-attribs">Public variables</a></h2>
-          <dl class="m-doc">
-            <dt id="a24f995950f6d18165e9e6c569f48f75d">
-              uint16_t <a href="#a24f995950f6d18165e9e6c569f48f75d" class="m-doc-self">key</a>
-            </dt>
-            <dd><span></span></dd>
-            <dt id="a5aebb469fcd9c3d34c87d07e8a6900b3">
-              uint8_t <a href="#a5aebb469fcd9c3d34c87d07e8a6900b3" class="m-doc-self">action</a>
-            </dt>
-            <dd><span></span></dd>
-            <dt id="ac5c53fe990bf83ec9b8681e74f33bd0d">
-              uint8_t <a href="#ac5c53fe990bf83ec9b8681e74f33bd0d" class="m-doc-self">modifiers</a>
-            </dt>
-            <dd><span></span></dd>
-            <dt id="a0c14e4191c247aaf38923be85bc96a44">
-              uint16_t <a href="#a0c14e4191c247aaf38923be85bc96a44" class="m-doc-self">scancode</a>
-            </dt>
-            <dd><span></span></dd>
-          </dl>
-        </section>
-        <section>
-          <h2>Function documentation</h2>
-          <section class="m-doc-details" id="a620edac7ff55cc20558a7b4718758d38"><div>
-            <h3>
-              <span class="m-doc-wrap-bumper"> IeKeyPressDescription::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#a620edac7ff55cc20558a7b4718758d38" class="m-doc-self">IeKeyPressDescription</a>(</span><span class="m-doc-wrap">int initialKey,
-              int initialAction,
-              int initialModifiers = 0)</span></span>
-            </h3>
-            <p>Constructs a KeyPressDescription from a key, action and modifiers.</p>
-            <table class="m-table m-fullwidth m-flat">
-              <thead>
-                <tr><th colspan="2">Parameters</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="width: 1%">initialKey</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>initialAction</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>initialModifiers</td>
-                  <td></td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th>Returns</th>
-                  <td><a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div></section>
-          <section class="m-doc-details" id="a0bcf28c05d572b881aec078a3e1d557c"><div>
-            <h3>
-              <span class="m-doc-wrap-bumper"> IeKeyPressDescription::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#a0bcf28c05d572b881aec078a3e1d557c" class="m-doc-self">IeKeyPressDescription</a>(</span><span class="m-doc-wrap">int initialKey) <span class="m-label m-info">explicit</span> </span></span>
-            </h3>
-            <table class="m-table m-fullwidth m-flat">
-              <thead>
-                <tr><th colspan="2">Parameters</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="width: 1%">initialKey</td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-<p>Constructs a KeyPressDescription from a key. Sets action to pressed with no modifiers.</p>
-          </div></section>
-          <section class="m-doc-details" id="a7b271f7b71a6f02302594e1ccd764195"><div>
-            <h3>
-              <span class="m-doc-wrap-bumper">bool IeKeyPressDescription::<wbr /></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a href="#a7b271f7b71a6f02302594e1ccd764195" class="m-doc-self">operator==</a>(</span><span class="m-doc-wrap">const <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a>&amp; other) const</span></span>
-            </h3>
-            <p>The == operator for the <a href="struct_ie_key_press_description.html" class="m-doc">IeKeyPressDescription</a> structure.</p>
-            <table class="m-table m-fullwidth m-flat">
-              <thead>
-                <tr><th colspan="2">Parameters</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="width: 1%">other</td>
-                  <td></td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th>Returns</th>
-                  <td>true if the values of the object and argument are the same, false if not.</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div></section>
-        </section>
-      </div>
-    </div>
-  </div>
-</article></main>
-<div class="m-doc-search" id="search">
-  <a href="#!" onclick="return hideSearch()"></a>
-  <div class="m-container">
-    <div class="m-row">
-      <div class="m-col-m-8 m-push-m-2">
-        <div class="m-doc-search-header m-text m-small">
-          <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
-          <div id="search-symbolcount">&hellip;</div>
-        </div>
-        <div class="m-doc-search-content">
-          <form>
-            <input type="search" name="q" id="search-input" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
-          </form>
-          <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.</noscript>
-          <div id="search-help" class="m-text m-dim m-text-center">
-            <p class="m-noindent">Search for symbols, directories, files, pages or
-            modules. You can omit any prefix from the symbol or file path; adding a
-            <code>:</code> or <code>/</code> suffix lists all members of given symbol or
-            directory.</p>
-            <p class="m-noindent">Use <span class="m-label m-dim">&darr;</span>
-            / <span class="m-label m-dim">&uarr;</span> to navigate through the list,
-            <span class="m-label m-dim">Enter</span> to go.
-            <span class="m-label m-dim">Tab</span> autocompletes common prefix, you can
-            copy a link to the result using <span class="m-label m-dim">⌘</span>
-            <span class="m-label m-dim">L</span> while <span class="m-label m-dim">⌘</span>
-            <span class="m-label m-dim">M</span> produces a Markdown link.</p>
-          </div>
-          <div id="search-notfound" class="m-text m-warning m-text-center">Sorry, nothing was found.</div>
-          <ul id="search-results"></ul>
-        </div>
-      </div>
-    </div>
-  </div>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo128.png"/></td>
+  <td id="projectalign">
+   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
+   </div>
+   <div id="projectbrief">A Game Development Engine Written In C++</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
 </div>
-<script src="search-v2.js"></script>
-<script src="searchdata-v2.js" async="async"></script>
-<footer><nav>
-  <div class="m-container">
-    <div class="m-row">
-      <div class="m-col-l-10 m-push-l-1">
-        <p>Illumination Engine A Game Development Engine Written In C++. Created with <a href="https://doxygen.org/">Doxygen</a> 1.9.4 and <a href="https://mcss.mosra.cz/">m.css</a>.</p>
-      </div>
-    </div>
-  </div>
-</nav></footer>
+<!-- end header part -->
+<!-- Generated by Doxygen 1.9.4 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search",'Search','.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="struct_ie_key_press_description-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">IeKeyPressDescription Struct Reference</div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>A class that stores the data related to a key press action.  
+ <a href="struct_ie_key_press_description.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="_i_e_keyboard_8hpp_source.html">IEKeyboard.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a620edac7ff55cc20558a7b4718758d38"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ie_key_press_description.html#a620edac7ff55cc20558a7b4718758d38">IeKeyPressDescription</a> (int initialKey, int initialAction, int initialModifiers=0)</td></tr>
+<tr class="memdesc:a620edac7ff55cc20558a7b4718758d38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a KeyPressDescription from a key, action and modifiers.  <a href="struct_ie_key_press_description.html#a620edac7ff55cc20558a7b4718758d38">More...</a><br /></td></tr>
+<tr class="separator:a620edac7ff55cc20558a7b4718758d38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bcf28c05d572b881aec078a3e1d557c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ie_key_press_description.html#a0bcf28c05d572b881aec078a3e1d557c">IeKeyPressDescription</a> (int initialKey)</td></tr>
+<tr class="separator:a0bcf28c05d572b881aec078a3e1d557c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b271f7b71a6f02302594e1ccd764195"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ie_key_press_description.html#a7b271f7b71a6f02302594e1ccd764195">operator==</a> (const <a class="el" href="struct_ie_key_press_description.html">IeKeyPressDescription</a> &amp;other) const</td></tr>
+<tr class="memdesc:a7b271f7b71a6f02302594e1ccd764195"><td class="mdescLeft">&#160;</td><td class="mdescRight">The == operator for the <a class="el" href="struct_ie_key_press_description.html" title="A class that stores the data related to a key press action.">IeKeyPressDescription</a> structure.  <a href="struct_ie_key_press_description.html#a7b271f7b71a6f02302594e1ccd764195">More...</a><br /></td></tr>
+<tr class="separator:a7b271f7b71a6f02302594e1ccd764195"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a24f995950f6d18165e9e6c569f48f75d"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ie_key_press_description.html#a24f995950f6d18165e9e6c569f48f75d">key</a></td></tr>
+<tr class="separator:a24f995950f6d18165e9e6c569f48f75d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5aebb469fcd9c3d34c87d07e8a6900b3"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ie_key_press_description.html#a5aebb469fcd9c3d34c87d07e8a6900b3">action</a></td></tr>
+<tr class="separator:a5aebb469fcd9c3d34c87d07e8a6900b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5c53fe990bf83ec9b8681e74f33bd0d"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ie_key_press_description.html#ac5c53fe990bf83ec9b8681e74f33bd0d">modifiers</a></td></tr>
+<tr class="separator:ac5c53fe990bf83ec9b8681e74f33bd0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c14e4191c247aaf38923be85bc96a44"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ie_key_press_description.html#a0c14e4191c247aaf38923be85bc96a44">scancode</a></td></tr>
+<tr class="separator:a0c14e4191c247aaf38923be85bc96a44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >A class that stores the data related to a key press action. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a620edac7ff55cc20558a7b4718758d38" name="a620edac7ff55cc20558a7b4718758d38"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a620edac7ff55cc20558a7b4718758d38">&#9670;&nbsp;</a></span>IeKeyPressDescription() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">IeKeyPressDescription::IeKeyPressDescription </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>initialKey</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>initialAction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>initialModifiers</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a KeyPressDescription from a key, action and modifiers. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">initialKey</td><td></td></tr>
+    <tr><td class="paramname">initialAction</td><td></td></tr>
+    <tr><td class="paramname">initialModifiers=0</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="struct_ie_key_press_description.html" title="A class that stores the data related to a key press action.">IeKeyPressDescription</a> </dd></dl>
+
+</div>
+</div>
+<a id="a0bcf28c05d572b881aec078a3e1d557c" name="a0bcf28c05d572b881aec078a3e1d557c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0bcf28c05d572b881aec078a3e1d557c">&#9670;&nbsp;</a></span>IeKeyPressDescription() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">IeKeyPressDescription::IeKeyPressDescription </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>initialKey</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p >Constructs a KeyPressDescription from a key. Sets action to pressed with no modifiers. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">initialKey</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a7b271f7b71a6f02302594e1ccd764195" name="a7b271f7b71a6f02302594e1ccd764195"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b271f7b71a6f02302594e1ccd764195">&#9670;&nbsp;</a></span>operator==()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool IeKeyPressDescription::operator== </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="struct_ie_key_press_description.html">IeKeyPressDescription</a> &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The == operator for the <a class="el" href="struct_ie_key_press_description.html" title="A class that stores the data related to a key press action.">IeKeyPressDescription</a> structure. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">other</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the values of the object and argument are the same, false if not. </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a5aebb469fcd9c3d34c87d07e8a6900b3" name="a5aebb469fcd9c3d34c87d07e8a6900b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5aebb469fcd9c3d34c87d07e8a6900b3">&#9670;&nbsp;</a></span>action</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t IeKeyPressDescription::action</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a24f995950f6d18165e9e6c569f48f75d" name="a24f995950f6d18165e9e6c569f48f75d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24f995950f6d18165e9e6c569f48f75d">&#9670;&nbsp;</a></span>key</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t IeKeyPressDescription::key</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac5c53fe990bf83ec9b8681e74f33bd0d" name="ac5c53fe990bf83ec9b8681e74f33bd0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac5c53fe990bf83ec9b8681e74f33bd0d">&#9670;&nbsp;</a></span>modifiers</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t IeKeyPressDescription::modifiers</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0c14e4191c247aaf38923be85bc96a44" name="a0c14e4191c247aaf38923be85bc96a44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c14e4191c247aaf38923be85bc96a44">&#9670;&nbsp;</a></span>scancode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t IeKeyPressDescription::scancode</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>Illumination-Engine/src/InputModule/<a class="el" href="_i_e_keyboard_8hpp_source.html">IEKeyboard.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.4
+</small></address>
 </body>
 </html>
