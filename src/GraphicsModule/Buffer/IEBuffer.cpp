@@ -86,23 +86,29 @@ IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo)
 	create(engineLink, createInfo);
 }
 
-IEBuffer::IEBuffer(IERenderEngine *engineLink, VkDeviceSize bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage) {
-	create(engineLink, bufferSize, usageFlags, memoryUsage);
+IEBuffer::IEBuffer(IERenderEngine *engineLink, uint64_t bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage, GLenum bufferType) {
+	create(engineLink, bufferSize, usageFlags, memoryUsage, bufferType);
 }
 
 void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo) {
-	linkedRenderEngine = engineLink;
-	size = createInfo->size;
-	usage = createInfo->usage;
-	allocationUsage = createInfo->allocationUsage;
+	if (status == IE_BUFFER_STATUS_NONE) {
+		linkedRenderEngine = engineLink;
+		size = createInfo->size;
+		usage = createInfo->usage;
+		allocationUsage = createInfo->allocationUsage;
+		type = createInfo->type;
+	}
 	status = IE_BUFFER_STATUS_UNLOADED;
 }
 
-void IEBuffer::create(IERenderEngine *engineLink, VkDeviceSize bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage) {
-	linkedRenderEngine = engineLink;
-	size = bufferSize;
-	usage = usageFlags;
-	allocationUsage = memoryUsage;
+void IEBuffer::create(IERenderEngine *engineLink, uint64_t bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage, GLenum bufferType) {
+	if (status == IE_BUFFER_STATUS_NONE) {
+		linkedRenderEngine = engineLink;
+		size = bufferSize;
+		usage = usageFlags;
+		allocationUsage = memoryUsage;
+		type = bufferType;
+	}
 	status = IE_BUFFER_STATUS_UNLOADED;
 }
 
@@ -114,8 +120,15 @@ void IEBuffer::uploadToVRAM() {
 }
 
 void IEBuffer::_openglUploadToVRAM() {
+	if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to load buffer with no contents in RAM to VRAM.");
+	}
 	if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM
-		glGenBuffers(1, &bufferID);  // Put it in VRAM
+		glGenBuffers(1, &id);  // Put it in VRAM
+	}
+	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {
+		glBindBuffer(type, id);
+		glBufferData(type, size, data.data(), GL_STATIC_DRAW);
 	}
 }
 
@@ -166,16 +179,14 @@ void IEBuffer::uploadToVRAM(const std::vector<char> &data) {
 }
 
 void IEBuffer::_openglUploadToVRAM_vector(const std::vector<char> &data) {
-	if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to load buffer with no contents in RAM to VRAM.");
-	}
 	if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM
-		glGenBuffers(1, &bufferID);  // Put it in VRAM
+		glGenBuffers(1, &id);  // Put it in VRAM
+		status = static_cast<IEBufferStatus>(status | IE_BUFFER_STATUS_DATA_IN_VRAM);
 	}
 
 	// Upload data
-	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) data.size() * (GLsizeiptr) sizeof(data[0]), data.data(), GL_STATIC_DRAW);
+	glBindBuffer(type, id);
+	glBufferData(type, (GLsizeiptr) data.size() * (GLsizeiptr) sizeof(data[0]), data.data(), GL_STATIC_DRAW);
 }
 
 void IEBuffer::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
@@ -205,6 +216,7 @@ void IEBuffer::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
 			bufferDeviceAddressInfo.buffer = buffer;
 			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
 		}
+		status = static_cast<IEBufferStatus>(status | IE_BUFFER_STATUS_DATA_IN_VRAM);
 	}
 
 	// Upload data in RAM to VRAM
@@ -222,16 +234,15 @@ void IEBuffer::uploadToVRAM(void *data, uint64_t size) {
 }
 
 void IEBuffer::_openglUploadToVRAM_void(void *data, std::size_t size) {
-	if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to load buffer with no contents in RAM to VRAM.");
-	}
 	if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM?
-		glGenBuffers(1, &bufferID);  // Put it in VRAM
+		glGenBuffers(1, &id);  // Put it in VRAM
+		this->size = size;
+		status = static_cast<IEBufferStatus>(status | IE_BUFFER_STATUS_DATA_IN_VRAM);
 	}
 
 	// Upload data
-	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) size, data, GL_STATIC_DRAW);
+	glBindBuffer(type, id);
+	glBufferData(type, (GLsizeiptr) size, data, GL_STATIC_DRAW);
 }
 
 void IEBuffer::_vulkanUploadToVRAM_void(void *data, std::size_t size) {
@@ -261,6 +272,10 @@ void IEBuffer::_vulkanUploadToVRAM_void(void *data, std::size_t size) {
 			bufferDeviceAddressInfo.buffer = buffer;
 			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
 		}
+
+		this->size = size;
+		status = static_cast<IEBufferStatus>(status | IE_BUFFER_STATUS_DATA_IN_VRAM);
+
 	}
 
 	// Upload data in RAM to VRAM
@@ -279,8 +294,8 @@ void IEBuffer::update(const std::vector<char> &data) {
 
 void IEBuffer::_openglUpdate_vector(const std::vector<char> &data) {
 	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
-		glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-		glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) data.size() * (GLsizeiptr) sizeof(data[0]), data.data(), GL_STATIC_DRAW);
+		glBindBuffer(type, id);
+		glBufferData(type, (GLsizeiptr) data.size() * (GLsizeiptr) sizeof(data[0]), data.data(), GL_STATIC_DRAW);
 	}
 	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {  // In RAM?
 		this->data = data;
@@ -309,8 +324,8 @@ void IEBuffer::update(void *data, std::size_t size) {
 
 void IEBuffer::_openglUpdate_void(void *data, std::size_t size) {
 	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
-		glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-		glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) size, data, GL_STATIC_DRAW);
+		glBindBuffer(type, id);
+		glBufferData(type, (GLsizeiptr) size, data, GL_STATIC_DRAW);
 	}
 	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {  // In RAM?
 		this->data = std::vector<char>{(char *) data, (char *) ((size_t) data + size)};
@@ -339,7 +354,7 @@ void IEBuffer::unloadFromVRAM() {
 
 void IEBuffer::_openglUnloadFromVRAM() {
 	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
-		glDeleteBuffers(1, &bufferID);
+		glDeleteBuffers(1, &id);
 		status = static_cast<IEBufferStatus>(status & ~IE_BUFFER_STATUS_DATA_IN_VRAM);  // Not in VRAM
 	}
 }
@@ -359,7 +374,7 @@ void IEBuffer::destroy() {
 
 void IEBuffer::_openglDestroy() {
 	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
-		glDeleteBuffers(1, &bufferID);
+		glDeleteBuffers(1, &id);
 		status = static_cast<IEBufferStatus>(status & ~IE_BUFFER_STATUS_DATA_IN_VRAM | IE_BUFFER_STATUS_QUEUED_VRAM);
 	}
 	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {  // In RAM?

@@ -13,7 +13,7 @@ void IEShader::setAPI(const IEAPI &API) {
 		_create = &IEShader::_openglCreate;
 		_compile = &IEShader::_openglCompile;
 	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-		_create = &IEShader::_openglCreate;
+		_create = &IEShader::_vulkanCreate;
 		_compile = &IEShader::_vulkanCompile;
 	}
 }

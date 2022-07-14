@@ -78,4 +78,5 @@ public:
 	std::shared_ptr<IEBuffer> indexBuffer{};
 	std::shared_ptr<IEMaterial> material{};
 	std::vector<std::function<void()>> deletionQueue{};
+	GLuint vertexArray{};
 };

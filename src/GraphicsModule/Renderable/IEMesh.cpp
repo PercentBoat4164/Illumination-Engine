@@ -41,7 +41,63 @@ void IEMesh::loadFromDiskToRAM(const std::string &directory, const aiScene *scen
 }
 
 void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScene *scene, aiMesh *mesh) {
+// record indices
+	vertices.reserve(mesh->mNumVertices);
+	IEVertex temporaryVertex{};
+	for (int i = 0; i < mesh->mNumVertices; ++i) {
+		if (mesh->HasPositions()) {
+			temporaryVertex.position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
+		}
+		if (mesh->HasNormals()) {
+			temporaryVertex.normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
+		}
+		if (mesh->HasTextureCoords(0)) {
+			temporaryVertex.textureCoordinates = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
+		}
+		if (mesh->HasVertexColors(0)) {
+			temporaryVertex.color = {mesh->mColors[0][i].a, mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b};
+		}
+		if (mesh->HasTangentsAndBitangents()) {
+			temporaryVertex.tangent = {mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z};
+			temporaryVertex.biTangent = {mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z};
+		}
+		vertices.push_back(temporaryVertex);
+	}
 
+	// Create vertex buffer.
+	IEBuffer::CreateInfo vertexBufferCreateInfo{
+			.size=sizeof(vertices[0]) * vertices.size(),
+			.type=GL_ARRAY_BUFFER,
+	};
+	vertexBuffer->create(linkedRenderEngine, &vertexBufferCreateInfo);
+	vertexBuffer->uploadToRAM(vertices.data(), vertexBufferCreateInfo.size);
+
+	// assuming all faces are triangles
+	triangleCount = mesh->mNumFaces;
+
+	// record vertices
+	indices.reserve(3UL * triangleCount);
+	int j;
+	for (int i = 0; i < triangleCount; ++i) {
+		if (mesh->mFaces[i].mNumIndices != 3) {
+			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+													 "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.");
+		}
+		for (j = 0; j < mesh->mFaces[i].mNumIndices; ++j) {
+			indices.push_back(mesh->mFaces[i].mIndices[j]);
+		}
+	}
+
+	// Create index buffer
+	IEBuffer::CreateInfo indexBufferCreateInfo{
+			.size=sizeof(indices[0]) * indices.size(),
+			.type=GL_ELEMENT_ARRAY_BUFFER,
+	};
+	indexBuffer->create(linkedRenderEngine, &indexBufferCreateInfo);
+	indexBuffer->uploadToRAM(indices.data(), indexBufferCreateInfo.size);
+
+	// load material
+	material->loadFromDiskToRAM(directory, scene, mesh->mMaterialIndex);
 }
 
 void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScene *scene, aiMesh *mesh) {
@@ -140,6 +196,25 @@ void IEMesh::_openglLoadFromRAMToVRAM() {
 	pipeline->create(linkedRenderEngine, new IEPipeline::CreateInfo{
 			.shaders=shaders,
 	});
+
+	glGenVertexArrays(1, &vertexArray);
+	glBindVertexArray(vertexArray);
+
+	glBindBuffer(vertexBuffer->type, vertexBuffer->id);
+	glBindBuffer(indexBuffer->type, indexBuffer->id);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, position));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, color));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, textureCoordinates));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, normal));
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, tangent));
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, biTangent));
 }
 
 void IEMesh::_vulkanLoadFromRAMToVRAM() {

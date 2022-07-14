@@ -34,6 +34,24 @@ void IEPipeline::create(IERenderEngine *engineLink, IEPipeline::CreateInfo *crea
 	_create(*this, engineLink, createInfo);
 }
 
+void IEPipeline::_openglCreate(IERenderEngine *engineLink, IEPipeline::CreateInfo *createInfo) {
+	programID = glCreateProgram();
+	for (std::shared_ptr<IEShader> &shader: createInfo->shaders) {
+		glAttachShader(programID, shader->shaderID);
+	}
+	glLinkProgram(programID);
+
+	GLint result;
+	GLint infoLogLength;
+	glGetProgramiv(programID, GL_LINK_STATUS, &result);
+	glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
+	if (infoLogLength > 0) {
+		std::vector<char> programErrorMessage(infoLogLength + 1);
+		glGetProgramInfoLog(programID, infoLogLength, NULL, &programErrorMessage[0]);
+		printf("%s\n", &programErrorMessage[0]);
+	}
+}
+
 void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInfo *createInfo) {
 	linkedRenderEngine = engineLink;
 	createdWith = *createInfo;
@@ -180,29 +198,6 @@ void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInf
 	deletionQueue.emplace_back([&] {
 		vkDestroyPipeline(linkedRenderEngine->device.device, pipeline, nullptr);
 	});
-}
-
-void IEPipeline::_openglCreate(IERenderEngine *engineLink, IEPipeline::CreateInfo *createInfo) {
-	programID = glCreateProgram();
-	for (std::shared_ptr<IEShader> &shader: createInfo->shaders) {
-		glAttachShader(programID, shader->shaderID);
-	}
-	glLinkProgram(programID);
-
-	GLint result;
-	GLint infoLogLength;
-	glGetProgramiv(programID, GL_LINK_STATUS, &result);
-	glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
-	if (infoLogLength > 0) {
-		std::vector<char> programErrorMessage(infoLogLength + 1);
-		glGetProgramInfoLog(programID, infoLogLength, NULL, &programErrorMessage[0]);
-		printf("%s\n", &programErrorMessage[0]);
-	}
-
-	for (std::shared_ptr<IEShader> &shader: createInfo->shaders) {
-		glDetachShader(programID, shader->shaderID);
-		glDeleteShader(shader->shaderID);
-	}
 }
 
 

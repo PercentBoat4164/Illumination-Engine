@@ -9,6 +9,7 @@ class VkVertexInputAttributeDescription;
 // External dependencies
 
 #define GLM_FORCE_RADIANS
+
 #include <glm/glm.hpp>
 
 // System dependencies
@@ -26,8 +27,6 @@ struct IEVertex {
 	static VkVertexInputBindingDescription getBindingDescription();
 
 	static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
-
-	std::string toString();
 
 	bool operator==(IEVertex &other);
 };

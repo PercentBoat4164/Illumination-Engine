@@ -49,6 +49,16 @@ void IERenderable::create(IERenderEngine *engineLink, const std::string &filePat
 }
 
 void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &filePath) {
+	linkedRenderEngine = engineLink;
+	for (IEMesh &mesh: meshes) {
+		mesh.create(linkedRenderEngine);
+	}
+
+	IEBuffer::CreateInfo modelBufferCreateInfo{
+			.size=sizeof(IEUniformBufferObject),
+			.type=GL_ARRAY_BUFFER,
+	};
+	modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
 }
 
 void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &filePath) {
@@ -156,6 +166,24 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 	}
 }
 
+void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
+	modelMatrices.resize(associatedAssets.size());
+	for (int i = 0; i < associatedAssets.size(); ++i) {
+		glm::quat quaternion = glm::yawPitchRoll(associatedAssets[i].lock()->rotation.x, associatedAssets[i].lock()->rotation.y, associatedAssets[i].lock()->rotation.z);
+		modelMatrices[i] = glm::rotate(glm::translate(glm::scale(glm::identity<glm::mat4>(), associatedAssets[i].lock()->scale), associatedAssets[i].lock()->position), glm::angle(quaternion), glm::axis(quaternion));
+	}
+	uniformBufferObject.viewModelMatrix = camera.viewMatrix;
+	uniformBufferObject.modelMatrix = modelMatrices[0];
+	uniformBufferObject.projectionMatrix = camera.projectionMatrix;
+	uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrices[0])));
+	uniformBufferObject.position = camera.position;
+	uniformBufferObject.time = time;
+	modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
+	for (IEMesh &mesh: meshes) {
+		mesh.update(renderCommandBufferIndex);
+	}
+}
+
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
 	modelMatrices.resize(associatedAssets.size());
 	for (int i = 0; i < associatedAssets.size(); ++i) {
@@ -172,24 +200,6 @@ void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t re
 	for (IEMesh &mesh: meshes) {
 		mesh.update(renderCommandBufferIndex);
 		mesh.descriptorSet->update({&modelBuffer}, {0});
-	}
-}
-
-void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-	modelMatrices.resize(associatedAssets.size());
-	for (int i = 0; i < associatedAssets.size(); ++i) {
-		glm::quat quaternion = glm::yawPitchRoll(associatedAssets[i].lock()->rotation.x, associatedAssets[i].lock()->rotation.y, associatedAssets[i].lock()->rotation.z);
-		modelMatrices[i] = glm::rotate(glm::translate(glm::scale(glm::identity<glm::mat4>(), associatedAssets[i].lock()->scale), associatedAssets[i].lock()->position), glm::angle(quaternion), glm::axis(quaternion));
-	}
-	uniformBufferObject.viewModelMatrix = camera.viewMatrix;
-	uniformBufferObject.modelMatrix = modelMatrices[0];
-	uniformBufferObject.projectionMatrix = camera.projectionMatrix;
-	uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrices[0])));
-	uniformBufferObject.position = camera.position;
-	uniformBufferObject.time = time;
-	modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
-	for (IEMesh &mesh: meshes) {
-		mesh.update(renderCommandBufferIndex);
 	}
 }
 

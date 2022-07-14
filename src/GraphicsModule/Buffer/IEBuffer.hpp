@@ -25,9 +25,11 @@ class IERenderEngine;
 class IEBuffer : public IEDependency, public std::enable_shared_from_this<IEBuffer> {
 public:
 	struct CreateInfo {
-		VkDeviceSize size{};
+		uint64_t size{};
 		VkBufferUsageFlags usage{};
 		VmaMemoryUsage allocationUsage{};
+
+		GLenum type{};
 	};
 
 	typedef enum IEBufferStatus {
@@ -42,12 +44,13 @@ public:
 	std::vector<char> data{};
 	VkBuffer buffer{};
 	VkDeviceAddress deviceAddress{};
-	VkDeviceSize size{};
+	uint64_t size{};
 	VkBufferUsageFlags usage{};
 	VmaMemoryUsage allocationUsage{};
 	std::vector<std::function<void()>> deletionQueue{};
 	IEBufferStatus status{IE_BUFFER_STATUS_NONE};
-	GLuint bufferID{};
+	GLuint id{};
+	GLenum type{};
 
 private:
 	static std::function<void(IEBuffer &)> _uploadToRAM;
@@ -105,7 +108,7 @@ public:
 
 	IEBuffer(IERenderEngine *, IEBuffer::CreateInfo *);
 
-	IEBuffer(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
+	IEBuffer(IERenderEngine *, uint64_t, VkBufferUsageFlags, VmaMemoryUsage, GLenum);
 
 
 	static void setAPI(const IEAPI &API);
@@ -113,7 +116,7 @@ public:
 
 	void create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
 
-	void create(IERenderEngine *, VkDeviceSize, VkBufferUsageFlags, VmaMemoryUsage);
+	void create(IERenderEngine *, uint64_t, VkBufferUsageFlags, VmaMemoryUsage, GLenum);
 
 
 	void toImage(const std::shared_ptr<IEImage> &image);

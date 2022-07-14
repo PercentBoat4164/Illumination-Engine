@@ -59,7 +59,6 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
 	return instance;
 }
 
-/**@note This method works for both OpenGL and Vulkan.*/
 GLFWwindow *IERenderEngine::createWindow() const {
 	GLFWwindow *pWindow = glfwCreateWindow(settings->defaultResolution[0], settings->defaultResolution[1], settings->applicationName.c_str(), nullptr,
 										   nullptr);
@@ -71,7 +70,6 @@ GLFWwindow *IERenderEngine::createWindow() const {
 	return pWindow;
 }
 
-/**@note This method works for both OpenGL and Vulkan.*/
 void IERenderEngine::setWindowIcons(const std::string &path) const {
 	int width;
 	int height;
@@ -275,7 +273,6 @@ void IERenderEngine::setAPI(const IEAPI &API) {
 	}
 }
 
-/**@note This method works for both OpenGL and Vulkan.*/
 IEAPI *IERenderEngine::autoDetectAPIVersion(const std::string &api) {
 	API = IEAPI{api};
 	API.version = API.getHighestSupportedVersion(this);
@@ -438,36 +435,38 @@ void IERenderEngine::handleResolutionChange() {
 	createRenderPass();
 }
 
+bool IERenderEngine::update() {
+	return _update(*this);
+}
+
 bool IERenderEngine::_openGLUpdate() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	for (const std::weak_ptr<IERenderable> &renderable: renderables) {
 		renderable.lock()->update(0);
 		for (int i = 0; i < renderable.lock()->associatedAssets.size(); ++i) {
 			for (const IEMesh &mesh: renderable.lock()->meshes) {
+				// Set shader program
 				glUseProgram(mesh.pipeline->programID);
-				glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBuffer->bufferID);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.indexBuffer->bufferID);
-				glBindBuffer(GL_TEXTURE_BUFFER, textures[mesh.material->diffuseTextureIndex]->textureID);
-				glUniformBlockBinding(mesh.shaders[0]->shaderID, glGetUniformBlockIndex(mesh.shaders[0]->shaderID, "cameraData"),
-									  renderable.lock()->modelBuffer.bufferID);
-				glUniformMatrix4fv(glGetUniformLocation(mesh.pipeline->programID, "projectionMatrix"), 1, GL_FALSE, &camera.projectionMatrix[0][0]);
-				glUniformMatrix3fv(glGetUniformLocation(mesh.pipeline->programID, "normalMatrix"), 1, GL_FALSE,
-								   &glm::mat3(glm::transpose(glm::inverse(renderable.lock()->modelMatrices[i])))[0][0]);
-				glUniformMatrix4fv(glGetUniformLocation(mesh.pipeline->programID, "viewModelMatrix"), 1, GL_FALSE,
-								   &(camera.viewMatrix * renderable.lock()->modelMatrices[i])[0][0]);
-				glUniformMatrix4fv(glGetUniformLocation(mesh.pipeline->programID, "modelMatrix"), 1, GL_FALSE, &renderable.lock()->modelMatrices[i][0][0]);
-				glUniform1i(glGetUniformLocation(mesh.pipeline->programID, "diffuseTexture"), 0);
-				glUniform3fv(glGetUniformLocation(mesh.pipeline->programID, "cameraPosition"), 1, &camera.position[0]);
-				glDrawElements(GL_TRIANGLES, mesh.vertices.size(), GL_UNSIGNED_INT, mesh.indices.data());
+
+				// Set vertices
+				glBindVertexArray(mesh.vertexArray);
+
+				glBindBuffer(mesh.vertexBuffer->type, mesh.vertexBuffer->id);
+				glBindBuffer(mesh.indexBuffer->type, mesh.indexBuffer->id);
+
+				// Update uniforms
+//				glBindBufferRange(GL_UNIFORM_BUFFER, 1, renderable.lock()->modelBuffer.id, 0, renderable.lock()->modelBuffer.size);
+//				glUniformBlockBinding(mesh.pipeline->programID, glGetProgramResourceIndex(mesh.pipeline->programID, GL_UNIFORM_BLOCK, "CameraData"), 1);
+
+				// Update texture
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, textures[mesh.material->diffuseTextureIndex]->textureID);
+				glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, mesh.indices.data());
 			}
 		}
 	}
 	glfwSwapBuffers(window);
 	return !glfwWindowShouldClose(window);
-}
-
-bool IERenderEngine::update() {
-	return _update(*this);
 }
 
 bool IERenderEngine::_vulkanUpdate() {
@@ -767,7 +766,10 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 	#endif
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only code block.
 	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	window = createWindow();
+
 	setWindowIcons("res/icons");
 	glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
 	glfwGetWindowPos(window, &(*settings.currentPosition)[0], &(*settings.currentPosition)[1]);

@@ -150,7 +150,7 @@ void IEImage::_vulkanUploadToVRAM() {
 
 		// Used to build the image in video memory.
 		std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, width * height * channels * getBytesInFormat(),
-																			 VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+																			 VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, NULL);
 		scratchBuffer->uploadToVRAM(data);
 		scratchBuffer->toImage(shared_from_this());
 
@@ -210,7 +210,7 @@ void IEImage::_vulkanUpdate_vector(const std::vector<char> &data) {
 	if (status & IE_IMAGE_STATUS_IN_VRAM) {
 		// Used to build the image in video memory.
 		std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, data.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-																			 VMA_MEMORY_USAGE_CPU_TO_GPU);
+																			 VMA_MEMORY_USAGE_CPU_TO_GPU, NULL);
 		scratchBuffer->uploadToVRAM(data);
 		scratchBuffer->toImage(shared_from_this());
 	}
@@ -233,7 +233,7 @@ void IEImage::_vulkanUpdate_voidPtr(void *data, uint64_t size) {
 	if (status & IE_IMAGE_STATUS_IN_VRAM) {
 		// Used to build the image in video memory.
 		std::shared_ptr<IEBuffer> scratchBuffer = std::make_shared<IEBuffer>(linkedRenderEngine, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-																			 VMA_MEMORY_USAGE_CPU_TO_GPU);
+																			 VMA_MEMORY_USAGE_CPU_TO_GPU, NULL);
 		scratchBuffer->uploadToVRAM(data, size);
 		scratchBuffer->toImage(shared_from_this());
 	}

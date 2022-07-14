@@ -55,7 +55,7 @@ public:
 	float mipMapLevel{0};
 	bool fullscreen{false};
 	int refreshRate{60};
-	bool vSync{false};
+	bool vSync{true};
 	GLFWmonitor *primaryMonitor;
 	std::array<int, 2> defaultResolution{};
 	std::array<int, 2> fullscreenResolution{};
