@@ -92,7 +92,7 @@ Getting Started</h1>
 <p >If you are running Ubuntu 21.04 or later, you do not need to run the follow command.</p>
 <p ><code>sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt update; sudo apt install -y g++-11</code></p>
 <p >If you plan to compile the Vulkan Render Engine, you will need to install the Vulkan software development kit. To accomplish this task, install the Vulkan software development kit using the following commmand:</p>
-<p ><code>wget -qO - <a href="https://packages.lunarg.com/lunarg-signing-key-pub.asc">https://packages.lunarg.com/lunarg-signing-key-pub.asc</a> | sudo apt-key add -;sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.198-focal.list <a href="https://packages.lunarg.com/vulkan/1.2.198/lunarg-vulkan-1.2.198-focal.list;sudo">https://packages.lunarg.com/vulkan/1.2.198/lunarg-vulkan-1.2.198-focal.list;sudo</a> apt update;sudo apt install vulkan-sdk</code></p>
+<p ><code>wget -qO - <a href="https://packages.lunarg.com/lunarg-signing-key-pub.asc">https://packages.lunarg.com/lunarg-signing-key-pub.asc</a> | sudo apt-key add - ; sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.198-focal.list <a href="https://packages.lunarg.com/vulkan/1.2.198/lunarg-vulkan-1.2.198-focal.list">https://packages.lunarg.com/vulkan/1.2.198/lunarg-vulkan-1.2.198-focal.list</a> ; sudo apt update ; sudo apt install vulkan-sdk</code></p>
 <p >In an upcoming release, users won't need to install the Vulkan SDK.</p>
 <p >If you are not using CLion or another IDE with CMake bundled, you will need to install CMake:</p>
 <p ><code>sudo apt install cmake</code></p>
