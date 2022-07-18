@@ -87,25 +87,45 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a7655c8e8ae6815f67ab3f439aee35339"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a7655c8e8ae6815f67ab3f439aee35339">getExtensions</a> ()</td></tr>
-<tr class="separator:a7655c8e8ae6815f67ab3f439aee35339"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4dfe8daad775806b7e928a019bad8fa"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#af4dfe8daad775806b7e928a019bad8fa">getName</a> ()</td></tr>
-<tr class="separator:af4dfe8daad775806b7e928a019bad8fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9ec097509ab983751d6b124e08bdf0e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#ad9ec097509ab983751d6b124e08bdf0e">IEFile</a> ()=default</td></tr>
+<tr class="separator:ad9ec097509ab983751d6b124e08bdf0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fc1adb5800927d4d3dc9c91b925d9d7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a1fc1adb5800927d4d3dc9c91b925d9d7">IEFile</a> (const std::string &amp;initialPath)</td></tr>
+<tr class="separator:a1fc1adb5800927d4d3dc9c91b925d9d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8959703124a4c1899c059d03cb9d3b4"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#af8959703124a4c1899c059d03cb9d3b4">getDirectory</a> () const</td></tr>
+<tr class="separator:af8959703124a4c1899c059d03cb9d3b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0d4507655cad8ed977748fe16d972a0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#ae0d4507655cad8ed977748fe16d972a0">createDirectory</a> () const</td></tr>
+<tr class="separator:ae0d4507655cad8ed977748fe16d972a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a537e0c9989fdd1ff837d5ec1243730c2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a537e0c9989fdd1ff837d5ec1243730c2">open</a> ()</td></tr>
+<tr class="separator:a537e0c9989fdd1ff837d5ec1243730c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8444697cb2711a2c17952088c2c5819"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#ac8444697cb2711a2c17952088c2c5819">close</a> ()</td></tr>
+<tr class="separator:ac8444697cb2711a2c17952088c2c5819"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a097fcb423168c8750af1f2a1df80691d"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a097fcb423168c8750af1f2a1df80691d">read</a> (std::streamsize numBytes, std::streamsize startPosition=-1)</td></tr>
+<tr class="separator:a097fcb423168c8750af1f2a1df80691d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17a899745d9ad433badf93df500da77d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a17a899745d9ad433badf93df500da77d">insert</a> (const std::string &amp;data, std::streamsize startPosition=-1)</td></tr>
+<tr class="separator:a17a899745d9ad433badf93df500da77d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a598ff7fb504371295790ec9b64c997e7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a598ff7fb504371295790ec9b64c997e7">overwrite</a> (const std::string &amp;data, std::streamsize startPosition=-1)</td></tr>
+<tr class="separator:a598ff7fb504371295790ec9b64c997e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8949c1b5173b916c723ca356c479296"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#ae8949c1b5173b916c723ca356c479296">erase</a> (std::streamsize numBytes, std::streamsize startPosition=-1)</td></tr>
+<tr class="separator:ae8949c1b5173b916c723ca356c479296"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f322a30ee25513b4f1629720be0d5df"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a3f322a30ee25513b4f1629720be0d5df">extensions</a> () const</td></tr>
+<tr class="separator:a3f322a30ee25513b4f1629720be0d5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54c0901c05715ac6d0212bd8d9625938"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a54c0901c05715ac6d0212bd8d9625938">~IEFile</a> ()</td></tr>
+<tr class="separator:a54c0901c05715ac6d0212bd8d9625938"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abec6153d2409ccc9ba2cb3ef4cb1a493"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_i_e_file.html">IEFile</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#abec6153d2409ccc9ba2cb3ef4cb1a493">operator=</a> (const <a class="el" href="class_i_e_file.html">IEFile</a> &amp;other)</td></tr>
+<tr class="separator:abec6153d2409ccc9ba2cb3ef4cb1a493"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a4285a4ea49a0435a995039d5760d693e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a4285a4ea49a0435a995039d5760d693e">path</a></td></tr>
+<tr class="memitem:aaff8f8c5980e20866bf7aebee24cb7a3"><td class="memItemLeft" align="right" valign="top">std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#aaff8f8c5980e20866bf7aebee24cb7a3">length</a> {}</td></tr>
+<tr class="separator:aaff8f8c5980e20866bf7aebee24cb7a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4285a4ea49a0435a995039d5760d693e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a4285a4ea49a0435a995039d5760d693e">path</a> {}</td></tr>
 <tr class="separator:a4285a4ea49a0435a995039d5760d693e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c196bc7d7aa6c094c110c7905bbe032"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a3c196bc7d7aa6c094c110c7905bbe032">name</a></td></tr>
-<tr class="separator:a3c196bc7d7aa6c094c110c7905bbe032"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff5546eed7a74acf52d707ab0e166bf4"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#aff5546eed7a74acf52d707ab0e166bf4">extensions</a></td></tr>
-<tr class="separator:aff5546eed7a74acf52d707ab0e166bf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab037f08668f3788f2e3fd3028a96263b"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#ab037f08668f3788f2e3fd3028a96263b">contents</a></td></tr>
-<tr class="separator:ab037f08668f3788f2e3fd3028a96263b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a527e7b09db585ce6fa2ade9cb718aa2e"><td class="memItemLeft" align="right" valign="top">std::fstream&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file.html#a527e7b09db585ce6fa2ade9cb718aa2e">file</a> {}</td></tr>
+<tr class="separator:a527e7b09db585ce6fa2ade9cb718aa2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a id="a7655c8e8ae6815f67ab3f439aee35339" name="a7655c8e8ae6815f67ab3f439aee35339"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7655c8e8ae6815f67ab3f439aee35339">&#9670;&nbsp;</a></span>getExtensions()</h2>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ad9ec097509ab983751d6b124e08bdf0e" name="ad9ec097509ab983751d6b124e08bdf0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9ec097509ab983751d6b124e08bdf0e">&#9670;&nbsp;</a></span>IEFile() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -114,7 +134,58 @@ Public Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt; std::string &gt; IEFile::getExtensions </td>
+          <td class="memname">IEFile::IEFile </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">default</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1fc1adb5800927d4d3dc9c91b925d9d7" name="a1fc1adb5800927d4d3dc9c91b925d9d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fc1adb5800927d4d3dc9c91b925d9d7">&#9670;&nbsp;</a></span>IEFile() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEFile::IEFile </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>initialPath</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a54c0901c05715ac6d0212bd8d9625938" name="a54c0901c05715ac6d0212bd8d9625938"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54c0901c05715ac6d0212bd8d9625938">&#9670;&nbsp;</a></span>~IEFile()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEFile::~IEFile </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -129,8 +200,9 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="af4dfe8daad775806b7e928a019bad8fa" name="af4dfe8daad775806b7e928a019bad8fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af4dfe8daad775806b7e928a019bad8fa">&#9670;&nbsp;</a></span>getName()</h2>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="ac8444697cb2711a2c17952088c2c5819" name="ac8444697cb2711a2c17952088c2c5819"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8444697cb2711a2c17952088c2c5819">&#9670;&nbsp;</a></span>close()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -139,7 +211,7 @@ Public Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::string IEFile::getName </td>
+          <td class="memname">void IEFile::close </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -148,6 +220,276 @@ Public Attributes</h2></td></tr>
   </td>
   <td class="mlabels-right">
 <span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae0d4507655cad8ed977748fe16d972a0" name="ae0d4507655cad8ed977748fe16d972a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0d4507655cad8ed977748fe16d972a0">&#9670;&nbsp;</a></span>createDirectory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void IEFile::createDirectory </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae8949c1b5173b916c723ca356c479296" name="ae8949c1b5173b916c723ca356c479296"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8949c1b5173b916c723ca356c479296">&#9670;&nbsp;</a></span>erase()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void IEFile::erase </td>
+          <td>(</td>
+          <td class="paramtype">std::streamsize&#160;</td>
+          <td class="paramname"><em>numBytes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::streamsize&#160;</td>
+          <td class="paramname"><em>startPosition</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3f322a30ee25513b4f1629720be0d5df" name="a3f322a30ee25513b4f1629720be0d5df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f322a30ee25513b4f1629720be0d5df">&#9670;&nbsp;</a></span>extensions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; IEFile::extensions </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="af8959703124a4c1899c059d03cb9d3b4" name="af8959703124a4c1899c059d03cb9d3b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8959703124a4c1899c059d03cb9d3b4">&#9670;&nbsp;</a></span>getDirectory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string IEFile::getDirectory </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a17a899745d9ad433badf93df500da77d" name="a17a899745d9ad433badf93df500da77d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17a899745d9ad433badf93df500da77d">&#9670;&nbsp;</a></span>insert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void IEFile::insert </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::streamsize&#160;</td>
+          <td class="paramname"><em>startPosition</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a537e0c9989fdd1ff837d5ec1243730c2" name="a537e0c9989fdd1ff837d5ec1243730c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a537e0c9989fdd1ff837d5ec1243730c2">&#9670;&nbsp;</a></span>open()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool IEFile::open </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="abec6153d2409ccc9ba2cb3ef4cb1a493" name="abec6153d2409ccc9ba2cb3ef4cb1a493"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abec6153d2409ccc9ba2cb3ef4cb1a493">&#9670;&nbsp;</a></span>operator=()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_i_e_file.html">IEFile</a> &amp; IEFile::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_i_e_file.html">IEFile</a> &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a598ff7fb504371295790ec9b64c997e7" name="a598ff7fb504371295790ec9b64c997e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a598ff7fb504371295790ec9b64c997e7">&#9670;&nbsp;</a></span>overwrite()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void IEFile::overwrite </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::streamsize&#160;</td>
+          <td class="paramname"><em>startPosition</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a097fcb423168c8750af1f2a1df80691d" name="a097fcb423168c8750af1f2a1df80691d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a097fcb423168c8750af1f2a1df80691d">&#9670;&nbsp;</a></span>read()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::string IEFile::read </td>
+          <td>(</td>
+          <td class="paramtype">std::streamsize&#160;</td>
+          <td class="paramname"><em>numBytes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::streamsize&#160;</td>
+          <td class="paramname"><em>startPosition</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -155,42 +497,28 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="ab037f08668f3788f2e3fd3028a96263b" name="ab037f08668f3788f2e3fd3028a96263b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab037f08668f3788f2e3fd3028a96263b">&#9670;&nbsp;</a></span>contents</h2>
+<a id="a527e7b09db585ce6fa2ade9cb718aa2e" name="a527e7b09db585ce6fa2ade9cb718aa2e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a527e7b09db585ce6fa2ade9cb718aa2e">&#9670;&nbsp;</a></span>file</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::string IEFile::contents</td>
+          <td class="memname">std::fstream IEFile::file {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="aff5546eed7a74acf52d707ab0e166bf4" name="aff5546eed7a74acf52d707ab0e166bf4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aff5546eed7a74acf52d707ab0e166bf4">&#9670;&nbsp;</a></span>extensions</h2>
+<a id="aaff8f8c5980e20866bf7aebee24cb7a3" name="aaff8f8c5980e20866bf7aebee24cb7a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaff8f8c5980e20866bf7aebee24cb7a3">&#9670;&nbsp;</a></span>length</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;std::string&gt; IEFile::extensions</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a3c196bc7d7aa6c094c110c7905bbe032" name="a3c196bc7d7aa6c094c110c7905bbe032"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3c196bc7d7aa6c094c110c7905bbe032">&#9670;&nbsp;</a></span>name</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::string IEFile::name</td>
+          <td class="memname">std::streamsize IEFile::length {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -204,7 +532,7 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::string IEFile::path</td>
+          <td class="memname">std::string IEFile::path {}</td>
         </tr>
       </table>
 </div><div class="memdoc">

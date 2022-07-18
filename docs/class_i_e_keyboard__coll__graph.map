@@ -1,4 +1,4 @@
 <map id="IEKeyboard" name="IEKeyboard">
-<area shape="rect" id="node1" title="The Keyboard class is intended to manage keyboard event handling." alt="" coords="52,113,177,149"/>
-<area shape="rect" id="node2" href="$struct_i_e_window_user_pointer.html" title=" " alt="" coords="5,5,224,41"/>
+<area shape="rect" id="node1" title="The Keyboard class is intended to manage keyboard event handling." alt="" coords="19,113,144,149"/>
+<area shape="rect" id="node2" href="$class_i_e_window_user.html" title="Used to store pointers to various parts of the engine that need to be accessed through the window." alt="" coords="5,5,157,41"/>
 </map>

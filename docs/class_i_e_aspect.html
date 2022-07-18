@@ -76,33 +76,75 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_i_e_aspect-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">IEAspect Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
+<p>An interface class used to create aspects of an <a class="el" href="class_i_e_asset.html">IEAsset</a>.  
+ <a href="class_i_e_aspect.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="_i_e_aspect_8hpp_source.html">IEAspect.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for IEAspect:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="class_i_e_aspect__inherit__graph.svg" width="210" height="131"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="class_i_e_aspect__inherit__graph.svg" width="154" height="131"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a04037e9d55af74c3f4748aec31f00d18"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_aspect.html#a04037e9d55af74c3f4748aec31f00d18">~IEAspect</a> ()=default</td></tr>
+<tr class="separator:a04037e9d55af74c3f4748aec31f00d18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:aae934433abe9a5f8f9aaa924807a2af9"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="class_i_e_asset.html">IEAsset</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_aspect.html#aae934433abe9a5f8f9aaa924807a2af9">associatedAssets</a> {}</td></tr>
-<tr class="separator:aae934433abe9a5f8f9aaa924807a2af9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaaa618c855fa29fda808dbd2634ec04f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::weak_ptr&lt; <a class="el" href="class_i_e_asset.html">IEAsset</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_aspect.html#aaaa618c855fa29fda808dbd2634ec04f">associatedAssets</a> {}</td></tr>
+<tr class="separator:aaaa618c855fa29fda808dbd2634ec04f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >An interface class used to create aspects of an <a class="el" href="class_i_e_asset.html">IEAsset</a>. </p>
+<p >The <a class="el" href="class_i_e_aspect.html" title="An interface class used to create aspects of an IEAsset.">IEAspect</a> class is an interface that is designed to allow the addition of new aspect types. Inherit from this class to be eligible to be added as an aspect to an asset. The pre-designed aspect classes are:</p><ul>
+<li>Renderable</li>
+<li>More to be added The user is free to add aspects as they see fit. </li>
+</ul>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a04037e9d55af74c3f4748aec31f00d18" name="a04037e9d55af74c3f4748aec31f00d18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04037e9d55af74c3f4748aec31f00d18">&#9670;&nbsp;</a></span>~IEAspect()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual IEAspect::~IEAspect </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span><span class="mlabel">default</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="aae934433abe9a5f8f9aaa924807a2af9" name="aae934433abe9a5f8f9aaa924807a2af9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae934433abe9a5f8f9aaa924807a2af9">&#9670;&nbsp;</a></span>associatedAssets</h2>
+<a id="aaaa618c855fa29fda808dbd2634ec04f" name="aaaa618c855fa29fda808dbd2634ec04f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaaa618c855fa29fda808dbd2634ec04f">&#9670;&nbsp;</a></span>associatedAssets</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;<a class="el" href="class_i_e_asset.html">IEAsset</a>*&gt; IEAspect::associatedAssets {}</td>
+          <td class="memname">std::vector&lt;std::weak_ptr&lt;<a class="el" href="class_i_e_asset.html">IEAsset</a>&gt; &gt; IEAspect::associatedAssets {}</td>
         </tr>
       </table>
 </div><div class="memdoc">

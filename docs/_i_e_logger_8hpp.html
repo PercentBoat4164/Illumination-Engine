@@ -85,12 +85,20 @@ $(function() {
   <div class="headertitle"><div class="title">IELogger.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;spdlog/spdlog.h&quot;</code><br />
-<code>#include &quot;spdlog/sinks/basic_file_sink.h&quot;</code><br />
+<div class="textblock"><code>#include &lt;spdlog/spdlog.h&gt;</code><br />
+<code>#include &lt;spdlog/sinks/basic_file_sink.h&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for IELogger.hpp:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="_i_e_logger_8hpp__incl.svg" width="395" height="203"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="_i_e_logger_8hpp__incl.svg" width="492" height="203"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
+</div>
+</div><div class="textblock"><div class="dynheader">
+This graph shows which files directly or indirectly include this file:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="_i_e_logger_8hpp__dep__incl.svg" width="4616" height="1151"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div>
 <p><a href="_i_e_logger_8hpp_source.html">Go to the source code of this file.</a></p>
@@ -133,8 +141,46 @@ Macros</h2></td></tr>
 <tr class="separator:aafa8f3a3848e490bd2b11d0905741e01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26653eba85ada8607835ea0ce9f3cf7c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a26653eba85ada8607835ea0ce9f3cf7c">ILLUMINATION_ENGINE_LOG_LEVEL_6</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a2f2ae0b61f623dda9055c5b237791b73">ILLUMINATION_ENGINE_LOG_LEVEL_OFF</a></td></tr>
 <tr class="separator:a26653eba85ada8607835ea0ce9f3cf7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99adf96b6a7c42e77750f6c4f97e913f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a99adf96b6a7c42e77750f6c4f97e913f">ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_LOW</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a219da1dbe37783748f81af7c1b24dd71">ILLUMINATION_ENGINE_LOG_LEVEL_3</a></td></tr>
+<tr class="separator:a99adf96b6a7c42e77750f6c4f97e913f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9fa7b988aa3b0da4aee451f130030e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#ad9fa7b988aa3b0da4aee451f130030e0">ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_MEDIUM</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a06feefa96e509c5be62d284bca88bd99">ILLUMINATION_ENGINE_LOG_LEVEL_4</a></td></tr>
+<tr class="separator:ad9fa7b988aa3b0da4aee451f130030e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e2fe80f972d94f75a6fa79740bcd17f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a6e2fe80f972d94f75a6fa79740bcd17f">ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_HIGH</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#aafa8f3a3848e490bd2b11d0905741e01">ILLUMINATION_ENGINE_LOG_LEVEL_5</a></td></tr>
+<tr class="separator:a6e2fe80f972d94f75a6fa79740bcd17f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38723d0b69cc70c73226823bca38de5a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a38723d0b69cc70c73226823bca38de5a">ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME</a>&#160;&#160;&#160;&quot;Illumination Engine Default Logger&quot;</td></tr>
+<tr class="separator:a38723d0b69cc70c73226823bca38de5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9053c2cfa950c885a626d5538ddd7797"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a9053c2cfa950c885a626d5538ddd7797">ILLUMINATION_ENGINE_DEFAULT_LOG_FILENAME</a>&#160;&#160;&#160;&quot;IlluminationEngine.log&quot;</td></tr>
+<tr class="separator:a9053c2cfa950c885a626d5538ddd7797"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a9053c2cfa950c885a626d5538ddd7797" name="a9053c2cfa950c885a626d5538ddd7797"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9053c2cfa950c885a626d5538ddd7797">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_DEFAULT_LOG_FILENAME</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ILLUMINATION_ENGINE_DEFAULT_LOG_FILENAME&#160;&#160;&#160;&quot;IlluminationEngine.log&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a38723d0b69cc70c73226823bca38de5a" name="a38723d0b69cc70c73226823bca38de5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a38723d0b69cc70c73226823bca38de5a">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME&#160;&#160;&#160;&quot;Illumination Engine Default Logger&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ad5d31c1552d90ca7bf4986838aaeebf1" name="ad5d31c1552d90ca7bf4986838aaeebf1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad5d31c1552d90ca7bf4986838aaeebf1">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_0</h2>
 
@@ -311,6 +357,48 @@ Macros</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_OFF&#160;&#160;&#160;spdlog::level::off</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6e2fe80f972d94f75a6fa79740bcd17f" name="a6e2fe80f972d94f75a6fa79740bcd17f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e2fe80f972d94f75a6fa79740bcd17f">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_HIGH</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_HIGH&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#aafa8f3a3848e490bd2b11d0905741e01">ILLUMINATION_ENGINE_LOG_LEVEL_5</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a99adf96b6a7c42e77750f6c4f97e913f" name="a99adf96b6a7c42e77750f6c4f97e913f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99adf96b6a7c42e77750f6c4f97e913f">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_LOW</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_LOW&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a219da1dbe37783748f81af7c1b24dd71">ILLUMINATION_ENGINE_LOG_LEVEL_3</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad9fa7b988aa3b0da4aee451f130030e0" name="ad9fa7b988aa3b0da4aee451f130030e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9fa7b988aa3b0da4aee451f130030e0">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_MEDIUM</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_MEDIUM&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a06feefa96e509c5be62d284bca88bd99">ILLUMINATION_ENGINE_LOG_LEVEL_4</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
