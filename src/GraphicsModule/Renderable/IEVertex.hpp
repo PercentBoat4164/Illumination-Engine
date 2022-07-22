@@ -28,5 +28,5 @@ struct IEVertex {
 
 	static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
 
-	bool operator==(IEVertex &other);
+	bool operator==(IEVertex &other) const;
 };

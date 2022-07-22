@@ -56,7 +56,7 @@ std::array<VkVertexInputAttributeDescription, 6> IEVertex::getAttributeDescripti
 	};
 }
 
-bool IEVertex::operator==(IEVertex &other) {
+bool IEVertex::operator==(IEVertex &other) const {
 	return position == other.position && color == other.color && textureCoordinates == other.textureCoordinates && normal == other.normal &&
 		   tangent == other.tangent && biTangent == other.biTangent;
 }

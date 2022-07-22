@@ -450,18 +450,19 @@ bool IERenderEngine::_openGLUpdate() {
 
 				// Set vertices
 				glBindVertexArray(mesh.vertexArray);
-
-				glBindBuffer(mesh.vertexBuffer->type, mesh.vertexBuffer->id);
 				glBindBuffer(mesh.indexBuffer->type, mesh.indexBuffer->id);
-
+				
 				// Update uniforms
-//				glBindBufferRange(GL_UNIFORM_BUFFER, 1, renderable.lock()->modelBuffer.id, 0, renderable.lock()->modelBuffer.size);
-//				glUniformBlockBinding(mesh.pipeline->programID, glGetProgramResourceIndex(mesh.pipeline->programID, GL_UNIFORM_BLOCK, "CameraData"), 1);
-
+				renderable.lock()->uniformBufferObject.openglUploadUniform("cameraData", (GLint) mesh.pipeline->programID);
+				
 				// Update texture
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, textures[mesh.material->diffuseTextureIndex]->textureID);
-				glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, mesh.indices.data());
+				
+				glUniform1i(glGetUniformLocation(mesh.pipeline->programID, "diffuseTexture"), (GLint) textures[mesh.material->diffuseTextureIndex]->textureID);
+				
+				// Draw mesh
+				glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, nullptr);
 			}
 		}
 	}

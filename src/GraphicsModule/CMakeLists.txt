@@ -52,8 +52,6 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IERenderEngine.hpp
 		RenderPass/IERenderPass.cpp
 		RenderPass/IERenderPass.hpp
-        IERenderableSettings.cpp
-        IERenderableSettings.hpp
         IESettings.cpp
         IESettings.hpp
 		Shader/IEUniformBufferObject.cpp

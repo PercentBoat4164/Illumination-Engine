@@ -196,10 +196,10 @@ void IEMesh::_openglLoadFromRAMToVRAM() {
 	pipeline->create(linkedRenderEngine, new IEPipeline::CreateInfo{
 			.shaders=shaders,
 	});
-
+	
 	glGenVertexArrays(1, &vertexArray);
 	glBindVertexArray(vertexArray);
-
+	
 	glBindBuffer(vertexBuffer->type, vertexBuffer->id);
 	glBindBuffer(indexBuffer->type, indexBuffer->id);
 
@@ -215,6 +215,8 @@ void IEMesh::_openglLoadFromRAMToVRAM() {
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, tangent));
 	glEnableVertexAttribArray(5);
 	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, biTangent));
+	
+	glBindBuffer(vertexBuffer->type, 0);
 }
 
 void IEMesh::_vulkanLoadFromRAMToVRAM() {

@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <string>
 #include "Image/IETexture.hpp"
-#include "IERenderableSettings.hpp"
 
 #define GLM_FORCE_RADIANS
 
@@ -25,7 +24,7 @@ public:
 
 	IEMaterial() = default;
 
-	IEMaterial(IERenderEngine *engineLink);
+	explicit IEMaterial(IERenderEngine *engineLink);
 
 	static void setAPI(const IEAPI &API);
 

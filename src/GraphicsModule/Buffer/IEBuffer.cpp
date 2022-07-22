@@ -8,7 +8,7 @@
 void IEBuffer::setAPI(const IEAPI &API) {
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_uploadToRAM = &IEBuffer::_openglUploadToRAM;
-		_uploadToVRAM = &IEBuffer::_openglUnloadFromVRAM;
+		_uploadToVRAM = &IEBuffer::_openglUploadToVRAM;
 		_uploadToVRAM_vector = &IEBuffer::_openglUploadToVRAM_vector;
 		_uploadToVRAM_void = &IEBuffer::_openglUploadToVRAM_void;
 		_update_vector = &IEBuffer::_openglUpdate_vector;
@@ -128,7 +128,8 @@ void IEBuffer::_openglUploadToVRAM() {
 	}
 	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {
 		glBindBuffer(type, id);
-		glBufferData(type, size, data.data(), GL_STATIC_DRAW);
+		glBufferData(type, (GLsizeiptr) size, data.data(), GL_STATIC_DRAW);
+		glBindBuffer(type, 0);
 	}
 }
 
@@ -181,12 +182,14 @@ void IEBuffer::uploadToVRAM(const std::vector<char> &data) {
 void IEBuffer::_openglUploadToVRAM_vector(const std::vector<char> &data) {
 	if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM
 		glGenBuffers(1, &id);  // Put it in VRAM
+		size = data.size();
 		status = static_cast<IEBufferStatus>(status | IE_BUFFER_STATUS_DATA_IN_VRAM);
 	}
 
 	// Upload data
 	glBindBuffer(type, id);
 	glBufferData(type, (GLsizeiptr) data.size() * (GLsizeiptr) sizeof(data[0]), data.data(), GL_STATIC_DRAW);
+	glBindBuffer(type, 0);
 }
 
 void IEBuffer::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
@@ -243,6 +246,7 @@ void IEBuffer::_openglUploadToVRAM_void(void *data, std::size_t size) {
 	// Upload data
 	glBindBuffer(type, id);
 	glBufferData(type, (GLsizeiptr) size, data, GL_STATIC_DRAW);
+	glBindBuffer(type, 0);
 }
 
 void IEBuffer::_vulkanUploadToVRAM_void(void *data, std::size_t size) {
@@ -296,6 +300,7 @@ void IEBuffer::_openglUpdate_vector(const std::vector<char> &data) {
 	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
 		glBindBuffer(type, id);
 		glBufferData(type, (GLsizeiptr) data.size() * (GLsizeiptr) sizeof(data[0]), data.data(), GL_STATIC_DRAW);
+		glBindBuffer(type, 0);
 	}
 	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {  // In RAM?
 		this->data = data;
@@ -326,6 +331,7 @@ void IEBuffer::_openglUpdate_void(void *data, std::size_t size) {
 	if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
 		glBindBuffer(type, id);
 		glBufferData(type, (GLsizeiptr) size, data, GL_STATIC_DRAW);
+		glBindBuffer(type, 0);
 	}
 	if (status & IE_BUFFER_STATUS_DATA_IN_RAM) {  // In RAM?
 		this->data = std::vector<char>{(char *) data, (char *) ((size_t) data + size)};
