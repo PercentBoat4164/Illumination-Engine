@@ -1,13 +1,11 @@
 #version 460
 
-layout(std140, binding = 0) uniform CameraData {
-    mat4 viewModelMatrix;
-    mat4 modelMatrix;
-    mat4 projectionMatrix;
-    mat4 normalMatrix;
-    vec3 position;
-    float time;
-} cameraData;
+uniform mat4 viewModelMatrix;
+uniform mat4 modelMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 normalMatrix;
+uniform vec3 position;
+uniform float time;
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec4 vertexColor;
@@ -22,8 +20,8 @@ layout(location = 1) out vec3 interpolatedNormal;
 layout(location = 2) out vec3 fragmentPosition;
 
 void main() {
-    fragmentPosition = vec3(cameraData.modelMatrix * vec4(vertexPosition, 1.0f));
-    gl_Position = cameraData.projectionMatrix * cameraData.viewModelMatrix * vec4(fragmentPosition, 1.0f);
+    fragmentPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0f));
+    gl_Position = projectionMatrix * viewModelMatrix * vec4(fragmentPosition, 1.0f);
     fragmentTextureCoordinates = vertexTextureCoordinates;
-    interpolatedNormal = vec3(normalize(cameraData.normalMatrix * vec4(vertexNormal, 1.0f)));
+    interpolatedNormal = vec3(normalize(normalMatrix * vec4(vertexNormal, 1.0f)));
 }

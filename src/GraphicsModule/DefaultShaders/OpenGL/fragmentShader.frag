@@ -1,13 +1,11 @@
 #version 460
 
-layout(std140, binding = 0) uniform CameraData {
-    mat4 viewModelMatrix;
-    mat4 modelMatrix;
-    mat4 projectionMatrix;
-    mat4 normalMatrix;
-    vec3 position;
-    float time;
-} cameraData;
+uniform mat4 viewModelMatrix;
+uniform mat4 modelMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 normalMatrix;
+uniform vec3 position;
+uniform float time;
 
 layout(binding = 1) uniform sampler2D diffuseTexture;
 
@@ -34,7 +32,7 @@ void main() {
     vec3 lightDirection = normalize(lightPosition - fragmentPosition);
     vec3 diffuse = vec3(texture(diffuseTexture, fragmentTextureCoordinates)) * max(dot(normalizedInterpolatedNormal, lightDirection), 0.0f) * lightColor * lightIntensityAfterAttenuation;
     vec3 ambient = ambientStrength * lightColor;
-    vec3 viewDirection = normalize(cameraData.position - fragmentPosition);
+    vec3 viewDirection = normalize(position - fragmentPosition);
     //    vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
     //    fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f));
     //    fragmentColor = aces(vec4((ambient + diffuse), 1.0f));

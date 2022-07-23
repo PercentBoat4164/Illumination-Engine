@@ -18,5 +18,5 @@ public:
 	alignas(16) glm::vec3 position{0, 0, 0};
 	alignas(4) glm::float32 time{};
 	
-	void openglUploadUniform(const std::string &name, GLint program);
+	void openglUploadUniform(GLint program);
 };

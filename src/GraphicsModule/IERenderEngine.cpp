@@ -453,11 +453,12 @@ bool IERenderEngine::_openGLUpdate() {
 				glBindBuffer(mesh.indexBuffer->type, mesh.indexBuffer->id);
 				
 				// Update uniforms
-				renderable.lock()->uniformBufferObject.openglUploadUniform("cameraData", (GLint) mesh.pipeline->programID);
+				renderable.lock()->uniformBufferObject.openglUploadUniform((GLint) mesh.pipeline->programID);
 				
 				// Update texture
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, textures[mesh.material->diffuseTextureIndex]->textureID);
+				
 				
 				glUniform1i(glGetUniformLocation(mesh.pipeline->programID, "diffuseTexture"), (GLint) textures[mesh.material->diffuseTextureIndex]->textureID);
 				
@@ -760,14 +761,14 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 		settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to initialize GLFW!");
 	}
 	glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	#ifndef NDEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	#endif
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only code block.
-	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+//	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only code block.
+//	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
+//	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	window = createWindow();
 
