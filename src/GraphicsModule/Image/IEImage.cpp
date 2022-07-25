@@ -83,13 +83,12 @@ void IEImage::uploadToRAM() {
 	status = static_cast<IEImageStatus>(status & ~IE_IMAGE_STATUS_QUEUED_RAM | IE_IMAGE_STATUS_IN_RAM);
 }
 
-void IEImage::_openglUploadToRAM() {
-
-}
+void IEImage::_openglUploadToRAM() {} /**@todo Do later.*/
 
 void IEImage::_vulkanUploadToRAM() {
 	std::shared_ptr<IEBuffer> stagingBuffer = std::make_shared<IEBuffer>();
-	toBuffer(stagingBuffer, width * height * channels);
+	/**@todo Remove the size parameter requirements optionally.*/
+	toBuffer(stagingBuffer, width * height * channels);  // Convert this image to a buffer
 	stagingBuffer->uploadToRAM();
 	data = stagingBuffer->data;
 }
@@ -136,7 +135,16 @@ void IEImage::uploadToVRAM() {
 }
 
 void IEImage::_openglUploadToVRAM() {
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei) width, (GLsizei) height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void IEImage::_vulkanUploadToVRAM() {
@@ -161,10 +169,13 @@ void IEImage::_vulkanUploadToVRAM() {
 	}
 }
 
+
+
 std::function<void(IEImage &, const std::vector<char> &)> IEImage::_uploadToVRAM_vector{nullptr};
 
 void IEImage::uploadToVRAM(const std::vector<char> &data) {
-
+	_uploadToVRAM_vector(*this, data);
+	status = static_cast<IEImageStatus>(status | IE_IMAGE_STATUS_IN_VRAM);
 }
 
 void IEImage::_openglUploadToVRAM_vector(const std::vector<char> &data) {
@@ -174,6 +185,7 @@ void IEImage::_openglUploadToVRAM_vector(const std::vector<char> &data) {
 void IEImage::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
 
 }
+
 
 std::function<void(IEImage &, void *, std::size_t)> IEImage::_uploadToVRAM_void{nullptr};
 
@@ -197,15 +209,20 @@ void IEImage::update(const std::vector<char> &data) {
 }
 
 void IEImage::_openglUpdate_vector(const std::vector<char> &data) {
-
+	if (status & IE_IMAGE_STATUS_IN_RAM) {
+		this->data = data;
+	}
+	if (status & IE_IMAGE_STATUS_IN_VRAM) {
+		// Used to build the image in video memory.
+		glBindTexture(GL_TEXTURE_2D, id);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei) width, (GLsizei) height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 }
 
 void IEImage::_vulkanUpdate_vector(const std::vector<char> &data) {
 	if (status & IE_IMAGE_STATUS_IN_RAM) {
 		this->data = data;
-	}
-	if (status & IE_IMAGE_STATUS_QUEUED_VRAM) {
-
 	}
 	if (status & IE_IMAGE_STATUS_IN_VRAM) {
 		// Used to build the image in video memory.
@@ -216,6 +233,7 @@ void IEImage::_vulkanUpdate_vector(const std::vector<char> &data) {
 	}
 }
 
+
 std::function<void(IEImage &, void *, uint64_t)> IEImage::_update_void{nullptr};
 
 void IEImage::update(void *data, uint64_t size) {
@@ -223,7 +241,15 @@ void IEImage::update(void *data, uint64_t size) {
 }
 
 void IEImage::_openglUpdate_voidPtr(void *data, uint64_t size) {
-
+	if (status & IE_IMAGE_STATUS_IN_RAM) {
+		this->data = std::vector<char>{(char *) data, (char *) data + size};
+	}
+	if (status & IE_IMAGE_STATUS_IN_VRAM) {
+		// Used to build the image in video memory.
+		glBindTexture(GL_TEXTURE_2D, id);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei) width, (GLsizei) height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 }
 
 void IEImage::_vulkanUpdate_voidPtr(void *data, uint64_t size) {

@@ -74,7 +74,7 @@ public:
 	IERenderEngine *linkedRenderEngine{};
 	std::vector<char> data{};
 	IEImageStatus status{IE_IMAGE_STATUS_UNKNOWN};
-	GLuint textureID{};
+	GLuint id{};
 
 	IEImage() = default;
 

@@ -457,10 +457,10 @@ bool IERenderEngine::_openGLUpdate() {
 				
 				// Update texture
 				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, textures[mesh.material->diffuseTextureIndex]->textureID);
+				glBindTexture(GL_TEXTURE_2D, textures[mesh.material->diffuseTextureIndex]->id);
 				
 				
-				glUniform1i(glGetUniformLocation(mesh.pipeline->programID, "diffuseTexture"), (GLint) textures[mesh.material->diffuseTextureIndex]->textureID);
+				glUniform1i(glGetUniformLocation(mesh.pipeline->programID, "diffuseTexture"), 0);
 				
 				// Draw mesh
 				glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, nullptr);

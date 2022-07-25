@@ -60,7 +60,17 @@ void IETexture::uploadToVRAM() {
 }
 
 void IETexture::_openglUploadToVRAM() {
-
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei) width, (GLsizei) height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+	glBindTexture(GL_TEXTURE_2D, 0);
+	update(data);
 }
 
 void IETexture::_vulkanUploadToVRAM() {
@@ -87,7 +97,22 @@ void IETexture::update(aiTexture *texture) {
 }
 
 void IETexture::_openglUpdate_aiTexture(aiTexture *texture) {
-
+	stbi_uc *tempData;
+	if (texture->mHeight == 0) {
+		tempData = stbi_load_from_memory((unsigned char *) texture->pcData, (int) texture->mWidth, reinterpret_cast<int *>(&width),
+										 reinterpret_cast<int *>(&height), reinterpret_cast<int *>(&channels), 4);
+	} else {
+		tempData = stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height),
+							 reinterpret_cast<int *>(&channels), 4);
+	}
+	channels = 4;  /**@todo Make number of channels imported change the number of channels in VRAM.*/
+	std::vector<char> data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
+	if (data.empty()) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
+												 stbi_failure_reason());
+	}
+	_openglUpdate_vector(data);
 }
 
 void IETexture::_vulkanUpdate_aiTexture(aiTexture *texture) {
@@ -117,7 +142,34 @@ void IETexture::uploadToVRAM(aiTexture *texture) {
 }
 
 void IETexture::_openglUploadToVRAM_texture(aiTexture *texture) {
-
+	stbi_uc *tempData;
+	if (texture->mHeight == 0) {
+		tempData = stbi_load_from_memory((unsigned char *) texture->pcData, (int) texture->mWidth, reinterpret_cast<int *>(&width),
+										 reinterpret_cast<int *>(&height), reinterpret_cast<int *>(&channels), 4);
+	} else {
+		tempData = stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height),
+							 reinterpret_cast<int *>(&channels), 4);
+	}
+	channels = 4;  /**@todo Make number of channels imported change the number of channels in VRAM.*/
+	std::vector<char> data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
+	if (data.empty()) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
+												 stbi_failure_reason());
+	}
+	
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D,  GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei) width, (GLsizei) height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	status = static_cast<IEImageStatus>(status | IE_IMAGE_STATUS_IN_VRAM);
 }
 
 void IETexture::_vulkanUploadToVRAM_texture(aiTexture *texture) {
@@ -141,13 +193,50 @@ void IETexture::_vulkanUploadToVRAM_texture(aiTexture *texture) {
 	_vulkanCreateImageView();
 	_vulkanCreateImageSampler();
 	
-	IEImageStatus originalStatus = status;
-	status = IE_IMAGE_STATUS_QUEUED_VRAM;
-	
-	
-	status = static_cast<IEImageStatus>(originalStatus | IE_IMAGE_STATUS_IN_VRAM);
-	
-	
+	status = static_cast<IEImageStatus>(status | IE_IMAGE_STATUS_IN_VRAM);
+}
+
+
+std::function<void(IETexture &, aiTexture *)> IETexture::_uploadToRAM_texture{nullptr};
+
+void IETexture::uploadToRAM(aiTexture *texture) {
+	_uploadToRAM_texture(*this, texture);
+}
+
+void IETexture::_openglUploadToRAM_texture(aiTexture *texture) {
+	stbi_uc *tempData;
+	if (texture->mHeight == 0) {
+		tempData = stbi_load_from_memory((unsigned char *) texture->pcData, (int) texture->mWidth, reinterpret_cast<int *>(&width),
+										 reinterpret_cast<int *>(&height), reinterpret_cast<int *>(&channels), 4);
+	} else {
+		tempData = stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height),
+							 reinterpret_cast<int *>(&channels), 4);
+	}
+	channels = 4;  /**@todo Make number of channels imported change the number of channels in VRAM.*/
+	data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
+	if (data.empty()) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
+												 stbi_failure_reason());
+	}
+}
+
+void IETexture::_vulkanUploadToRAM_texture(aiTexture *texture) {
+	stbi_uc *tempData;
+	if (texture->mHeight == 0) {
+		tempData = stbi_load_from_memory((unsigned char *) texture->pcData, (int) texture->mWidth, reinterpret_cast<int *>(&width),
+										 reinterpret_cast<int *>(&height), reinterpret_cast<int *>(&channels), 4);
+	} else {
+		tempData = stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height),
+							 reinterpret_cast<int *>(&channels), 4);
+	}
+	channels = 4;  /**@todo Make number of channels imported change the number of channels in VRAM.*/
+	data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
+	if (data.empty()) {
+		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
+												 stbi_failure_reason());
+	}
 }
 
 
@@ -176,32 +265,4 @@ void IETexture::_vulkanCreateImageSampler() {
 	if (vkCreateSampler(linkedRenderEngine->device.device, &samplerCreateInfo, nullptr, &sampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");
 	}
-}
-
-std::function<void(IETexture &, aiTexture *)> IETexture::_uploadToRAM_texture{nullptr};
-
-void IETexture::_openglUploadToRAM_texture(aiTexture *texture) {
-
-}
-
-void IETexture::_vulkanUploadToRAM_texture(aiTexture *texture) {
-	stbi_uc *tempData;
-	if (texture->mHeight == 0) {
-		tempData = stbi_load_from_memory((unsigned char *) texture->pcData, (int) texture->mWidth, reinterpret_cast<int *>(&width),
-										 reinterpret_cast<int *>(&height), reinterpret_cast<int *>(&channels), 4);
-	} else {
-		tempData = stbi_load(texture->mFilename.C_Str(), reinterpret_cast<int *>(&width), reinterpret_cast<int *>(&height),
-							 reinterpret_cast<int *>(&channels), 4);
-	}
-	channels = 4;  /**@todo Make number of channels imported change the number of channels in VRAM.*/
-	data = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
-	if (data.empty()) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
-												 stbi_failure_reason());
-	}
-}
-
-void IETexture::uploadToRAM(aiTexture *texture) {
-	_uploadToRAM_texture(*this, texture);
 }
