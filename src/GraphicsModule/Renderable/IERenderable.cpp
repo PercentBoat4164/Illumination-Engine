@@ -12,7 +12,6 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtx/euler_angles.hpp>
-#include <glm/detail/type_quat.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
@@ -167,39 +166,39 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 }
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-	modelMatrices.resize(associatedAssets.size());
-	for (int i = 0; i < associatedAssets.size(); ++i) {
-		glm::quat quaternion = glm::yawPitchRoll(associatedAssets[i].lock()->rotation.x, associatedAssets[i].lock()->rotation.y, associatedAssets[i].lock()->rotation.z);
-		modelMatrices[i] = glm::rotate(glm::translate(glm::scale(glm::identity<glm::mat4>(), associatedAssets[i].lock()->scale), associatedAssets[i].lock()->position), glm::angle(quaternion), glm::axis(quaternion));
-	}
-	uniformBufferObject.viewModelMatrix = camera.viewMatrix;
-	uniformBufferObject.modelMatrix = modelMatrices[0];
-	uniformBufferObject.projectionMatrix = camera.projectionMatrix;
-	uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrices[0])));
-	uniformBufferObject.position = camera.position;
-	uniformBufferObject.time = time;
-	modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
-	for (IEMesh &mesh: meshes) {
-		mesh.update(renderCommandBufferIndex);
+	for (auto & associatedAsset : associatedAssets) {
+		IEAsset thisAsset = *associatedAsset.lock();
+		glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
+		modelMatrix = glm::rotate(glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position), glm::angle(quaternion), glm::axis(quaternion));
+		uniformBufferObject.projectionViewModelMatrix = camera.projectionMatrix * camera.viewMatrix;
+		uniformBufferObject.modelMatrix = modelMatrix;
+		uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
+		uniformBufferObject.position = camera.position;
+		uniformBufferObject.time = time;
+//		modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
+		for (IEMesh &mesh: meshes) {
+			// Update uniforms
+			uniformBufferObject.openglUploadUniform((GLint) mesh.pipeline->programID);
+			mesh.update(renderCommandBufferIndex);
+		}
 	}
 }
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-	modelMatrices.resize(associatedAssets.size());
-	for (int i = 0; i < associatedAssets.size(); ++i) {
-		glm::quat quaternion = glm::yawPitchRoll(associatedAssets[i].lock()->rotation.x, associatedAssets[i].lock()->rotation.y, associatedAssets[i].lock()->rotation.z);
-		modelMatrices[i] = glm::rotate(glm::translate(glm::scale(glm::identity<glm::mat4>(), associatedAssets[i].lock()->scale), associatedAssets[i].lock()->position), glm::angle(quaternion), glm::axis(quaternion));
-	}
-	uniformBufferObject.viewModelMatrix = camera.viewMatrix;
-	uniformBufferObject.modelMatrix = modelMatrices[0];
-	uniformBufferObject.projectionMatrix = camera.projectionMatrix;
-	uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrices[0])));
-	uniformBufferObject.position = camera.position;
-	uniformBufferObject.time = time;
-	modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
-	for (IEMesh &mesh: meshes) {
-		mesh.update(renderCommandBufferIndex);
-		mesh.descriptorSet->update({&modelBuffer}, {0});
+	for (auto & associatedAsset : associatedAssets) {
+		IEAsset thisAsset = *associatedAsset.lock();
+		glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
+		modelMatrix = glm::rotate(glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position), glm::angle(quaternion), glm::axis(quaternion));
+		uniformBufferObject.projectionViewModelMatrix = camera.projectionMatrix * camera.viewMatrix;
+		uniformBufferObject.modelMatrix = modelMatrix;
+		uniformBufferObject.normalMatrix = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
+		uniformBufferObject.position = camera.position;
+		uniformBufferObject.time = time;
+		modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
+		for (IEMesh &mesh: meshes) {
+			mesh.descriptorSet->update({&modelBuffer}, {0});
+			mesh.update(renderCommandBufferIndex);
+		}
 	}
 }
 

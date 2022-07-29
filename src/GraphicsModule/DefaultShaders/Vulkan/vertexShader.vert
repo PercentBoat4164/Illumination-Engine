@@ -2,9 +2,8 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 layout(binding = 0) uniform CameraData {
-    mat4 viewModelMatrix;
+    mat4 projectionViewModelMatrix;
     mat4 modelMatrix;
-    mat4 projectionMatrix;
     mat4 normalMatrix;
     vec3 position;
     float time;
@@ -24,7 +23,7 @@ layout(location = 2) out vec3 fragmentPosition;
 
 void main() {
     fragmentPosition = vec3(cameraData.modelMatrix * vec4(vertexPosition, 1.0f));
-    gl_Position = cameraData.projectionMatrix * cameraData.viewModelMatrix * vec4(fragmentPosition, 1.0f);
+    gl_Position = cameraData.projectionViewModelMatrix * vec4(fragmentPosition, 1.0f);
     fragmentTextureCoordinates = vertexTextureCoordinates;
     interpolatedNormal = vec3(normalize(cameraData.normalMatrix * vec4(vertexNormal, 1.0f)));
 }

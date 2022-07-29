@@ -50,7 +50,7 @@ public:
 	bool render{true};
 	uint32_t commandBufferIndex{};
 	std::string directory{};
-	std::vector<glm::mat4> modelMatrices{};
+	glm::mat4 modelMatrix{};
 	IERenderableStatus status{IE_RENDERABLE_STATE_UNKNOWN};
 
 	IERenderable() = default;

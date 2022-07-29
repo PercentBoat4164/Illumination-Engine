@@ -440,34 +440,16 @@ bool IERenderEngine::update() {
 }
 
 bool IERenderEngine::_openGLUpdate() {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (const std::weak_ptr<IERenderable> &renderable: renderables) {
 		renderable.lock()->update(0);
-		for (int i = 0; i < renderable.lock()->associatedAssets.size(); ++i) {
-			for (const IEMesh &mesh: renderable.lock()->meshes) {
-				// Set shader program
-				glUseProgram(mesh.pipeline->programID);
-
-				// Set vertices
-				glBindVertexArray(mesh.vertexArray);
-				glBindBuffer(mesh.indexBuffer->type, mesh.indexBuffer->id);
-				
-				// Update uniforms
-				renderable.lock()->uniformBufferObject.openglUploadUniform((GLint) mesh.pipeline->programID);
-				
-				// Update texture
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, textures[mesh.material->diffuseTextureIndex]->id);
-				
-				
-				glUniform1i(glGetUniformLocation(mesh.pipeline->programID, "diffuseTexture"), 0);
-				
-				// Draw mesh
-				glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, nullptr);
-			}
-		}
 	}
 	glfwSwapBuffers(window);
+	auto currentTime = (float) glfwGetTime();
+	frameTime = currentTime - previousTime;
+	previousTime = currentTime;
+	frameNumber++;
 	return !glfwWindowShouldClose(window);
 }
 
@@ -524,10 +506,6 @@ bool IERenderEngine::_vulkanUpdate() {
 	graphicsCommandPool->index(imageIndex)->commandPool->commandPoolMutex.lock();
 	result = vkQueuePresentKHR(presentQueue, &presentInfo);
 	graphicsCommandPool->index(imageIndex)->commandPool->commandPoolMutex.unlock();
-	auto currentTime = (float) glfwGetTime();
-	frameTime = currentTime - previousTime;
-	previousTime = currentTime;
-	frameNumber++;
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
 		framebufferResized = false;
 		handleResolutionChange();
@@ -539,6 +517,10 @@ bool IERenderEngine::_vulkanUpdate() {
 		settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
 							 "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime * 1000) + "ms to compute.");
 	}
+	auto currentTime = (float) glfwGetTime();
+	frameTime = currentTime - previousTime;
+	previousTime = currentTime;
+	frameNumber++;
 	return glfwWindowShouldClose(window) != 1;
 }
 

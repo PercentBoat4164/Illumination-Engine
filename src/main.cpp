@@ -11,24 +11,12 @@ int main() {
 	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(settings);
 
 	IEKeyboard keyboard{renderEngine->window};
-	keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow *) {
-		renderEngine->camera.position += renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
-	});
-	keyboard.editActions(GLFW_KEY_A, [&](GLFWwindow *) {
-		renderEngine->camera.position -= renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed;
-	});
-	keyboard.editActions(GLFW_KEY_S, [&](GLFWwindow *) {
-		renderEngine->camera.position -= renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
-	});
-	keyboard.editActions(GLFW_KEY_D, [&](GLFWwindow *) {
-		renderEngine->camera.position += renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed;
-	});
-	keyboard.editActions(GLFW_KEY_SPACE, [&](GLFWwindow *) {
-		renderEngine->camera.position += renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
-	});
-	keyboard.editActions(GLFW_KEY_LEFT_SHIFT, [&](GLFWwindow *) {
-		renderEngine->camera.position -= renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
-	});
+	keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow *) { renderEngine->camera.position += renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_A, [&](GLFWwindow *) { renderEngine->camera.position -= renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_S, [&](GLFWwindow *) { renderEngine->camera.position -= renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_D, [&](GLFWwindow *) { renderEngine->camera.position += renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_SPACE, [&](GLFWwindow *) { renderEngine->camera.position += renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_LEFT_SHIFT, [&](GLFWwindow *) { renderEngine->camera.position -= renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed; });
 	keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_PRESS}, [&](GLFWwindow *) { renderEngine->camera.speed *= 6; });
 	keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE}, [&](GLFWwindow *) { renderEngine->camera.speed /= 6; });
 	keyboard.editActions({GLFW_KEY_F11, GLFW_PRESS}, [&](GLFWwindow *) { renderEngine->toggleFullscreen(); });
@@ -38,7 +26,7 @@ int main() {
 	glfwSetWindowUserPointer(renderEngine->window, &windowUser);
 
 	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
-	fbx->filename = "res/assets/AncientStatue/model/ancientStatue.fbx";
+	fbx->filename = "res/assets/AncientStatueOptimized/model/ancientStatue.fbx";
 	fbx->addAspect(new IERenderable{});
 	fbx->position = {0.0F, -1.0F, 0.0F};
 	renderEngine->addAsset(fbx);
@@ -52,5 +40,8 @@ int main() {
 		fbx->rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine->frameTime;
 		glfwPollEvents();
 		keyboard.handleQueue();
+		glm::vec3 temp = renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
+//		std::cout << renderEngine->camera.position.x << "\t" << renderEngine->camera.position.y << "\t" << renderEngine->camera.position.z << std::endl;
+		std::cout << temp.x << "\t" << temp.y << "\t" << temp.z << std::endl;
 	}
 }

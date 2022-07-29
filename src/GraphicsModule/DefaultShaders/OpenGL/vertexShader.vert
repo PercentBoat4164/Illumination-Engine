@@ -1,8 +1,7 @@
 #version 460
 
-uniform mat4 viewModelMatrix;
+uniform mat4 projectionViewModelMatrix;
 uniform mat4 modelMatrix;
-uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
 uniform vec3 position;
 uniform float time;
@@ -21,7 +20,7 @@ layout(location = 2) out vec3 fragmentPosition;
 
 void main() {
     fragmentPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0f));
-    gl_Position = projectionMatrix * viewModelMatrix * vec4(fragmentPosition, 1.0f);
+    gl_Position = projectionViewModelMatrix * vec4(fragmentPosition, 1.0f);
     fragmentTextureCoordinates = vertexTextureCoordinates;
     interpolatedNormal = vec3(normalize(normalMatrix * vec4(vertexNormal, 1.0f)));
 }

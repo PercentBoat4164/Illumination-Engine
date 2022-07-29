@@ -2,9 +2,8 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 layout(binding = 0) uniform CameraData {
-    mat4 viewModelMatrix;
+    mat4 projectionViewModelMatrix;
     mat4 modelMatrix;
-    mat4 projectionMatrix;
     mat4 normalMatrix;
     vec3 position;
     float time;
@@ -39,7 +38,7 @@ void main() {
     vec3 viewDirection = normalize(cameraData.position - fragmentPosition);
 //    vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
 //    fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f));
-//    fragmentColor = aces(vec4((ambient + diffuse), 1.0f));
-    fragmentColor = aces(vec4(texture(diffuseTexture, fragmentTextureCoordinates)));
+    fragmentColor = aces(vec4((ambient + diffuse), 1.0f));
+//    fragmentColor = aces(vec4(texture(diffuseTexture, fragmentTextureCoordinates)));
 //    fragmentColor = aces(vec4(1));
 }

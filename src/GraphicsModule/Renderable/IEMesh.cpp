@@ -255,12 +255,34 @@ void IEMesh::update(uint32_t commandBufferIndex) {
 }
 
 void IEMesh::_openglUpdate(uint32_t commandBufferIndex) {
-
+	// Set shader program
+	glUseProgram(pipeline->programID);
+	
+	// Set vertices
+	glBindVertexArray(vertexArray);
+	glBindBuffer(indexBuffer->type, indexBuffer->id);
+	
+	// Update texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, linkedRenderEngine->textures[material->diffuseTextureIndex]->id);
+	
+	
+	glUniform1i(glGetUniformLocation(pipeline->programID, "diffuseTexture"), 0);  // Magic number is the active texture.
+	
+	// Draw mesh
+	glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, nullptr);
+	
+	//Reset All
+	glUseProgram(0);
+	glBindVertexArray(0);
+	glBindBuffer(indexBuffer->type, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
 }
 
 void IEMesh::_vulkanUpdate(uint32_t commandBufferIndex) {
-	VkDeviceSize offsets[]{0};
-	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindVertexBuffers(0, 1, {vertexBuffer}, offsets);
+	std::array<VkDeviceSize, 1> offsets{0};
+	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindVertexBuffers(0, 1, {vertexBuffer}, offsets.data());
 	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindIndexBuffer(indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 	linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex)->recordBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline, 0,

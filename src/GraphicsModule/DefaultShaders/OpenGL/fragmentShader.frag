@@ -1,8 +1,7 @@
 #version 460
 
-uniform mat4 viewModelMatrix;
+uniform mat4 projectionViewModelMatrix;
 uniform mat4 modelMatrix;
-uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
 uniform vec3 position;
 uniform float time;
@@ -32,17 +31,17 @@ float gold_noise(in vec3 xyz, in float seed) {
 }
 
 void main() {
-//    vec3 normalizedInterpolatedNormal = normalize(interpolatedNormal);
-//    float distanceFromFragmentToLight = length(fragmentPosition - lightPosition);
-//    float lightIntensityAfterAttenuation = 1 / (1 + distanceFromFragmentToLight + distanceFromFragmentToLight * distanceFromFragmentToLight) * brightness;
-//    vec3 lightDirection = normalize(lightPosition - fragmentPosition);
-//    vec3 diffuse = vec3(texture(diffuseTexture, fragmentTextureCoordinates)) * max(dot(normalizedInterpolatedNormal, lightDirection), 0.0f) * lightColor * lightIntensityAfterAttenuation;
-//    vec3 ambient = ambientStrength * lightColor;
-//    vec3 viewDirection = normalize(position - fragmentPosition);
+    vec3 normalizedInterpolatedNormal = normalize(interpolatedNormal);
+    float distanceFromFragmentToLight = length(fragmentPosition - lightPosition);
+    float lightIntensityAfterAttenuation = 1 / (1 + distanceFromFragmentToLight + distanceFromFragmentToLight * distanceFromFragmentToLight) * brightness;
+    vec3 lightDirection = normalize(lightPosition - fragmentPosition);
+    vec3 diffuse = vec3(texture(diffuseTexture, fragmentTextureCoordinates)) * max(dot(normalizedInterpolatedNormal, lightDirection), 0.0f) * lightColor * lightIntensityAfterAttenuation;
+    vec3 ambient = ambientStrength * lightColor;
+    vec3 viewDirection = normalize(position - fragmentPosition);
     //    vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
     //    fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f));
-    //    fragmentColor = aces(vec4((ambient + diffuse), 1.0f));
-    fragmentColor = aces(vec4(texture(diffuseTexture, fragmentTextureCoordinates)));
+        fragmentColor = aces(vec4((ambient + diffuse), 1.0f));
+//    fragmentColor = aces(vec4(texture(diffuseTexture, fragmentTextureCoordinates)));
     //    fragmentColor = aces(vec4(1));
 //    fragmentColor = aces(vec4(gold_noise(vec3(gl_FragCoord), time), gold_noise(vec3(gl_FragCoord), time + 1), gold_noise(vec3(gl_FragCoord), time + 2), 1.0f));
 }
