@@ -441,6 +441,7 @@ bool IERenderEngine::update() {
 
 bool IERenderEngine::_openGLUpdate() {
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_FRAMEBUFFER_SRGB);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (const std::weak_ptr<IERenderable> &renderable: renderables) {
 		renderable.lock()->update(0);
