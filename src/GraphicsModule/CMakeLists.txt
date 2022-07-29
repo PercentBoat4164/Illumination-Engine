@@ -2,55 +2,63 @@
 add_subdirectory(DefaultShaders)
 
 set(IEGraphicsModuleSourceFiles  # Gather sources
-        Buffer/IEAccelerationStructure.cpp
-        Buffer/IEAccelerationStructure.hpp
         Buffer/IEBuffer.cpp
         Buffer/IEBuffer.hpp
+        CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.cpp
+        CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.hpp
+        CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.cpp
+        CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.hpp
+        CommandBuffer/DependencyStructs/IEDependencyInfo.cpp
+        CommandBuffer/DependencyStructs/IEDependencyInfo.hpp
+        CommandBuffer/DependencyStructs/IEImageMemoryBarrier.cpp
+        CommandBuffer/DependencyStructs/IEImageMemoryBarrier.hpp
+        CommandBuffer/DependencyStructs/IERenderPassBeginInfo.cpp
+        CommandBuffer/DependencyStructs/IERenderPassBeginInfo.hpp
         CommandBuffer/IECommandBuffer.cpp
         CommandBuffer/IECommandBuffer.hpp
         CommandBuffer/IECommandPool.cpp
         CommandBuffer/IECommandPool.hpp
-        Image/IEFramebuffer.cpp
-        Image/IEFramebuffer.hpp
+		RenderPass/IEFramebuffer.cpp
+		RenderPass/IEFramebuffer.hpp
         Image/IEImage.cpp
         Image/IEImage.hpp
         Image/IETexture.cpp
         Image/IETexture.hpp
         Renderable/IEMaterial.cpp
         Renderable/IEMaterial.hpp
+        Renderable/IEMesh.cpp
+        Renderable/IEMesh.hpp
         Renderable/IERenderable.cpp
         Renderable/IERenderable.hpp
-        Renderable/IEShader.cpp
-        Renderable/IEShader.hpp
+		Shader/IEShader.cpp
+		Shader/IEShader.hpp
         Renderable/IEVertex.cpp
         Renderable/IEVertex.hpp
         IEAPI.cpp
         IEAPI.hpp
         IECamera.cpp
         IECamera.hpp
-        IEDependency.cpp
-        IEDependency.hpp
-        IEDependent.cpp
-        IEDependent.hpp
-        IEDescriptorSet.cpp
-        IEDescriptorSet.hpp
+		CommandBuffer/IEDependency.cpp
+		CommandBuffer/IEDependency.hpp
+		CommandBuffer/IEDependent.cpp
+		CommandBuffer/IEDependent.hpp
+		Shader/IEDescriptorSet.cpp
+		Shader/IEDescriptorSet.hpp
         IEMonitor.cpp
         IEMonitor.hpp
-        IEPipeline.cpp
-        IEPipeline.hpp
+		Shader/IEPipeline.cpp
+		Shader/IEPipeline.hpp
         IERenderEngine.cpp
         IERenderEngine.hpp
-        IERenderPass.cpp
-        IERenderPass.hpp
-        IERenderableSettings.cpp
-        IERenderableSettings.hpp
+		RenderPass/IERenderPass.cpp
+		RenderPass/IERenderPass.hpp
         IESettings.cpp
         IESettings.hpp
-        IEUniformBufferObject.cpp
-        IEUniformBufferObject.hpp
+		Shader/IEUniformBufferObject.cpp
+		Shader/IEUniformBufferObject.hpp
         IEVersion.cpp
         IEVersion.hpp
-        )
+		RenderPass/SubPass.cpp RenderPass/SubPass.hpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

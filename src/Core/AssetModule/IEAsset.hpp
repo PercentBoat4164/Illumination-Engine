@@ -2,24 +2,22 @@
 
 #include <string>
 #include <vector>
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <algorithm>
+#include <memory>
 #include "IEAspect.hpp"
 
-class IEAsset {
+class IEAsset : public std::enable_shared_from_this<IEAsset> {
 public:
-    // Things that are shared among all aspects of an asset
-    glm::vec3 position{};
-    glm::vec3 rotation{};
-    glm::vec3 scale{1.0f, 1.0f, 1.0f};
-    std::string filename{};
-    size_t index{};
-    std::vector<IEAsset *> *allAssets{};
-    std::vector<IEAspect *> aspects{};
+	// Things that are shared among all aspects of an asset
+	glm::vec3 position{0.0, 0.0, 0.0};
+	glm::vec3 rotation{0.0, 0.0, 0.0};
+	glm::vec3 scale{1.0, 1.0, 1.0};
+	std::string filename{};
+	std::vector<std::shared_ptr<IEAspect>> aspects{};
 
-    void addAspect(IEAspect* aspect);
-
-    ~IEAsset();
+	void addAspect(IEAspect *aspect);
 };
 
 /*

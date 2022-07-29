@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 class IEAsset;
 
@@ -16,8 +17,7 @@ class IEAsset;
  */
 class IEAspect {
 public:
-    std::string childType;
-    std::vector<IEAsset*> associatedAssets{};  // A vector of assets that this aspect belongs to
+	virtual ~IEAspect() = default;
 
-    virtual void destroy() = 0;
+	std::vector<std::weak_ptr<IEAsset>> associatedAssets{};  // A vector of assets that this aspect belongs to
 };

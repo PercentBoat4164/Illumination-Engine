@@ -8,6 +8,7 @@ class IEBuffer;
 #include "IEImage.hpp"
 
 // External dependencies
+#include <assimp/material.h>
 #include <vulkan/vulkan.h>
 
 #include <stb_image.h>
@@ -16,29 +17,81 @@ class IEBuffer;
 #include <cstdint>
 #include <string>
 
+class aiTexture;
 
 class IETexture : public IEImage {
 public:
-    struct CreateInfo {
-        VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};
-        VkImageLayout layout{VK_IMAGE_LAYOUT_UNDEFINED};
-        VkImageType type{VK_IMAGE_TYPE_2D};
-        VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
-        VkImageCreateFlags flags{};
-        VmaMemoryUsage allocationUsage{};
-        uint32_t width{}, height{};
-        IEBuffer *dataSource{};
-        stbi_uc *data{};
-        std::string filename{};
-    };
+	struct CreateInfo {
+		VkFormat format{VK_FORMAT_R8G8B8A8_SRGB};
+		VkImageLayout layout{VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+		VkImageType type{VK_IMAGE_TYPE_2D};
+		VkImageUsageFlags usage{VK_IMAGE_USAGE_SAMPLED_BIT};
+		VkImageCreateFlags flags{};
+		VmaMemoryUsage allocationUsage{};
+	};
+	
+	std::string filename{};
+	
+	IETexture() = default;
 
-    void copyCreateInfo(IETexture::CreateInfo *createInfo);
+	IETexture(IERenderEngine *, IETexture::CreateInfo *);
 
-    void create(IERenderEngine *engineLink, IETexture::CreateInfo *createInfo);
+	static void setAPI(const IEAPI &);
 
-    void upload(void *data);
 
-    void upload(IEBuffer *data);
+	void create(IERenderEngine *, IETexture::CreateInfo *);
 
-    void generateMipMaps();
+private:
+	static std::function<void(IETexture &)> _uploadToVRAM;
+	
+	static std::function<void(IETexture &, aiTexture *)> _uploadToRAM_texture;
+	
+	static std::function<void(IETexture &, aiTexture *)> _uploadToVRAM_texture;
+	
+	static std::function<void(IETexture &, aiTexture *)> _update_texture;
+	
+protected:
+	void _openglUploadToVRAM() override;
+
+	void _vulkanUploadToVRAM() override;
+
+
+	virtual void _openglUpdate_aiTexture(aiTexture *);
+
+	virtual void _vulkanUpdate_aiTexture(aiTexture *);
+	
+	
+	virtual void _openglUploadToRAM_texture(aiTexture *);
+	
+	virtual void _vulkanUploadToRAM_texture(aiTexture *);
+	
+	
+	virtual void _openglUploadToVRAM_texture(aiTexture *);
+	
+	virtual void _vulkanUploadToVRAM_texture(aiTexture *);
+	
+	
+	void _vulkanCreateImageSampler();
+	
+public:
+	using IEImage::uploadToRAM;
+	
+	void uploadToRAM(aiTexture *);
+	
+	using IEImage::uploadToVRAM;
+	
+	void uploadToVRAM(aiTexture *);
+	
+	
+	void uploadToVRAM() override;
+	
+	using IEImage::update;
+	
+	
+	void update(aiTexture *);
+	
+	
+	using IEImage::unloadFromVRAM;
+	
+	using IEImage::destroy;
 };

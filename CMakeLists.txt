@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)  # 3.14 is required for FetchContent
 project(IlluminationEngine VERSION 0.0.0)
 
-set(BUILD_SHARED_LIBS ON)
+set(CMAKE_CXX_STANDARD 23)
+
+set(BUILD_SHARED_LIBS OFF)
 if (WIN32)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif ()
 
 set(ILLUMINATION_ENGINE_BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})  # Directory Illumination Engine is being built in
@@ -18,10 +20,10 @@ add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res COMMAND ${CMAKE_
 file(COPY ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})  # Move resource files
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_compile_options("-g")  # Compile with debug information
+	add_compile_options("-g")  # Compile with debug information
 else ()
-    add_compile_options("-O3")  # Compile with level 3 optimizations
+	add_compile_options("-O3")  # Compile with level 3 optimizations
 endif ()
 
 # Always leave this line commented whenever committing as it will cause issues if the correct software is not installed.
-#add_link_options("-fuse-ld=lld")  # Use LLVM's lld linker for speed
+add_link_options("-fuse-ld=lld")  # Use LLVM's lld linker for speed
