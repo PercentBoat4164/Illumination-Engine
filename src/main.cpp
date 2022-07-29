@@ -8,7 +8,7 @@
 int main() {
 	IESettings settings = IESettings();
 	// RenderEngine must be allocated on the heap.
-	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(settings);
+	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(&settings);
 
 	IEKeyboard keyboard{renderEngine->window};
 	keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow *) { renderEngine->camera.position += renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed; });
@@ -40,8 +40,5 @@ int main() {
 		fbx->rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine->frameTime;
 		glfwPollEvents();
 		keyboard.handleQueue();
-		glm::vec3 temp = renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
-//		std::cout << renderEngine->camera.position.x << "\t" << renderEngine->camera.position.y << "\t" << renderEngine->camera.position.z << std::endl;
-		std::cout << temp.x << "\t" << temp.y << "\t" << temp.z << std::endl;
 	}
 }

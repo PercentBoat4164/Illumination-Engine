@@ -23,7 +23,7 @@ void IECamera::update() {
 	projectionMatrix = {glm::perspective(glm::radians(horizontalFOV), double((*linkedRenderEngine->settings->currentResolution)[0]) /
 																	  (*linkedRenderEngine->settings->currentResolution)[1], 0.01,
 										 linkedRenderEngine->settings->renderDistance)};
-	projectionMatrix[1][1] *= -1.0f;
+	if (linkedRenderEngine->API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) projectionMatrix[1][1] *= -1.0f;
 }
 
 void IECamera::updateSettings() {
