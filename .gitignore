@@ -6,7 +6,7 @@
 /build
 /out
 # CLion
-/*-build
+/*-build-*
 /.idea
 # Dependencies extracted from deps/otherSources.tar.xz
 /deps
