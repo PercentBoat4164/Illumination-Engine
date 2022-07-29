@@ -444,6 +444,7 @@ bool IERenderEngine::_openGLUpdate() {
 	glEnable(GL_FRAMEBUFFER_SRGB);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	camera.update();
+	glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
 	for (const std::weak_ptr<IERenderable> &renderable: renderables) {
 		renderable.lock()->update(0);
 	}
@@ -603,14 +604,12 @@ IERenderEngine::~IERenderEngine() {
 }
 
 void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
-	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(
-			pWindow))->renderEngine;
+	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->renderEngine;
 	*renderEngine->settings->currentPosition = {x, y};
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(
-			pWindow))->renderEngine;
+	std::shared_ptr<IERenderEngine> renderEngine = (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->renderEngine;
 	*renderEngine->settings->currentResolution = {width, height};
 	renderEngine->framebufferResized = true;
 }
