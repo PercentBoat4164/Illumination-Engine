@@ -56,7 +56,7 @@ private:
 	 * @brief Changes the window icon to all of the images found in [path] with a name that contains last part of [path].
 	 * @param path string of path to icons folder plus the identifier.
 	 */
-	void setWindowIcons(const std::string &path) const;
+	void setWindowIcons(const std::filesystem::path &path) const;
 
 	/**
 	 * @brief Creates a VkSurface for the window.

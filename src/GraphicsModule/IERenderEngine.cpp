@@ -70,28 +70,29 @@ GLFWwindow *IERenderEngine::createWindow() const {
 	return pWindow;
 }
 
-void IERenderEngine::setWindowIcons(const std::string &path) const {
-	int width;
-	int height;
-	int channels;
-	std::vector<GLFWimage> icons{};
-	std::string filename = path.substr(path.find_last_of('/'));  // filename component of path
+void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
+    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+            "Path: " + path.string());
 
-	// iterate over all files and directories within path recursively
-	for (const std::filesystem::directory_entry &file: std::filesystem::recursive_directory_iterator(path)) {
-		if (path.find(filename) >= 0) {  // if filename to look for is in path
-			stbi_uc *pixels = stbi_load(file.path().c_str(), &width, &height, &channels, STBI_rgb_alpha);  // Load image from disk
-			if (pixels == nullptr) {
-				settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-									 "Failed to load icon " + file.path().generic_string() + ". Is this file an image?");
-			}
-			icons.push_back(GLFWimage{.width=width, .height=height, .pixels=pixels});  // Generate image
-		}
-	}
-	glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
-	for (GLFWimage icon: icons) {
-		stbi_image_free(icon.pixels);  // Free all pixel data
-	}
+    int width;
+    int height;
+    int channels;
+    std::vector<GLFWimage> icons{};
+
+    // iterate over all files and directories within path recursively
+    for (const std::filesystem::directory_entry &file: std::filesystem::recursive_directory_iterator(path)) {
+        stbi_uc *pixels = stbi_load(file.path().string().c_str(), &width, &height, &channels,
+                                    STBI_rgb_alpha);  // Load image from disk
+        if (pixels == nullptr) {
+            settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+                                 "Failed to load icon " + file.path().generic_string() + ". Is this file an image?");
+        }
+        icons.push_back(GLFWimage{.width=width, .height=height, .pixels=pixels});  // Generate image
+    }
+    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
+    for (GLFWimage icon: icons) {
+        stbi_image_free(icon.pixels);  // Free all pixel data
+    }
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
@@ -418,21 +419,23 @@ void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
 }
 
 void IERenderEngine::handleResolutionChange() {
-	createSwapchain();
-	IEImage::CreateInfo depthImageCreateInfo{
-			.format=VK_FORMAT_D32_SFLOAT_S8_UINT,
-			.layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
-			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-			.aspect=VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-			.allocationUsage=VMA_MEMORY_USAGE_GPU_ONLY,
-			.width=swapchain.extent.width,
-			.height=swapchain.extent.height,
-			.channels=1,
-	};
-	depthImage = std::make_shared<IEImage>(this, &depthImageCreateInfo);
-	depthImage->uploadToVRAM();
-	renderPass->destroy();
-	createRenderPass();
+    if(API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+        createSwapchain();
+        IEImage::CreateInfo depthImageCreateInfo{
+                .format=VK_FORMAT_D32_SFLOAT_S8_UINT,
+                .layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+                .usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                .aspect=VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+                .allocationUsage=VMA_MEMORY_USAGE_GPU_ONLY,
+                .width=swapchain.extent.width,
+                .height=swapchain.extent.height,
+                .channels=1,
+        };
+        depthImage = std::make_shared<IEImage>(this, &depthImageCreateInfo);
+        depthImage->uploadToVRAM();
+        renderPass->destroy();
+        createRenderPass();
+    }
 }
 
 bool IERenderEngine::update() {
