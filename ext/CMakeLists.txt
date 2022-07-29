@@ -51,7 +51,7 @@ endif ()
 
 if (Vulkan_FOUND)
     # Get vk-bootstrap
-    message("Downloading vk-bootstrap master")
+    message("Downloading vk-bootstrap from master")
     FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG master)
 
     # Get VMA from master because latest release was from 2017. Master is generally considered stable.
@@ -61,6 +61,8 @@ if (Vulkan_FOUND)
     FetchContent_MakeAvailable(vk-bootstrap vma)  # Generate all external dependencies which require Vulkan
 
     set(Vulkan_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
+    set(Vulkan_LIBRARIES ${Vulkan_LIBRARIES} PARENT_SCOPE)  # Move package variable up to parent scope
+    set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS} PARENT_SCOPE)  # Move package variable up to parent scope
 endif ()
 
 FetchContent_MakeAvailable(assimp glm spdlog)  # Build all libraries

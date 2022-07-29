@@ -73,8 +73,8 @@ target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm)
 target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR})
 target_compile_definitions(IEGraphicsModule PUBLIC ILLUMINATION_ENGINE_OPENGL)  # Compile with OpenGL support
 if (Vulkan_FOUND)
-    target_link_libraries(IEGraphicsModule PUBLIC vk-bootstrap vulkan)
-    target_include_directories(IEGraphicsModule PUBLIC ${vk-bootstrap_DIR} ${vma_DIR})
+    target_link_libraries(IEGraphicsModule PUBLIC vk-bootstrap ${Vulkan_LIBRARIES})
+    target_include_directories(IEGraphicsModule PUBLIC ${vk-bootstrap_DIR} ${vma_DIR} ${Vulkan_INCLUDE_DIRS})
     target_compile_definitions(IEGraphicsModule PUBLIC ILLUMINATION_ENGINE_VULKAN)  # Compile with Vulkan support
 endif ()
 
