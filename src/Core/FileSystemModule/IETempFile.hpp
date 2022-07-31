@@ -18,38 +18,36 @@
 class IETempFile {
 public:
     std::string name{};
-    std::string data{}; // the data in the file
+    std::vector<char> data{}; // the data in the file
     std::string extension{};
-    int size{};
 
-    IETempFile(std::string fileName, std::string fileData = "") {
+    explicit IETempFile(const std::string& fileName, const std::vector<char>& fileData = {}) {
         name = fileName;
         data = fileData;
         if(int extensionStart = fileName.find_last_of('.') != std::string::npos) {
-            extension = data.substr(extensionStart);
+            extension = name.substr(extensionStart);
         }
     }
 
-    IETempFile(IEFile file) {
+    explicit IETempFile(IEFile file) {
         name = file.name;
         extension = file.extension;
         data = file.read();
-        size = data.size();
     }
 
-    std::string read() {
+    [[nodiscard]] std::vector<char> read() const {
         return data;
     }
 
-    std::string read(std::streamsize numBytes, std::streamsize startPosition) {
-        return data.substr(startPosition, numBytes);
+    [[nodiscard]] std::vector<char> read(std::streamsize numBytes, std::streamsize startPosition) const {
+        return {data.begin() + startPosition, data.begin() + startPosition + numBytes};
     }
 
-    void write(std::string newData) {
+    void write(const std::vector<char> &newData) {
         data = newData;
     }
 
-    void overwrite(std::string newData, std::streamsize numBytes) {
+    void overwrite(const std::vector<char> &newData, std::streamsize numBytes) {
         data = newData;
     }
 
@@ -57,9 +55,9 @@ public:
         data = file.read();
     }
 
-    IEFile createRealFile(std::filesystem::path path) {
-        IEFile file(path);
-        file.write(data);
+    IEFile *createRealFile(const std::filesystem::path& path) {
+        auto *file = new IEFile{path};
+        file->write(data);
         return file;
     }
 };

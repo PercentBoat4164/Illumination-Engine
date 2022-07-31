@@ -1,6 +1,6 @@
 # Project exclude paths
 # CLion
-/*-build
+/*build*
 /.idea
 # Ignore pre-compiled shaders
 /res/Shaders/*/*.spv

@@ -7,64 +7,33 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include <variant>
-#include <iostream>
 
 class IEFileSystem {
 public:
     std::filesystem::path path;
     IEImporter importer;
 
-    //constructor
-    IEFileSystem(std::filesystem::path fileSystemPath) {
-        path = fileSystemPath.string();
-    }
+    explicit IEFileSystem(const std::filesystem::path& fileSystemPath);
 
-    //create a new IEFile with the given relative path
-    void addFile(std::string filePath) {
-        std::filesystem::path newPath(path / filePath);
-        createFolder(newPath.parent_path().string());
-        files.insert(std::make_pair(filePath, IEFile(newPath)));
-    }
+    // Create a new IEFile with the given relative path
+    void addFile(const std::string& filePath);
 
-    void createFolder(std::string folderPath) {
-        std::filesystem::create_directories(path / folderPath);
-    }
+    void createFolder(const std::string& folderPath) const;
 
-    //export data to an IEFile
-    void exportData(std::string filePath, std::string data) {
-        files.find(filePath)->second.write(data);
-    }
+    // Export data to an IEFile
+    void exportData(const std::string& filePath, const std::vector<char> &data);
 
-    //delete a file
-    void deleteFile(std::string filePath) {
-        files.erase(files.find(filePath));
-        std::filesystem::remove(path / filePath);
-    }
+    // Delete a file
+    void deleteFile(const std::string& filePath);
 
-    //delete a directory
-    void deleteDirectory(std::string filePath) {
-        if(std::filesystem::is_empty(path / filePath) && std::filesystem::is_directory(std::filesystem::path(path.string() + "/"  + filePath))) {
-            std::filesystem::remove(path / filePath);
-        }
-    }
+    // Delete a directory
+    void deleteDirectory(const std::string& filePath) const;
 
-    //delete a directory that has other files in it
-    void deleteUsedDirectory(std::string filePath) {
-        std::string testPath;
-        for(auto const& x : files) {
-            testPath = x.second.path.string().substr(0, filePath.size());
-            if(testPath == filePath) {
-                files.erase(x.first);
-            }
-        }
-        std::filesystem::remove_all(path / filePath);
-    }
+    // Delete a directory that has other files in it
+    void deleteUsedDirectory(const std::string& filePath);
 
-    //import a file
-    std::string importFile(std::string filePath) {
-        return importer.import(files.find(filePath)->second);
-    }
+    // Import a file
+    std::string importFile(const std::string& filePath);
 
 private:
     std::unordered_map<std::string, IEFile> files;
