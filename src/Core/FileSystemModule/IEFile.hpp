@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Core/LogModule/IELogger.hpp"
-
 #include <vector>
 #include <string>
 #include <filesystem>

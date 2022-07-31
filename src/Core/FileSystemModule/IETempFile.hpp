@@ -1,8 +1,5 @@
 #pragma once
 
-// logging
-#include "Core/LogModule/IELogger.hpp"
-
 //internal dependencies
 #include "IEFile.hpp"
 

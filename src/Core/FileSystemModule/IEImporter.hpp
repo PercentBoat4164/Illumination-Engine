@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IEFile.hpp"
-#include "stb_image.h"
 
 #include <assimp/Importer.hpp>
 
@@ -14,7 +13,7 @@ class IEImporter {
 public:
 	Assimp::Importer importer{};
 
-	void import(const aiScene **, IEFile &, uint32_t = 0);
+	void import(const aiScene **, IEFile &, uint32_t);
 	
 	static void import(std::string *, IEFile &, uint32_t);
 	

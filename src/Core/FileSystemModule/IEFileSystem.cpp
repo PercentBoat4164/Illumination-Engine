@@ -17,7 +17,7 @@ void IEFileSystem::createFolder(const std::string &folderPath) const {
 }
 
 void IEFileSystem::exportData(const std::string &filePath, const std::vector<char> &data) {
-	files.find(filePath)->second.write(data.data());
+	files.find(filePath)->second.write(data);
 }
 
 void IEFileSystem::deleteFile(const std::string &filePath) {
@@ -40,8 +40,4 @@ void IEFileSystem::deleteUsedDirectory(const std::string &filePath) {
 		}
 	}
 	std::filesystem::remove_all(path / filePath);
-}
-
-std::string IEFileSystem::importFile(const std::string &filePath) {
-	return importer.import(files.find(filePath)->second);
 }
