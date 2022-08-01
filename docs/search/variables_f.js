@@ -1,20 +1,15 @@
 var searchData=
 [
-  ['patch_0',['patch',['../struct_i_e_version.html#a57dd4cfc2d145eb094a221e7c996ed0a',1,'IEVersion']]],
-  ['path_1',['path',['../class_i_e_directory.html#ae28ee284978f681b231a4931e5e9f5d6',1,'IEDirectory::path()'],['../class_i_e_file.html#a4285a4ea49a0435a995039d5760d693e',1,'IEFile::path()']]],
-  ['pclearvalues_2',['pClearValues',['../class_i_e_render_pass_begin_info.html#a78a9e699185158e7ff6ca90b077d86d7',1,'IERenderPassBeginInfo']]],
-  ['pipeline_3',['pipeline',['../class_i_e_mesh.html#a3d7b76ee32ef543a34f0f63f7500c6b1',1,'IEMesh::pipeline()'],['../class_i_e_pipeline.html#ad42e81445ab4e4c0b8750a13249a80e9',1,'IEPipeline::pipeline()']]],
-  ['pipelinelayout_4',['pipelineLayout',['../struct_i_e_pipeline_1_1_created.html#af8c543c0dc13cf8657db82bd0b3934f6',1,'IEPipeline::Created::pipelineLayout()'],['../class_i_e_pipeline.html#a120a887bdfdc4f68ae30dc853c697688',1,'IEPipeline::pipelineLayout()']]],
-  ['pitch_5',['pitch',['../class_i_e_camera.html#a8350e2414a0037d5cbcb0b7c12838d7c',1,'IECamera']]],
-  ['pnext_6',['pNext',['../class_i_e_buffer_memory_barrier.html#a8a2df9657f97105a35943ce71ba4c637',1,'IEBufferMemoryBarrier::pNext()'],['../class_i_e_copy_buffer_to_image_info.html#a2bbdc6d35bd0a03b28771a01a7493d55',1,'IECopyBufferToImageInfo::pNext()'],['../class_i_e_dependency_info.html#aff73aa20ca07f0e2e01a01b6b56031b6',1,'IEDependencyInfo::pNext()'],['../class_i_e_image_memory_barrier.html#a8e0ff6c150b4cfb3c64b68885202d60e',1,'IEImageMemoryBarrier::pNext()'],['../class_i_e_render_pass_begin_info.html#a40b4fcfabd68bad72ab0cb8c93948baf',1,'IERenderPassBeginInfo::pNext()']]],
-  ['pnexthighestfeature_7',['pNextHighestFeature',['../struct_i_e_render_engine_1_1_extension_and_feature_info.html#a2130a7ad5697517ff62a40fe6608b382',1,'IERenderEngine::ExtensionAndFeatureInfo']]],
-  ['pnexthighestrenderdoccompatiblefeature_8',['pNextHighestRenderDocCompatibleFeature',['../struct_i_e_render_engine_1_1_extension_and_feature_info.html#ad82f40314c68c110e2ad109b006bb46f',1,'IERenderEngine::ExtensionAndFeatureInfo']]],
-  ['polygonmode_9',['polygonMode',['../struct_i_e_renderable_settings.html#a5edcd34cbb068b2cf34c14f20231b1d7',1,'IERenderableSettings']]],
-  ['poolsizes_10',['poolSizes',['../struct_i_e_descriptor_set_1_1_create_info.html#a7cfd85aee464b25d8ec0fa5450430019',1,'IEDescriptorSet::CreateInfo']]],
-  ['position_11',['position',['../class_i_e_asset.html#a572a4f27a62c42fdd7b314f825479a7b',1,'IEAsset::position()'],['../class_i_e_camera.html#ad2c32457fd0ff8dcd7b8c48587242deb',1,'IECamera::position()'],['../struct_i_e_vertex.html#a10e15039c168576038db912715ad0a82',1,'IEVertex::position()'],['../struct_i_e_uniform_buffer_object.html#a6ba5154db3642deaa5f7cbc704ccbbf5',1,'IEUniformBufferObject::position()']]],
-  ['presentcommandpool_12',['presentCommandPool',['../class_i_e_render_engine.html#a9cf427e882b6d102fac7a29f99385320',1,'IERenderEngine']]],
-  ['presentqueue_13',['presentQueue',['../class_i_e_render_engine.html#a68c38bb853f40bd364f86289b6776de1',1,'IERenderEngine']]],
-  ['primarymonitor_14',['primaryMonitor',['../class_i_e_settings.html#ab624790dbff0e561d1348362588a48aa',1,'IESettings']]],
-  ['programid_15',['programID',['../class_i_e_pipeline.html#a7dd2e05ec49f21c16baec506c3c7302e',1,'IEPipeline']]],
-  ['projectionmatrix_16',['projectionMatrix',['../class_i_e_camera.html#a23b10c7a6519ea0e2f3ba97a2abf60ca',1,'IECamera::projectionMatrix()'],['../struct_i_e_uniform_buffer_object.html#a73f95efa0e62e5bb465613cf8203cf27',1,'IEUniformBufferObject::projectionMatrix()']]]
+  ['raytracing_0',['rayTracing',['../struct_vulkan_graphics_engine_link_1_1_physical_device_info.html#aefbae345cb4ab3ae19607abbe738f525',1,'VulkanGraphicsEngineLink::PhysicalDeviceInfo::rayTracing()'],['../class_open_g_l_settings.html#a92a282c6378041e666622d77b2a23c87',1,'OpenGLSettings::rayTracing()']]],
+  ['refreshrate_1',['refreshRate',['../class_open_g_l_settings.html#ae4902d8e41e1c0129f73156606e2d536',1,'OpenGLSettings']]],
+  ['render_2',['render',['../class_open_g_l_renderable.html#acfef0ebc884a02d609cf9beaa5f0eb46',1,'OpenGLRenderable::render()'],['../class_vulkan_renderable.html#aee8312e89daa47cfd08042e446f9d312',1,'VulkanRenderable::render()']]],
+  ['renderables_3',['renderables',['../class_open_g_l_render_engine.html#aac50cc110c90af61197f906fcba69250',1,'OpenGLRenderEngine']]],
+  ['renderdistance_4',['renderDistance',['../class_open_g_l_settings.html#abad70c94a427a0cf63e8977d2ff53cbb',1,'OpenGLSettings']]],
+  ['renderengine_5',['renderEngine',['../struct_i_e_window_user_pointer.html#a6d43ac5c1608931ead44b4389e44c08d',1,'IEWindowUserPointer']]],
+  ['renderenginelink_6',['renderEngineLink',['../class_open_g_l_render_engine.html#a7e2ecc603222b2d5a6700a0f4d415532',1,'OpenGLRenderEngine::renderEngineLink()'],['../class_vulkan_render_engine.html#a0b36fec6cc0057b7559b9fa8d90cdb52',1,'VulkanRenderEngine::renderEngineLink()']]],
+  ['renderpass_7',['renderPass',['../struct_vulkan_framebuffer_1_1_create_info.html#a8a81bd532445a40fa539163165cafb10',1,'VulkanFramebuffer::CreateInfo::renderPass()'],['../class_vulkan_render_pass.html#a443057644d2c6060bbc216919c8e25e2',1,'VulkanRenderPass::renderPass()'],['../class_vulkan_render_engine.html#aabfd50c644c7f1a5ba19517087ce310d',1,'VulkanRenderEngine::renderPass()'],['../struct_vulkan_pipeline_1_1_create_info.html#a1a04e54ff9fb4022c7cdb439ba62a533',1,'VulkanPipeline::CreateInfo::renderPass()']]],
+  ['resolution_8',['resolution',['../class_open_g_l_settings.html#a5f03fea1306358ce8cdd5a54a3b4d261',1,'OpenGLSettings']]],
+  ['right_9',['right',['../class_open_g_l_camera.html#a02d29918a5f26abeeb0b287464164e11',1,'OpenGLCamera::right()'],['../class_vulkan_camera.html#ade5ebf105479d64b2b22a55d4fa67498',1,'VulkanCamera::right()']]],
+  ['rotation_10',['rotation',['../class_i_e_asset.html#a9fdcbc4b63497b97f8522fe3ead803ac',1,'IEAsset']]],
+  ['roughnesstexture_11',['roughnessTexture',['../struct_open_g_l_renderable_1_1_open_g_l_mesh.html#a90628ef8441cdc8548b542cec2808195',1,'OpenGLRenderable::OpenGLMesh::roughnessTexture()'],['../struct_vulkan_renderable_1_1_vulkan_mesh.html#ad5ec5f5669d1f0a5dad9cc51db07ad61',1,'VulkanRenderable::VulkanMesh::roughnessTexture()']]]
 ];

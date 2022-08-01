@@ -77,7 +77,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_i_e_file_system-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">IEFileSystem Class Reference</div></div>
 </div><!--header-->
@@ -87,148 +87,17 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ac375106c4ef83a2bdcb5561906d75e3c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file_system.html#ac375106c4ef83a2bdcb5561906d75e3c">IEFileSystem</a> (const std::string &amp;initialAssetDirectory)</td></tr>
-<tr class="separator:ac375106c4ef83a2bdcb5561906d75e3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac4b93761941b8ce381925728c88cda68"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file_system.html#ac4b93761941b8ce381925728c88cda68">IEFileSystem</a> (const <a class="el" href="class_i_e_directory.html">IEDirectory</a> &amp;initialBaseDirectory)</td></tr>
-<tr class="separator:ac4b93761941b8ce381925728c88cda68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3975e0b04d62c9e4c7c6a850d373a4e3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_i_e_file.html">IEFile</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file_system.html#a3975e0b04d62c9e4c7c6a850d373a4e3">getAssetFile</a> (const std::string &amp;assetName)</td></tr>
-<tr class="separator:a3975e0b04d62c9e4c7c6a850d373a4e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a756fe0222b6ad7e62e42cb174bc86482"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_i_e_file.html">IEFile</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file_system.html#a756fe0222b6ad7e62e42cb174bc86482">getFile</a> (const std::string &amp;filePath, bool isCompletePath=true)</td></tr>
-<tr class="separator:a756fe0222b6ad7e62e42cb174bc86482"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a524dfa60ae2a82721b368c289eaf787a"><td class="memTemplParams" colspan="2">template&lt;typename... Args&gt; </td></tr>
-<tr class="memitem:a524dfa60ae2a82721b368c289eaf787a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_i_e_file_system.html#a524dfa60ae2a82721b368c289eaf787a">getAssetDirectory</a> (Args &amp;&amp;... args) -&gt; decltype(<a class="el" href="class_i_e_file_system.html#a579790c46fa76584a294a0623a1ac066">getDirectory</a>(std::forward&lt; Args &gt;(args)...))</td></tr>
-<tr class="separator:a524dfa60ae2a82721b368c289eaf787a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a579790c46fa76584a294a0623a1ac066"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_i_e_directory.html">IEDirectory</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file_system.html#a579790c46fa76584a294a0623a1ac066">getDirectory</a> (const std::string &amp;assetName)</td></tr>
-<tr class="separator:a579790c46fa76584a294a0623a1ac066"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6432d86094ad4b183c642bf98195dc5d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file_system.html#a6432d86094ad4b183c642bf98195dc5d">addFile</a> (const <a class="el" href="class_i_e_file.html">IEFile</a> &amp;<a class="el" href="src_2_graphics_module_2_vulkan_2_default_shaders_2_ray_trace_2_c_make_lists_8txt.html#aaa52ab6457f351badb3db7e6f9b60dad">file</a>)</td></tr>
+<tr class="separator:a6432d86094ad4b183c642bf98195dc5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr class="memitem:ac2922d5c4134b46dc5f13f3c7802423c"><td class="memTemplParams" colspan="2">template&lt;typename... Args&gt; </td></tr>
-<tr class="memitem:ac2922d5c4134b46dc5f13f3c7802423c"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_i_e_file_system.html#ac2922d5c4134b46dc5f13f3c7802423c">composePath</a> (<a class="el" href="_i_e_file_system_8hpp.html#afe13fa5427a7ea330ff67d963807031e">IEPathName</a> format, const Args &amp;... args)</td></tr>
-<tr class="separator:ac2922d5c4134b46dc5f13f3c7802423c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:aaf3add513165165b3f9c4524f3e3b884"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="class_i_e_file.html">IEFile</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_file_system.html#aaf3add513165165b3f9c4524f3e3b884">files</a> {}</td></tr>
+<tr class="separator:aaf3add513165165b3f9c4524f3e3b884"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ac375106c4ef83a2bdcb5561906d75e3c" name="ac375106c4ef83a2bdcb5561906d75e3c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac375106c4ef83a2bdcb5561906d75e3c">&#9670;&nbsp;</a></span>IEFileSystem() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">IEFileSystem::IEFileSystem </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>initialAssetDirectory</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ac4b93761941b8ce381925728c88cda68" name="ac4b93761941b8ce381925728c88cda68"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4b93761941b8ce381925728c88cda68">&#9670;&nbsp;</a></span>IEFileSystem() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">IEFileSystem::IEFileSystem </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="class_i_e_directory.html">IEDirectory</a> &amp;&#160;</td>
-          <td class="paramname"><em>initialBaseDirectory</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ac2922d5c4134b46dc5f13f3c7802423c" name="ac2922d5c4134b46dc5f13f3c7802423c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac2922d5c4134b46dc5f13f3c7802423c">&#9670;&nbsp;</a></span>composePath()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename... Args&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static std::string IEFileSystem::composePath </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="_i_e_file_system_8hpp.html#afe13fa5427a7ea330ff67d963807031e">IEPathName</a>&#160;</td>
-          <td class="paramname"><em>format</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const Args &amp;...&#160;</td>
-          <td class="paramname"><em>args</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a524dfa60ae2a82721b368c289eaf787a" name="a524dfa60ae2a82721b368c289eaf787a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a524dfa60ae2a82721b368c289eaf787a">&#9670;&nbsp;</a></span>getAssetDirectory()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename... Args&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto IEFileSystem::getAssetDirectory </td>
-          <td>(</td>
-          <td class="paramtype">Args &amp;&amp;...&#160;</td>
-          <td class="paramname"><em>args</em></td><td>)</td>
-          <td> -&gt; decltype(<a class="el" href="class_i_e_file_system.html#a579790c46fa76584a294a0623a1ac066">getDirectory</a>(std::forward&lt;Args&gt;(args)...)) </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a3975e0b04d62c9e4c7c6a850d373a4e3" name="a3975e0b04d62c9e4c7c6a850d373a4e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3975e0b04d62c9e4c7c6a850d373a4e3">&#9670;&nbsp;</a></span>getAssetFile()</h2>
+<a id="a6432d86094ad4b183c642bf98195dc5d" name="a6432d86094ad4b183c642bf98195dc5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6432d86094ad4b183c642bf98195dc5d">&#9670;&nbsp;</a></span>addFile()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -237,10 +106,10 @@ template&lt;typename... Args&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="class_i_e_file.html">IEFile</a> * IEFileSystem::getAssetFile </td>
+          <td class="memname">void IEFileSystem::addFile </td>
           <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>assetName</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="class_i_e_file.html">IEFile</a> &amp;&#160;</td>
+          <td class="paramname"><em>file</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -253,64 +122,17 @@ template&lt;typename... Args&gt; </div>
 
 </div>
 </div>
-<a id="a579790c46fa76584a294a0623a1ac066" name="a579790c46fa76584a294a0623a1ac066"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a579790c46fa76584a294a0623a1ac066">&#9670;&nbsp;</a></span>getDirectory()</h2>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="aaf3add513165165b3f9c4524f3e3b884" name="aaf3add513165165b3f9c4524f3e3b884"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf3add513165165b3f9c4524f3e3b884">&#9670;&nbsp;</a></span>files</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="class_i_e_directory.html">IEDirectory</a> * IEFileSystem::getDirectory </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>assetName</em></td><td>)</td>
-          <td></td>
+          <td class="memname">std::vector&lt;<a class="el" href="class_i_e_file.html">IEFile</a>&gt; IEFileSystem::files {}</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a756fe0222b6ad7e62e42cb174bc86482" name="a756fe0222b6ad7e62e42cb174bc86482"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a756fe0222b6ad7e62e42cb174bc86482">&#9670;&nbsp;</a></span>getFile()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="class_i_e_file.html">IEFile</a> * IEFileSystem::getFile </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>filePath</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>isCompletePath</em> = <code>true</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 </div>

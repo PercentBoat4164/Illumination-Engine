@@ -1,14 +1,18 @@
 var searchData=
 [
-  ['tangent_0',['tangent',['../struct_i_e_vertex.html#a10fbf202467832cff6a7f3db8a07b3f0',1,'IEVertex']]],
-  ['texturecoordinates_1',['textureCoordinates',['../struct_i_e_vertex.html#aeebefb7a8ff025c52a6451052e15afb1',1,'IEVertex']]],
-  ['texturecount_2',['textureCount',['../class_i_e_material.html#a294f0987fadd1741cda1c4ed3b676b42',1,'IEMaterial']]],
-  ['textureid_3',['textureID',['../class_i_e_image.html#a29c79f8df069ed07bf82ea713f4a7d10',1,'IEImage']]],
-  ['textures_4',['textures',['../class_i_e_render_engine.html#afb22c08add0806b9dfb336bd1a80189d',1,'IERenderEngine']]],
-  ['tiling_5',['tiling',['../class_i_e_image.html#abcc38da420db62cb9d1a85936d5b58af',1,'IEImage']]],
-  ['time_6',['time',['../struct_i_e_uniform_buffer_object.html#a5e9e2f8a1f768d3727c57de3cc972fc1',1,'IEUniformBufferObject']]],
-  ['transfercommandpool_7',['transferCommandPool',['../class_i_e_render_engine.html#adcd67ae6181675e9c8e801e9f8cb32fc',1,'IERenderEngine']]],
-  ['transferqueue_8',['transferQueue',['../class_i_e_render_engine.html#a49970a047243907e4eebd4482c184771',1,'IERenderEngine']]],
-  ['trianglecount_9',['triangleCount',['../class_i_e_mesh.html#abcaaad02f7806740d5811dc38e0d86fd',1,'IEMesh']]],
-  ['type_10',['type',['../struct_i_e_buffer_1_1_create_info.html#ad3aca381a4e2bd2e32cf786c9bf91cf1',1,'IEBuffer::CreateInfo::type()'],['../class_i_e_buffer.html#a745fd6c6d6d5eeb1a38505b2a4b39912',1,'IEBuffer::type()'],['../struct_i_e_image_1_1_create_info.html#a684214e5e310c4152d07a907723d06aa',1,'IEImage::CreateInfo::type()'],['../class_i_e_image.html#a19252c95bf1e691f93f081cb2ff8e883',1,'IEImage::type()'],['../struct_i_e_texture_1_1_create_info.html#aa0f9d89a928cf40c8e157019d64ae7bf',1,'IETexture::CreateInfo::type()']]]
+  ['vertexarrayobject_0',['vertexArrayObject',['../struct_open_g_l_renderable_1_1_open_g_l_mesh.html#ae7bca125e0c13595cd7ac8c87465aaa5',1,'OpenGLRenderable::OpenGLMesh']]],
+  ['vertexbuffer_1',['vertexBuffer',['../struct_open_g_l_renderable_1_1_open_g_l_mesh.html#a81017a78f6bae6306bfdcb1e2df8a1c6',1,'OpenGLRenderable::OpenGLMesh::vertexBuffer()'],['../struct_vulkan_renderable_1_1_vulkan_mesh.html#a15c2ac285407bb69eb330618edcb57e0',1,'VulkanRenderable::VulkanMesh::vertexBuffer()']]],
+  ['vertexbufferaddress_2',['vertexBufferAddress',['../struct_vulkan_buffer_1_1_create_info.html#a0f6e3dc716896d90c9c12ab49c8496c3',1,'VulkanBuffer::CreateInfo']]],
+  ['vertices_3',['vertices',['../struct_open_g_l_renderable_1_1_open_g_l_mesh.html#a5ba5c4f181de807f9bfd8787bc3c34ef',1,'OpenGLRenderable::OpenGLMesh::vertices()'],['../struct_vulkan_renderable_1_1_vulkan_mesh.html#a2dc1e648fea827570f64a4a6ae6d43a2',1,'VulkanRenderable::VulkanMesh::vertices()']]],
+  ['view_4',['view',['../class_open_g_l_camera.html#ae3007ef22a089d40ad64554b5e638683',1,'OpenGLCamera::view()'],['../class_vulkan_image.html#a7955a2034b3fff0e356805924ca1fb3c',1,'VulkanImage::view()']]],
+  ['viewmatrix_5',['viewMatrix',['../class_vulkan_camera.html#a10093b525e0899a67e78e77139f2951c',1,'VulkanCamera']]],
+  ['viewmodelmatrix_6',['viewModelMatrix',['../struct_vulkan_uniform_buffer_object.html#aa4a61fd1b0c95a13bb5db1c2ecdd0ca8',1,'VulkanUniformBufferObject']]],
+  ['vkacquirenextimagekhr_7',['vkAcquireNextImageKhr',['../class_vulkan_graphics_engine_link.html#a20f4aa751b5befd8cc0ef0dd139f6fc5',1,'VulkanGraphicsEngineLink']]],
+  ['vkcmdbuildaccelerationstructureskhr_8',['vkCmdBuildAccelerationStructuresKHR',['../class_vulkan_graphics_engine_link.html#a619645b99aa153b14c9293f71dc18755',1,'VulkanGraphicsEngineLink']]],
+  ['vkcreateaccelerationstructurekhr_9',['vkCreateAccelerationStructureKHR',['../class_vulkan_graphics_engine_link.html#aed65e164c7dd3323902eb30cb38300e1',1,'VulkanGraphicsEngineLink']]],
+  ['vkdestroyaccelerationstructurekhr_10',['vkDestroyAccelerationStructureKHR',['../class_vulkan_graphics_engine_link.html#ab22c2106045ab530c0e17aac25be24c5',1,'VulkanGraphicsEngineLink']]],
+  ['vkgetaccelerationstructurebuildsizeskhr_11',['vkGetAccelerationStructureBuildSizesKHR',['../class_vulkan_graphics_engine_link.html#a2df4074e7f0273bd3659d53299486670',1,'VulkanGraphicsEngineLink']]],
+  ['vkgetaccelerationstructuredeviceaddresskhr_12',['vkGetAccelerationStructureDeviceAddressKHR',['../class_vulkan_graphics_engine_link.html#af7f58e0655399149d5cc421ba3654447',1,'VulkanGraphicsEngineLink']]],
+  ['vkgetbufferdeviceaddresskhr_13',['vkGetBufferDeviceAddressKHR',['../class_vulkan_graphics_engine_link.html#a67dae40a4a0061d7dac8e3bdedbd6d22',1,'VulkanGraphicsEngineLink']]],
+  ['vsync_14',['vSync',['../class_open_g_l_settings.html#a8a12bdd88a6abd6cc2d38b61d7770029',1,'OpenGLSettings']]]
 ];

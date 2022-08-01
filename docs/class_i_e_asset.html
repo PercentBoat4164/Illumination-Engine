@@ -84,18 +84,6 @@ $(function() {
 <div class="contents">
 
 <p><code>#include &lt;<a class="el" href="_i_e_asset_8hpp_source.html">IEAsset.hpp</a>&gt;</code></p>
-<div class="dynheader">
-Inheritance diagram for IEAsset:</div>
-<div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="class_i_e_asset__inherit__graph.svg" width="226" height="155"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
-</div>
-<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
-<div class="dynheader">
-Collaboration diagram for IEAsset:</div>
-<div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="class_i_e_asset__coll__graph.svg" width="226" height="155"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
-</div>
-<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -104,16 +92,17 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a572a4f27a62c42fdd7b314f825479a7b"><td class="memItemLeft" align="right" valign="top">glm::vec3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_asset.html#a572a4f27a62c42fdd7b314f825479a7b">position</a> {0.0, 0.0, 0.0}</td></tr>
+<tr class="memitem:a572a4f27a62c42fdd7b314f825479a7b"><td class="memItemLeft" align="right" valign="top">glm::vec3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_asset.html#a572a4f27a62c42fdd7b314f825479a7b">position</a> {}</td></tr>
 <tr class="separator:a572a4f27a62c42fdd7b314f825479a7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fdcbc4b63497b97f8522fe3ead803ac"><td class="memItemLeft" align="right" valign="top">glm::vec3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_asset.html#a9fdcbc4b63497b97f8522fe3ead803ac">rotation</a> {0.0, 0.0, 0.0}</td></tr>
+<tr class="memitem:a9fdcbc4b63497b97f8522fe3ead803ac"><td class="memItemLeft" align="right" valign="top">glm::vec3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_asset.html#a9fdcbc4b63497b97f8522fe3ead803ac">rotation</a> {}</td></tr>
 <tr class="separator:a9fdcbc4b63497b97f8522fe3ead803ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7cfc6a497e86ce47efaec3856b4279da"><td class="memItemLeft" align="right" valign="top">glm::vec3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_asset.html#a7cfc6a497e86ce47efaec3856b4279da">scale</a> {1.0, 1.0, 1.0}</td></tr>
+<tr class="memitem:a7cfc6a497e86ce47efaec3856b4279da"><td class="memItemLeft" align="right" valign="top">glm::vec3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_asset.html#a7cfc6a497e86ce47efaec3856b4279da">scale</a> {1.0f, 1.0f, 1.0f}</td></tr>
 <tr class="separator:a7cfc6a497e86ce47efaec3856b4279da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96fdcd7f37e5039a3962313a56fde9a1"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_asset.html#a96fdcd7f37e5039a3962313a56fde9a1">filename</a> {}</td></tr>
 <tr class="separator:a96fdcd7f37e5039a3962313a56fde9a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5386cd444a21268b0c8540fb52ab7402"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::shared_ptr&lt; <a class="el" href="class_i_e_aspect.html">IEAspect</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_asset.html#a5386cd444a21268b0c8540fb52ab7402">aspects</a> {}</td></tr>
-<tr class="separator:a5386cd444a21268b0c8540fb52ab7402"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66ba1d4c5e1c6ddc64bf93ad5dcb3e3f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; void * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_asset.html#a66ba1d4c5e1c6ddc64bf93ad5dcb3e3f">aspects</a> {}</td></tr>
+<tr class="memdesc:a66ba1d4c5e1c6ddc64bf93ad5dcb3e3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Aspects can be one of:  <a href="class_i_e_asset.html#a66ba1d4c5e1c6ddc64bf93ad5dcb3e3f">More...</a><br /></td></tr>
+<tr class="separator:a66ba1d4c5e1c6ddc64bf93ad5dcb3e3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="ac3d9225efbf37f07326f74aa65cc14aa" name="ac3d9225efbf37f07326f74aa65cc14aa"></a>
@@ -121,6 +110,9 @@ Public Attributes</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void IEAsset::addAspect </td>
@@ -130,22 +122,36 @@ Public Attributes</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a5386cd444a21268b0c8540fb52ab7402" name="a5386cd444a21268b0c8540fb52ab7402"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5386cd444a21268b0c8540fb52ab7402">&#9670;&nbsp;</a></span>aspects</h2>
+<a id="a66ba1d4c5e1c6ddc64bf93ad5dcb3e3f" name="a66ba1d4c5e1c6ddc64bf93ad5dcb3e3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66ba1d4c5e1c6ddc64bf93ad5dcb3e3f">&#9670;&nbsp;</a></span>aspects</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;std::shared_ptr&lt;<a class="el" href="class_i_e_aspect.html">IEAspect</a>&gt; &gt; IEAsset::aspects {}</td>
+          <td class="memname">std::vector&lt;void*&gt; IEAsset::aspects {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Aspects can be one of: </p>
+<ul>
+<li>Renderable xN // Control how the asset is displayed visually</li>
+<li>SoundPlayerThing xN // Control what sounds the asset creates in-game</li>
+<li>Script xN // Control the asset based on events or timings</li>
+<li>PhysicsBody xN // Control how the asset interacts with other assets</li>
+<li>???User specified??? xN // Control low-level interactions with the game engine </li>
+</ul>
 
 </div>
 </div>
@@ -170,7 +176,7 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">glm::vec3 IEAsset::position {0.0, 0.0, 0.0}</td>
+          <td class="memname">glm::vec3 IEAsset::position {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -184,7 +190,7 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">glm::vec3 IEAsset::rotation {0.0, 0.0, 0.0}</td>
+          <td class="memname">glm::vec3 IEAsset::rotation {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -198,16 +204,15 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">glm::vec3 IEAsset::scale {1.0, 1.0, 1.0}</td>
+          <td class="memname">glm::vec3 IEAsset::scale {1.0f, 1.0f, 1.0f}</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<hr/>The documentation for this class was generated from the following files:<ul>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>Illumination-Engine/src/Core/AssetModule/<a class="el" href="_i_e_asset_8hpp_source.html">IEAsset.hpp</a></li>
-<li>Illumination-Engine/src/Core/AssetModule/<a class="el" href="_i_e_asset_8cpp.html">IEAsset.cpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

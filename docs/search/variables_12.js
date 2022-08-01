@@ -1,23 +1,7 @@
 var searchData=
 [
-  ['sampler_0',['sampler',['../class_i_e_image.html#a871ae1879582c1722a77ed8988dc995d',1,'IEImage']]],
-  ['scale_1',['scale',['../class_i_e_asset.html#a7cfc6a497e86ce47efaec3856b4279da',1,'IEAsset']]],
-  ['scancode_2',['scancode',['../struct_i_e_key_press_description.html#a22bf1304e1b4a8e458eed8a5950b3d9e',1,'IEKeyPressDescription']]],
-  ['settings_3',['settings',['../class_i_e_render_engine.html#a6ccc681adafe2af9ff1f9ee21a4cdcec',1,'IERenderEngine']]],
-  ['shaderid_4',['shaderID',['../class_i_e_shader.html#a1415207424ecddb62e95708257886446',1,'IEShader']]],
-  ['shaders_5',['shaders',['../class_i_e_mesh.html#ab38b5e5dd99f7e6f56a97359251c4060',1,'IEMesh::shaders()'],['../class_i_e_renderable.html#a5efe84bd80c40d3ffcdab327e8b1da95',1,'IERenderable::shaders()'],['../struct_i_e_pipeline_1_1_create_info.html#a700768ee31659a576b2950f618302324',1,'IEPipeline::CreateInfo::shaders()']]],
-  ['shaderstages_6',['shaderStages',['../struct_i_e_descriptor_set_1_1_create_info.html#a27cb7be066929c2a093bb80745d0692d',1,'IEDescriptorSet::CreateInfo']]],
-  ['size_7',['size',['../struct_i_e_buffer_1_1_create_info.html#a4c61e8b0166f940b526fb1bebbf6b5e9',1,'IEBuffer::CreateInfo::size()'],['../class_i_e_buffer.html#a75a2198d9b9bb1ddcea60b8d9909c666',1,'IEBuffer::size()'],['../class_i_e_buffer_memory_barrier.html#ae92b89c138d79f555cd7d05ecbb36da9',1,'IEBufferMemoryBarrier::size()']]],
-  ['speed_8',['speed',['../class_i_e_camera.html#ae489b5713bd4410b44b307ec82da86a1',1,'IECamera']]],
-  ['srcaccessmask_9',['srcAccessMask',['../class_i_e_image_memory_barrier.html#a721b4d75c504ad8c22df0fbb2950f109',1,'IEImageMemoryBarrier::srcAccessMask()'],['../class_i_e_buffer_memory_barrier.html#a116d1ab48fae1c4f73a1cc6186ec3ec2',1,'IEBufferMemoryBarrier::srcAccessMask()']]],
-  ['srcbuffer_10',['srcBuffer',['../class_i_e_copy_buffer_to_image_info.html#afffbedcfd5badcb0c817790000820c50',1,'IECopyBufferToImageInfo']]],
-  ['srcqueuefamilyindex_11',['srcQueueFamilyIndex',['../class_i_e_buffer_memory_barrier.html#ae4c1a80d5bf816bbabba8d083fc55575',1,'IEBufferMemoryBarrier::srcQueueFamilyIndex()'],['../class_i_e_image_memory_barrier.html#a2a96cd2758e2918b8b24f0571771a4bf',1,'IEImageMemoryBarrier::srcQueueFamilyIndex()']]],
-  ['status_12',['status',['../class_i_e_buffer.html#a65c648906760994d177f6ebb0c746220',1,'IEBuffer::status()'],['../class_i_e_command_buffer.html#ad8d3e3bba137c03b3da69bc3d1240471',1,'IECommandBuffer::status()'],['../class_i_e_image.html#a6f77f6311fbd56d9df4652c7bd260f7e',1,'IEImage::status()'],['../class_i_e_renderable.html#a28a721355cbf0361e3069993d45a74fc',1,'IERenderable::status()']]],
-  ['subdirectories_13',['subDirectories',['../class_i_e_directory.html#a7a3cdb448796033a18e4c7a4980cdf3b',1,'IEDirectory']]],
-  ['subresourcerange_14',['subresourceRange',['../class_i_e_image_memory_barrier.html#a71d3426a51e0f21eec0b4643a499b230',1,'IEImageMemoryBarrier']]],
-  ['supportedextensions_15',['supportedExtensions',['../struct_i_e_render_engine_1_1_extension_and_feature_info.html#acd95200cf5493b6169d5d810d53d1f52',1,'IERenderEngine::ExtensionAndFeatureInfo']]],
-  ['surface_16',['surface',['../class_i_e_render_engine.html#ae56b152231e3fb165d402ecabc79901e',1,'IERenderEngine']]],
-  ['swapchain_17',['swapchain',['../class_i_e_render_engine.html#ae9cda7c69224707428bb467303c58070',1,'IERenderEngine']]],
-  ['swapchainimageviews_18',['swapchainImageViews',['../class_i_e_render_engine.html#ab7b218f772a539c218bcb5db2c548c88',1,'IERenderEngine']]],
-  ['systeminfo_19',['systemInfo',['../class_i_e_render_engine.html#a900bc591aae5e06c8b94c496d24079e7',1,'IERenderEngine']]]
+  ['uniformbufferobject_0',['uniformBufferObject',['../class_vulkan_renderable.html#a3686e764c6975d48cc78ce249dbe7ece',1,'VulkanRenderable']]],
+  ['up_1',['up',['../class_open_g_l_camera.html#a8279ab5052fbd34983395a8acff69088',1,'OpenGLCamera::up()'],['../class_vulkan_camera.html#a013ae8228f6c8fbcbfbb7566fcb88eba',1,'VulkanCamera::up()']]],
+  ['uploaded_2',['uploaded',['../class_open_g_l_renderable.html#a1757cb28eb0df2de4ed230e0fb96e496',1,'OpenGLRenderable']]],
+  ['usage_3',['usage',['../struct_vulkan_buffer_1_1_create_info.html#a16019fb20836d0ed630138e9e3ac3bac',1,'VulkanBuffer::CreateInfo::usage()'],['../struct_vulkan_image_1_1_create_info.html#a7d7d00ba72b1e0e6e54181a32012da9c',1,'VulkanImage::CreateInfo::usage()']]]
 ];

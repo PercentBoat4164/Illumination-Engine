@@ -1,20 +1,15 @@
 var searchData=
 [
-  ['camera_0',['camera',['../class_i_e_render_engine.html#a8bdc821a7024757d5346ad8b30a5c36c',1,'IERenderEngine']]],
-  ['channels_1',['channels',['../struct_i_e_image_1_1_create_info.html#a84ddb97adf99557a4b46906ad46aabb7',1,'IEImage::CreateInfo::channels()'],['../class_i_e_image.html#a62604d8bbb9eac6348ae1356b8958c6e',1,'IEImage::channels()']]],
-  ['clearvaluecount_2',['clearValueCount',['../class_i_e_render_pass_begin_info.html#a93e64d1bce0e4228de1387ce34200810',1,'IERenderPassBeginInfo']]],
-  ['clearvalues_3',['clearValues',['../class_i_e_framebuffer.html#a8dc8a50759e574eed63b04514a411d6f',1,'IEFramebuffer']]],
-  ['color_4',['color',['../struct_i_e_vertex.html#a520bcdeac9949e59389ba86d4170a7ca',1,'IEVertex']]],
-  ['commandbuffer_5',['commandBuffer',['../class_i_e_command_buffer.html#ab404d3ce8eb732c4c4a26280a8d96583',1,'IECommandBuffer']]],
-  ['commandbufferindex_6',['commandBufferIndex',['../class_i_e_renderable.html#a8a741be4ee5f25032e5795fa95f1cb68',1,'IERenderable']]],
-  ['commandbuffers_7',['commandBuffers',['../class_i_e_command_pool.html#af0fac2a5103844d13bad1c402eb5a5cd',1,'IECommandPool']]],
-  ['commandpool_8',['commandPool',['../class_i_e_command_buffer.html#a7e760142d760b471a5696d7fe29d9133',1,'IECommandBuffer::commandPool()'],['../class_i_e_command_pool.html#aefd6f7c2a73e189ff8db45f6a9d08234',1,'IECommandPool::commandPool()']]],
-  ['commandpoolmutex_9',['commandPoolMutex',['../class_i_e_command_pool.html#ac8f7b5979e244515c1e88191498503f2',1,'IECommandPool']]],
-  ['commandqueue_10',['commandQueue',['../struct_i_e_command_pool_1_1_create_info.html#ae365bcded048c2741268e0bb05faddc8',1,'IECommandPool::CreateInfo']]],
-  ['computecommandpool_11',['computeCommandPool',['../class_i_e_render_engine.html#a2436c8cb26e93651565a648fb6bfc60e',1,'IERenderEngine']]],
-  ['computequeue_12',['computeQueue',['../class_i_e_render_engine.html#af5e9123fa701647970c9d85cf8ed2259',1,'IERenderEngine']]],
-  ['created_13',['created',['../class_i_e_pipeline.html#a8ad537a01f2c7dccd9178c5c7e25a37c',1,'IEPipeline']]],
-  ['createdwith_14',['createdWith',['../class_i_e_command_pool.html#aafb02c5debef8b447af6b036e79cf2da',1,'IECommandPool::createdWith()'],['../class_i_e_render_pass.html#a2b69e5c4636ec578f52569a27e8d1d5e',1,'IERenderPass::createdWith()'],['../class_i_e_descriptor_set.html#ac8e6abb0746fad26f970ba16102406e3',1,'IEDescriptorSet::createdWith()'],['../class_i_e_pipeline.html#a3d4ced5ba6c06f22dcced3ecbb5b30e0',1,'IEPipeline::createdWith()']]],
-  ['currentposition_15',['currentPosition',['../class_i_e_settings.html#ad1c1423ea3738e6c18a9cce0e7ed5dac',1,'IESettings']]],
-  ['currentresolution_16',['currentResolution',['../class_i_e_settings.html#aa255e5eafd35d2a03da8434378a6fa9f',1,'IESettings']]]
+  ['data_0',['data',['../class_open_g_l_shader.html#a201d92f02c5263bef33807abe3f542aa',1,'OpenGLShader::data()'],['../struct_vulkan_buffer_1_1_create_info.html#acaa07e42ee84ac418adac8a36574b063',1,'VulkanBuffer::CreateInfo::data()'],['../class_vulkan_buffer.html#ae75f0884297059954863b8980802801c',1,'VulkanBuffer::data()'],['../struct_vulkan_descriptor_set_1_1_create_info.html#a01e3e74f908b42bda2c67cd3a77c426c',1,'VulkanDescriptorSet::CreateInfo::data()'],['../struct_vulkan_image_1_1_create_info.html#aaf5a6038cb56215594576ef473e636e0',1,'VulkanImage::CreateInfo::data()'],['../class_vulkan_shader.html#a0972563e452e4c2df2d0f2d9e6c719b0',1,'VulkanShader::data()'],['../struct_open_g_l_image_1_1_create_info.html#a4f632af43a7cf53c77fc00030a1e31ad',1,'OpenGLImage::CreateInfo::data()']]],
+  ['datasource_1',['dataSource',['../struct_vulkan_image_1_1_create_info.html#a5265afcde74d1ace67a02d0b7b94f020',1,'VulkanImage::CreateInfo']]],
+  ['defaultwindowresolution_2',['defaultWindowResolution',['../class_open_g_l_settings.html#a94b6f3549611f73311481fe54e63418f',1,'OpenGLSettings']]],
+  ['deletionqueue_3',['deletionQueue',['../class_vulkan_shader.html#a9dfbecc1e5a49fe0c4a7d52950c2be1b',1,'VulkanShader::deletionQueue()'],['../class_vulkan_renderable.html#aa1bb702af117530737d9b5963bfa4fef',1,'VulkanRenderable::deletionQueue()'],['../struct_vulkan_renderable_1_1_vulkan_mesh.html#ae9b264b11c8c24d959537a5fe1132e7a',1,'VulkanRenderable::VulkanMesh::deletionQueue()'],['../class_vulkan_image.html#aa856894de65f0a19dd061bdb29fbfd0e',1,'VulkanImage::deletionQueue()'],['../class_vulkan_buffer.html#a26258f48ea269f796b29875b9f0d8451',1,'VulkanBuffer::deletionQueue()']]],
+  ['depth_4',['depth',['../struct_open_g_l_framebuffer_1_1_create_info.html#adb82bd0a197138f87f761a2ea016fa10',1,'OpenGLFramebuffer::CreateInfo']]],
+  ['depthimage_5',['depthImage',['../class_open_g_l_framebuffer.html#a097684365bacb4f6f4d8df5db3a5d1b3',1,'OpenGLFramebuffer::depthImage()'],['../class_vulkan_framebuffer.html#a8fe5e6cec6adda42ab70c369b2649a75',1,'VulkanFramebuffer::depthImage()']]],
+  ['descriptorpool_6',['descriptorPool',['../class_vulkan_descriptor_set.html#aa9bbb19da28565febefddf13889d7e66',1,'VulkanDescriptorSet']]],
+  ['descriptorset_7',['descriptorSet',['../class_vulkan_descriptor_set.html#afdb844b3a2a8c9ae67edcc682d9002dd',1,'VulkanDescriptorSet::descriptorSet()'],['../struct_vulkan_pipeline_1_1_create_info.html#a768b27b877456b31804e4079eb94e115',1,'VulkanPipeline::CreateInfo::descriptorSet()'],['../struct_vulkan_renderable_1_1_vulkan_mesh.html#a51ce014c4785e11a28e3b03a6cd89a51',1,'VulkanRenderable::VulkanMesh::descriptorSet()']]],
+  ['descriptorsetlayout_8',['descriptorSetLayout',['../class_vulkan_descriptor_set.html#a1117e008601d3c7fe8b46d72be8658ed',1,'VulkanDescriptorSet']]],
+  ['device_9',['device',['../class_vulkan_graphics_engine_link.html#a3c433a3e894ebcb5b38665ee2cbfe3dd',1,'VulkanGraphicsEngineLink']]],
+  ['deviceaddress_10',['deviceAddress',['../class_vulkan_buffer.html#a1a139c76f9a1930ddd1830a001ded3c1',1,'VulkanBuffer']]],
+  ['diffusetexture_11',['diffuseTexture',['../struct_open_g_l_renderable_1_1_open_g_l_mesh.html#afdcaef1bbb59664c0005af0e13b47844',1,'OpenGLRenderable::OpenGLMesh::diffuseTexture()'],['../struct_vulkan_renderable_1_1_vulkan_mesh.html#a74ba33e51900b8a24e5c711e4bd1b16d',1,'VulkanRenderable::VulkanMesh::diffuseTexture()']]]
 ];
