@@ -71,9 +71,6 @@ GLFWwindow *IERenderEngine::createWindow() const {
 }
 
 void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
-    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-            "Path: " + path.string());
-
     int width;
     int height;
     int channels;
@@ -747,8 +744,8 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 		settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to initialize GLFW!");
 	}
 	glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 	#ifndef NDEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	#endif
