@@ -18,12 +18,12 @@ layout(location = 5) in vec3 vertexBitangent;
 
 
 layout(location = 0) out vec2 fragmentTextureCoordinates;
-layout(location = 1) out vec3 interpolatedWorldSpaceNormal;
+layout(location = 1) out vec3 interpolatedNormal;
 layout(location = 2) out vec3 fragmentPosition;
 
 void main() {
     fragmentPosition = vec3(cameraData.modelMatrix * vec4(vertexPosition, 1.0f));
     gl_Position = cameraData.projectionViewModelMatrix * vec4(fragmentPosition, 1.0f);
     fragmentTextureCoordinates = vertexTextureCoordinates;
-    interpolatedWorldSpaceNormal = vec3(cameraData.normalMatrix * vec4(vertexNormal, 1.0f));
+    interpolatedNormal = vec3(normalize(cameraData.normalMatrix * vec4(vertexNormal, 1.0f)));
 }

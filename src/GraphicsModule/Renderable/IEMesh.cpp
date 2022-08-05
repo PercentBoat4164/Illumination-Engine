@@ -263,11 +263,11 @@ void IEMesh::_openglUpdate(uint32_t commandBufferIndex) {
 	glBindBuffer(indexBuffer->type, indexBuffer->id);
 	
 	// Update texture
-	glActiveTexture(GL_TEXTURE1);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, linkedRenderEngine->textures[material->diffuseTextureIndex]->id);
 	
 	// Set active texture for diffuseTexture in shader
-	glUniform1i(glGetUniformLocation(pipeline->programID, "diffuseTexture"), 1);  // Magic number is the active texture.
+	glUniform1i(glGetUniformLocation(pipeline->programID, "diffuseTexture"), 0);  // Magic number is the active texture.
 	
 	// Draw mesh
 	glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, nullptr);
