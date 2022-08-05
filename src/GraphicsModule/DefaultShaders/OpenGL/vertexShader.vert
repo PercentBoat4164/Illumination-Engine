@@ -1,4 +1,7 @@
-#version 460
+#version 140
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_shading_language_420pack : enable
+#extension GL_ARB_explicit_attrib_location : enable
 
 uniform mat4 projectionViewModelMatrix;
 uniform mat4 modelMatrix;
@@ -19,8 +22,8 @@ layout(location = 1) out vec3 interpolatedNormal;
 layout(location = 2) out vec3 fragmentPosition;
 
 void main() {
-    fragmentPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0f));
-    gl_Position = projectionViewModelMatrix * vec4(fragmentPosition, 1.0f);
+    fragmentPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0));
+    gl_Position = projectionViewModelMatrix * vec4(fragmentPosition, 1.0);
     fragmentTextureCoordinates = vertexTextureCoordinates;
-    interpolatedNormal = vec3(normalize(normalMatrix * vec4(vertexNormal, 1.0f)));
+    interpolatedNormal = vec3(normalize(normalMatrix * vec4(vertexNormal, 1.0)));
 }

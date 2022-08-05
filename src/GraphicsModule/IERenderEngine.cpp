@@ -71,9 +71,6 @@ GLFWwindow *IERenderEngine::createWindow() const {
 }
 
 void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
-    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-            "Path: " + path.string());
-
     int width;
     int height;
     int channels;
