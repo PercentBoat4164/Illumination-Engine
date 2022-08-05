@@ -45,5 +45,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: Illumination-Engine
-          path: ${{github.workspace}}/build/bin/
+          path: |
+            ${{github.workspace}}/build/bin/
+            ${{github.workspace}}/build/lib/
           if-no-files-found: warn
