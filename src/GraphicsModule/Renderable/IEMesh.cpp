@@ -203,18 +203,7 @@ void IEMesh::_openglLoadFromRAMToVRAM() {
 	glBindBuffer(vertexBuffer->type, vertexBuffer->id);
 	glBindBuffer(indexBuffer->type, indexBuffer->id);
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, position));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, color));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, textureCoordinates));
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, normal));
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, tangent));
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, biTangent));
+	IEVertex::useVertexAttributesWithProgram(pipeline->programID);
 	
 	glBindBuffer(vertexBuffer->type, 0);
 }
