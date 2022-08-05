@@ -26,4 +26,4 @@ else ()
 endif ()
 
 # Always leave this line commented whenever committing as it will cause issues if the correct software is not installed.
-add_link_options("-fuse-ld=lld")  # Use LLVM's lld linker for speed
+#add_link_options("-fuse-ld=lld")  # Use LLVM's lld linker for speed
