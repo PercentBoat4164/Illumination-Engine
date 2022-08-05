@@ -8,7 +8,7 @@
 int main() {
 	IESettings settings = IESettings();
 	// RenderEngine must be allocated on the heap.
-	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(&settings);
+	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(settings);
 
 	IEKeyboard keyboard{renderEngine->window};
 	keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow *) { renderEngine->camera.position += renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed; });
