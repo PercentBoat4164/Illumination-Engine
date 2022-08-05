@@ -56,7 +56,39 @@ std::array<VkVertexInputAttributeDescription, 6> IEVertex::getAttributeDescripti
 	};
 }
 
+void IEVertex::useVertexAttributesWithProgram(GLint program) {
+	int attributeLocation = glGetAttribLocation(program, "vertexPosition");
+	if (attributeLocation >= 0) {
+		glEnableVertexAttribArray(attributeLocation);
+		glVertexAttribPointer(attributeLocation, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, position));
+	}
+	attributeLocation = glGetAttribLocation(program, "vertexColor");
+	if (attributeLocation >= 0) {
+		glEnableVertexAttribArray(attributeLocation);
+		glVertexAttribPointer(attributeLocation, 4, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, color));
+	}
+	attributeLocation = glGetAttribLocation(program, "vertexTextureCoordinates");
+	if (attributeLocation >= 0) {
+		glEnableVertexAttribArray(attributeLocation);
+		glVertexAttribPointer(attributeLocation, 2, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, textureCoordinates));
+	}
+	attributeLocation = glGetAttribLocation(program, "vertexNormal");
+	if (attributeLocation >= 0) {
+		glEnableVertexAttribArray(attributeLocation);
+		glVertexAttribPointer(attributeLocation, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, normal));
+	}
+	attributeLocation = glGetAttribLocation(program, "vertexTangent");
+	if (attributeLocation >= 0) {
+		glEnableVertexAttribArray(attributeLocation);
+		glVertexAttribPointer(attributeLocation, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, tangent));
+	}
+	attributeLocation = glGetAttribLocation(program, "vertexBiTangent");
+	if (attributeLocation >= 0) {
+		glEnableVertexAttribArray(attributeLocation);
+		glVertexAttribPointer(attributeLocation, 3, GL_FLOAT, GL_FALSE, sizeof(IEVertex), (void *) offsetof(IEVertex, biTangent));
+	}
+}
+
 bool IEVertex::operator==(IEVertex &other) const {
-	return position == other.position && color == other.color && textureCoordinates == other.textureCoordinates && normal == other.normal &&
-		   tangent == other.tangent && biTangent == other.biTangent;
+	return position == other.position && color == other.color && textureCoordinates == other.textureCoordinates && normal == other.normal && tangent == other.tangent && biTangent == other.biTangent;
 }

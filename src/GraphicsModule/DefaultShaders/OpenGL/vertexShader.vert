@@ -1,7 +1,4 @@
-#version 140
-#extension GL_ARB_separate_shader_objects : enable
-#extension GL_ARB_shading_language_420pack : enable
-#extension GL_ARB_explicit_attrib_location : enable
+#version 110
 
 uniform mat4 projectionViewModelMatrix;
 uniform mat4 modelMatrix;
@@ -9,17 +6,17 @@ uniform mat4 normalMatrix;
 uniform vec3 position;
 uniform float time;
 
-layout(location = 0) in vec3 vertexPosition;
-layout(location = 1) in vec4 vertexColor;
-layout(location = 2) in vec2 vertexTextureCoordinates;
-layout(location = 3) in vec3 vertexNormal;
-layout(location = 4) in vec3 vertexTangent;
-layout(location = 5) in vec3 vertexBitangent;
+attribute vec3 vertexPosition;
+attribute vec4 vertexColor;
+attribute vec2 vertexTextureCoordinates;
+attribute vec3 vertexNormal;
+attribute vec3 vertexTangent;
+attribute vec3 vertexBiTangent;
 
 
-layout(location = 0) out vec2 fragmentTextureCoordinates;
-layout(location = 1) out vec3 interpolatedNormal;
-layout(location = 2) out vec3 fragmentPosition;
+varying vec2 fragmentTextureCoordinates;
+varying vec3 interpolatedNormal;
+varying vec3 fragmentPosition;
 
 void main() {
     fragmentPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0));
