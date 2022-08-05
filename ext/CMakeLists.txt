@@ -54,6 +54,30 @@ if (Vulkan_FOUND)
     message("Downloading vk-bootstrap from master")
     FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG master)
 
+    # Get Vulkan SDK
+    # The Vulkan SDK is made of many different repositories, but they will be treated as one library.
+    message("Downloading the latest Vulkan SDK")
+    FetchContent_Declare(_vulkanHeaders GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers GIT_TAG master)
+    FetchContent_Declare(_vulkanLoader GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader GIT_TAG master)
+    FetchContent_Declare(_vulkanValidationLayers GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers GIT_TAG master)
+    FetchContent_Declare(_vulkanKhronosTools GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Tools GIT_TAG master)
+    FetchContent_Declare(_vulkanLunarGTools GIT_REPOSITORY https://github.com/LunarG/VulkanTools GIT_TAG master)
+    FetchContent_Declare(_vulkanGlslang GIT_REPOSITORY https://github.com/KhronosGroup/glslang GIT_TAG master)
+    FetchContent_Declare(_vulkanShaderc GIT_REPOSITORY https://github.com/google/shaderc GIT_TAG master)
+    FetchContent_Declare(_vulkanSPIRVHeaders GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers GIT_TAG master)
+    FetchContent_Declare(_vulkanSPIRVTools GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools GIT_TAG master)
+    FetchContent_Declare(_vulkanSPIRVCross GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Cross GIT_TAG master)
+    FetchContent_Declare(_vulkanGfxReconstruct GIT_REPOSITORY https://github.com/LunarG/gfxreconstruct GIT_TAG master)
+    FetchContent_Declare(_vulkanSPIRVReflect GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Reflect GIT_TAG master)
+    FetchContent_Declare(_vulkanExtensionLayer GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ExtensionLayer GIT_TAG master)
+    FetchContent_Declare(_vulkanDXC GIT_REPOSITORY https://github.com/microsoft/DirectXShaderCompiler GIT_TAG master)
+
+    # Build all of the repositories
+    FetchContent_MakeAvailable(_vulkanHeaders _vulkanLoader _vulkanValidationLayers _vulkanKhronosTools _vulkanLunarGTools _vulkanGlslang _vulkanShaderc _vulkanSPIRVHeaders _vulkanSPIRVTools _vulkanSPIRVCross _vulkanGfxReconstruct _vulkanSPIRVReflect _vulkanExtensionLayer _vulkanDXC)
+
+    # Merge them into one library
+    add_library(vulkan PUBLIC _vulkanHeaders _vulkanLoader _vulkanValidationLayers _vulkanKhronosTools _vulkanLunarGTools _vulkanGlslang _vulkanShaderc _vulkanSPIRVHeaders _vulkanSPIRVTools _vulkanSPIRVCross _vulkanGfxReconstruct _vulkanSPIRVReflect _vulkanExtensionLayer _vulkanDXC)
+
     # Get VMA from master because latest release was from 2017. Master is generally considered stable.
     message("Downloading VMA from master")
     FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG master)
