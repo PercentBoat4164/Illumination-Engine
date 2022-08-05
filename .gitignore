@@ -2,5 +2,9 @@
 # CLion
 /*-build*
 /.idea
+# Visual Studio Code
+/out/build/x64-Debug/
+/.vs/
+/CMakeSettings.json
 # Ignore pre-compiled shaders
 /res/Shaders/*/*.spv
