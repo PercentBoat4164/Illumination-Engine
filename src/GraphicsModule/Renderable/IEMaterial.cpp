@@ -118,7 +118,7 @@ void IEMaterial::_vulkanLoadFromDiskToRAM(const std::string &directory, const ai
 		texture = const_cast<aiTexture *>(scene->GetEmbeddedTexture(texturePath.C_Str()));
 		if (texture == nullptr || texture->mHeight != 0) {  // is the texture not an embedded texture?
 			texture = new aiTexture;
-			texture->mFilename = directory + "/" + texturePath.C_Str();
+			texture->mFilename = directory.substr(0, directory.find_last_of('/')) + "/textures/" + texturePath.C_Str();
 			texture->mHeight = 1;  // flag texture as not embedded
 		}
 		*textureType.first = linkedRenderEngine->textures.size();

@@ -745,7 +745,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 	}
 	glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 	#ifndef NDEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	#endif
