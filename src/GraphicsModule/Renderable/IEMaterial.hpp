@@ -74,7 +74,7 @@ public:
 	void _vulkanUnloadFromRAM();
 
 private:
-	std::vector<std::pair<uint32_t *, aiTextureType>> textureTypes = {
+	std::vector<std::pair<uint32_t *, aiTextureType>> supportedTextureTypes = {
 			{&diffuseTextureIndex, aiTextureType_DIFFUSE},
 			{&diffuseTextureIndex, aiTextureType_BASE_COLOR},
 	};

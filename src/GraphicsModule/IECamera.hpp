@@ -28,7 +28,7 @@ public:
 	void updateSettings();
 
 	IERenderEngine *linkedRenderEngine{};
-	float yaw{-90};
+	float yaw{90};
 	float pitch{0};
 	double aspectRatio{16.0 / 9};
 	double fov{90};

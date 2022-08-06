@@ -25,8 +25,6 @@ class IERenderable;
 #include "Core/AssetModule/IEAsset.hpp"
 
 // External dependencies
-#include <vk_mem_alloc.h>
-
 #include <VkBootstrap.h>
 
 #include <vulkan/vulkan.h>

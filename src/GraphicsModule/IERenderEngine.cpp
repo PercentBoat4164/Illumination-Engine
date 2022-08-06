@@ -18,7 +18,7 @@
 
 #define VMA_IMPLEMENTATION
 
-#include <vk_mem_alloc.h>
+#include <include/vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -745,7 +745,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 	}
 	glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	#ifndef NDEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	#endif

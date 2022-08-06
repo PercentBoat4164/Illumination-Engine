@@ -11,7 +11,7 @@ class IERenderEngine;
 #include "IEAPI.hpp"
 
 // External dependencies
-#include <vk_mem_alloc.h>
+#include <include/vk_mem_alloc.h>
 #include <GL/glew.h>
 
 #include <vulkan/vulkan.h>

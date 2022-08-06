@@ -26,30 +26,30 @@ int main() {
 	glfwSetWindowUserPointer(renderEngine->window, &windowUser);
 
 	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
-	fbx->filename = "res/assets/AncientStatueOptimized/model/ancientStatue.fbx";
+	fbx->filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
 	fbx->addAspect(new IERenderable{});
-	fbx->position = {0.0F, -1.0F, 2.0F};
+	fbx->position = {0.0F, 1.0F, 2.0F};
 	renderEngine->addAsset(fbx);
 	std::shared_ptr<IEAsset> obj = std::make_shared<IEAsset>();
-	obj->filename = "res/assets/AncientStatueOptimized/model/ancientStatue.fbx";
+	obj->filename = "res/assets/AncientStatue/models/ancientStatue.obj";
 	obj->addAspect(new IERenderable{});
-	obj->position = {0.0F, -1.0F, -0.0F};
+	obj->position = {0.0F, 1.0F, -0.0F};
 	renderEngine->addAsset(obj);
 	std::shared_ptr<IEAsset> glb = std::make_shared<IEAsset>();
-	glb->filename = "res/assets/AncientStatueOptimized/model/ancientStatue.fbx";
+	glb->filename = "res/assets/AncientStatue/models/ancientStatue.glb";
 	glb->addAspect(new IERenderable{});
-	glb->position = {0.0F, -1.0F, -2.0F};
+	glb->position = {0.0F, 1.0F, -2.0F};
 	renderEngine->addAsset(glb);
 
-	renderEngine->camera.position = {0.0F, 2.0F, 0.0F};
+	renderEngine->camera.position = {0.0F, -2.0F, 0.0F};
 
 	renderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", pthread_self()));
 
 	glfwSetTime(0);
 	while (renderEngine->update()) {
-		fbx->rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine->frameTime;
+		fbx->rotation += glm::vec3(-glm::pi<double>(), 0, 0) * renderEngine->frameTime;
 		obj->rotation += glm::vec3(0, -glm::pi<double>(), 0) * renderEngine->frameTime;
-		glb->rotation += glm::vec3(-glm::pi<double>(), 0, 0) * renderEngine->frameTime;
+		glb->rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine->frameTime;
 		glfwPollEvents();
 		keyboard.handleQueue();
 	}

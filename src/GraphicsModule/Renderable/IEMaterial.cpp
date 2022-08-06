@@ -55,10 +55,10 @@ void IEMaterial::_openglLoadFromDiskToRAM(const std::string &directory, const ai
 	textureCount = 0;
 	uint32_t thisCount;
 	/**@todo Build a system that tracks duplicate textures and only keeps one copy in memory.*/
-	for (int i = 0; i < textureTypes.size(); ++i) {
-		thisCount = material->GetTextureCount(textureTypes[i].second);
+	for (int i = 0; i < supportedTextureTypes.size(); ++i) {
+		thisCount = material->GetTextureCount(supportedTextureTypes[i].second);
 		if (thisCount == 0) {
-			textureTypes.erase(textureTypes.begin() + i--);
+			supportedTextureTypes.erase(supportedTextureTypes.begin() + i--);  // Remove any unused texture types
 		}
 		textureCount += thisCount;
 	}
@@ -69,16 +69,16 @@ void IEMaterial::_openglLoadFromDiskToRAM(const std::string &directory, const ai
 	aiTexture *texture;
 	uint32_t textureIndex{0};
 	IETexture::CreateInfo imageCreateInfo{};
-
+	
 	// load all textures despite embedded state
-	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
 		while (texturePath.length == 0 && textureIndex < textureCount) {
 			material->GetTexture(textureType.second, textureIndex++, &texturePath);
 		}
 		texture = const_cast<aiTexture *>(scene->GetEmbeddedTexture(texturePath.C_Str()));
 		if (texture == nullptr || texture->mHeight != 0) {  // is the texture not an embedded texture?
 			texture = new aiTexture;
-			texture->mFilename = directory + "/" + texturePath.C_Str();
+			texture->mFilename = directory.substr(0, directory.find_last_of('/')) + "/textures/" + texturePath.C_Str();
 			texture->mHeight = 1;  // flag texture as not embedded
 		}
 		*textureType.first = linkedRenderEngine->textures.size();
@@ -95,10 +95,10 @@ void IEMaterial::_vulkanLoadFromDiskToRAM(const std::string &directory, const ai
 	textureCount = 0;
 	uint32_t thisCount;
 	/**@todo Build a system that tracks duplicate textures and only keeps one copy in memory.*/
-	for (int i = 0; i < textureTypes.size(); ++i) {
-		thisCount = material->GetTextureCount(textureTypes[i].second);
+	for (int i = 0; i < supportedTextureTypes.size(); ++i) {
+		thisCount = material->GetTextureCount(supportedTextureTypes[i].second);
 		if (thisCount == 0) {
-			textureTypes.erase(textureTypes.begin() + i--);
+			supportedTextureTypes.erase(supportedTextureTypes.begin() + i--);
 		}
 		textureCount += thisCount;
 	}
@@ -111,7 +111,7 @@ void IEMaterial::_vulkanLoadFromDiskToRAM(const std::string &directory, const ai
 	IETexture::CreateInfo imageCreateInfo{};
 
 	// load all textures despite embedded state
-	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
 		while (texturePath.length == 0 && textureIndex < textureCount) {
 			material->GetTexture(textureType.second, textureIndex++, &texturePath);
 		}
@@ -136,13 +136,13 @@ void IEMaterial::loadFromRAMToVRAM() {
 }
 
 void IEMaterial::_openglLoadFromRAMToVRAM() {
-	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
 		linkedRenderEngine->textures[*textureType.first]->uploadToVRAM();
 	}
 }
 
 void IEMaterial::_vulkanLoadFromRAMToVRAM() {
-	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
 		linkedRenderEngine->textures[*textureType.first]->uploadToVRAM();
 	}
 }
@@ -155,13 +155,13 @@ void IEMaterial::unloadFromVRAM() {
 }
 
 void IEMaterial::_openglUnloadFromVRAM() {
-	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
 		linkedRenderEngine->textures[*textureType.first]->unloadFromVRAM();
 	}
 }
 
 void IEMaterial::_vulkanUnloadFromVRAM() {
-	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
 		linkedRenderEngine->textures[*textureType.first]->unloadFromVRAM();
 	}
 }
@@ -176,13 +176,13 @@ void IEMaterial::unloadFromRAM() {
 }
 
 void IEMaterial::_openglUnloadFromRAM() {
-	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
 		linkedRenderEngine->textures[*textureType.first]->data.clear();
 	}
 }
 
 void IEMaterial::_vulkanUnloadFromRAM() {
-	for (std::pair<uint32_t *, aiTextureType> textureType: textureTypes) {
+	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
 		linkedRenderEngine->textures[*textureType.first]->data.clear();
 	}
 }
