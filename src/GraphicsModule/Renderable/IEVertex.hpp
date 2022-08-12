@@ -12,7 +12,7 @@ class VkVertexInputAttributeDescription;
 #include <glm/glm.hpp>
 
 #define GLEW_IMPLEMENTATION
-#include "GL/glew.h"
+#include <include/GL/glew.h>
 
 // System dependencies
 #include <array>

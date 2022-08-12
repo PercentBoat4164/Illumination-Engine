@@ -18,47 +18,49 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         CommandBuffer/IECommandBuffer.hpp
         CommandBuffer/IECommandPool.cpp
         CommandBuffer/IECommandPool.hpp
-		RenderPass/IEFramebuffer.cpp
-		RenderPass/IEFramebuffer.hpp
+        CommandBuffer/IEDependency.cpp
+        CommandBuffer/IEDependency.hpp
+        CommandBuffer/IEDependent.cpp
+        CommandBuffer/IEDependent.hpp
+        IEAPI.cpp
+        IEAPI.hpp
+        IECamera.cpp
+        IECamera.hpp
+        IEMonitor.cpp
+        IEMonitor.hpp
+        IERenderEngine.cpp
+        IERenderEngine.hpp
+        IESettings.cpp
+        IESettings.hpp
+        IEVersion.cpp
+        IEVersion.hpp
         Image/IEImage.cpp
         Image/IEImage.hpp
         Image/IETexture.cpp
         Image/IETexture.hpp
+        RenderPass/IEFramebuffer.cpp
+        RenderPass/IEFramebuffer.hpp
+        RenderPass/IERenderPass.cpp
+        RenderPass/IERenderPass.hpp
+        RenderPass/SubPass.cpp
+        RenderPass/SubPass.hpp
         Renderable/IEMaterial.cpp
         Renderable/IEMaterial.hpp
         Renderable/IEMesh.cpp
         Renderable/IEMesh.hpp
         Renderable/IERenderable.cpp
         Renderable/IERenderable.hpp
-		Shader/IEShader.cpp
-		Shader/IEShader.hpp
         Renderable/IEVertex.cpp
         Renderable/IEVertex.hpp
-        IEAPI.cpp
-        IEAPI.hpp
-        IECamera.cpp
-        IECamera.hpp
-		CommandBuffer/IEDependency.cpp
-		CommandBuffer/IEDependency.hpp
-		CommandBuffer/IEDependent.cpp
-		CommandBuffer/IEDependent.hpp
-		Shader/IEDescriptorSet.cpp
-		Shader/IEDescriptorSet.hpp
-        IEMonitor.cpp
-        IEMonitor.hpp
-		Shader/IEPipeline.cpp
-		Shader/IEPipeline.hpp
-        IERenderEngine.cpp
-        IERenderEngine.hpp
-		RenderPass/IERenderPass.cpp
-		RenderPass/IERenderPass.hpp
-        IESettings.cpp
-        IESettings.hpp
-		Shader/IEUniformBufferObject.cpp
-		Shader/IEUniformBufferObject.hpp
-        IEVersion.cpp
-        IEVersion.hpp
-		RenderPass/SubPass.cpp RenderPass/SubPass.hpp)
+        Shader/IEDescriptorSet.cpp
+        Shader/IEDescriptorSet.hpp
+        Shader/IEPipeline.cpp
+        Shader/IEPipeline.hpp
+        Shader/IEShader.cpp
+        Shader/IEShader.hpp
+        Shader/IEUniformBufferObject.cpp
+        Shader/IEUniformBufferObject.hpp
+        )
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

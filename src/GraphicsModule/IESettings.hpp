@@ -15,9 +15,8 @@
 // External dependencies
 #include <vulkan/vulkan.h>
 
-#define GLEW_IMPLEMENTATION  // Must precede GLEW inclusion.
-
-#include <GL/glew.h>  // Not required by this file, but must be included before GLFW which is required.
+#define GLEW_IMPLEMENTATION
+#include <include/GL/glew.h>
 
 #include <GLFW/glfw3.h>
 
