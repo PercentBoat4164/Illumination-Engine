@@ -36,8 +36,12 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IEVersion.hpp
         Image/IEImage.cpp
         Image/IEImage.hpp
+        Image/IEImageNEW.cpp
+        Image/IEImageNEW.hpp
         Image/IETexture.cpp
         Image/IETexture.hpp
+        Image/IETextureNEW.cpp
+        Image/IETextureNEW.hpp
         RenderPass/IEFramebuffer.cpp
         RenderPass/IEFramebuffer.hpp
         RenderPass/IERenderPass.cpp
