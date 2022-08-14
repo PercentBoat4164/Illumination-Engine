@@ -38,6 +38,8 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Image/IEImage.hpp
         Image/IEImageNEW.cpp
         Image/IEImageNEW.hpp
+        Image/IENDimensionalResizableImage.cpp
+        Image/IENDimensionalResizableImage.hpp
         Image/IETexture.cpp
         Image/IETexture.hpp
         Image/IETextureNEW.cpp

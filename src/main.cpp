@@ -4,36 +4,46 @@
 #include "GraphicsModule/Renderable/IERenderable.hpp"
 #include "InputModule/IEKeyboard.hpp"
 #include "Core/AssetModule/IEAsset.hpp"
-#include "Core/FileSystemModule/IEFileSystem.hpp"
-#include "Image/IEImageNEW.cpp"
+//#include "Core/FileSystemModule/IEFileSystem.hpp"
+//#include "Image/IEImageNEW.cpp"
+#include "Image/IENDimensionalResizableImage.hpp"
 
 int main() {
-	// Create new resizable image
-	IEImageNEW image{};
-	// Resize it to fit the dimensions of our pretend image
-	image.setLocation(IE_IMAGE_LOCATION_NONE);
-	image.setDimensions(512, 512, 4);
-	// Set image to be stored on system and video memory
+	// Create a 16x16 image with 3 channels
+	IENDimensionalResizableImage image{3, 16, 16};
+
+	// Check its size and dimensions.
+	std::cout << image.getSize() << '\n' << image.getDimensionCount();
+
 	image.setLocation(IE_IMAGE_LOCATION_VIDEO | IE_IMAGE_LOCATION_SYSTEM);
-	// Upload texture data
-	image.uploadTexture((const aiTexture *) nullptr);
-	// At this point the texture data can be changed, the size of the image can be changed (cropping or extension may have to occur), or the location
-	// 	in which the texture is stored can change, each independently of the others
 
-	// Create a statically sized 512x512x4 image
-	IEImageNEW<512, 512, 4> knownImage{};
-	// Upload fake texture data
-	knownImage.uploadTexture((stbi_uc *) nullptr);
-	// Data is now put into video memory
-	knownImage.setLocation(IE_IMAGE_LOCATION_VIDEO);
-	// At this point the data, or the location, but not the size of the knownImage can change.
 
-	// Copy the dynamically sized image into a statically sized image
-	IEImageNEW<120, 120, 3> newImage{image};  // This will work even if sizes don't match. The image will be cropped or extended.
-	newImage.uploadData(nullptr);
-	newImage.setLocation(IE_IMAGE_LOCATION_SYSTEM);
-	// At this point two images exist in system memory and two exist in video memory.
-	std::cout << std::flush;
+//	// Create new resizable image
+//	IEImageNEW image{};
+//	// Resize it to fit the dimensions of our pretend image
+//	image.setLocation(IE_IMAGE_LOCATION_NONE);
+//	image.setDimensions(512, 512, 4);
+//	// Set image to be stored on system and video memory
+//	image.setLocation(IE_IMAGE_LOCATION_VIDEO | IE_IMAGE_LOCATION_SYSTEM);
+//	// Upload texture data
+//	image.uploadTexture((const aiTexture *) nullptr);
+//	// At this point the texture data can be changed, the size of the image can be changed (cropping or extension may have to occur), or the location
+//	// 	in which the texture is stored can change, each independently of the others
+//
+//	// Create a statically sized 512x512x4 image
+//	IEImageNEW<512, 512, 4> knownImage{};
+//	// Upload fake texture data
+//	knownImage.uploadTexture((stbi_uc *) nullptr);
+//	// Data is now put into video memory
+//	knownImage.setLocation(IE_IMAGE_LOCATION_VIDEO);
+//	// At this point the data, or the location, but not the size of the knownImage can change.
+//
+//	// Copy the dynamically sized image into a statically sized image
+//	IEImageNEW<120, 120, 3> newImage{image};  // This will work even if sizes don't match. The image will be cropped or extended.
+//	newImage.uploadData(nullptr);
+//	newImage.setLocation(IE_IMAGE_LOCATION_SYSTEM);
+//	// At this point two images exist in system memory and two exist in video memory.
+//	std::cout << std::flush;
 
 
 //	IESettings settings = IESettings();
