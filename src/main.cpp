@@ -1,6 +1,5 @@
-#include <memory>
-
-#include "GraphicsModule/IERenderEngine.cpp"
+#include "GraphicsModule/IERenderEngine.hpp"
+#include "GraphicsModule/Renderable/IERenderable.hpp"
 #include "InputModule/IEKeyboard.hpp"
 #include "Core/AssetModule/IEAsset.hpp"
 #include "Core/FileSystemModule/IEFileSystem.hpp"
@@ -8,7 +7,7 @@
 int main() {
 	IESettings settings = IESettings();
 	// RenderEngine must be allocated on the heap.
-	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(&settings);
+	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(settings);
 
 	IEKeyboard keyboard{renderEngine->window};
 	keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow *) { renderEngine->camera.position += renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed; });
@@ -28,28 +27,30 @@ int main() {
 	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
 	fbx->filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
 	fbx->addAspect(new IERenderable{});
-	fbx->position = {0.0F, 1.0F, 2.0F};
+	fbx->position = {2, 1, 0};
 	renderEngine->addAsset(fbx);
 	std::shared_ptr<IEAsset> obj = std::make_shared<IEAsset>();
 	obj->filename = "res/assets/AncientStatue/models/ancientStatue.obj";
 	obj->addAspect(new IERenderable{});
-	obj->position = {0.0F, 1.0F, -0.0F};
+	obj->position = {0, 1, 0};
 	renderEngine->addAsset(obj);
 	std::shared_ptr<IEAsset> glb = std::make_shared<IEAsset>();
 	glb->filename = "res/assets/AncientStatue/models/ancientStatue.glb";
 	glb->addAspect(new IERenderable{});
-	glb->position = {0.0F, 1.0F, -2.0F};
+	glb->position = {-2, 1, 0};
 	renderEngine->addAsset(glb);
+	std::shared_ptr<IEAsset> floor = std::make_shared<IEAsset>();
+	floor->filename = "res/assets/DeepslateFloor/models/DeepslateFloor.fbx";
+	floor->addAspect(new IERenderable{});
+	renderEngine->addAsset(floor);
+	floor->position = {0, 0, -1};
 
-	renderEngine->camera.position = {0.0F, -2.0F, 0.0F};
+	renderEngine->camera.position = {0.0F, -2.0F, 1.0F};
 
-	renderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, fmt::format("Beginning main loop on thread {:#x}.", pthread_self()));
+	renderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Beginning main loop.");
 
 	glfwSetTime(0);
 	while (renderEngine->update()) {
-		fbx->rotation += glm::vec3(-glm::pi<double>(), 0, 0) * renderEngine->frameTime;
-		obj->rotation += glm::vec3(0, -glm::pi<double>(), 0) * renderEngine->frameTime;
-		glb->rotation += glm::vec3(0, 0, glm::pi<double>()) * renderEngine->frameTime;
 		glfwPollEvents();
 		keyboard.handleQueue();
 	}

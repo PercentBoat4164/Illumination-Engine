@@ -6,8 +6,8 @@
 #include "glm/glm.hpp"
 #include <string>
 
-#define GLEW_IMPLEMENTATION  // Must precede GLEW inclusion.
-#include "GL/glew.h"
+#define GLEW_IMPLEMENTATION
+#include <include/GL/glew.h>
 
 struct IEUniformBufferObject {
 public:

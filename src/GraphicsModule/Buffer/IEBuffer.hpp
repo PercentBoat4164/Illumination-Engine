@@ -12,7 +12,9 @@ class IERenderEngine;
 
 // External dependencies
 #include <include/vk_mem_alloc.h>
-#include <GL/glew.h>
+
+#define GLEW_IMPLEMENTATION
+#include <include/GL/glew.h>
 
 #include <vulkan/vulkan.h>
 

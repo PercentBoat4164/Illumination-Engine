@@ -10,7 +10,8 @@
 /* Include external dependencies. */
 #include <vulkan/vulkan.h>
 
-#include <GL/glew.h>
+#define GLEW_IMPLEMENTATION
+#include <include/GL/glew.h>
 
 
 IEAPI::IEAPI(const std::string &apiName) {

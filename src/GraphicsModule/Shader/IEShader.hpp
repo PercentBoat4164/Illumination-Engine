@@ -21,7 +21,9 @@ class IERenderEngine;
 #include <vector>
 #include <functional>
 #include "Core/FileSystemModule/IEFile.hpp"
-#include <GL/glew.h>
+
+#define GLEW_IMPLEMENTATION
+#include <include/GL/glew.h>
 
 
 class IEShader {

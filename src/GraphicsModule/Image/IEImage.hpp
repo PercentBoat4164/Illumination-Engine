@@ -9,7 +9,9 @@ class IEBuffer;
 // Internal dependencies
 #include "GraphicsModule/CommandBuffer/IEDependency.hpp"
 #include "IEAPI.hpp"
-#include "GL/glew.h"
+
+#define GLEW_IMPLEMENTATION
+#include <include/GL/glew.h>
 
 // External dependencies
 #include <include/vk_mem_alloc.h>
