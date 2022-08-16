@@ -19,9 +19,9 @@ add_subdirectory(src)  # Generate Illumination Engine from source
 file(COPY ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})  # Move resource files
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_compile_options("-g")  # Compile with debug information
+    add_compile_options(-g)  # Compile with debug information
 else ()
-    add_compile_options("-O3")  # Compile with level 3 optimizations
+    add_compile_options(-O3)  # Compile with level 3 optimizations
 endif ()
 
 # Require LLVM to be installed on Windows machines
