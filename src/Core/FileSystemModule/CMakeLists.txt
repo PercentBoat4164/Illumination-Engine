@@ -4,5 +4,5 @@ set(IEFileSystemModuleSourceFiles  # Gather sources
         )
 
 # Create and define properties for the executable target
-add_library(IEFileSystemModule ${IEFileSystemModuleSourceFiles})
+add_library(IEFileSystemModule INTERFACE ${IEFileSystemModuleSourceFiles})
 set_target_properties(IEFileSystemModule PROPERTIES LINKER_LANGUAGE CXX)
