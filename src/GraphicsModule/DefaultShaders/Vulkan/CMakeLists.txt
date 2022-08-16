@@ -20,6 +20,6 @@ if (GLSLC)
         endif ()
         add_custom_command(TARGET IEGMVulkanShaders COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${shader} ${shader_output_directory}/${shader} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${shader})  # Copy source file to output directory
 
-        target_sources(IEGMVulkanShaders PRIVATE ${shader_output_directory}/${shader}.spv) # Add the compiled output to the sources so that it is regenerated upon change of source
+        target_sources(IEGMVulkanShaders PRIVATE ${shader_output_directory}/${shader}.spv) # Add the shader source to the target so that it is regenerated upon change of source
     endforeach ()
 endif ()

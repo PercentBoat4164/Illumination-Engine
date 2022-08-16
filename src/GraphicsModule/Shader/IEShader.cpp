@@ -38,7 +38,7 @@ void IEShader::_openglCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
 	GLenum shaderType = GL_VERTEX_SHADER;
 	if (file->extensions()[0] == "frag") shaderType = GL_FRAGMENT_SHADER;
 	shaderID = glCreateShader(shaderType);
-	compile(file->path, "");
+	compile(file->path, file->path);
 }
 
 void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
@@ -49,14 +49,10 @@ void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
 	if (std::find(extensions.begin(), extensions.end(), "spv") == extensions.end()) {
 		compile(file->path, file->path + ".spv");
 		file = new IEFile{file->path + ".spv"};
-		file->open();
-		fileContents = file->read(file->length, 0);
-		file->close();
-	} else {
-		file->open();
-		fileContents = file->read(file->length, 0);
-		file->close();
 	}
+	file->open();
+	fileContents = file->read(file->length, 0);
+	file->close();
 	VkShaderModuleCreateInfo shaderModuleCreateInfo{
 			.sType=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
 			.codeSize=static_cast<size_t>(file->length),
@@ -79,7 +75,7 @@ IEShader::~IEShader() {
 
 std::function<void(IEShader &, const std::string &, std::string)> IEShader::_compile{nullptr};
 
-void IEShader::compile(const std::string &input, std::string output) {
+void IEShader::compile(const std::string &input, const std::string &output) {
 	_compile(*this, input, output);
 }
 
@@ -91,13 +87,13 @@ void IEShader::_openglCompile(const std::string &input, std::string) {
 	GLint result = GL_FALSE;
 	int infoLogLength;
 	const GLchar *shader = contents.c_str();
-	glShaderSource(shaderID, 1, &shader, NULL);
+	glShaderSource(shaderID, 1, &shader, nullptr);
 	glCompileShader(shaderID);
 	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
 	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
 	if (infoLogLength > 0) {
 		std::vector<char> shaderErrorMessage(infoLogLength + 1);
-		glGetShaderInfoLog(shaderID, infoLogLength, NULL, &shaderErrorMessage[0]);
+		glGetShaderInfoLog(shaderID, infoLogLength, nullptr, &shaderErrorMessage[0]);
 		printf("%s\n", &shaderErrorMessage[0]);
 	}
 }
@@ -106,7 +102,7 @@ void IEShader::_vulkanCompile(const std::string &input, std::string output) {
 	if (output.empty()) {
 		output = input + ".spv";
 	}
-	if (system((GLSLC + input + " -o " + output).c_str()) != 0) {
-		throw std::runtime_error("failed to compile shaders: " + input);
-	}
+//	if (system((GLSLC + input + " -o " + output).c_str()) != 0) {
+//		throw std::runtime_error("failed to compile shaders: " + input);
+//	}
 }
