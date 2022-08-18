@@ -1,5 +1,5 @@
 #include "IEImageNEW.hpp"
-#include <c++/12/iostream>
+#include <iostream>
 
 constexpr IEImageLocation operator|(IEImageLocation first, IEImageLocation second) noexcept {
 	return (IEImageLocation) ((uint8_t) first | (uint8_t) second);
