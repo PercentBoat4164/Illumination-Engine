@@ -27,6 +27,9 @@ jobs:
       - name: Install Deps
         run: sudo apt update ; sudo apt install -y libglu1-mesa-dev mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev vulkan-sdk llvm-dev
 
+      - name: Configure Variables
+        run: export CC=/usr/bin/clang ; export CXX=/usr/bin/clang++
+
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
