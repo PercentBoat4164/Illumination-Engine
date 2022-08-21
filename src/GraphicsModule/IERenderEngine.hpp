@@ -9,20 +9,17 @@ class GLFWwindow;
 
 class GLFWmonitor;
 
-class IERenderable;
-
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEAPI.hpp"
 #include "IECamera.hpp"
 #include "GraphicsModule/RenderPass/IERenderPass.hpp"
 #include "IESettings.hpp"
-
 #include "CommandBuffer/IECommandPool.hpp"
-
 #include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
 #include "Image/IETexture.hpp"
 #include "Core/AssetModule/IEAsset.hpp"
+#include "Renderable/IERenderable.hpp"
 
 // External dependencies
 #include <VkBootstrap.h>

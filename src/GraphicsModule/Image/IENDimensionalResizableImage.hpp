@@ -15,7 +15,7 @@ typedef enum IEImageLocation {
 constexpr IEImageLocation operator|(IEImageLocation first, IEImageLocation second) noexcept {
 	uint8_t result = (uint8_t) first | (uint8_t) second;
 	if (result & IE_IMAGE_LOCATION_NONE && (result & ~IE_IMAGE_LOCATION_NONE) > IE_IMAGE_LOCATION_NULL) {
-		throw std::logic_error("IE_IMAGE_LOCATION_NONE mix error!");
+		std::logic_error("IE_IMAGE_LOCATION_NONE mix error!");
 	}
 	return (IEImageLocation) result;
 }
