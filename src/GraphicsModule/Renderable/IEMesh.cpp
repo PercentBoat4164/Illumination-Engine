@@ -220,9 +220,9 @@ void IEMesh::_vulkanLoadFromRAMToVRAM() {
 	// Set up shaders
 	shaders.resize(2);
 	shaders[0] = std::make_shared<IEShader>();
-	shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/Vulkan/vertexShader.vert"});
+	shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/Vulkan/vertexShader.vert.spv"});
 	shaders[1] = std::make_shared<IEShader>();
-	shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/Vulkan/fragmentShader.frag"});
+	shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/Vulkan/fragmentShader.frag.spv"});
 
 	// Set up pipeline
 	pipeline->create(linkedRenderEngine, new IEPipeline::CreateInfo{

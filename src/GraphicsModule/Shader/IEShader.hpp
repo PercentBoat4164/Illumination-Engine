@@ -54,7 +54,7 @@ public:
 
 	~IEShader();
 
-	void compile(const std::string &, std::string = "");
+	void compile(const std::string &, const std::string &);
 
 	void create(IERenderEngine *, IEFile *);
 

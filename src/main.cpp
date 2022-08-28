@@ -1,9 +1,5 @@
-#include <memory>
-
 #include "GraphicsModule/IERenderEngine.hpp"
-#include "GraphicsModule/Renderable/IERenderable.hpp"
 #include "InputModule/IEKeyboard.hpp"
-#include "Core/AssetModule/IEAsset.hpp"
 #include "Core/FileSystemModule/IEFileSystem.hpp"
 
 int main() {

@@ -36,8 +36,14 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IEVersion.hpp
         Image/IEImage.cpp
         Image/IEImage.hpp
+        Image/IEImageNEW.cpp
+        Image/IEImageNEW.hpp
+        Image/IENDimensionalResizableImage.cpp
+        Image/IENDimensionalResizableImage.hpp
         Image/IETexture.cpp
         Image/IETexture.hpp
+        Image/IETextureNEW.cpp
+        Image/IETextureNEW.hpp
         RenderPass/IEFramebuffer.cpp
         RenderPass/IEFramebuffer.hpp
         RenderPass/IERenderPass.cpp
@@ -64,20 +70,14 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})
-target_include_directories(IEGraphicsModule PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(IEGraphicsModule PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX)
 
 # Add internal dependency libraries to the target
 target_link_libraries(IEGraphicsModule PUBLIC IECore)
 
 # Add external dependency libraries and include directories to the target
-target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm)
-target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR})
-target_compile_definitions(IEGraphicsModule PUBLIC ILLUMINATION_ENGINE_OPENGL)  # Compile with OpenGL support
-if (Vulkan_FOUND)
-    target_link_libraries(IEGraphicsModule PUBLIC vk-bootstrap ${Vulkan_LIBRARIES})
-    target_include_directories(IEGraphicsModule PUBLIC ${vk-bootstrap_DIR} ${vma_DIR} ${Vulkan_INCLUDE_DIRS})
-    target_compile_definitions(IEGraphicsModule PUBLIC ILLUMINATION_ENGINE_VULKAN)  # Compile with Vulkan support
-endif ()
+target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm vk-bootstrap ${Vulkan_LIBRARIES})
+target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR} ${vk-bootstrap_DIR} ${vma_DIR} ${Vulkan_INCLUDE_DIR})
 
 add_dependencies(IEGraphicsModule IEGMShaders)  # Add shader pre-compilation as a dependency
