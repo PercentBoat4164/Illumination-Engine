@@ -1,7 +1,7 @@
 # Add all subdirectories
 add_subdirectory(AssetModule)
-add_subdirectory(FileSystemModule)
 add_subdirectory(LogModule)
+add_subdirectory(FileSystemModule)
 
 # Create and define properties for the library
 add_library(IECore IEWindowUser.cpp IEWindowUser.hpp)

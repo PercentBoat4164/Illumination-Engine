@@ -1,4 +1,5 @@
 set(IEInputModuleSourceFiles  # Gather sources
+        IEKeyboard.cpp
         IEKeyboard.hpp
         )
 
