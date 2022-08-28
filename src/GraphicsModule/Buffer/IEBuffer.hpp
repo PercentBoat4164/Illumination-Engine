@@ -27,26 +27,26 @@ class IERenderEngine;
 class IEBuffer : public IEDependency, public std::enable_shared_from_this<IEBuffer> {
 public:
 	struct CreateInfo {
-		uint64_t size{};
+		size_t size{};
 		VkBufferUsageFlags usage{};
 		VmaMemoryUsage allocationUsage{};
 
 		GLenum type{};
 	};
 
-	typedef enum IEBufferStatus {
+	using IEBufferStatus = enum IEBufferStatus {
 		IE_BUFFER_STATUS_NONE = 0x0,
 		IE_BUFFER_STATUS_UNLOADED = 0x1,
 		IE_BUFFER_STATUS_QUEUED_RAM = 0x2,
 		IE_BUFFER_STATUS_DATA_IN_RAM = 0x4,
 		IE_BUFFER_STATUS_QUEUED_VRAM = 0x8,
 		IE_BUFFER_STATUS_DATA_IN_VRAM = 0x10
-	} IEBufferStatus;
+	};
 
 	std::vector<char> data{};
 	VkBuffer buffer{};
 	VkDeviceAddress deviceAddress{};
-	uint64_t size{};
+	size_t size{};
 	VkBufferUsageFlags usage{};
 	VmaMemoryUsage allocationUsage{};
 	std::vector<std::function<void()>> deletionQueue{};
@@ -59,10 +59,10 @@ private:
 
 	static std::function<void(IEBuffer &)> _uploadToVRAM;
 	static std::function<void(IEBuffer &, const std::vector<char> &)> _uploadToVRAM_vector;
-	static std::function<void(IEBuffer &, void *, std::size_t)> _uploadToVRAM_void;
+	static std::function<void(IEBuffer &, void *, size_t)> _uploadToVRAM_void;
 
 	static std::function<void(IEBuffer &, const std::vector<char> &)> _update_vector;
-	static std::function<void(IEBuffer &, void *, std::size_t)> _update_void;
+	static std::function<void(IEBuffer &, void *, size_t)> _update_void;
 
 	static std::function<void(IEBuffer &)> _unloadFromVRAM;
 
@@ -82,18 +82,18 @@ protected:
 
 	virtual void _vulkanUploadToVRAM_vector(const std::vector<char> &);
 
-	virtual void _openglUploadToVRAM_void(void *, std::size_t);
+	virtual void _openglUploadToVRAM_void(void *, size_t);
 
-	virtual void _vulkanUploadToVRAM_void(void *, std::size_t);
+	virtual void _vulkanUploadToVRAM_void(void *, size_t);
 
 
 	virtual void _openglUpdate_vector(const std::vector<char> &);
 
 	virtual void _vulkanUpdate_vector(const std::vector<char> &);
 
-	virtual void _openglUpdate_void(void *, std::size_t);
+	virtual void _openglUpdate_void(void *, size_t);
 
-	virtual void _vulkanUpdate_void(void *, std::size_t);
+	virtual void _vulkanUpdate_void(void *, size_t);
 
 
 	virtual void _openglUnloadFromVRAM();
@@ -110,7 +110,7 @@ public:
 
 	IEBuffer(IERenderEngine *, IEBuffer::CreateInfo *);
 
-	IEBuffer(IERenderEngine *, uint64_t, VkBufferUsageFlags, VmaMemoryUsage, GLenum);
+	IEBuffer(IERenderEngine *engineLink, size_t bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage, GLenum bufferType);
 
 
 	static void setAPI(const IEAPI &API);
@@ -118,7 +118,7 @@ public:
 
 	void create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
 
-	void create(IERenderEngine *, uint64_t, VkBufferUsageFlags, VmaMemoryUsage, GLenum);
+	void create(IERenderEngine *engineLink, size_t bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage, GLenum bufferType);
 
 
 	void toImage(const std::shared_ptr<IEImage> &image);
@@ -128,19 +128,19 @@ public:
 
 	void uploadToRAM(const std::vector<char> &);
 
-	void uploadToRAM(void *, uint64_t);
+	void uploadToRAM(void *, size_t);
 
 
 	virtual void uploadToVRAM();
 
 	void uploadToVRAM(const std::vector<char> &);
 
-	void uploadToVRAM(void *, uint64_t);
+	void uploadToVRAM(void *, size_t);
 
 
 	void update(const std::vector<char> &);
 
-	void update(void *, uint64_t);
+	void update(void *, size_t);
 
 
 	void unloadFromVRAM();

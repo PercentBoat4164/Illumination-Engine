@@ -94,10 +94,10 @@ private:
 
 	static std::function<void(IEImage &)> _uploadToVRAM;
 	static std::function<void(IEImage &, const std::vector<char> &)> _uploadToVRAM_vector;
-	static std::function<void(IEImage &, void *, std::size_t)> _uploadToVRAM_void;
+	static std::function<void(IEImage &, void *, size_t)> _uploadToVRAM_void;
 
 	static std::function<void(IEImage &, const std::vector<char> &)> _update_vector;
-	static std::function<void(IEImage &, void *, std::size_t)> _update_void;
+	static std::function<void(IEImage &, void *, size_t)> _update_void;
 
 	static std::function<void(IEImage &)> _unloadFromVRAM;
 
@@ -117,18 +117,18 @@ protected:
 
 	virtual void _vulkanUploadToVRAM_vector(const std::vector<char> &);
 
-	virtual void _openglUploadToVRAM_void(void *, std::size_t);
+	virtual void _openglUploadToVRAM_void(void *, size_t);
 
-	virtual void _vulkanUploadToVRAM_void(void *, std::size_t);
+	virtual void _vulkanUploadToVRAM_void(void *, size_t);
 
 
 	virtual void _openglUpdate_vector(const std::vector<char> &);
 
 	virtual void _vulkanUpdate_vector(const std::vector<char> &);
 
-	virtual void _openglUpdate_voidPtr(void *, std::size_t);
+	virtual void _openglUpdate_voidPtr(void *, size_t);
 
-	virtual void _vulkanUpdate_voidPtr(void *, std::size_t);
+	virtual void _vulkanUpdate_voidPtr(void *, size_t);
 
 
 	virtual void _openglUnloadFromVRAM();
@@ -150,19 +150,19 @@ public:
 
 	void uploadToRAM(const std::vector<char> &);
 
-	void uploadToRAM(void *, uint64_t);
+	void uploadToRAM(void *, size_t);
 
 
 	virtual void uploadToVRAM();
 
 	void uploadToVRAM(const std::vector<char> &);
 
-	void uploadToVRAM(void *, uint64_t);
+	void uploadToVRAM(void *, size_t);
 
 
 	void update(const std::vector<char> &);
 
-	void update(void *, uint64_t);
+	void update(void *data, size_t size);
 
 
 	void unloadFromVRAM();

@@ -68,7 +68,7 @@ target_include_directories(IEGraphicsModule PUBLIC ${ILLUMINATION_ENGINE_BASE_DI
 set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX)
 
 # Add internal dependency libraries to the target
-target_link_libraries(IEGraphicsModule INTERFACE IECore)
+target_link_libraries(IEGraphicsModule PUBLIC IECore)
 
 # Add external dependency libraries and include directories to the target
 target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm)

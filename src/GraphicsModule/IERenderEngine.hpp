@@ -5,9 +5,9 @@
 #define IE_ENGINE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT "VariableDescriptorCount"
 
 /* Predefine classes used with pointers or as return values for functions. */
-class GLFWwindow;
+struct GLFWwindow;
 
-class GLFWmonitor;
+struct GLFWmonitor;
 
 class IERenderable;
 
@@ -274,8 +274,7 @@ private:
 
 public:
 
-	static void
-	glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam);
+	static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam);
 
 	static void setAPI(const IEAPI &API);
 };

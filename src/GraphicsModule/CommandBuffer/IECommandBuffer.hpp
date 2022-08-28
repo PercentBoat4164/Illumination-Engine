@@ -56,7 +56,7 @@ public:
 
 	void reset(bool synchronize = true);
 
-	void execute(VkSemaphore input = nullptr, VkSemaphore output = nullptr, VkFence fence = nullptr);
+	void execute(VkSemaphore input = VkSemaphore(nullptr), VkSemaphore output = VkSemaphore(nullptr), VkFence fence = VkFence(nullptr));
 
 	void finish(bool synchronize = true);
 

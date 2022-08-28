@@ -41,7 +41,7 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
 
 //	uint8_t msaaSamplesAllowed = getHighestMSAASampleCount(linkedRenderEngine->settings->msaaSamples);
 
-	for (int i = 0; i < linkedRenderEngine->swapchain.image_count; ++i) {
+	for (size_t i = 0; i < linkedRenderEngine->swapchain.image_count; ++i) {
 		std::vector<VkImageView> framebufferAttachments{};
 		framebufferAttachments.reserve(attachments.size() + 2);
 		framebufferAttachments.push_back(linkedRenderEngine->swapchainImageViews[i]);

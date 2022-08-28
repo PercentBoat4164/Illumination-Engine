@@ -1,9 +1,9 @@
 #pragma once
 
 /* Predefine classes used with pointers or as return values for functions. */
-class VkVertexInputBindingDescription;
+struct VkVertexInputBindingDescription;
 
-class VkVertexInputAttributeDescription;
+struct VkVertexInputAttributeDescription;
 
 /* Include classes used as attributes or function arguments. */
 // External dependencies

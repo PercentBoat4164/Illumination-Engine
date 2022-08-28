@@ -159,18 +159,18 @@ void IECommandBuffer::execute(VkSemaphore input, VkSemaphore output, VkFence fen
 		}
 		VkSubmitInfo submitInfo{
 				.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-				.waitSemaphoreCount = thisInput != nullptr,
+				.waitSemaphoreCount = thisInput != (VkSemaphore)nullptr,
 				.pWaitSemaphores = &thisInput,
 				.pWaitDstStageMask = new VkPipelineStageFlags{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
 				.commandBufferCount = 1,
 				.pCommandBuffers = &commandBuffer,
-				.signalSemaphoreCount = thisOutput != nullptr,
+				.signalSemaphoreCount = thisOutput != (VkSemaphore)nullptr,
 				.pSignalSemaphores = &thisOutput,
 		};
 
 		// Set up fence if not already setup.
-		bool fenceWasNullptr = thisFence == nullptr;
-		if (thisFence == nullptr) {
+		bool fenceWasNullptr = thisFence == (VkFence)nullptr;
+		if (thisFence == (VkFence)nullptr) {
 			VkFenceCreateInfo fenceCreateInfo{
 					.sType=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
 			};
@@ -280,10 +280,10 @@ void IECommandBuffer::recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo)
 	commandPool->commandPoolMutex.unlock();
 }
 
-void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount, std::vector<std::shared_ptr<IEBuffer>> buffers,
-											  VkDeviceSize *pOffsets) {
-	VkBuffer pVkBuffers[buffers.size()];
-	for (int i = 0; i < buffers.size(); ++i) {
+void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount, std::vector<std::shared_ptr<IEBuffer>> buffers, VkDeviceSize *pOffsets) {
+	std::vector<VkBuffer> pVkBuffers{};
+	pVkBuffers.resize(buffers.size());
+	for (size_t i = 0; i < buffers.size(); ++i) {
 		pVkBuffers[i] = buffers[i]->buffer;
 		addDependency((std::shared_ptr<IEDependency>) buffers[i]);
 	}
@@ -295,14 +295,14 @@ void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bi
 													 "Attempt to record a vertex buffer bind on a command buffer that is not recording!");
 		}
 	}
-	vkCmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, pVkBuffers, pOffsets);
+	vkCmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, pVkBuffers.data(), pOffsets);
 	commandPool->commandPoolMutex.unlock();
 }
 
-void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount, const std::vector<std::shared_ptr<IEBuffer>> &buffers,
-											  VkDeviceSize *pOffsets, VkDeviceSize *pSizes, VkDeviceSize *pStrides) {
-	VkBuffer pVkBuffers[buffers.size()];
-	for (int i = 0; i < buffers.size(); ++i) {
+void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount, const std::vector<std::shared_ptr<IEBuffer>> &buffers, VkDeviceSize *pOffsets, VkDeviceSize *pSizes, VkDeviceSize *pStrides) {
+	std::vector<VkBuffer> pVkBuffers{};
+	pVkBuffers.resize(buffers.size());
+	for (size_t i = 0; i < buffers.size(); ++i) {
 		pVkBuffers[i] = buffers[i]->buffer;
 		addDependency(buffers[i]);
 	}
@@ -314,7 +314,7 @@ void IECommandBuffer::recordBindVertexBuffers(uint32_t firstBinding, uint32_t bi
 													 "Attempt to record a vertex buffer bind on a command buffer that is not recording!");
 		}
 	}
-	vkCmdBindVertexBuffers2(commandBuffer, firstBinding, bindingCount, pVkBuffers, pOffsets, pSizes, pStrides);
+	vkCmdBindVertexBuffers2(commandBuffer, firstBinding, bindingCount, pVkBuffers.data(), pOffsets, pSizes, pStrides);
 	commandPool->commandPoolMutex.unlock();
 }
 
@@ -346,12 +346,11 @@ void IECommandBuffer::recordBindPipeline(VkPipelineBindPoint pipelineBindPoint, 
 	commandPool->commandPoolMutex.unlock();
 }
 
-void IECommandBuffer::recordBindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, const std::shared_ptr<IEPipeline> &pipeline, uint32_t firstSet,
-											   const std::vector<std::shared_ptr<IEDescriptorSet>> &descriptorSets,
-											   std::vector<uint32_t> dynamicOffsets) {
+void IECommandBuffer::recordBindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, const std::shared_ptr<IEPipeline> &pipeline, uint32_t firstSet, const std::vector<std::shared_ptr<IEDescriptorSet>> &descriptorSets, std::vector<uint32_t> dynamicOffsets) {
 	addDependency(pipeline);
-	VkDescriptorSet pDescriptorSets[descriptorSets.size()];
-	for (int i = 0; i < descriptorSets.size(); ++i) {
+	std::vector<VkDescriptorSet> pDescriptorSets{};
+	pDescriptorSets.resize(descriptorSets.size());
+	for (size_t i = 0; i < descriptorSets.size(); ++i) {
 		pDescriptorSets[i] = descriptorSets[i]->descriptorSet;
 		addDependency(descriptorSets[i]);
 	}
@@ -363,8 +362,7 @@ void IECommandBuffer::recordBindDescriptorSets(VkPipelineBindPoint pipelineBindP
 													 "Attempt to record a descriptor set bind on a command buffer that is not recording!");
 		}
 	}
-	vkCmdBindDescriptorSets(commandBuffer, pipelineBindPoint, pipeline->pipelineLayout, firstSet, descriptorSets.size(), pDescriptorSets,
-							dynamicOffsets.size(), dynamicOffsets.data());
+	vkCmdBindDescriptorSets(commandBuffer, pipelineBindPoint, pipeline->pipelineLayout, firstSet, descriptorSets.size(), pDescriptorSets.data(), dynamicOffsets.size(), dynamicOffsets.data());
 	commandPool->commandPoolMutex.unlock();
 }
 

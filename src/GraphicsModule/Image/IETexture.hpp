@@ -17,7 +17,7 @@ class IEBuffer;
 #include <cstdint>
 #include <string>
 
-class aiTexture;
+struct aiTexture;
 
 class IETexture : public IEImage {
 public:

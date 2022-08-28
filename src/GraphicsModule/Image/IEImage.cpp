@@ -109,7 +109,7 @@ void IEImage::uploadToRAM(const std::vector<char> &data) {
 	}
 }
 
-void IEImage::uploadToRAM(void *data, std::size_t size) {
+void IEImage::uploadToRAM(void *data, size_t size) {
 	if (size == 0) {
 		status = static_cast<IEImageStatus>(status | IE_IMAGE_STATUS_QUEUED_RAM);
 		return;
@@ -121,8 +121,8 @@ void IEImage::uploadToRAM(void *data, std::size_t size) {
 		if (size > width * height * channels) {
 			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "");
 		}
-		std::size_t i = 0;
-		std::generate(this->data.begin(), this->data.end(), [&] -> char { return *(char *) ((std::size_t) data + i++); });
+		size_t i = 0;
+		std::generate(this->data.begin(), this->data.end(), [&] { return *(char *) ((size_t) data + i++); });
 	}
 }
 
@@ -187,17 +187,17 @@ void IEImage::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
 }
 
 
-std::function<void(IEImage &, void *, std::size_t)> IEImage::_uploadToVRAM_void{nullptr};
+std::function<void(IEImage &, void *, size_t)> IEImage::_uploadToVRAM_void{nullptr};
 
-void IEImage::uploadToVRAM(void *data, uint64_t size) {
-
-}
-
-void IEImage::_openglUploadToVRAM_void(void *data, std::size_t size) {
+void IEImage::uploadToVRAM(void *, size_t) {
 
 }
 
-void IEImage::_vulkanUploadToVRAM_void(void *data, std::size_t size) {
+void IEImage::_openglUploadToVRAM_void(void *data, size_t size) {
+
+}
+
+void IEImage::_vulkanUploadToVRAM_void(void *data, size_t size) {
 
 }
 
@@ -234,13 +234,13 @@ void IEImage::_vulkanUpdate_vector(const std::vector<char> &data) {
 }
 
 
-std::function<void(IEImage &, void *, uint64_t)> IEImage::_update_void{nullptr};
+std::function<void(IEImage &, void *, size_t)> IEImage::_update_void{nullptr};
 
-void IEImage::update(void *data, uint64_t size) {
+void IEImage::update(void *data, size_t size) {
 	_update_void(*this, data, size);
 }
 
-void IEImage::_openglUpdate_voidPtr(void *data, uint64_t size) {
+void IEImage::_openglUpdate_voidPtr(void *data, size_t size) {
 	if (status & IE_IMAGE_STATUS_IN_RAM) {
 		this->data = std::vector<char>{(char *) data, (char *) data + size};
 	}
@@ -252,7 +252,7 @@ void IEImage::_openglUpdate_voidPtr(void *data, uint64_t size) {
 	}
 }
 
-void IEImage::_vulkanUpdate_voidPtr(void *data, uint64_t size) {
+void IEImage::_vulkanUpdate_voidPtr(void *data, size_t size) {
 	if (status & IE_IMAGE_STATUS_IN_RAM) {
 		this->data = std::vector<char>{(char *) data, (char *) data + size};
 	}
@@ -340,8 +340,7 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	} else if (layout == VK_IMAGE_LAYOUT_UNDEFINED &&
-			   newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL | newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) {
+	} else if ((layout == VK_IMAGE_LAYOUT_UNDEFINED) && ((newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) || (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL))) {
 		imageMemoryBarrier.srcAccessMask = 0;
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;

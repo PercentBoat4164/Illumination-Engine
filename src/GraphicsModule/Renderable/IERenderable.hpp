@@ -1,7 +1,7 @@
 #pragma once
 
 /* Predefine classes used with pointers or as return values for functions. */
-class aiScene;
+struct aiScene;
 
 class IECamera;
 

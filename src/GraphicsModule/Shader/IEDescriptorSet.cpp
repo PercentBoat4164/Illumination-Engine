@@ -73,7 +73,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 	bindings.reserve(createdWith.data.size());
 	std::vector<std::optional<std::variant<IEImage *, IEBuffer *>>> data{};
 	data.reserve(createdWith.data.size());
-	for (int i = 0; i < createdWith.data.size(); ++i) {
+	for (size_t i = 0; i < createdWith.data.size(); ++i) {
 		if (createdWith.data[i].has_value()) {
 			bindings.push_back(i);
 			data.push_back(createdWith.data[i]);

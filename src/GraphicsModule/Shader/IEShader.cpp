@@ -50,11 +50,11 @@ void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
 		compile(file->path, file->path + ".spv");
 		file = new IEFile{file->path + ".spv"};
 		file->open();
-		fileContents = file->read(file->length, 0);
+		fileContents = file->read((size_t) file->length, 0);
 		file->close();
 	} else {
 		file->open();
-		fileContents = file->read(file->length, 0);
+		fileContents = file->read((size_t) file->length, 0);
 		file->close();
 	}
 	VkShaderModuleCreateInfo shaderModuleCreateInfo{
@@ -85,7 +85,7 @@ void IEShader::compile(const std::string &input, std::string output) {
 
 void IEShader::_openglCompile(const std::string &input, std::string) {
 	file->open();
-	std::string contents = file->read(file->length, 0);
+	std::string contents = file->read((size_t) file->length, 0);
 
 	// Compile shader
 	GLint result = GL_FALSE;

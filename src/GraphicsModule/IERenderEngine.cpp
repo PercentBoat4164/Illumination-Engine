@@ -193,7 +193,7 @@ void IERenderEngine::createSyncObjects() {
 	imagesInFlight.resize(swapchain.image_count);
 
 	// Create all the semaphores and fences.
-	for (int i = 0; i < swapchain.image_count; ++i) {
+	for (uint32_t i = 0; i < swapchain.image_count; ++i) {
 		vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]);
 		vkCreateSemaphore(device.device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]);
 		vkCreateFence(device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]);

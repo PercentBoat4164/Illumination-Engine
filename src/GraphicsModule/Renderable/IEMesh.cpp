@@ -44,7 +44,7 @@ void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScen
 // record indices
 	vertices.reserve(mesh->mNumVertices);
 	IEVertex temporaryVertex{};
-	for (int i = 0; i < mesh->mNumVertices; ++i) {
+	for (size_t i = 0; i < mesh->mNumVertices; ++i) {
 		if (mesh->HasPositions()) {
 			temporaryVertex.position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
 		}
@@ -77,8 +77,8 @@ void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScen
 
 	// record vertices
 	indices.reserve(3UL * triangleCount);
-	int j;
-	for (int i = 0; i < triangleCount; ++i) {
+	size_t j;
+	for (size_t i = 0; i < triangleCount; ++i) {
 		if (mesh->mFaces[i].mNumIndices != 3) {
 			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
 													 "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.");
@@ -104,7 +104,7 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
 	// record indices
 	vertices.reserve(mesh->mNumVertices);
 	IEVertex temporaryVertex{};
-	for (int i = 0; i < mesh->mNumVertices; ++i) {
+	for (size_t i = 0; i < mesh->mNumVertices; ++i) {
 		if (mesh->HasPositions()) {
 			temporaryVertex.position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
 		}
@@ -138,8 +138,8 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
 
 	// record vertices
 	indices.reserve(3UL * triangleCount);
-	int j;
-	for (int i = 0; i < triangleCount; ++i) {
+	size_t j;
+	for (size_t i = 0; i < triangleCount; ++i) {
 		if (mesh->mFaces[i].mNumIndices != 3) {
 			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
 													 "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.");

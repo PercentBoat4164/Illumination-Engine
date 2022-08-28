@@ -55,7 +55,7 @@ void IEMaterial::_openglLoadFromDiskToRAM(const std::string &directory, const ai
 	textureCount = 0;
 	uint32_t thisCount;
 	/**@todo Build a system that tracks duplicate textures and only keeps one copy in memory.*/
-	for (int i = 0; i < supportedTextureTypes.size(); ++i) {
+	for (size_t i = 0; i < supportedTextureTypes.size(); ++i) {
 		thisCount = material->GetTextureCount(supportedTextureTypes[i].second);
 		if (thisCount == 0) {
 			supportedTextureTypes.erase(supportedTextureTypes.begin() + i--);  // Remove any unused texture types
@@ -95,7 +95,7 @@ void IEMaterial::_vulkanLoadFromDiskToRAM(const std::string &directory, const ai
 	textureCount = 0;
 	uint32_t thisCount;
 	/**@todo Build a system that tracks duplicate textures and only keeps one copy in memory.*/
-	for (int i = 0; i < supportedTextureTypes.size(); ++i) {
+	for (size_t i = 0; i < supportedTextureTypes.size(); ++i) {
 		thisCount = material->GetTextureCount(supportedTextureTypes[i].second);
 		if (thisCount == 0) {
 			supportedTextureTypes.erase(supportedTextureTypes.begin() + i--);

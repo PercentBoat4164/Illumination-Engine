@@ -28,7 +28,7 @@ public:
 
 	void createDirectory() const {
 		std::string thisDirectory{getDirectory()};
-		for (int i = 0; i < thisDirectory.size(); ++i) {
+		for (size_t i = 0; i < thisDirectory.size(); ++i) {
 			if (thisDirectory[i] == '/') {
 				std::filesystem::create_directory(thisDirectory.substr(0, i));
 			}
@@ -62,7 +62,7 @@ public:
 		file.close();
 	}
 
-	virtual std::string read(std::streamsize numBytes, std::streamsize startPosition = -1) {
+	virtual std::string read(size_t numBytes, std::streamsize startPosition = -1) {
 		if (startPosition == -1) {  // If no starting position
 			startPosition = file.tellg();  // Start here
 		}
@@ -70,13 +70,14 @@ public:
 		file.seekg(startPosition);
 
 		// Create space for contents
-		char bytes[numBytes];
+		std::vector<char> bytes{};
+		bytes.resize(numBytes);
 
 		// Read the specified number of bytes into the char array
-		file.read(bytes, numBytes);
+		file.read(bytes.data(), numBytes);
 
 		// Convert to string
-		return std::string{bytes, bytes + length};
+		return std::string{bytes.data(), bytes.size()};
 	}
 
 	void insert(const std::string &data, std::streamsize startPosition = -1) {
@@ -89,7 +90,7 @@ public:
 		}
 
 		// Read data that is about to be overwritten
-		std::string bytes = read(length - startPosition, startPosition);
+		std::string bytes = read((size_t) (length - startPosition), startPosition);
 
 		// Go to starting position
 		file.seekg(startPosition);
@@ -131,7 +132,7 @@ public:
 		file.seekg(startPosition + numBytes);
 
 		// Read to EOF into a buffer
-		std::string bytes{read(length - file.tellg())};
+		std::string bytes{read((size_t) (length - file.tellg()))};
 
 		// Resize file to the size of only the data to be kept
 		std::filesystem::resize_file(path, startPosition);

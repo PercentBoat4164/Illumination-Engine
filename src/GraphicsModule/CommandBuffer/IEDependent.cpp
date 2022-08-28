@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <memory>
 #include <iostream>
-#include <cxxabi.h>
 #include "IEDependent.hpp"
 #include "Buffer/IEBuffer.hpp"
 #include "GraphicsModule/RenderPass/IEFramebuffer.hpp"

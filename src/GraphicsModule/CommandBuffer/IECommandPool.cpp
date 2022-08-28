@@ -13,7 +13,7 @@ void IECommandPool::create(IERenderEngine *engineLink, IECommandPool::CreateInfo
 	queue = linkedRenderEngine->device.get_queue(createdWith.commandQueue).value();
 	VkCommandPoolCreateInfo commandPoolCreateInfo{
 			.sType=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-			.flags=createInfo->flags,
+			.flags=static_cast<VkCommandPoolCreateFlags>(createInfo->flags),
 			.queueFamilyIndex=linkedRenderEngine->device.get_queue_index(createInfo->commandQueue).value()
 	};
 	if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {

@@ -67,7 +67,7 @@ struct IEKeyPressDescription {
  */
 template<>
 struct [[maybe_unused]] std::hash<IEKeyPressDescription> {
-	std::size_t operator()(const IEKeyPressDescription &k) const {
+	size_t operator()(const IEKeyPressDescription &k) const {
 		return ((((std::hash<int>()(k.key) ^ std::hash<int>()(k.scancode) >> 1) << 1) ^ std::hash<int>()(k.action) << 1) << 1) ^
 			   std::hash<int>()(k.modifiers);
 	}
