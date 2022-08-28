@@ -70,6 +70,7 @@ set_target_properties(assimp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME
 
 # Setup all needed includes
 set(assimp_DIR ${assimp_SOURCE_DIR} PARENT_SCOPE)
+set(spdlog_DIR ${spdlog_SOURCE_DIR} PARENT_SCOPE)
 set(glfw_DIR ${glfw_SOURCE_DIR} PARENT_SCOPE)
 set(glew_DIR ${glew_SOURCE_DIR} PARENT_SCOPE)
 set(glm_DIR ${glm_SOURCE_DIR} PARENT_SCOPE)

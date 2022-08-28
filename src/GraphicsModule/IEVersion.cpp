@@ -38,11 +38,9 @@ IEVersion::IEVersion(uint32_t versionMajor, uint32_t versionMinor, uint32_t vers
 
 IEVersion::IEVersion(uint32_t versionNumber) {
 	number = versionNumber;
-	#ifdef ILLUMINATION_ENGINE_VULKAN
 	major = VK_VERSION_MAJOR(versionNumber);
 	minor = VK_VERSION_MINOR(versionNumber);
 	patch = VK_VERSION_PATCH(versionNumber);
-	#endif
 	name = std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
 	version = {major, minor, patch};
 }

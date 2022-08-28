@@ -51,7 +51,7 @@ void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
 		file = new IEFile{file->path + ".spv"};
 	}
 	file->open();
-	fileContents = file->read(file->length, 0);
+	fileContents = file->read((size_t)file->length, 0);
 	file->close();
 	VkShaderModuleCreateInfo shaderModuleCreateInfo{
 			.sType=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,

@@ -1,11 +1,9 @@
 #pragma once
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <string>
+#include <include/spdlog/logger.h>
 
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
+#include <string>
+#include <memory>
 
 //Illumination Engine replacements for spdlog log levels.
 #define ILLUMINATION_ENGINE_LOG_LEVEL_TRACE spdlog::level::trace
@@ -36,17 +34,11 @@
  */
 class IELogger {
 public:
-	IELogger(const std::string &name, const std::string &path) {
-		logger = spdlog::basic_logger_mt(name, path, true);
-	}
+	IELogger(const std::string &name, const std::string &path);
 
-	explicit IELogger() {
-		logger = spdlog::default_logger();
-	}
+	explicit IELogger();
 
-	void log(spdlog::level::level_enum level, const std::string &msg) const {
-		logger->log(level, msg);
-	}
+	void log(spdlog::level::level_enum level, const std::string &msg) const;
 
 private:
 	std::shared_ptr<spdlog::logger> logger;
