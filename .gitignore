@@ -8,7 +8,3 @@
 /CMakeSettings.json
 # Ignore pre-compiled shaders
 /res/Shaders/*/*.spv
-/debug-build/
-/release-build/
-/res/
-[ master , graphics_dev]
