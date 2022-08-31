@@ -33,7 +33,7 @@ DoxygenAwesomeFragmentCopyButton.init()
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo128.png"/></td>
   <td id="projectalign">
-   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
+   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.0</span>
    </div>
    <div id="projectbrief">A Game Development Engine Written In C++</div>
   </td>
@@ -113,8 +113,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aa35f2e6a2b1fec0df43c343145df385d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c87df10f8fda4802cfbf0223bfccab7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_command_buffer.html#a1c87df10f8fda4802cfbf0223bfccab7">reset</a> (bool synchronize=true)</td></tr>
 <tr class="separator:a1c87df10f8fda4802cfbf0223bfccab7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac43d4341043b5805f1346b40c0834e83"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_command_buffer.html#ac43d4341043b5805f1346b40c0834e83">execute</a> (VkSemaphore input=nullptr, VkSemaphore output=nullptr, VkFence fence=nullptr)</td></tr>
-<tr class="separator:ac43d4341043b5805f1346b40c0834e83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a739141f5baedffaf3d5217e70c2cc7ab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_command_buffer.html#a739141f5baedffaf3d5217e70c2cc7ab">execute</a> (VkSemaphore input=(VkSemaphore)(void *) nullptr, VkSemaphore output=(VkSemaphore)(void *) nullptr, VkFence fence=(VkFence)(void *) nullptr)</td></tr>
+<tr class="separator:a739141f5baedffaf3d5217e70c2cc7ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9739f6e6d9d9af6799048ac4545001b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_command_buffer.html#ae9739f6e6d9d9af6799048ac4545001b">finish</a> (bool synchronize=true)</td></tr>
 <tr class="separator:ae9739f6e6d9d9af6799048ac4545001b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a77bb6170a5e5edf16dd5425c4eefa821"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_command_buffer.html#a77bb6170a5e5edf16dd5425c4eefa821">recordPipelineBarrier</a> (VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, const std::vector&lt; VkMemoryBarrier &gt; &amp;memoryBarriers, const std::vector&lt; <a class="el" href="class_i_e_buffer_memory_barrier.html">IEBufferMemoryBarrier</a> &gt; &amp;bufferMemoryBarriers, const std::vector&lt; <a class="el" href="class_i_e_image_memory_barrier.html">IEImageMemoryBarrier</a> &gt; &amp;imageMemoryBarriers)</td></tr>
@@ -376,8 +376,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="ac43d4341043b5805f1346b40c0834e83" name="ac43d4341043b5805f1346b40c0834e83"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac43d4341043b5805f1346b40c0834e83">&#9670;&nbsp;</a></span>execute()</h2>
+<a id="a739141f5baedffaf3d5217e70c2cc7ab" name="a739141f5baedffaf3d5217e70c2cc7ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a739141f5baedffaf3d5217e70c2cc7ab">&#9670;&nbsp;</a></span>execute()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -386,19 +386,19 @@ Additional Inherited Members</h2></td></tr>
           <td class="memname">void IECommandBuffer::execute </td>
           <td>(</td>
           <td class="paramtype">VkSemaphore&#160;</td>
-          <td class="paramname"><em>input</em> = <code>nullptr</code>, </td>
+          <td class="paramname"><em>input</em> = <code>(VkSemaphore)(void&#160;*)nullptr</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">VkSemaphore&#160;</td>
-          <td class="paramname"><em>output</em> = <code>nullptr</code>, </td>
+          <td class="paramname"><em>output</em> = <code>(VkSemaphore)(void&#160;*)nullptr</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">VkFence&#160;</td>
-          <td class="paramname"><em>fence</em> = <code>nullptr</code>&#160;</td>
+          <td class="paramname"><em>fence</em> = <code>(VkFence)(void&#160;*)nullptr</code>&#160;</td>
         </tr>
         <tr>
           <td></td>

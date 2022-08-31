@@ -33,7 +33,7 @@ DoxygenAwesomeFragmentCopyButton.init()
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo128.png"/></td>
   <td id="projectalign">
-   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
+   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.0</span>
    </div>
    <div id="projectbrief">A Game Development Engine Written In C++</div>
   </td>
@@ -76,6 +76,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="struct_i_e_uniform_buffer_object-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">IEUniformBufferObject Struct Reference</div></div>
@@ -84,14 +85,17 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_i_e_uniform_buffer_object_8hpp_source.html">IEUniformBufferObject.hpp</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a5062c35969b37ccd1d67bdb4977b7920"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_e_uniform_buffer_object.html#a5062c35969b37ccd1d67bdb4977b7920">openglUploadUniform</a> (GLint program)</td></tr>
+<tr class="separator:a5062c35969b37ccd1d67bdb4977b7920"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a994cdc960fe5cca92b50ebaa5335af47"><td class="memItemLeft" align="right" valign="top">glm::mat4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_e_uniform_buffer_object.html#a994cdc960fe5cca92b50ebaa5335af47">viewModelMatrix</a> {}</td></tr>
-<tr class="separator:a994cdc960fe5cca92b50ebaa5335af47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd4c616503186f8192bd2796f4623787"><td class="memItemLeft" align="right" valign="top">glm::mat4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_e_uniform_buffer_object.html#abd4c616503186f8192bd2796f4623787">projectionViewModelMatrix</a> {}</td></tr>
+<tr class="separator:abd4c616503186f8192bd2796f4623787"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fdea68f2945ef43380350fe757785dd"><td class="memItemLeft" align="right" valign="top">glm::mat4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_e_uniform_buffer_object.html#a0fdea68f2945ef43380350fe757785dd">modelMatrix</a> {}</td></tr>
 <tr class="separator:a0fdea68f2945ef43380350fe757785dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73f95efa0e62e5bb465613cf8203cf27"><td class="memItemLeft" align="right" valign="top">glm::mat4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_e_uniform_buffer_object.html#a73f95efa0e62e5bb465613cf8203cf27">projectionMatrix</a> {}</td></tr>
-<tr class="separator:a73f95efa0e62e5bb465613cf8203cf27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a8f13d4edd6affb9458cc1bce7a9158"><td class="memItemLeft" align="right" valign="top">glm::mat4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_e_uniform_buffer_object.html#a5a8f13d4edd6affb9458cc1bce7a9158">normalMatrix</a> {}</td></tr>
 <tr class="separator:a5a8f13d4edd6affb9458cc1bce7a9158"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ba5154db3642deaa5f7cbc704ccbbf5"><td class="memItemLeft" align="right" valign="top">glm::vec3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_e_uniform_buffer_object.html#a6ba5154db3642deaa5f7cbc704ccbbf5">position</a> {0, 0, 0}</td></tr>
@@ -99,6 +103,25 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a5e9e2f8a1f768d3727c57de3cc972fc1"><td class="memItemLeft" align="right" valign="top">glm::float32&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_e_uniform_buffer_object.html#a5e9e2f8a1f768d3727c57de3cc972fc1">time</a> {}</td></tr>
 <tr class="separator:a5e9e2f8a1f768d3727c57de3cc972fc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a5062c35969b37ccd1d67bdb4977b7920" name="a5062c35969b37ccd1d67bdb4977b7920"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5062c35969b37ccd1d67bdb4977b7920">&#9670;&nbsp;</a></span>openglUploadUniform()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void IEUniformBufferObject::openglUploadUniform </td>
+          <td>(</td>
+          <td class="paramtype">GLint&#160;</td>
+          <td class="paramname"><em>program</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a0fdea68f2945ef43380350fe757785dd" name="a0fdea68f2945ef43380350fe757785dd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0fdea68f2945ef43380350fe757785dd">&#9670;&nbsp;</a></span>modelMatrix</h2>
@@ -142,14 +165,14 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a73f95efa0e62e5bb465613cf8203cf27" name="a73f95efa0e62e5bb465613cf8203cf27"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a73f95efa0e62e5bb465613cf8203cf27">&#9670;&nbsp;</a></span>projectionMatrix</h2>
+<a id="abd4c616503186f8192bd2796f4623787" name="abd4c616503186f8192bd2796f4623787"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd4c616503186f8192bd2796f4623787">&#9670;&nbsp;</a></span>projectionViewModelMatrix</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">glm::mat4 IEUniformBufferObject::projectionMatrix {}</td>
+          <td class="memname">glm::mat4 IEUniformBufferObject::projectionViewModelMatrix {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -170,22 +193,9 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a994cdc960fe5cca92b50ebaa5335af47" name="a994cdc960fe5cca92b50ebaa5335af47"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a994cdc960fe5cca92b50ebaa5335af47">&#9670;&nbsp;</a></span>viewModelMatrix</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">glm::mat4 IEUniformBufferObject::viewModelMatrix {}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<hr/>The documentation for this struct was generated from the following files:<ul>
 <li>Illumination-Engine/src/GraphicsModule/Shader/<a class="el" href="_i_e_uniform_buffer_object_8hpp_source.html">IEUniformBufferObject.hpp</a></li>
+<li>Illumination-Engine/src/GraphicsModule/Shader/<a class="el" href="_i_e_uniform_buffer_object_8cpp.html">IEUniformBufferObject.cpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

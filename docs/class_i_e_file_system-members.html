@@ -33,7 +33,7 @@ DoxygenAwesomeFragmentCopyButton.init()
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo128.png"/></td>
   <td id="projectalign">
-   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
+   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.0</span>
    </div>
    <div id="projectbrief">A Game Development Engine Written In C++</div>
   </td>
@@ -81,8 +81,13 @@ $(function() {
 
 <p>This is the complete list of members for <a class="el" href="class_i_e_file_system.html">IEFileSystem</a>, including all inherited members.</p>
 <table class="directory">
-  <tr class="even"><td class="entry"><a class="el" href="class_i_e_file_system.html#a6432d86094ad4b183c642bf98195dc5d">addFile</a>(const IEFile &amp;file)</td><td class="entry"><a class="el" href="class_i_e_file_system.html">IEFileSystem</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr class="odd"><td class="entry"><a class="el" href="class_i_e_file_system.html#aaf3add513165165b3f9c4524f3e3b884">files</a></td><td class="entry"><a class="el" href="class_i_e_file_system.html">IEFileSystem</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_i_e_file_system.html#afc36a0bbae2dd2219bb8222fde814fb0">composePath</a>(IEPathName format, const Args &amp;... args)</td><td class="entry"><a class="el" href="class_i_e_file_system.html">IEFileSystem</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="odd"><td class="entry"><a class="el" href="class_i_e_file_system.html#a524dfa60ae2a82721b368c289eaf787a">getAssetDirectory</a>(Args &amp;&amp;... args) -&gt; decltype(getDirectory(std::forward&lt; Args &gt;(args)...))</td><td class="entry"><a class="el" href="class_i_e_file_system.html">IEFileSystem</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_i_e_file_system.html#a3975e0b04d62c9e4c7c6a850d373a4e3">getAssetFile</a>(const std::string &amp;assetName)</td><td class="entry"><a class="el" href="class_i_e_file_system.html">IEFileSystem</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="odd"><td class="entry"><a class="el" href="class_i_e_file_system.html#a579790c46fa76584a294a0623a1ac066">getDirectory</a>(const std::string &amp;assetName)</td><td class="entry"><a class="el" href="class_i_e_file_system.html">IEFileSystem</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_i_e_file_system.html#a756fe0222b6ad7e62e42cb174bc86482">getFile</a>(const std::string &amp;filePath, bool isCompletePath=true)</td><td class="entry"><a class="el" href="class_i_e_file_system.html">IEFileSystem</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="odd"><td class="entry"><a class="el" href="class_i_e_file_system.html#ac375106c4ef83a2bdcb5561906d75e3c">IEFileSystem</a>(const std::string &amp;initialAssetDirectory)</td><td class="entry"><a class="el" href="class_i_e_file_system.html">IEFileSystem</a></td><td class="entry"><span class="mlabel">explicit</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_i_e_file_system.html#ac4b93761941b8ce381925728c88cda68">IEFileSystem</a>(const IEDirectory &amp;initialBaseDirectory)</td><td class="entry"><a class="el" href="class_i_e_file_system.html">IEFileSystem</a></td><td class="entry"><span class="mlabel">explicit</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

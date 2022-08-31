@@ -1,22 +1,4 @@
 var searchData=
 [
-  ['sampler_0',['sampler',['../class_vulkan_image.html#a0d6e30740fede4c0f26c1ef252a35fa2',1,'VulkanImage']]],
-  ['samplerinfo_1',['samplerInfo',['../class_vulkan_image.html#a5a7e2fc9c2e0717513a3b7aab4c83ac1',1,'VulkanImage']]],
-  ['scale_2',['scale',['../class_i_e_asset.html#a7cfc6a497e86ce47efaec3856b4279da',1,'IEAsset']]],
-  ['scancode_3',['scancode',['../struct_ie_key_press_description.html#a0c14e4191c247aaf38923be85bc96a44',1,'IeKeyPressDescription']]],
-  ['settings_4',['settings',['../class_open_g_l_graphics_engine_link.html#a50ea7724737575769bf47312e4bc63d0',1,'OpenGLGraphicsEngineLink::settings()'],['../class_open_g_l_render_engine.html#a6cbe6caeeb8b489d82ecc6be41c96f00',1,'OpenGLRenderEngine::settings()'],['../class_vulkan_graphics_engine_link.html#a1e692fccecf505957ea64c4d30f197c4',1,'VulkanGraphicsEngineLink::settings()'],['../class_vulkan_render_engine.html#ae17c190d5ba0238e881fda8c60828e8a',1,'VulkanRenderEngine::settings()']]],
-  ['shadercreateinfos_5',['shaderCreateInfos',['../class_vulkan_renderable.html#ae24177a9690716a740d2f7228698ee6b',1,'VulkanRenderable']]],
-  ['shaderfilenames_6',['shaderFilenames',['../class_open_g_l_renderable.html#abbd9aff5b1867a64404f3e244657f25a',1,'OpenGLRenderable']]],
-  ['shadernames_7',['shaderNames',['../class_vulkan_renderable.html#a8b5923082dcb503af69fca69a7df6b48',1,'VulkanRenderable']]],
-  ['shaders_8',['shaders',['../struct_vulkan_pipeline_1_1_create_info.html#ab60fcacebd70f6b715e1d5186f4e23db',1,'VulkanPipeline::CreateInfo::shaders()'],['../class_vulkan_renderable.html#adb8d7cb959bf2c33b3430056958774a4',1,'VulkanRenderable::shaders()'],['../class_open_g_l_renderable.html#a4558ff431e180c16024c22ca36b2fb09',1,'OpenGLRenderable::shaders()'],['../struct_open_g_l_program_1_1_create_info.html#a364bdc8d60107770c945b6a1e48e7902',1,'OpenGLProgram::CreateInfo::shaders()']]],
-  ['shaderstages_9',['shaderStages',['../struct_vulkan_descriptor_set_1_1_create_info.html#a83c320e1fe8e7c4eb48a07f920a82164',1,'VulkanDescriptorSet::CreateInfo']]],
-  ['shadertype_10',['shaderType',['../struct_open_g_l_shader_1_1_create_info.html#a690e4f4d144d8a57e3e5725d2d8d7136',1,'OpenGLShader::CreateInfo']]],
-  ['size_11',['size',['../struct_vulkan_buffer_1_1_create_info.html#a9c60c0b39523457b29332ffbf05675fe',1,'VulkanBuffer::CreateInfo']]],
-  ['sizeofdata_12',['sizeOfData',['../struct_vulkan_buffer_1_1_create_info.html#a754976620d7d75c1823175e1908e3fab',1,'VulkanBuffer::CreateInfo']]],
-  ['speculartexture_13',['specularTexture',['../struct_open_g_l_renderable_1_1_open_g_l_mesh.html#a29cece60cab93dea9ca9567e436254ff',1,'OpenGLRenderable::OpenGLMesh::specularTexture()'],['../struct_vulkan_renderable_1_1_vulkan_mesh.html#aeb57c414a019ea13b77990c9c816d21a',1,'VulkanRenderable::VulkanMesh::specularTexture()']]],
-  ['speed_14',['speed',['../class_open_g_l_camera.html#a41bf36aacf4dd1b4e487743cc9363ec7',1,'OpenGLCamera::speed()'],['../class_vulkan_camera.html#a0ff6a8c8bbee69755c467840b22b5729',1,'VulkanCamera::speed()']]],
-  ['supportedphysicaldeviceinfo_15',['supportedPhysicalDeviceInfo',['../class_vulkan_graphics_engine_link.html#aaa8bfc5e3df713b47a46db11e4556ac6',1,'VulkanGraphicsEngineLink']]],
-  ['swapchain_16',['swapchain',['../class_vulkan_graphics_engine_link.html#a33082671c0a7ec4c3a98d071cffe36bc',1,'VulkanGraphicsEngineLink']]],
-  ['swapchainimageview_17',['swapchainImageView',['../struct_vulkan_framebuffer_1_1_create_info.html#a885850d7616f0733bb32c4b3c83564d4',1,'VulkanFramebuffer::CreateInfo']]],
-  ['swapchainimageviews_18',['swapchainImageViews',['../class_vulkan_graphics_engine_link.html#a349c9e0def6977c0a2b6639d7e69091e',1,'VulkanGraphicsEngineLink']]]
+  ['queue_0',['queue',['../class_i_e_command_pool.html#a53e0157bbf3d6d2626831344f9680bd4',1,'IECommandPool']]]
 ];

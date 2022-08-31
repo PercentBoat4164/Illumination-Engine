@@ -33,7 +33,7 @@ DoxygenAwesomeFragmentCopyButton.init()
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo128.png"/></td>
   <td id="projectalign">
-   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.1</span>
+   <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.0</span>
    </div>
    <div id="projectbrief">A Game Development Engine Written In C++</div>
   </td>
@@ -79,29 +79,47 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><dl class="reflist">
-<dt>Member <a class="el" href="vulkan_render_engine_8hpp.html#aa9e48b7e73656c9a67966387241d1329">GLEW_IMPLEMENTATION</a>  </dt>
-<dd><p class="startdd"><a class="anchor" id="_todo000007"></a>: Add multithreading support throughout the engine</p><ul>
-<li>LOW PRIORITY: GPU is busy 95-98% of the time. This will be a higher priority if GPU hits 80-90%. Focus is going to be put on making all engines work before perfecting any of them. </li>
-</ul>
-<p class="enddd"><a class="anchor" id="_todo000008"></a>: Add proper invalid input checks to, and clean up, the abstractions.</p><ul>
-<li>HIGH PRIORITY: This should happen before moving on to a new part of the game engine. This has already been started in <a class="el" href="vulkan_descriptor_set_8hpp.html">vulkanDescriptorSet.hpp</a>.  </li>
-</ul>
+<dt>Member <a class="el" href="class_i_e_buffer.html#aecacf1e195ce6cb66e67c28d6d30f92f">IEBuffer::_openglUploadToRAM</a>  ()</dt>
+<dd><a class="anchor" id="_todo000001"></a>Load from VRAM to RAM somehow.  </dd>
+<dt>Member <a class="el" href="class_i_e_image.html#a19c09e3ca858b6724143d11f4d93d5d8">IEImage::_vulkanCreateImageView</a>  ()</dt>
+<dd><a class="anchor" id="_todo000010"></a>Add support for more than just 2D images.  </dd>
+<dt>Member <a class="el" href="class_i_e_image.html#a23c05b05cb50fcfa5d9e338decd779d1">IEImage::_vulkanUploadToRAM</a>  ()</dt>
+<dd><p class="startdd"><a class="anchor" id="_todo000007"></a>Do later. </p>
+<p class="enddd"><a class="anchor" id="_todo000008"></a>Remove the size parameter requirements optionally.  </p>
 </dd>
-<dt>Member <a class="el" href="struct_vulkan_image_1_1_create_info.html#a9d30163edc3192d1a31e7f4d00e9c321">VulkanImage::CreateInfo::mipMapping</a>  </dt>
-<dd><a class="anchor" id="_todo000005"></a>: Remove this item.  </dd>
-<dt>Member <a class="el" href="struct_vulkan_image_1_1_create_info.html#a54d769b24b54b13f4f772f97e3fa7369">VulkanImage::CreateInfo::msaaSamples</a>  </dt>
-<dd><a class="anchor" id="_todo000004"></a>: Remove this item.  </dd>
-<dt>Member <a class="el" href="class_vulkan_image.html#a302ab6243e7473ffcdd7670817e6183f">VulkanImage::upload</a>  ()</dt>
-<dd><p class="startdd"><a class="anchor" id="_todo000002"></a>: Combine as many command buffer submissions as possible together to reduce prepare on GPU. </p>
-<p class="enddd"><a class="anchor" id="_todo000003"></a>: Allow either dataSource input or bufferData input from the <a class="el" href="struct_vulkan_image_1_1_create_info.html">CreateInfo</a>. Currently is only bufferData for texture and only dataSource for other.  </p>
+<dt>Member <a class="el" href="class_i_e_image.html#aeafe4ed859b8865572b70d4d498d37fa">IEImage::format</a>  </dt>
+<dd><a class="anchor" id="_todo000011"></a>Add proper format checks.  </dd>
+<dt>Member <a class="el" href="class_i_e_image.html#a66b77d57f25528b9f2ea5cea3b1cb9b0">IEImage::toBuffer</a>  (const std::shared_ptr&lt; IEBuffer &gt; &amp;, uint32_t) const</dt>
+<dd><a class="anchor" id="_todo000009"></a>Needs to be done in a way that these dependencies get added.  </dd>
+<dt>Member <a class="el" href="class_i_e_material.html#a24dc74422d4ceff9eed8d389fc25a090">IEMaterial::_openglLoadFromDiskToRAM</a>  (const std::string &amp;, const aiScene *, uint32_t)</dt>
+<dd><a class="anchor" id="_todo000019"></a>Build a system that tracks duplicate textures and only keeps one copy in memory.  </dd>
+<dt>Member <a class="el" href="class_i_e_material.html#aa8d3159ed18ae46586b579f09dd7f12d">IEMaterial::_unloadFromRAM</a>  </dt>
+<dd><a class="anchor" id="_todo000021"></a>Keep two numbers of materials owning texture in <a class="el" href="class_i_e_texture.html">IETexture</a>. Decrease the appropriate number whenever a material is unloaded from RAM or VRAM. Delete texture from appropriate memory type when number is zero.  </dd>
+<dt>Member <a class="el" href="class_i_e_material.html#a26564cb35b4eef56879f8757c097710f">IEMaterial::_vulkanLoadFromDiskToRAM</a>  (const std::string &amp;, const aiScene *, uint32_t)</dt>
+<dd><a class="anchor" id="_todo000020"></a>Build a system that tracks duplicate textures and only keeps one copy in memory.  </dd>
+<dt>Member <a class="el" href="class_i_e_mesh.html#a5c3685fc7f71ed6492e5d2ec77146979">IEMesh::_vulkanLoadFromRAMToVRAM</a>  ()</dt>
+<dd><a class="anchor" id="_todo000022"></a>Make renderPass of pipeline adjustable.  </dd>
+<dt>Member <a class="el" href="class_i_e_render_engine.html#a45cca0ada67f841ecf37d8035d90f3b6">IERenderEngine::IERenderEngine</a>  (<a class="el" href="class_i_e_settings.html">IESettings</a> &amp;settings)</dt>
+<dd><a class="anchor" id="_todo000006"></a>Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI abstraction.  </dd>
+<dt>Member <a class="el" href="class_i_e_render_engine.html#a1a994358c9eb27e719d0d9bfbff62776">IERenderEngine::IERenderEngine</a>  (<a class="el" href="class_i_e_settings.html">IESettings</a> *settings=new <a class="el" href="class_i_e_settings.html">IESettings</a>{})</dt>
+<dd><p class="startdd"><a class="anchor" id="_todo000005"></a>Create an abstraction for sync objects if necessary. </p>
+<p class="interdd"><a class="anchor" id="_todo000004"></a>Find a better way to handle specifying features. Perhaps use a similar method as was used for extensions. </p>
+<p class="enddd"><a class="anchor" id="_todo000003"></a>Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI abstraction.  </p>
 </dd>
-<dt>Member <a class="el" href="class_vulkan_render_engine.html#a9b692d0964251606211e0f611764cdb5">VulkanRenderEngine::VulkanRenderEngine</a>  ()</dt>
-<dd><a class="anchor" id="_todo000009"></a>: Implement a device selection scheme for systems with multiple GPUs.  </dd>
-<dt>Member <a class="el" href="class_vulkan_texture.html#aaa6a1556a521f486c157dc13eaab603a">VulkanTexture::upload</a>  () override</dt>
-<dd><p class="startdd"><a class="anchor" id="_todo000010"></a>: Combine as many command buffer submissions as possible together to reduce prepare on GPU and CPU. </p>
-<p class="interdd"><a class="anchor" id="_todo000011"></a>: Allow either dataSource input or bufferData input from the CreateInfo. Currently is only bufferData for texture and only dataSource for other. </p>
-<p class="enddd"><a class="anchor" id="_todo000012"></a>: Add support for more mipmap interpolation methods. Currently only linear interpolation is supported. </p>
-</dd>
+<dt>Member <a class="el" href="class_i_e_texture.html#a97a220c40a224d6c284a3bffc8376976">IETexture::_openglUpdate_aiTexture</a>  (aiTexture *)</dt>
+<dd><a class="anchor" id="_todo000013"></a>Make number of channels imported change the number of channels in VRAM.  </dd>
+<dt>Member <a class="el" href="class_i_e_texture.html#a703b876276f7c589688441cc99e19c0a">IETexture::_openglUploadToRAM_texture</a>  (aiTexture *)</dt>
+<dd><a class="anchor" id="_todo000017"></a>Make number of channels imported change the number of channels in VRAM.  </dd>
+<dt>Member <a class="el" href="class_i_e_texture.html#af5b47537c8161196e3de0a57e00aea75">IETexture::_openglUploadToVRAM_texture</a>  (aiTexture *)</dt>
+<dd><a class="anchor" id="_todo000015"></a>Make number of channels imported change the number of channels in VRAM.  </dd>
+<dt>Member <a class="el" href="class_i_e_texture.html#a7be34b56ea21e3ad17025d92659d357b">IETexture::_vulkanUpdate_aiTexture</a>  (aiTexture *)</dt>
+<dd><a class="anchor" id="_todo000014"></a>Make number of channels imported change the number of channels in VRAM.  </dd>
+<dt>Member <a class="el" href="class_i_e_texture.html#a2e31e0561d1e5c01df5b0f3dcf905a7a">IETexture::_vulkanUploadToRAM_texture</a>  (aiTexture *)</dt>
+<dd><a class="anchor" id="_todo000018"></a>Make number of channels imported change the number of channels in VRAM.  </dd>
+<dt>Member <a class="el" href="class_i_e_texture.html#aff3a94b8799dee77dae6f3764eb60914">IETexture::_vulkanUploadToVRAM_texture</a>  (aiTexture *)</dt>
+<dd><a class="anchor" id="_todo000016"></a>Make number of channels imported change the number of channels in VRAM.  </dd>
+<dt>Member <a class="el" href="class_i_e_texture.html#a517bb85bc3bc2c72545dea35db0cd22b">IETexture::create</a>  (<a class="el" href="class_i_e_render_engine.html">IERenderEngine</a> *, <a class="el" href="struct_i_e_texture_1_1_create_info.html">IETexture::CreateInfo</a> *)</dt>
+<dd><a class="anchor" id="_todo000012"></a>Implement mip-mapping again. </dd>
 </dl>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

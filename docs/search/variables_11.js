@@ -1,13 +1,16 @@
 var searchData=
 [
-  ['texturecoordinates_0',['textureCoordinates',['../struct_open_g_l_renderable_1_1_open_g_l_mesh_1_1_open_g_l_vertex.html#abe39d38d782f0525c8b6b4c16207ef72',1,'OpenGLRenderable::OpenGLMesh::OpenGLVertex::textureCoordinates()'],['../struct_vulkan_vertex.html#a79c3dc577a1e0beee9b7d7077abe8af6',1,'VulkanVertex::textureCoordinates()']]],
-  ['textures_1',['textures',['../class_open_g_l_renderable.html#ae401ec291af56805492338a332280ff5',1,'OpenGLRenderable::textures()'],['../class_vulkan_renderable.html#a1303d312093ed3242853fc7b1b00c31a',1,'VulkanRenderable::textures()']]],
-  ['tiling_2',['tiling',['../struct_vulkan_image_1_1_create_info.html#a41b5acf9be9770b4c2d7b7a1a7afd3cb',1,'VulkanImage::CreateInfo']]],
-  ['time_3',['time',['../struct_vulkan_uniform_buffer_object.html#a56a83a1b8e2fd9fbbb41bfff6e87d902',1,'VulkanUniformBufferObject']]],
-  ['transferqueue_4',['transferQueue',['../class_vulkan_graphics_engine_link.html#a094bac571a45afe608b828441fd2a3fa',1,'VulkanGraphicsEngineLink']]],
-  ['transformationbuffer_5',['transformationBuffer',['../struct_vulkan_renderable_1_1_vulkan_mesh.html#a407711ca2f4ab882b6ba5dacd3002bc1',1,'VulkanRenderable::VulkanMesh']]],
-  ['transformationbufferaddress_6',['transformationBufferAddress',['../struct_vulkan_buffer_1_1_create_info.html#ac34c3e8033e0c6a448a105af3812c91c',1,'VulkanBuffer::CreateInfo']]],
-  ['transformationmatrix_7',['transformationMatrix',['../struct_vulkan_buffer_1_1_create_info.html#a1c731bb8c20a87d6fdaab01045d9f610',1,'VulkanBuffer::CreateInfo::transformationMatrix()'],['../struct_vulkan_renderable_1_1_vulkan_mesh.html#acfa503829af29cab4af3afac3ffbb027',1,'VulkanRenderable::VulkanMesh::transformationMatrix()']]],
-  ['trianglecount_8',['triangleCount',['../struct_open_g_l_renderable_1_1_open_g_l_mesh.html#a489259d18888f274ac2757439e27dec3',1,'OpenGLRenderable::OpenGLMesh::triangleCount()'],['../struct_vulkan_renderable_1_1_vulkan_mesh.html#a6bd6aa12d1ce85470eb85dd145066501',1,'VulkanRenderable::VulkanMesh::triangleCount()']]],
-  ['type_9',['type',['../struct_vulkan_buffer_1_1_create_info.html#a59ed13f3331462137b3b54d46b4ff232',1,'VulkanBuffer::CreateInfo']]]
+  ['rayqueryfeatures_0',['rayQueryFeatures',['../struct_i_e_render_engine_1_1_extension_and_feature_info.html#a2bb7908f667279a731dee5804ced2b69',1,'IERenderEngine::ExtensionAndFeatureInfo']]],
+  ['raytracing_1',['rayTracing',['../class_i_e_settings.html#a29473dce0ca29707e095e8f67412212d',1,'IESettings']]],
+  ['raytracingpipelinefeatures_2',['rayTracingPipelineFeatures',['../struct_i_e_render_engine_1_1_extension_and_feature_info.html#a4f71874a37d3443e71ad5df79981fbcd',1,'IERenderEngine::ExtensionAndFeatureInfo']]],
+  ['refreshrate_3',['refreshRate',['../class_i_e_settings.html#aa88485e2057e23d0efda8c4fda86a4d2',1,'IESettings']]],
+  ['regions_4',['regions',['../class_i_e_copy_buffer_to_image_info.html#aace8435fa0f420a1a2deb2cc34e49c59',1,'IECopyBufferToImageInfo']]],
+  ['render_5',['render',['../class_i_e_renderable.html#adc2cd67f221695232538463d3157882c',1,'IERenderable']]],
+  ['renderables_6',['renderables',['../class_i_e_render_engine.html#ae932db029a8e79e9dbbcf42674451a46',1,'IERenderEngine']]],
+  ['renderarea_7',['renderArea',['../class_i_e_render_pass_begin_info.html#a7ef073a7f4b550a8f809f2ef05c1b5d5',1,'IERenderPassBeginInfo']]],
+  ['renderdistance_8',['renderDistance',['../class_i_e_settings.html#ab95bdccfefd0380db8f4838535743a41',1,'IESettings']]],
+  ['renderengine_9',['renderEngine',['../class_i_e_window_user.html#a70330511e55584e15f3f183d4bb83912',1,'IEWindowUser']]],
+  ['renderpass_10',['renderPass',['../class_i_e_render_pass_begin_info.html#a80778ebc18b334bb5b4fdbc4c604b4e5',1,'IERenderPassBeginInfo::renderPass()'],['../class_i_e_render_engine.html#aebb65613bac6f7c86a082e6a7cd46375',1,'IERenderEngine::renderPass()'],['../struct_i_e_framebuffer_1_1_create_info.html#a254fdf10b76faab672c60756d584678f',1,'IEFramebuffer::CreateInfo::renderPass()'],['../class_i_e_framebuffer.html#a933c68b2cd222d013a6fc0c38eb09308',1,'IEFramebuffer::renderPass()'],['../class_i_e_render_pass.html#a005e74efbf6e0505baac18d4b29ebb05',1,'IERenderPass::renderPass()'],['../struct_i_e_pipeline_1_1_create_info.html#a0006d4a791e3b9126a6dfd1a27139d86',1,'IEPipeline::CreateInfo::renderPass()']]],
+  ['right_11',['right',['../class_i_e_camera.html#af200c4e50bc5d046f4793b6d2c76d8cf',1,'IECamera']]],
+  ['rotation_12',['rotation',['../class_i_e_asset.html#a9fdcbc4b63497b97f8522fe3ead803ac',1,'IEAsset']]]
 ];
