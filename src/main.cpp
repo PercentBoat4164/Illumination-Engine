@@ -1,127 +1,55 @@
-#include "GraphicsModule/OpenGL/openglRenderEngine.hpp"
+#include "GraphicsModule/IERenderEngine.hpp"
 #include "InputModule/IEKeyboard.hpp"
-#include "GraphicsModule/OpenGL/IEWindowUserPointer.hpp"
+#include "Core/FileSystemModule/IEFileSystem.hpp"
 
-/**
- * @brief A key callback function. Moves the camera forward.
- * @param window
- */
-void moveCameraForward(GLFWwindow *window) {
-	auto renderEngine = (OpenGLRenderEngine *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->renderEngine;
-	renderEngine->camera.position = renderEngine->camera.position + renderEngine->camera.front * renderEngine->frameTime *
-																	renderEngine->camera.speed;
-}
+int main() {
+	IESettings settings = IESettings();
+	// RenderEngine must be allocated on the heap.
+	std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(settings);
 
-/**
- * @brief A key callback function. Moves the camera backward.
- * @param window
- */
-void moveCameraBackward(GLFWwindow *window) {
-	auto renderEngine = (OpenGLRenderEngine *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->renderEngine;
-	renderEngine->camera.position = renderEngine->camera.position - renderEngine->camera.front * renderEngine->frameTime *
-																	renderEngine->camera.speed;
-}
+	IEKeyboard keyboard{renderEngine->window};
+	keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow *) { renderEngine->camera.position += renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_A, [&](GLFWwindow *) { renderEngine->camera.position -= renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_S, [&](GLFWwindow *) { renderEngine->camera.position -= renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_D, [&](GLFWwindow *) { renderEngine->camera.position += renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_SPACE, [&](GLFWwindow *) { renderEngine->camera.position += renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions(GLFW_KEY_LEFT_SHIFT, [&](GLFWwindow *) { renderEngine->camera.position -= renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed; });
+	keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_PRESS}, [&](GLFWwindow *) { renderEngine->camera.speed *= 6; });
+	keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE}, [&](GLFWwindow *) { renderEngine->camera.speed /= 6; });
+	keyboard.editActions({GLFW_KEY_F11, GLFW_PRESS}, [&](GLFWwindow *) { renderEngine->toggleFullscreen(); });
+	keyboard.editActions({GLFW_KEY_ESCAPE, GLFW_REPEAT}, [&](GLFWwindow *) { glfwSetWindowShouldClose(renderEngine->window, 1); });
 
-/**
- * @brief A key callback function. Moves the camera right.
- * @param window
- */
-void moveCameraRight(GLFWwindow *window) {
-	auto renderEngine = (OpenGLRenderEngine *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->renderEngine;
-	renderEngine->camera.position = renderEngine->camera.position + renderEngine->camera.right * renderEngine->frameTime *
-																	renderEngine->camera.speed;
-}
+	IEWindowUser windowUser{std::shared_ptr<IERenderEngine>(renderEngine), &keyboard};
+	glfwSetWindowUserPointer(renderEngine->window, &windowUser);
 
-/**
- * @brief A key callback function. Moves the camera left.
- * @param window
- */
-void moveCameraLeft(GLFWwindow *window) {
-	auto renderEngine = (OpenGLRenderEngine *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->renderEngine;
-	renderEngine->camera.position = renderEngine->camera.position - renderEngine->camera.right * renderEngine->frameTime *
-																	renderEngine->camera.speed;
-}
+	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
+	fbx->filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
+	fbx->addAspect(new IERenderable{});
+	fbx->position = {2, 1, 0};
+	renderEngine->addAsset(fbx);
+	std::shared_ptr<IEAsset> obj = std::make_shared<IEAsset>();
+	obj->filename = "res/assets/AncientStatue/models/ancientStatue.obj";
+	obj->addAspect(new IERenderable{});
+	obj->position = {0, 1, 0};
+	renderEngine->addAsset(obj);
+	std::shared_ptr<IEAsset> glb = std::make_shared<IEAsset>();
+	glb->filename = "res/assets/AncientStatue/models/ancientStatue.glb";
+	glb->addAspect(new IERenderable{});
+	glb->position = {-2, 1, 0};
+	renderEngine->addAsset(glb);
+	std::shared_ptr<IEAsset> floor = std::make_shared<IEAsset>();
+	floor->filename = "res/assets/DeepslateFloor/models/DeepslateFloor.fbx";
+	floor->addAspect(new IERenderable{});
+	renderEngine->addAsset(floor);
+	floor->position = {0, 0, -1};
 
-/**
- * @brief A key callback function. Moves the camera up.
- * @param window
- */
-void moveCameraUp(GLFWwindow *window) {
-	auto renderEngine = (OpenGLRenderEngine *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->renderEngine;
-	renderEngine->camera.position = renderEngine->camera.position + renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
-}
+	renderEngine->camera.position = {0.0F, -2.0F, 1.0F};
 
-/**
- * @brief A key callback function. Moves the camera down.
- * @param window
- */
-void moveCameraDown(GLFWwindow *window) {
-	auto renderEngine = (OpenGLRenderEngine *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->renderEngine;
-	renderEngine->camera.position = renderEngine->camera.position - renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
-}
+	renderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Beginning main loop.");
 
-/**
- * @brief A key callback function. Moves the camera slower.
- * @param window
- */
-void moveSlower(GLFWwindow *window);
-
-/**
- * @brief A key callback function. Moves the camera faster.
- * @param window
- */
-void moveFaster(GLFWwindow *window) {
-	auto renderEngine = (OpenGLRenderEngine *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->renderEngine;
-	renderEngine->camera.speed *= 3;
-}
-
-void moveSlower(GLFWwindow *window) {
-	auto renderEngine = (OpenGLRenderEngine *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->renderEngine;
-	renderEngine->camera.speed /= 3;
-}
-
-/**
- * @brief A key callback function. Resets the camera position and keyboard queue.
- * @param window
- */
-void resetAll(GLFWwindow *window) {
-	auto keyboard = (IEKeyboard *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->keyboard;
-	auto renderEngine = (OpenGLRenderEngine *) ((IEWindowUserPointer *) glfwGetWindowUserPointer(window))->renderEngine;
-	keyboard->clearQueue();
-	renderEngine->camera = OpenGLCamera{};
-	renderEngine->camera.linkedRenderEngine = &renderEngine->renderEngineLink;
-}
-
-/**
- * @brief Code for testing the entire engine with all its modular parts goes here.
- */
-int main(int argc, char **argv) {
-	OpenGLRenderEngine renderEngine{};
-	OpenGLRenderable cube{&renderEngine.renderEngineLink, "res/Models/Cube/cube.obj"};
-	IEAsset asset{};
-	IEAsset piece{};
-	asset.addAspect(&cube);
-	piece.addAspect(&cube);
-	asset.position = {0, -3, 0};
-	piece.position = {0, -4, 1};
-	renderEngine.loadRenderable(&cube);
-	IEKeyboard keyboard{renderEngine.window};
-	keyboard.attachment = &renderEngine;
-	keyboard.editActions(GLFW_KEY_W, moveCameraForward);
-	keyboard.editActions(GLFW_KEY_A, moveCameraLeft);
-	keyboard.editActions(GLFW_KEY_S, moveCameraBackward);
-	keyboard.editActions(GLFW_KEY_D, moveCameraRight);
-	keyboard.editActions(GLFW_KEY_SPACE, moveCameraUp);
-	keyboard.editActions(GLFW_KEY_LEFT_SHIFT, moveCameraDown);
-	keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_PRESS}, moveFaster, false);
-	keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE}, moveSlower, false);
-	keyboard.editActions(GLFW_KEY_HOME, resetAll, false);
-	IEWindowUserPointer windowUser{&keyboard, &renderEngine};
-	glfwSetWindowUserPointer(renderEngine.window, &windowUser);
-	while (renderEngine.update()) {
+	glfwSetTime(0);
+	while (renderEngine->update()) {
 		glfwPollEvents();
 		keyboard.handleQueue();
 	}
 }
-
-// vector of pointers to all assets of aspect in aspect.

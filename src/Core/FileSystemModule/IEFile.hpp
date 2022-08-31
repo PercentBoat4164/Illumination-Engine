@@ -1,30 +1,41 @@
+#pragma once
+
 #include <vector>
 #include <string>
+#include <filesystem>
+#include <fstream>
+#include <regex>
+#include <iostream>
 
 class IEFile {
 public:
-    std::string path;
-    std::string name;
-    std::vector<std::string> extensions;
-    std::string contents;
+	IEFile() = default;
 
-    std::vector<std::string> getExtensions() {
-        std::string originalPath;
-        std::swap(originalPath, path);
-        extensions = std::vector<std::string>{};
-        uint32_t lastExtensionPosition{static_cast<uint32_t>(path.find_last_of('.'))};
-        while (lastExtensionPosition < path.size()) {
-            extensions.push_back(path.substr(lastExtensionPosition, path.size() - lastExtensionPosition));
-            path = path.substr(0, lastExtensionPosition);
-            lastExtensionPosition = path.find_last_of('.');
-        }
-        std::swap(path, originalPath);
-        return extensions;
-    }
+	explicit IEFile(const std::string &initialPath);
 
-    std::string getName() {
-        uint32_t nameStartPosition{static_cast<uint32_t>(path.find_last_of('/') + 1)}; // starting position of name in path
-        name = path.substr(nameStartPosition, path.size() - nameStartPosition);
-        return name;
-    }
+	std::streamsize length{};
+	std::string path{};
+	std::fstream file{};
+
+	std::string getDirectory() const;
+
+	void createDirectory() const;
+
+	bool open();
+
+	void close();
+
+	virtual std::string read(size_t numBytes, std::streamsize startPosition = -1);
+
+	void insert(const std::string &data, std::streamsize startPosition = -1);
+
+	void overwrite(const std::string &data, std::streamsize startPosition = -1);
+
+	void erase(std::streamsize numBytes, std::streamsize startPosition = -1);
+
+	std::vector<std::string> extensions() const;
+
+	~IEFile();
+
+	IEFile &operator=(const IEFile &other);
 };
