@@ -96,8 +96,7 @@ The build system is being reworked and the method of dependency installation wil
 <h2><a class="anchor" id="autotoc_md4"></a>
 - Windows</h2>
 <p >Required: <a href="https://vulkan.lunarg.com/sdk/home">Vulkan</a></p>
-<p >If you are not using CLion or another IDE with CMake bundled, you will need to install <a href="https://cmake.org/download/">CMake</a>.</p>
-<p >When installing CMake, make sure that the <code>install to path</code> option is selected.</p>
+<p >If you are not using CLion or another IDE with CMake bundled, you will need to install <a href="https://cmake.org/download/">CMake</a>. During the Cmake installation, make sure that the <code>install to path</code> option is selected.</p>
 <p >Additionally, if you don't plan to use CLion or another IDE with a GCC v11.2 compatible compiler built in, you'll need to install <a href="https://www.msys2.org/">MSYS</a>. Follow the instructions on the page to install MSYS, then run the command (as shown on the website) <code>pacman -S mingw-w64-x86_64-gcc</code>.</p>
 <p >In an upcoming release, users won't need to install the Vulkan SDK.</p>
 <h1><a class="anchor" id="autotoc_md5"></a>
@@ -109,13 +108,8 @@ IDE Specific Instructions</h2>
 <p >To build Illumination Engine with CLion, load the project folder into the IDE. CLion should automatically import the CMake projects. Make sure that the configuration is set to build the Illumination Engine project, your c++ compiler location is set, and your GCC 11 compatible compiler must be set. Finally, click the run button, and CLion should compile and run the project.</p>
 <h2><a class="anchor" id="autotoc_md8"></a>
 Terminal Instructions</h2>
-<h3><a class="anchor" id="autotoc_md9"></a>
-- Linux</h3>
-<p >To build Illumination Engine without an IDE on Linux, make sure that you have the required packages installed. Then, open your terminal window inside the project folder and type the command <code>mkdir build</code>. This will create the folder that will hold all the files used to build the program. Next, type the command <code>cd build</code>. This moves you into the folder you just created. Next, type the command <code>cmake ..</code>. This will generate a makefile that can be used to build the project. After it is generated, type the command <code>make</code>. This will take a moment and should successfully build your project if your computer has all the libraries listed above. Finally, to run what was just built, enter the command <code>./IlluminationEngine</code>. This will launch the Illumination Engine program that was just built.</p>
-<h3><a class="anchor" id="autotoc_md10"></a>
-- Windows</h3>
-<p >To build Illumination Engine without an IDE on Windows, make sure that you have the required packages installed. Then, open a Windows Powershell window inside the project folder and enter the command <code>mkdir build</code>. This will create the folder that will hold all the files used to build the program. Next, type the command <code>cd build</code>. This moves you into the folder you just created. Next, type the command <code>cmake ..</code>. This will generate a makefile that can be used to build the project. After it is generated, type the command <code>make</code>. This will take a moment and should successfully build your project if your computer has all the libraries listed above. Finally, to run what was just built, enter the command <code>./IlluminationEngine</code>. This will launch the Illumination Engine program that was just built.</p>
-<h1><a class="anchor" id="autotoc_md11"></a>
+<p >To build Illumination Engine without an IDE on Linux or Windows, make sure that you have the required packages installed. Then, open a Terminal/Windows Powershell window inside the project folder and enter the command <code>mkdir build</code>. This will create the folder that will hold all the files used to build the program. Next, type the command <code>cd build</code>. This moves you into the folder you just created. Next, type the command <code>cmake ..</code>. This will generate a makefile that can be used to build the project. After it is generated, type the command <code>make</code>. This will take a moment and should successfully build your project if your computer has all the libraries listed above. Finally, to run what was just built, enter the command <code>./IlluminationEngine</code>. This will launch the Illumination Engine program that was just built.</p>
+<h1><a class="anchor" id="autotoc_md9"></a>
 Support</h1>
 <p >If you are having any trouble, check out our <a href="https://percentboat4164.github.io/Illumination-Engine/docs/index.html">documentation</a> or <a href="https://github.com/PercentBoat4164/Illumination-Engine/issues">report an issue on Github</a>. </p>
 </div></div><!-- PageDoc -->
