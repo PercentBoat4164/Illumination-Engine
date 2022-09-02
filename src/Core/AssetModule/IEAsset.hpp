@@ -1,31 +1,23 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <string>
 #include <vector>
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <algorithm>
+#include <memory>
 #include "IEAspect.hpp"
 
-class IEAsset {
+class IEAsset : public std::enable_shared_from_this<IEAsset> {
 public:
-    // Things that are shared among all aspects of an asset
-    glm::vec3 position{};
-    glm::vec3 rotation{};
-    glm::vec3 scale{1.0f, 1.0f, 1.0f};
-    std::string filename{};
+	// Things that are shared among all aspects of an asset
+	glm::vec3 position{0.0, 0.0, 0.0};
+	glm::vec3 rotation{0.0, 0.0, 0.0};
+	glm::vec3 scale{1.0, 1.0, 1.0};
+	std::string filename{};
+	std::vector<std::shared_ptr<IEAspect>> aspects{};
 
-    /** @brief Aspects can be one of:
-     * - Renderable xN  // Control how the asset is displayed visually
-     * - SoundPlayerThing xN  // Control what sounds the asset creates in-game
-     * - Script xN  // Control the asset based on events or timings
-     * - PhysicsBody xN  // Control how the asset interacts with other assets
-     * - ???User specified??? xN  // Control low-level interactions with the game engine
-     */
-    std::vector<void*> aspects{};
-
-    void addAspect(IEAspect* aspect) {
-        aspects.emplace_back(aspect);
-        aspect->associatedAssets.push_back(this);
-    }
+	void addAspect(IEAspect *aspect);
 };
 
 /*

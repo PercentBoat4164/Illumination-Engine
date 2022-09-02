@@ -14,7 +14,7 @@ Illumination Engine is a game engine written in C++. It is currently under devel
 - [x] Asset
 
 ### Optional modules
-- [ ] Graphics
+- [x] Graphics
 - [ ] Physics
 - [ ] Sound
 
