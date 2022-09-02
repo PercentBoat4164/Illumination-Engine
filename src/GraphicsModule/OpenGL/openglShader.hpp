@@ -68,7 +68,7 @@ public:
                 compile();
             } else { throw std::runtime_error("failed to compile shaders: " + static_cast<std::string>(createdWith.filename)); }
         }
-        compiled = compiled | compiledThisTime;
+        compiled = compiled | (bool) compiledThisTime;
     }
 
     void destroy() {

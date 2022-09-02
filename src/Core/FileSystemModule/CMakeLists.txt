@@ -1,16 +1,8 @@
 set(IEFileSystemModuleSourceFiles  # Gather sources
-		IEFile.cpp
-		IEFile.hpp
-		IEFileSystem.cpp
-		IEFileSystem.hpp
-		IEImporter.cpp
-		IEImporter.hpp
-		IETempFile.cpp
-		IETempFile.hpp
-		)
+        IEFileSystem.hpp
+        IEFile.hpp
+        )
 
 # Create and define properties for the executable target
-add_library(IEFileSystemModule ${IEFileSystemModuleSourceFiles})
-target_link_libraries(IEFileSystemModule assimp)
-target_include_directories(IEFileSystemModule PUBLIC ${assimp_DIR})
+add_library(IEFileSystemModule INTERFACE ${IEFileSystemModuleSourceFiles})
 set_target_properties(IEFileSystemModule PROPERTIES LINKER_LANGUAGE CXX)

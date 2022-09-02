@@ -1,6 +1,14 @@
 # Project exclude paths
+# Visual Studio Code
+/.vs
+/.vscode
+/CMakeFiles
+/build
+/out
 # CLion
-/*build*
+/*-build-*
 /.idea
+# Dependencies extracted from deps/otherSources.tar.xz
+/deps
 # Ignore pre-compiled shaders
 /res/Shaders/*/*.spv
