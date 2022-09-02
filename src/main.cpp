@@ -1,6 +1,7 @@
 #include "GraphicsModule/IERenderEngine.hpp"
 #include "InputModule/IEKeyboard.hpp"
 #include "Core/FileSystemModule/IEFileSystem.hpp"
+#include "ScriptingModule/IEScript.hpp"
 
 int main() {
 	IESettings settings = IESettings();
@@ -25,6 +26,7 @@ int main() {
 	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
 	fbx->filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
 	fbx->addAspect(new IERenderable{});
+	fbx->addScript(new IEScript{"res/assets/AncientStatue/scripts/rotate.py"})
 	fbx->position = {2, 1, 0};
 	renderEngine->addAsset(fbx);
 	std::shared_ptr<IEAsset> obj = std::make_shared<IEAsset>();
@@ -51,5 +53,6 @@ int main() {
 	while (renderEngine->update()) {
 		glfwPollEvents();
 		keyboard.handleQueue();
+
 	}
 }

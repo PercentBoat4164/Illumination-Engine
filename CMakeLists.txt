@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 
 set(BUILD_SHARED_LIBS OFF)
 if (WIN32)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif ()
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)  # Uncomment this line if you have no internet connection
@@ -22,9 +22,9 @@ add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res COMMAND ${CMAKE_
 file(COPY ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})  # Move resource files
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_compile_options("-g")  # Compile with debug information
+	add_compile_options("-g")  # Compile with debug information
 else ()
-    add_compile_options("-O3")  # Compile with level 3 optimizations
+	add_compile_options("-O3")  # Compile with level 3 optimizations
 endif ()
 
 # Always leave this line commented whenever committing as it will cause issues if the correct software is not installed.

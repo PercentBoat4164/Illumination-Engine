@@ -68,6 +68,15 @@ set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS} PARENT_SCOPE)  # Move package var
 FetchContent_MakeAvailable(assimp glm spdlog)  # Build all libraries
 set_target_properties(assimp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+# Get SWIG for scripting module
+# REQUIRES:
+# libpcre2-dev libpcre3-dev autoconf automake libtool bison
+
+message("Downloading SWIG from master")
+FetchContent_Declare(swig GIT_REPOSITORY https://github.com/swig/swig GIT_TAG master)
+
+FetchContent_MakeAvailable(swig)  # Generate SWIG
+
 # Setup all needed includes
 set(assimp_DIR ${assimp_SOURCE_DIR} PARENT_SCOPE)
 set(spdlog_DIR ${spdlog_SOURCE_DIR} PARENT_SCOPE)
@@ -78,3 +87,4 @@ set(stb_image_DIR ${assimp_SOURCE_DIR}/contrib/stb PARENT_SCOPE)
 set(vk-bootstrap_DIR ${vk-bootstrap_SOURCE_DIR}/src PARENT_SCOPE)
 set(vma_DIR ${vma_SOURCE_DIR} PARENT_SCOPE)
 set(vulkan_DIR ${_vulkanheaders_SOURCE_DIR} PARENT_SCOPE)
+set(swig_DIR ${swig_SOURCE_DIR} PARENT_SCOPE)
