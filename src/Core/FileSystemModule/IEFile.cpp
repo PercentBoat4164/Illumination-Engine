@@ -4,7 +4,8 @@
 IEFile::IEFile(const std::filesystem::path &filePath) {
 	path = filePath;
 	name = filePath.filename().string();
-	open(std::fstream::out);
+	open(std::fstream::in | std::fstream::binary);
+    fileIO.seekg(0, std::fstream::end);
 	size = fileIO.tellg();
 	extension = filePath.extension().string();
 	close();
@@ -29,7 +30,9 @@ IEFile &IEFile::operator=(const IEFile &file) {
 }
 
 std::vector<char> IEFile::read() {
-	open();
+    open(std::fstream::in | std::fstream::binary);
+    getSize();
+    fileIO.seekg(0, std::fstream::beg);
 	std::vector<char> data{std::istreambuf_iterator<char>(fileIO), std::istreambuf_iterator<char>()};
 	close();
 	return data;
@@ -77,7 +80,12 @@ void IEFile::overwrite(const std::vector<char> &data, std::streamsize startPosit
 	close();
 }
 
-void IEFile::open(std::_Ios_Openmode mode) {
+std::streamsize IEFile::getSize() {
+    fileIO.seekg(0, std::fstream::end);
+    return size = fileIO.tellg();
+}
+
+void IEFile::open(std::ios::openmode mode) {
 	if(!fileIO.is_open()) {
 		fileIO.open(path, mode);
 		size = fileIO.tellg();

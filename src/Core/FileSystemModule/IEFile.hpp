@@ -37,8 +37,10 @@ public:
 
 private:
 
+    std::streamsize getSize();
+
     // Open a file for reading and writing
-    void open(std::_Ios_Openmode mode = std::ios::in | std::ios::out | std::ios::binary);
+    void open(std::ios::openmode mode = std::ios::in | std::ios::out | std::ios::binary);
 
     // Close the file
     void close();

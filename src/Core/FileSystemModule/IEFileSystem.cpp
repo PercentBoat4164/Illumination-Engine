@@ -41,3 +41,14 @@ void IEFileSystem::deleteUsedDirectory(const std::string &filePath) {
 	}
 	std::filesystem::remove_all(path / filePath);
 }
+
+IEFile &IEFileSystem::getFile(const std::string &filePath) {
+    return files.find(filePath)->second;
+}
+
+
+
+//template<class T>
+//void IEFileSystem::importFile(T* data, IEFile &file, unsigned int flags) {
+//    importer.import(data, file, flags);
+//}

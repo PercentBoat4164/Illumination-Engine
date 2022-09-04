@@ -11,12 +11,14 @@
 class IEFileSystem {
 public:
     std::filesystem::path path;
-    IEImporter importer;
+    IEImporter importer{};
 
     explicit IEFileSystem(const std::filesystem::path& fileSystemPath);
 
     // Create a new IEFile with the given relative path
     void addFile(const std::string& filePath);
+
+    IEFile& getFile(const std::string& filePath);
 
     void createFolder(const std::string& folderPath) const;
 
@@ -32,8 +34,15 @@ public:
     // Delete a directory that has other files in it
     void deleteUsedDirectory(const std::string& filePath);
 
-    // Import a file
-    std::string importFile(const std::string& filePath);
+    template<class T>
+    void importFile(T* data, IEFile &file, unsigned int flags = 0) {
+        importer.import(data, file, flags);
+    }
+
+    template<class T>
+    void importFile(T* data, std::string filePath, unsigned int flags = 0) {
+        importer.import(data, getFile(filePath), flags);
+    };
 
 private:
     std::unordered_map<std::string, IEFile> files;
