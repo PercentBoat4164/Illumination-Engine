@@ -42,12 +42,9 @@ else ()
 	set(glew-cmake_BUILD_STATIC ON CACHE BOOL "" FORCE)
 endif ()
 message("Downloading GLEW glew-2.2.0")
-FetchContent_Declare(glew URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
+FetchContent_Declare(glew URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz SOURCE_SUBDIR build/cmake)
 
 FetchContent_MakeAvailable(glfw glew)  # Generate all external dependencies which require OpenGL
-
-# Special commands for generating GLEW
-add_subdirectory(${glew_SOURCE_DIR}/build/cmake ${glew_BINARY_DIR})
 
 set(OpenGL_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
 
@@ -68,16 +65,29 @@ set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS} PARENT_SCOPE)  # Move package var
 FetchContent_MakeAvailable(assimp glm spdlog)  # Build all libraries
 set_target_properties(assimp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+
+# SKIPPING SWIG IN FAVOR OF INDIVIDUAL APIS FOR EACH LANGUAGE
+
 # Get SWIG for scripting module
 # REQUIRES:
 # libpcre2-dev libpcre3-dev autoconf automake libtool bison
 
-message("Downloading SWIG from master")
-FetchContent_Declare(swig GIT_REPOSITORY https://github.com/swig/swig GIT_TAG master)
+#message("Downloading SWIG from master")
+#FetchContent_Declare(swig GIT_REPOSITORY https://github.com/swig/swig GIT_TAG master OVERRIDE_FIND_PACKAGE)
 
-FetchContent_MakeAvailable(swig)  # Generate SWIG
+# For now note that swig is required to be installed.
+# Ubuntu:
+#	sudo apt install swig
+#include(FindSWIG)
+
+# Lua and sol2 for scripting language support
+include(FindLua)
+FetchContent_Declare(sol2 GIT_REPOSITORY https://github.com/ThePhD/sol2 GIT_TAG main)
+FetchContent_MakeAvailable(sol2)
 
 # Setup all needed includes
+set(LUA_LIBRARIES ${LUA_LIBRARIES} PARENT_SCOPE)
+set(LUA_INCLUDE_DIR ${LUA_INCLUDE_DIR} PARENT_SCOPE)
 set(assimp_DIR ${assimp_SOURCE_DIR} PARENT_SCOPE)
 set(spdlog_DIR ${spdlog_SOURCE_DIR} PARENT_SCOPE)
 set(glfw_DIR ${glfw_SOURCE_DIR} PARENT_SCOPE)
@@ -86,5 +96,5 @@ set(glm_DIR ${glm_SOURCE_DIR} PARENT_SCOPE)
 set(stb_image_DIR ${assimp_SOURCE_DIR}/contrib/stb PARENT_SCOPE)
 set(vk-bootstrap_DIR ${vk-bootstrap_SOURCE_DIR}/src PARENT_SCOPE)
 set(vma_DIR ${vma_SOURCE_DIR} PARENT_SCOPE)
-set(vulkan_DIR ${_vulkanheaders_SOURCE_DIR} PARENT_SCOPE)
-set(swig_DIR ${swig_SOURCE_DIR} PARENT_SCOPE)
+set(sol2_DIR ${sol2_SOURCE_DIR}/include PARENT_SCOPE)
+

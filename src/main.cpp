@@ -26,7 +26,7 @@ int main() {
 	std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
 	fbx->filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
 	fbx->addAspect(new IERenderable{});
-	fbx->addScript(new IEScript{"res/assets/AncientStatue/scripts/rotate.py"})
+	fbx->addAspect(new IEScript{"res/assets/AncientStatue/scripts/rotate.py"});
 	fbx->position = {2, 1, 0};
 	renderEngine->addAsset(fbx);
 	std::shared_ptr<IEAsset> obj = std::make_shared<IEAsset>();

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)  # 3.14 is required for FetchContent
 project(IlluminationEngine VERSION 0.0.0)
 
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+
 set(CMAKE_CXX_STANDARD 23)
 
 set(BUILD_SHARED_LIBS OFF)
@@ -21,10 +23,11 @@ add_subdirectory(src)  # Generate Illumination Engine from source
 add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res DEPENDS ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res COMMENT "Copying resource files...")
 file(COPY ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})  # Move resource files
 
+add_compile_options(-fmodules-ts)
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-	add_compile_options("-g")  # Compile with debug information
+	add_compile_options(-g)  # Compile with debug information
 else ()
-	add_compile_options("-O3")  # Compile with level 3 optimizations
+	add_compile_options(-O3)  # Compile with level 3 optimizations
 endif ()
 
 # Always leave this line commented whenever committing as it will cause issues if the correct software is not installed.

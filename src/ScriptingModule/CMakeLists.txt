@@ -7,8 +7,5 @@ set(IEScriptingModuleSourceFiles  # Gather sources
 add_library(IEScriptingModule ${IEScriptingModuleSourceFiles})
 set_target_properties(IEScriptingModule PROPERTIES LINKER_LANGUAGE CXX)
 
-# Add external dependency libraries and include directories to the target
-target_link_libraries(IEScriptingModule PUBLIC swig)
-
-# Compiles without this line, but without it CLion thinks it cannot find the files.
-target_include_directories(IEScriptingModule PUBLIC ${swig_DIR})
+target_link_libraries(IEScriptingModule PUBLIC IECore sol2 ${LUA_LIBRARIES})
+target_include_directories(IEScriptingModule PUBLIC ${LUA_INCLUDE_DIR} ${sol2_DIR})

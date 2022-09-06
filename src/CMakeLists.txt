@@ -2,6 +2,7 @@
 add_subdirectory(Core)
 add_subdirectory(InputModule)
 add_subdirectory(GraphicsModule)
+add_subdirectory(ScriptingModule)
 
 # Create and define properties for the executable target
 add_executable(IlluminationEngine main.cpp)
