@@ -3,6 +3,9 @@
 
 /* Include dependencies within this module. */
 #include "GraphicsModule/Renderable/IERenderable.hpp"
+#include "GraphicsModule/Image/Image.hpp"
+#include "GraphicsModule/Image/ImageVulkan.hpp"
+#include "GraphicsModule/Image/ImageOpenGL.hpp"
 
 /* Include dependencies from Core. */
 #include "Core/LogModule/IELogger.hpp"
@@ -17,7 +20,7 @@
 
 #define VMA_IMPLEMENTATION
 
-#include <include/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -882,3 +885,11 @@ void IERenderEngine::_openGLDestroy() {
 
 std::function<bool(IERenderEngine &)> IERenderEngine::_update = std::function<bool(IERenderEngine &)>{[](IERenderEngine &) { return true; }};
 std::function<void(IERenderEngine &)> IERenderEngine::_destroy = std::function<void(IERenderEngine &)>{[](IERenderEngine &) { return; }};
+
+IE::Image *IERenderEngine::createImage() const {
+	if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		return new IE::ImageVulkan{};
+	} else {
+		return new IE::ImageOpenGL{};
+	}
+}

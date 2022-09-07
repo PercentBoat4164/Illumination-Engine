@@ -9,6 +9,8 @@ struct GLFWwindow;
 
 struct GLFWmonitor;
 
+namespace IE { class Image; }
+
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEAPI.hpp"
@@ -30,6 +32,7 @@ struct GLFWmonitor;
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 
 class IERenderEngine {
@@ -191,6 +194,7 @@ public:
 
 	IECamera camera{};
 	std::shared_ptr<IERenderPass> renderPass{};
+	std::shared_ptr<IERenderPass> shadowPass{};
 	IESettings *settings;
 	std::shared_ptr<IECommandPool> graphicsCommandPool{};
 	std::shared_ptr<IECommandPool> presentCommandPool{};
@@ -274,4 +278,6 @@ public:
 	static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam);
 
 	static void setAPI(const IEAPI &API);
+	
+	IE::Image *createImage() const;
 };

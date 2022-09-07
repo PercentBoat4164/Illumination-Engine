@@ -47,7 +47,7 @@ void IEPipeline::_openglCreate(IERenderEngine *engineLink, IEPipeline::CreateInf
 	glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
 	if (infoLogLength > 0) {
 		std::vector<char> programErrorMessage(infoLogLength + 1);
-		glGetProgramInfoLog(programID, infoLogLength, NULL, &programErrorMessage[0]);
+		glGetProgramInfoLog(programID, infoLogLength, nullptr, &programErrorMessage[0]);
 		printf("%s\n", &programErrorMessage[0]);
 	}
 }
@@ -64,18 +64,9 @@ void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInf
 	if (vkCreatePipelineLayout(linkedRenderEngine->device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to create pipeline layout!");
 	}
-	#ifndef NDEBUG
-	created.pipelineLayout = true;
-	#endif
+
 	deletionQueue.emplace_back([&] {
-		#ifndef NDEBUG
-		if (created.pipelineLayout) {
-			#endif
-			vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr);
-			#ifndef NDEBUG
-			created.pipelineLayout = false;
-		}
-		#endif
+		vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr);
 	});
 
 	// Prepare shaders

@@ -12,10 +12,10 @@ typedef enum IEImageLocation {
 	IE_IMAGE_LOCATION_VIDEO = 0x4
 } IEImageLocation;
 
-constexpr IEImageLocation operator|(IEImageLocation first, IEImageLocation second) noexcept {
+constexpr IEImageLocation operator|(IEImageLocation first, IEImageLocation second) {
 	uint8_t result = (uint8_t) first | (uint8_t) second;
 	if (result & IE_IMAGE_LOCATION_NONE && (result & ~IE_IMAGE_LOCATION_NONE) > IE_IMAGE_LOCATION_NULL) {
-		std::logic_error("IE_IMAGE_LOCATION_NONE mix error!");
+		throw std::logic_error("IE_IMAGE_LOCATION_NONE mix error!");
 	}
 	return (IEImageLocation) result;
 }

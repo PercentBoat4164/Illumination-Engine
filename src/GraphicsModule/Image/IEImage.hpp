@@ -14,7 +14,7 @@ class IEBuffer;
 #include <include/GL/glew.h>
 
 // External dependencies
-#include <include/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 #include <vulkan/vulkan.h>
 
