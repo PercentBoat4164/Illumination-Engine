@@ -191,6 +191,7 @@ public:
 
 	IECamera camera{};
 	std::shared_ptr<IERenderPass> renderPass{};
+	std::shared_ptr<IERenderPass> shadowPass{};
 	IESettings *settings;
 	std::shared_ptr<IECommandPool> graphicsCommandPool{};
 	std::shared_ptr<IECommandPool> presentCommandPool{};

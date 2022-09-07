@@ -17,7 +17,7 @@
 
 #define VMA_IMPLEMENTATION
 
-#include <include/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 

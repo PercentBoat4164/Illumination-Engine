@@ -66,7 +66,13 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Shader/IEShader.hpp
         Shader/IEUniformBufferObject.cpp
         Shader/IEUniformBufferObject.hpp
-        )
+		Image/Image.cpp
+		Image/Image.hpp
+		Image/ImageOpenGL.cpp
+		Image/ImageOpenGL.hpp
+		Image/ImageVulkan.cpp
+		Image/ImageVulkan.hpp
+		)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})
@@ -81,3 +87,6 @@ target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm vk-boo
 target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR} ${vk-bootstrap_DIR} ${vma_DIR} ${Vulkan_INCLUDE_DIR})
 
 add_dependencies(IEGraphicsModule IEGMShaders)  # Add shader pre-compilation as a dependency
+
+add_executable(IEGMmain main.cpp)
+target_link_libraries(IEGMmain PUBLIC IEGraphicsModule)
