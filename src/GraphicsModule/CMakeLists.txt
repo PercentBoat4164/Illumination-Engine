@@ -36,15 +36,9 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         IEVersion.hpp
         Image/IEImage.cpp
         Image/IEImage.hpp
-        Image/IEImageNEW.cpp
-        Image/IEImageNEW.hpp
-        Image/IENDimensionalResizableImage.cpp
-        Image/IENDimensionalResizableImage.hpp
-        Image/IETexture.cpp
+		Image/IETexture.cpp
         Image/IETexture.hpp
-        Image/IETextureNEW.cpp
-        Image/IETextureNEW.hpp
-        RenderPass/IEFramebuffer.cpp
+		RenderPass/IEFramebuffer.cpp
         RenderPass/IEFramebuffer.hpp
         RenderPass/IERenderPass.cpp
         RenderPass/IERenderPass.hpp
@@ -72,7 +66,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 		Image/ImageOpenGL.hpp
 		Image/ImageVulkan.cpp
 		Image/ImageVulkan.hpp
-		)
+		Image/Texture.cpp Image/Texture.hpp Image/Attachment.cpp Image/Attachment.hpp Image/TextureOpenGL.cpp Image/TextureOpenGL.hpp Image/TextureVulkan.cpp Image/TextureVulkan.hpp Image/AttachmentOpenGL.cpp Image/AttachmentOpenGL.hpp Image/AttachmentVulkan.cpp Image/AttachmentVulkan.hpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

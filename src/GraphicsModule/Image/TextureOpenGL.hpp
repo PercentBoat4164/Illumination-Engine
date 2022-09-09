@@ -1,0 +1,14 @@
+//
+// Created by sophia on 9/9/22.
+//
+
+#ifndef ILLUMINATIONENGINE_TEXTUREOPENGL_HPP
+#define ILLUMINATIONENGINE_TEXTUREOPENGL_HPP
+
+
+class TextureOpenGL {
+
+};
+
+
+#endif //ILLUMINATIONENGINE_TEXTUREOPENGL_HPP

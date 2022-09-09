@@ -15,12 +15,15 @@ void doAThing(IE::Image *image) {
 
 int main() {
 	IESettings settings{};
-	IERenderEngine renderEngine{&settings};
-	IE::Image *imageFromRenderEngine{renderEngine.createImage()};
-	auto imageFromImageFactory(IE::Image::factory(&renderEngine));
-	doAThing(imageFromRenderEngine);
+	auto renderEngine{std::make_shared<IERenderEngine>(settings)};
+	auto imageFromImageFactory(IE::Image::create(renderEngine));
 	doAThing(imageFromImageFactory.get());
-//	std::cout << vulkan.format << std::endl;
+	IE::Core::MultiDimensionalVector<int> vector{12u, 12u};
+	vector[{11, 3}] = 108;
+	IE::Core::MultiDimensionalVector<int> slice{vector[{{5, 4}, {10, 6}}]};
+	int element = vector[{11, 3}];
+	std::cout << slice.m_dimensions[0] << ", " << slice.m_dimensions[1] << std::endl;
+	std::cout << element << std::endl;
 }
 
 /* ******************************************

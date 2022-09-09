@@ -49,23 +49,24 @@ constexpr IE::Image::Location operator^(IE::Image::Location t_first, IE::Image::
 
 /**
  * @brief An implementation of the NOT operator for the IE::Image::Location enum.
+ * @details This operator does not necessarily return a valid location. It may return a location that has both the IE_IMAGE_LOCATION_NONE and
+ * IE_IMAGE_LOCATION_SYSTEM bits set for exampl
  * @param t_first Operand.
  * @return ~t_first
  */
 constexpr IE::Image::Location operator~(IE::Image::Location t_first) noexcept {
-	return Location(~(uint8_t) t_first);
+	return static_cast<IE::Image::Location>(~(uint8_t) t_first);
 }
 
 //
 // ===================== Implementation of IE::Image =====================
 //
 
-IE::Image::Image() noexcept: m_location{IE_IMAGE_LOCATION_NULL}, m_size{0}, m_components{0} {}
+IE::Image::Image() noexcept : m_location{IE_IMAGE_LOCATION_NULL},
+							  m_components{0} {}
 
 IE::Image &IE::Image::operator=(const IE::Image &other) {
 	if (&other != this) {
-		m_size = other.m_size;
-		m_dimensions = other.m_dimensions;
 		m_components = other.m_components;
 		m_location = other.m_location;
 		m_data = other.m_data;
@@ -76,29 +77,43 @@ IE::Image &IE::Image::operator=(const IE::Image &other) {
 
 IE::Image &IE::Image::operator=(IE::Image &&other) noexcept {
 	if (&other != this) {
-		m_size = std::exchange(other.m_size, 0);
-		m_dimensions = std::exchange(other.m_dimensions, std::vector<size_t>{});
 		m_components = std::exchange(other.m_components, 0);
 		m_location = std::exchange(other.m_location, IE_IMAGE_LOCATION_NULL);
-		m_data = std::exchange(other.m_data, std::vector<unsigned char>{});
+		m_data = std::exchange(other.m_data, IE::Core::MultiDimensionalVector<unsigned char>{});
 		/**@todo Add the parts of this function that would destroy the image and possibly rebuild it under the new engine. This may have to be implemented in the classes that inherit this one. */
 	}
 	return *this;
 }
-
-IE::Image::Image(IE::Image &&other) noexcept:
-		m_size{std::exchange(other.m_size, 0)},
-		m_dimensions{std::exchange(other.m_dimensions, std::vector<size_t>{})},
-		m_components{std::exchange(other.m_components, 0)},
-		m_location{std::exchange(other.m_location, IE_IMAGE_LOCATION_NULL)},
-		m_data{std::exchange(other.m_data, std::vector<unsigned char>{})},
-		m_linkedRenderEngine{std::exchange(other.m_linkedRenderEngine, std::weak_ptr<IERenderEngine>{})} {}
-
 		
-std::unique_ptr<IE::Image> IE::Image::factory(IERenderEngine *t_engineLink) {
-	if (t_engineLink->API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-		return std::unique_ptr<IE::Image>{reinterpret_cast<Image *>(new IE::ImageVulkan())};
-	} if (t_engineLink->API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-		return std::unique_ptr<IE::Image>{reinterpret_cast<Image *>(new IE::ImageOpenGL())};
+std::unique_ptr<IE::Image> IE::Image::create(const std::weak_ptr<IERenderEngine> &t_engineLink) {
+	if (t_engineLink.lock()->API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+		return std::unique_ptr<IE::Image>{reinterpret_cast<Image *>(new IE::ImageVulkan(t_engineLink))};
+	} if (t_engineLink.lock()->API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+		return std::unique_ptr<IE::Image>{reinterpret_cast<Image *>(new IE::ImageOpenGL(t_engineLink))};
 	}
+	t_engineLink.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "failed to create image because render engine is neither Vulkan or OpenGL.");
+	return nullptr;
 }
+
+template<typename... Args> unsigned char IE::Image::operator[](Args... args) {
+	return m_data[std::forward<Args...>(args...)];
+}
+
+template<typename... Args>
+IE::Image::Image(Args... t_dimensions) :
+		m_components{4},
+		m_location{IE_IMAGE_LOCATION_SYSTEM},
+		m_data{IE::Core::MultiDimensionalVector<unsigned char>(t_dimensions...)} {}
+
+IE::Image::Image(const std::weak_ptr<IERenderEngine> &t_engineLink) : m_location {IE_IMAGE_LOCATION_NULL},
+												 					  m_components{0},
+												 					  m_linkedRenderEngine{t_engineLink.lock()} {}
+
+IE::Image::Location IE::Image::getLocation() const {
+	return m_location;
+}
+
+IE::Core::MultiDimensionalVector<unsigned char> IE::Image::getData() const {
+	return m_data;
+}
+

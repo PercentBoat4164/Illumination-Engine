@@ -45,7 +45,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 	descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
 	descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
 	if (vkCreateDescriptorSetLayout(linkedRenderEngine->device.device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) !=
-		VK_SUCCESS) { throw std::runtime_error("failed to create descriptor layout!"); }
+		VK_SUCCESS) { throw std::runtime_error("failed to create descriptor m_layout!"); }
 	deletionQueue.emplace_back([&] { vkDestroyDescriptorSetLayout(linkedRenderEngine->device.device, descriptorSetLayout, nullptr); });
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
 	descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(createdWith.poolSizes.size());

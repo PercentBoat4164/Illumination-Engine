@@ -1,0 +1,14 @@
+//
+// Created by sophia on 9/9/22.
+//
+
+#ifndef ILLUMINATIONENGINE_ATTACHMENTVULKAN_HPP
+#define ILLUMINATIONENGINE_ATTACHMENTVULKAN_HPP
+
+
+class AttachmentVulkan {
+
+};
+
+
+#endif //ILLUMINATIONENGINE_ATTACHMENTVULKAN_HPP
