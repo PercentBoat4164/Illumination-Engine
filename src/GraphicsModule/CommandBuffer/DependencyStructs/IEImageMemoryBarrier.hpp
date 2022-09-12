@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <vulkan/vulkan.h>
-#include "Image/IEImage.hpp"
+#include "Image/Image.hpp"
 
 class IEImageMemoryBarrier {
 public:
@@ -12,13 +12,11 @@ public:
 	VkImageLayout newLayout;
 	uint32_t srcQueueFamilyIndex;
 	uint32_t dstQueueFamilyIndex;
-	std::shared_ptr<IEImage> image;
+	std::shared_ptr<IE::Graphics::Image> image;
 	VkImageSubresourceRange subresourceRange;
 
-	[[nodiscard]] std::vector<std::shared_ptr<IEImage>> getImages() const;
-
-	[[nodiscard]] std::vector<std::shared_ptr<IEDependency>> getDependencies() const;
-
+	[[nodiscard]] std::vector<std::shared_ptr<IE::Graphics::Image>> getImages() const;
+	
 	explicit operator VkImageMemoryBarrier() const;
 
 	explicit operator VkImageMemoryBarrier2() const;

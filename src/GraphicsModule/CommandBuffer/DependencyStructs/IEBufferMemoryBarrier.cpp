@@ -5,9 +5,7 @@ std::vector<std::shared_ptr<IEBuffer>> IEBufferMemoryBarrier::getBuffers() const
 	return {buffer};
 }
 
-std::vector<std::shared_ptr<IEDependency>> IEBufferMemoryBarrier::getDependencies() const {
-	return {buffer};
-}
+
 
 IEBufferMemoryBarrier::operator VkBufferMemoryBarrier() const {
 	return {

@@ -59,13 +59,13 @@ void IEBuffer::_vulkanUploadToRAM() {
 }
 
 
-void IEBuffer::toImage(const std::shared_ptr<IEImage> &image) {
+void IEBuffer::toImage(const std::shared_ptr<IE::Graphics::detail::ImageVulkan> &image) {
 	VkBufferImageCopy region{};
-	region.imageSubresource.aspectMask = image->aspect & (VK_IMAGE_ASPECT_COLOR_BIT | VK_IMAGE_ASPECT_DEPTH_BIT);
+	region.imageSubresource.aspectMask = image->m_aspect & (VK_IMAGE_ASPECT_COLOR_BIT | VK_IMAGE_ASPECT_DEPTH_BIT);
 	region.imageSubresource.layerCount = 1;
-	region.imageExtent = {image->width, image->height, 1};
-	if (image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-		VkImageLayout oldLayout = image->layout;
+	region.imageExtent = {static_cast<uint32_t>(image->m_dimensions[0]), static_cast<uint32_t>(image->m_dimensions[0]), 1};
+	if (image->m_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+		VkImageLayout oldLayout = image->m_layout;
 		image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		linkedRenderEngine->graphicsCommandPool->index(0)->recordCopyBufferToImage(shared_from_this(), image, {region});
 		if (oldLayout != VK_IMAGE_LAYOUT_UNDEFINED) {
@@ -374,7 +374,6 @@ void IEBuffer::_vulkanUnloadFromVRAM() {
 std::function<void(IEBuffer &)> IEBuffer::_destroy = nullptr;
 
 void IEBuffer::destroy() {
-	invalidateDependents();
 	_destroy(*this);
 }
 

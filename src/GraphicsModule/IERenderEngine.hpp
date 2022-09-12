@@ -9,17 +9,15 @@ struct GLFWwindow;
 
 struct GLFWmonitor;
 
-namespace IE { class Image; }
-
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "IEAPI.hpp"
 #include "IECamera.hpp"
-#include "GraphicsModule/RenderPass/IERenderPass.hpp"
+#include "RenderPass/IERenderPass.hpp"
 #include "IESettings.hpp"
 #include "CommandBuffer/IECommandPool.hpp"
-#include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
-#include "Image/IETexture.hpp"
+#include "RenderPass/IEFramebuffer.hpp"
+#include "Image/Texture.hpp"
 #include "Core/AssetModule/IEAsset.hpp"
 #include "Renderable/IERenderable.hpp"
 
@@ -221,13 +219,12 @@ public:
 	PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR{};
 	PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR{};
 	PFN_vkAcquireNextImageKHR vkAcquireNextImageKhr{};
-	std::vector<std::shared_ptr<IETexture>> textures{};
+	std::vector<std::shared_ptr<IE::Graphics::Texture>> textures{};
 	std::vector<VkImageView> swapchainImageViews{};
 	std::vector<std::weak_ptr<IERenderable>> renderables{};
 	float frameTime{};
 	int frameNumber{};
-	// global depth image used by all framebuffers. Should this be here?
-	std::shared_ptr<IEImage> depthImage{};
+	std::shared_ptr<IE::Graphics::Image> depthImage{};
 
 	void addAsset(const std::shared_ptr<IEAsset> &asset);
 
@@ -278,6 +275,4 @@ public:
 	static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam);
 
 	static void setAPI(const IEAPI &API);
-	
-	IE::Image *createImage() const;
 };

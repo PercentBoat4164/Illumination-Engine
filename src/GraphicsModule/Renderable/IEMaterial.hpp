@@ -7,7 +7,8 @@
 #include "assimp/scene.h"
 #include <unordered_map>
 #include <string>
-#include "Image/IETexture.hpp"
+#include "Image/Texture.hpp"
+#include "IEAPI.hpp"
 
 #define GLM_FORCE_RADIANS
 

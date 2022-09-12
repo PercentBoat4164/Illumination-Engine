@@ -2,13 +2,13 @@
 
 #include "IERenderEngine.hpp"
 #include "Core/AssetModule/IEAspect.hpp"
-#include "Image/IEImage.hpp"
+#include "Image/Image.hpp"
 #include "RenderPass/IEFramebuffer.hpp"
 
 class IELight : public IEAspect {
 public:
 	IEFramebuffer framebuffer{};
-	IEImage depthImage{};
+	IE::Graphics::Image depthImage{};
 	IERenderEngine *linkedRenderEngine{};
 	
 	IELight(IERenderEngine *engineLink) : linkedRenderEngine(engineLink){

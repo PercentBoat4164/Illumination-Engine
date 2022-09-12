@@ -40,14 +40,14 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
 	clearValues[2].color = clearValues[0].color;
 
 //	uint8_t msaaSamplesAllowed = getHighestMSAASampleCount(linkedRenderEngine->settings->msaaSamples);
-
+	
 	for (size_t i = 0; i < linkedRenderEngine->swapchain.image_count; ++i) {
 		std::vector<VkImageView> framebufferAttachments{};
 		framebufferAttachments.reserve(attachments.size() + 2);
 		framebufferAttachments.push_back(linkedRenderEngine->swapchainImageViews[i]);
-		framebufferAttachments.push_back(linkedRenderEngine->depthImage->view);
-		for (const std::shared_ptr<IEImage>& image : attachments) {
-			framebufferAttachments.push_back(image->view);
+		framebufferAttachments.push_back(linkedRenderEngine->depthImage->m_view);
+		for (const std::shared_ptr<IE::Graphics::detail::AttachmentVulkan> &attachment: attachments) {
+			framebufferAttachments.push_back(attachment->m_view);
 		}
 		VkFramebufferCreateInfo framebufferCreateInfo{
 				.sType=VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,

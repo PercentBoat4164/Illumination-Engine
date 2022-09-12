@@ -1,14 +1,13 @@
 #pragma once
 
 /* Predefine classes used with pointers or as return values for functions. */
-class IEImage;
-
 class IERenderEngine;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "GraphicsModule/CommandBuffer/IEDependency.hpp"
 #include "IEAPI.hpp"
+#include "Image/Image.hpp"
+#include "Image/ImageVulkan.hpp"
 
 // External dependencies
 #include <vk_mem_alloc.h>
@@ -22,9 +21,10 @@ class IERenderEngine;
 #include <vector>
 #include <cstdint>
 #include <functional>
+#include <memory>
 
 
-class IEBuffer : public IEDependency, public std::enable_shared_from_this<IEBuffer> {
+class IEBuffer : public std::enable_shared_from_this<IEBuffer> {
 public:
 	struct CreateInfo {
 		size_t size{};
@@ -121,7 +121,7 @@ public:
 	void create(IERenderEngine *engineLink, size_t bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage, GLenum bufferType);
 
 
-	void toImage(const std::shared_ptr<IEImage> &image);
+	void toImage(const std::shared_ptr<IE::Graphics::detail::ImageVulkan> &image);
 
 
 	void uploadToRAM();
@@ -145,12 +145,9 @@ public:
 
 	void unloadFromVRAM();
 
-
+	
 	void destroy();
-
-
-	~IEBuffer() override;
-
+	
 protected:
 	IERenderEngine *linkedRenderEngine{};
 	VmaAllocation allocation{};

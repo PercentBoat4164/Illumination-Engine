@@ -10,10 +10,6 @@ std::vector<std::shared_ptr<IERenderPass>> IERenderPassBeginInfo::getRenderPasse
 	return {renderPass};
 }
 
-std::vector<std::shared_ptr<IEDependency>> IERenderPassBeginInfo::getDependencies() const {
-	return {framebuffer, renderPass};
-}
-
 IERenderPassBeginInfo::operator VkRenderPassBeginInfo() const {
 	return {
 			.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,

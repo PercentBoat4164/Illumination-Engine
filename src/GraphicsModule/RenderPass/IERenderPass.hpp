@@ -21,7 +21,7 @@ class IERenderPassBeginInfo;
 
 class IERenderEngine;
 
-class IERenderPass : public IEDependency, public std::enable_shared_from_this<IERenderPass> {
+class IERenderPass : public std::enable_shared_from_this<IERenderPass> {
 public:
 	struct CreateInfo {
 		uint8_t msaaSamples{1};
@@ -36,7 +36,7 @@ public:
 
 	void destroy();
 
-	~IERenderPass() override;
+	~IERenderPass();
 
 private:
 	std::vector<std::function<void()>> deletionQueue{};

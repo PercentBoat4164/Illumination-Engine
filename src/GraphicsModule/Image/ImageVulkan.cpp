@@ -1,77 +1,99 @@
 #include "ImageVulkan.hpp"
 
-#include "utility"
+#include "IERenderEngine.hpp"
 
-IE::ImageVulkan::ImageVulkan() : m_format{VK_FORMAT_UNDEFINED},
-								 m_layout{VK_IMAGE_LAYOUT_UNDEFINED},
-								 m_type{VK_IMAGE_TYPE_1D},
-								 m_tiling{VK_IMAGE_TILING_OPTIMAL},
-								 m_usage{VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
-								 m_flags{0},
-								 m_aspect{VK_IMAGE_ASPECT_NONE},
-								 m_allocationUsage{VMA_MEMORY_USAGE_AUTO},
-								 m_allocation() {}
+#include <utility>
+#include <mutex>
 
-IE::ImageVulkan &IE::ImageVulkan::operator=(const IE::ImageVulkan &t_other) {
+IE::Graphics::detail::ImageVulkan::ImageVulkan() : m_format{VK_FORMAT_UNDEFINED},
+												   m_layout{VK_IMAGE_LAYOUT_UNDEFINED},
+												   m_type{VK_IMAGE_TYPE_1D},
+												   m_viewType{VK_IMAGE_VIEW_TYPE_1D},
+												   m_tiling{VK_IMAGE_TILING_OPTIMAL},
+												   m_usage{VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
+												   m_flags{0},
+												   m_aspect{VK_IMAGE_ASPECT_NONE},
+												   m_samples{VK_SAMPLE_COUNT_1_BIT},
+												   m_mipLevel{1},
+												   m_allocationUsage{VMA_MEMORY_USAGE_AUTO},
+												   m_allocation(),
+												   m_allocationInfo(),
+												   m_id(nullptr),
+												   m_view(nullptr) {}
+
+IE::Graphics::detail::ImageVulkan &IE::Graphics::detail::ImageVulkan::operator=(const IE::Graphics::detail::ImageVulkan &t_other) {
 	if (&t_other != this) {
 		m_format = t_other.m_format;
 		m_layout = t_other.m_layout;
 		m_type = t_other.m_type;
+		m_viewType = t_other.m_viewType;
 		m_tiling = t_other.m_tiling;
 		m_usage = t_other.m_usage;
 		m_flags = t_other.m_flags;
 		m_aspect = t_other.m_aspect;
+		m_samples = t_other.m_samples;
+		m_mipLevel = t_other.m_mipLevel;
 		m_allocationUsage = t_other.m_allocationUsage;
 		m_allocation = t_other.m_allocation;
-		if (m_linkedRenderEngine.lock() != t_other.m_linkedRenderEngine.lock()) {
-			/**@todo Add the parts of this function that would destroy the image and rebuild it under the new engine. This may have to be implemented in the classes that inherit this one. */
-			m_linkedRenderEngine = t_other.m_linkedRenderEngine;
-		}
+		m_allocationInfo = t_other.m_allocationInfo;
+		m_id = t_other.m_id;
+		m_view = t_other.m_view;
 	}
 	return *this;
 }
 
-IE::ImageVulkan &IE::ImageVulkan::operator=(IE::ImageVulkan &&t_other) noexcept {
+IE::Graphics::detail::ImageVulkan &IE::Graphics::detail::ImageVulkan::operator=(IE::Graphics::detail::ImageVulkan &&t_other) noexcept {
 	if (&t_other != this) {
 		m_format = std::exchange(t_other.m_format, VK_FORMAT_UNDEFINED);
 		m_layout = std::exchange(t_other.m_layout, VK_IMAGE_LAYOUT_UNDEFINED);
 		m_type = std::exchange(t_other.m_type, VK_IMAGE_TYPE_1D);
+		m_viewType = std::exchange(t_other.m_viewType, VK_IMAGE_VIEW_TYPE_1D);
 		m_tiling = std::exchange(t_other.m_tiling, VK_IMAGE_TILING_OPTIMAL);
 		m_usage = std::exchange(t_other.m_usage, VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
 		m_flags = std::exchange(t_other.m_flags, 0);
+		m_samples = std::exchange(t_other.m_samples, VK_SAMPLE_COUNT_1_BIT);
+		m_mipLevel = std::exchange(t_other.m_mipLevel, 1);
 		m_aspect = std::exchange(t_other.m_aspect, VK_IMAGE_ASPECT_NONE);
 		m_allocationUsage = std::exchange(t_other.m_allocationUsage, VMA_MEMORY_USAGE_AUTO);
 		m_allocation = std::exchange(t_other.m_allocation, {});
-		if (m_linkedRenderEngine.lock() != t_other.m_linkedRenderEngine.lock()) {
-			/**@todo Add the parts of this function that would destroy the image and rebuild it under the new engine. This may have to be implemented in the classes that inherit this one. */
-			m_linkedRenderEngine = t_other.m_linkedRenderEngine;
-		}
+		m_allocationInfo = std::exchange(t_other.m_allocationInfo, {});
+		m_id = std::exchange(t_other.m_id, nullptr);
+		m_view = std::exchange(t_other.m_view, nullptr);
 	}
 	return *this;
 }
 
-IE::ImageVulkan::ImageVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink) : m_format{VK_FORMAT_UNDEFINED},
-																				  m_layout{VK_IMAGE_LAYOUT_UNDEFINED},
-																				  m_type{VK_IMAGE_TYPE_1D},
-																				  m_tiling{VK_IMAGE_TILING_OPTIMAL},
-																				  m_usage{VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
-																				  m_flags{0},
-																				  m_aspect{VK_IMAGE_ASPECT_NONE},
-																				  m_allocationUsage{VMA_MEMORY_USAGE_AUTO},
-																				  m_allocation(),
-																				  IE::Image(t_engineLink) {}
+IE::Graphics::detail::ImageVulkan::ImageVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink) : m_format{VK_FORMAT_UNDEFINED},
+																									m_layout{VK_IMAGE_LAYOUT_UNDEFINED},
+																									m_type{VK_IMAGE_TYPE_1D},
+																									m_viewType{VK_IMAGE_VIEW_TYPE_1D},
+																									m_tiling{VK_IMAGE_TILING_OPTIMAL},
+																									m_usage{VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
+																									m_flags{0},
+																									m_aspect{VK_IMAGE_ASPECT_NONE},
+																									m_samples{VK_SAMPLE_COUNT_1_BIT},
+																									m_mipLevel{1},
+																									m_allocationUsage{VMA_MEMORY_USAGE_AUTO},
+																									m_allocation(),
+																									m_allocationInfo(),
+																									m_id(nullptr),
+																									m_view(nullptr),
+																									IE::Graphics::Image(t_engineLink) {}
 
 
-uint8_t IE::ImageVulkan::getBytesInFormat() const {
+uint8_t IE::Graphics::detail::ImageVulkan::getBytesInFormat() const {
 	switch (m_format) {
 		case VK_FORMAT_UNDEFINED:
-			m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!");
+			m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+															  "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!");
 			return 0x0;
 		case VK_FORMAT_MAX_ENUM:
-			m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to get number of bytes in pixel of format VK_FORMAT_MAX_ENUM!");
+			m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+															  "Attempt to get number of bytes in pixel of format VK_FORMAT_MAX_ENUM!");
 			return 0x0;
 		default:
-			m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to get number of bytes in pixel of unknown format");
+			m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+															  "Attempt to get number of bytes in pixel of unknown format");
 			return 0x0;
 		case VK_FORMAT_R8_UNORM:
 		case VK_FORMAT_R8_SNORM:
@@ -333,110 +355,180 @@ uint8_t IE::ImageVulkan::getBytesInFormat() const {
 	}
 }
 
-void IE::ImageVulkan::transitionLayout(VkImageLayout) {
+void IE::Graphics::detail::ImageVulkan::transitionLayout(VkImageLayout) {
 
 }
 
-void IE::ImageVulkan::setLocation(IE::Image::Location t_location) {
-	if (!m_data.empty() || m_id != nullptr && t_location != m_location) {  // If data already exists somewhere and the new location is not the same as the old
+void IE::Graphics::detail::ImageVulkan::setLocation(IE::Graphics::Image::Location t_location) {
+	std::unique_lock<std::mutex> lock(*m_mutex);
+	if (!m_data.empty() ||
+		m_id != nullptr && t_location != m_location) {  // If data already exists somewhere and the new location is not the same as the old
 		if (m_location & IE_IMAGE_LOCATION_SYSTEM && t_location & IE_IMAGE_LOCATION_VIDEO) {  // system -> video
 			// Create image with specified intrinsics
+			lock.release();
+			_createImage(m_data);
+			lock.lock();
 		} else if (m_location & IE_IMAGE_LOCATION_VIDEO && t_location & IE_IMAGE_LOCATION_SYSTEM) {  // video -> system
 			// Copy data to system
+			lock.release();
+			_getImageData(&m_data);
+			lock.lock();
 		}
 		if (m_location & IE_IMAGE_LOCATION_SYSTEM && ~t_location & IE_IMAGE_LOCATION_SYSTEM) {  // system -> none
 			// Clear image from system
+			m_data.clear();
 		}
 		if (m_location & IE_IMAGE_LOCATION_VIDEO && ~t_location & IE_IMAGE_LOCATION_VIDEO) {  // video -> none
 			// Destroy video memory copy of image
+			lock.release();
+			_destroyImage();
+			lock.lock();
 		}
 	}
 	m_location = t_location;
 }
 
-void IE::ImageVulkan::setData(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) {
+void IE::Graphics::detail::ImageVulkan::setData(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) {
+	std::unique_lock<std::mutex> lock(*m_mutex);
 	if (m_location & IE_IMAGE_LOCATION_NONE) {  // Nowhere for image data to go.
 		// warn and return
+		m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+														  "Attempted to set data to an image stored in IE_IMAGE_LOCATION_NONE!");
+		return;
 	}
 	if (m_location & IE_IMAGE_LOCATION_SYSTEM) {
 		m_data = t_data;
 	}
 	if (m_location & IE_IMAGE_LOCATION_VIDEO) {
-		_createVkImage(t_data);
-		_createVkImageView();
+		if (m_dimensions == t_data.m_dimensions) {
+			lock.release();
+			_setImageData(t_data);
+			lock.lock();
+		} else {
+			lock.release();
+			_destroyImage();
+			_createImage(t_data);
+			lock.lock();
+		}
 	}
 }
 
-bool IE::ImageVulkan::_createVkImage(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) {
-	if (t_data.m_dimensions.size() > 4) {
-		m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Images with more than 4 dimensions cannot put on the GPU.");
+bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) {
+	std::unique_lock<std::mutex> lock(*m_mutex);
+	if (t_data.m_dimensions.size() > 4 || t_data.m_dimensions.empty()) {
+		m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
+														  "Images with more than 4 dimensions or less than 1 cannot be put on the GPU.");
 	}
 	
 	// Vulkan Image specifications
 	VkImageCreateInfo imageCreateInfo{
-		.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-		.imageType=m_type,
-		.format=m_format,
-		.extent=VkExtent3D{
-			.width=static_cast<uint32_t>(!m_data.m_dimensions.empty() ? m_data.m_dimensions[0] : 1),
-			.height=static_cast<uint32_t>(m_data.m_dimensions.size() > 1 ? m_data.m_dimensions[1] : 1),
-			.depth=static_cast<uint32_t>(m_data.m_dimensions.size() > 2 ? m_data.m_dimensions[2] : 1)
-		},
-		.mipLevels=1,
-		.arrayLayers=static_cast<uint32_t>(m_data.m_dimensions.size() > 3 ? m_data.m_dimensions[3] : 1),
-		.samples=m_samples,
-		.tiling=m_tiling,
-		.usage=m_usage,
-		.sharingMode=VK_SHARING_MODE_EXCLUSIVE,
-		.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED  // Will be changed to the requested layout after being filled with data.
+			.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+			.imageType=m_type,
+			.format=m_format,
+			.extent=VkExtent3D{
+					.width=static_cast<uint32_t>(!m_data.m_dimensions.empty() ? m_data.m_dimensions[0] : 0),
+					.height=static_cast<uint32_t>(m_data.m_dimensions.size() > 1 ? m_data.m_dimensions[1] : 1),
+					.depth=static_cast<uint32_t>(m_data.m_dimensions.size() > 2 ? m_data.m_dimensions[2] : 1)
+			},
+			.mipLevels=1,
+			.arrayLayers=static_cast<uint32_t>(m_data.m_dimensions.size() > 3 ? m_data.m_dimensions[3] : 1),
+			.samples=m_samples,
+			.tiling=m_tiling,
+			.usage=m_usage,
+			.sharingMode=VK_SHARING_MODE_EXCLUSIVE,
+			.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED  // Will be changed to the requested layout after being filled with data.
 	};
 	
 	// VMA allocation specifications
-	VmaAllocationCreateInfo allocationCreateInfo {
-		.flags=0,  // Use VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT for framebuffer attachments
-		.usage=m_allocationUsage,
-		.requiredFlags=0,
-		.preferredFlags=VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		.memoryTypeBits=0,
-		.pool=VK_NULL_HANDLE,
-		.pUserData=nullptr,
-		.priority=0.0  // Default to the lowest priority
+	VmaAllocationCreateInfo allocationCreateInfo{
+			.flags=0,  // Use VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT for framebuffer attachments
+			.usage=m_allocationUsage,
+			.requiredFlags=0,
+			.preferredFlags=VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			.memoryTypeBits=0,
+			.pool=VK_NULL_HANDLE,
+			.pUserData=nullptr,
+			.priority=0.0  // Default to the lowest priority
 	};
 	
 	// Create image and perform error checking
-	VkResult result{vmaCreateImage(m_linkedRenderEngine.lock()->allocator, &imageCreateInfo, &allocationCreateInfo, &m_id, &m_allocation, &m_allocationInfo)};
+	VkResult result{
+			vmaCreateImage(m_linkedRenderEngine.lock()->allocator, &imageCreateInfo, &allocationCreateInfo, &m_id, &m_allocation, &m_allocationInfo)};
 	if (!result) {
-		m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "failed to create image with error: " + IERenderEngine::translateVkResultCodes(result) + ". Use Vulkan's validation layers for more information.");
+		m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
+														  "failed to create image with error: " + IERenderEngine::translateVkResultCodes(result) +
+														  ". Use Vulkan's validation layers for more information.");
+		return false;
 	}
-	return result == VK_SUCCESS;
-}
-
-bool IE::ImageVulkan::_createVkImageView() {
+	
 	// Describe what parts of the image are accessible from this view.
-	VkImageViewCreateInfo imageViewCreateInfo {
-		.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-		.flags=0,
-		.image=m_id,
-		.viewType=m_viewType,
-		.format=m_format,
-		.components=VkComponentMapping{
-			.r=VK_COMPONENT_SWIZZLE_B,
-			.g=VK_COMPONENT_SWIZZLE_G,
-			.b=VK_COMPONENT_SWIZZLE_B,
-			.a=VK_COMPONENT_SWIZZLE_A
-		},
-		.subresourceRange=VkImageSubresourceRange{  // View entire image
-			.aspectMask=m_aspect,
-			.baseMipLevel=0,
-			.levelCount=m_mipLevel,
-			.baseArrayLayer=0,
-			.layerCount=static_cast<uint32_t>(m_data.m_dimensions.size() > 3 ? m_data.m_dimensions[3] : 1)
-		},
+	VkImageViewCreateInfo imageViewCreateInfo{
+			.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.flags=0,
+			.image=m_id,
+			.viewType=m_viewType,
+			.format=m_format,
+			.components=VkComponentMapping{
+					.r=VK_COMPONENT_SWIZZLE_B,
+					.g=VK_COMPONENT_SWIZZLE_G,
+					.b=VK_COMPONENT_SWIZZLE_B,
+					.a=VK_COMPONENT_SWIZZLE_A
+			},
+			.subresourceRange=VkImageSubresourceRange{  // View entire image
+					.aspectMask=m_aspect,
+					.baseMipLevel=0,
+					.levelCount=m_mipLevel,
+					.baseArrayLayer=0,
+					.layerCount=static_cast<uint32_t>(m_data.m_dimensions.size() > 3 ? m_data.m_dimensions[3] : 1)
+			},
 	};
 	
-	VkResult result{vkCreateImageView(m_linkedRenderEngine.lock()->device.device, &imageViewCreateInfo, nullptr, &m_view)};
+	result = vkCreateImageView(m_linkedRenderEngine.lock()->device.device, &imageViewCreateInfo, nullptr, &m_view);
 	if (!result) {
-		m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "failed to create image view with error: " + IERenderEngine::translateVkResultCodes(result) + ". Use Vulkan's validation layers for more information.");
+		m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "failed to create image view with error: " +
+																							   IERenderEngine::translateVkResultCodes(result) +
+																							   ". Use Vulkan's validation layers for more information.");
+		return false;
 	}
-	return result == VK_SUCCESS;
+	m_dimensions = t_data.m_dimensions;
+	return true;
+}
+
+IE::Graphics::detail::ImageVulkan::~ImageVulkan() {
+	std::unique_lock<std::mutex> lock(*m_mutex);
+	_destroyImage();
+}
+
+void IE::Graphics::detail::ImageVulkan::_destroyImage() {
+	std::unique_lock<std::mutex> lock(*m_mutex);
+	vmaDestroyImage(m_linkedRenderEngine.lock()->allocator, m_id, m_allocation);
+	vkDestroyImageView(m_linkedRenderEngine.lock()->device.device, m_view, nullptr);
+}
+
+void IE::Graphics::detail::ImageVulkan::_getImageData(IE::Core::MultiDimensionalVector<unsigned char> *t_pData) const {
+	std::unique_lock<std::mutex> lock(*m_mutex);
+	void *data{m_allocationInfo.pMappedData};
+	if (data == nullptr) {
+		vmaMapMemory(m_linkedRenderEngine.lock()->allocator, m_allocation, &data);
+	}
+	t_pData->m_data.assign((unsigned char *) data, (unsigned char *) ((size_t) data + m_allocationInfo.size));
+	vmaUnmapMemory(m_linkedRenderEngine.lock()->allocator, m_allocation);
+	lock.release();
+	if (std::accumulate(t_pData->m_dimensions.begin(), t_pData->m_dimensions.end(), 1, std::multiplies()) != t_pData->m_data.size()) {
+		t_pData->m_dimensions = {t_pData->m_data.size()};
+	}
+}
+
+void IE::Graphics::detail::ImageVulkan::_setImageData(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) {
+	std::unique_lock<std::mutex> lock(*m_mutex);
+	if (m_allocationInfo.size != t_data.m_data.size()) {
+		m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+														  "attempt to fill image with data that does not match its size! This may lead to broken textures or images.");
+	}
+	void *data{m_allocationInfo.pMappedData};
+	if (data == nullptr) {
+		vmaMapMemory(m_linkedRenderEngine.lock()->allocator, m_allocation, &data);
+	}
+	memcpy(data, t_data.m_data.data(), t_data.m_data.size());
+	vmaUnmapMemory(m_linkedRenderEngine.lock()->allocator, m_allocation);
 }

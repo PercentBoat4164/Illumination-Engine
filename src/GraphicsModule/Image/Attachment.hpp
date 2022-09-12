@@ -1,14 +1,5 @@
-//
-// Created by sophia on 9/9/22.
-//
-
-#ifndef ILLUMINATIONENGINE_ATTACHMENT_HPP
-#define ILLUMINATIONENGINE_ATTACHMENT_HPP
-
+#pragma once
 
 class Attachment {
 
 };
-
-
-#endif //ILLUMINATIONENGINE_ATTACHMENT_HPP

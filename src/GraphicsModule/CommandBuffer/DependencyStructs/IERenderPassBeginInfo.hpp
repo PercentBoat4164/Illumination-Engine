@@ -17,7 +17,5 @@ public:
 
 	[[nodiscard]] std::vector<std::shared_ptr<IERenderPass>> getRenderPasses() const;
 
-	[[nodiscard]] std::vector<std::shared_ptr<IEDependency>> getDependencies() const;
-
 	explicit operator VkRenderPassBeginInfo() const;
 };

@@ -68,7 +68,7 @@ void IEMaterial::_openglLoadFromDiskToRAM(const std::string &directory, const ai
 	std::string data{};
 	aiTexture *texture;
 	uint32_t textureIndex{0};
-	IETexture::CreateInfo imageCreateInfo{};
+	IE::Graphics::Texture::CreateInfo imageCreateInfo{};
 	
 	// load all textures despite embedded state
 	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
@@ -82,8 +82,8 @@ void IEMaterial::_openglLoadFromDiskToRAM(const std::string &directory, const ai
 			texture->mHeight = 1;  // flag texture as not embedded
 		}
 		*textureType.first = linkedRenderEngine->textures.size();
-
-		linkedRenderEngine->textures.push_back(std::make_shared<IETexture>(linkedRenderEngine, &imageCreateInfo));
+		
+		linkedRenderEngine->textures.push_back(std::make_shared<IE::Graphics::Texture>(linkedRenderEngine, &imageCreateInfo));
 		linkedRenderEngine->textures[*textureType.first]->uploadToRAM(texture);
 	}
 }
@@ -108,7 +108,7 @@ void IEMaterial::_vulkanLoadFromDiskToRAM(const std::string &directory, const ai
 	std::string data{};
 	aiTexture *texture;
 	uint32_t textureIndex{0};
-	IETexture::CreateInfo imageCreateInfo{};
+	IE::Graphics::Texture::CreateInfo imageCreateInfo{};
 
 	// load all textures despite embedded state
 	for (std::pair<uint32_t *, aiTextureType> textureType: supportedTextureTypes) {
@@ -123,7 +123,7 @@ void IEMaterial::_vulkanLoadFromDiskToRAM(const std::string &directory, const ai
 		}
 		*textureType.first = linkedRenderEngine->textures.size();
 
-		linkedRenderEngine->textures.push_back(std::make_shared<IETexture>(linkedRenderEngine, &imageCreateInfo));
+		linkedRenderEngine->textures.push_back(std::make_shared<IE::Graphics::Texture>(linkedRenderEngine, &imageCreateInfo));
 		linkedRenderEngine->textures[*textureType.first]->uploadToRAM(texture);
 	}
 }

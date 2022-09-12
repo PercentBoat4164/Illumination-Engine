@@ -1,16 +1,13 @@
 #include "IECopyBufferToImageInfo.hpp"
+#include "Image/ImageVulkan.hpp"
 #include <vector>
 
 std::vector<std::shared_ptr<IEBuffer>> IECopyBufferToImageInfo::getBuffers() const {
 	return {srcBuffer};
 }
 
-std::vector<std::shared_ptr<IEImage>> IECopyBufferToImageInfo::getImages() const {
+std::vector<std::shared_ptr<IE::Graphics::Image>> IECopyBufferToImageInfo::getImages() const {
 	return {dstImage};
-}
-
-std::vector<std::shared_ptr<IEDependency>> IECopyBufferToImageInfo::getDependencies() const {
-	return {srcBuffer, dstImage};
 }
 
 IECopyBufferToImageInfo::operator VkCopyBufferToImageInfo2() const {
@@ -18,7 +15,7 @@ IECopyBufferToImageInfo::operator VkCopyBufferToImageInfo2() const {
 			.sType=VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
 			.pNext=pNext,
 			.srcBuffer=srcBuffer->buffer,
-			.dstImage=dstImage->image,
+			.dstImage=dynamic_cast<IE::Graphics::detail::ImageVulkan *>(dstImage.get())->m_id,
 			.regionCount=static_cast<uint32_t>(regions.size()),
 			.pRegions=regions.data()
 	};

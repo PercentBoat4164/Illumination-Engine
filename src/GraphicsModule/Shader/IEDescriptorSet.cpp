@@ -2,10 +2,11 @@
 #include "IEDescriptorSet.hpp"
 
 /* Include dependencies within this module. */
-#include "GraphicsModule/Buffer/IEBuffer.hpp"
+#include "Buffer/IEBuffer.hpp"
 #include "IERenderEngine.hpp"
 
-#include "GraphicsModule/Image/IEImage.hpp"
+#include "Image/Image.hpp"
+#include "Image/TextureVulkan.hpp"
 
 /* Include system dependencies. */
 #include <cassert>
@@ -71,7 +72,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 		VK_SUCCESS) { throw std::runtime_error("failed to allocate descriptor set!"); }
 	std::vector<int> bindings{};
 	bindings.reserve(createdWith.data.size());
-	std::vector<std::optional<std::variant<IEImage *, IEBuffer *>>> data{};
+	std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> data{};
 	data.reserve(createdWith.data.size());
 	for (size_t i = 0; i < createdWith.data.size(); ++i) {
 		if (createdWith.data[i].has_value()) {
@@ -82,7 +83,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 	update(data, bindings);
 }
 
-void IEDescriptorSet::update(std::vector<std::optional<std::variant<IEImage *, IEBuffer *>>> newData,
+void IEDescriptorSet::update(std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> newData,
 							 std::vector<int> bindings) {
 	std::vector<VkDescriptorImageInfo> imageDescriptorInfos{};
 	imageDescriptorInfos.reserve(createdWith.poolSizes.size());
@@ -102,9 +103,9 @@ void IEDescriptorSet::update(std::vector<std::optional<std::variant<IEImage *, I
 			writeDescriptorSet.descriptorCount = writeDescriptorSet.dstBinding == createdWith.data.size() ? createdWith.maxIndex : 1;
 			if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
 				VkDescriptorImageInfo storageImageDescriptorInfo{};
-				storageImageDescriptorInfo.imageView = std::get<IEImage *>(newData[i].value())->view;
-				storageImageDescriptorInfo.sampler = std::get<IEImage *>(newData[i].value())->sampler;
-				storageImageDescriptorInfo.imageLayout = std::get<IEImage *>(newData[i].value())->layout;
+				storageImageDescriptorInfo.imageView = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_view;
+				storageImageDescriptorInfo.sampler = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_sampler;
+				storageImageDescriptorInfo.imageLayout = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_layout;
 				if (storageImageDescriptorInfo.imageView == VK_NULL_HANDLE) {
 					throw std::runtime_error("no image given or given image does not have an associated view!");
 				}
@@ -112,9 +113,9 @@ void IEDescriptorSet::update(std::vector<std::optional<std::variant<IEImage *, I
 				writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
 			} else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
 				VkDescriptorImageInfo combinedImageSamplerDescriptorInfo{};
-				combinedImageSamplerDescriptorInfo.imageView = std::get<IEImage *>(newData[i].value())->view;
-				combinedImageSamplerDescriptorInfo.sampler = std::get<IEImage *>(newData[i].value())->sampler;
-				combinedImageSamplerDescriptorInfo.imageLayout = std::get<IEImage *>(newData[i].value())->layout;
+				combinedImageSamplerDescriptorInfo.imageView = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_view;
+				combinedImageSamplerDescriptorInfo.sampler = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_sampler;
+				combinedImageSamplerDescriptorInfo.imageLayout = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_layout;
 				if (combinedImageSamplerDescriptorInfo.sampler == VK_NULL_HANDLE) {
 					throw std::runtime_error("no image given or given image does not have an associated sampler!");
 				}

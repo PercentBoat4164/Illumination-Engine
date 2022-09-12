@@ -1,10 +1,8 @@
 #include "IEImageMemoryBarrier.hpp"
 
-std::vector<std::shared_ptr<IEImage>> IEImageMemoryBarrier::getImages() const {
-	return {image};
-}
+#include "Image/ImageVulkan.hpp"
 
-std::vector<std::shared_ptr<IEDependency>> IEImageMemoryBarrier::getDependencies() const {
+std::vector<std::shared_ptr<IE::Graphics::Image>> IEImageMemoryBarrier::getImages() const {
 	return {image};
 }
 
@@ -17,7 +15,7 @@ IEImageMemoryBarrier::operator VkImageMemoryBarrier() const {
 			.newLayout=newLayout,
 			.srcQueueFamilyIndex=srcQueueFamilyIndex,
 			.dstQueueFamilyIndex=dstQueueFamilyIndex,
-			.image=image->image,
+			.image=dynamic_cast<IE::Graphics::detail::ImageVulkan *>(image.get())->m_id,
 			.subresourceRange=subresourceRange
 	};
 }
@@ -31,7 +29,7 @@ IEImageMemoryBarrier::operator VkImageMemoryBarrier2() const {
 			.newLayout=newLayout,
 			.srcQueueFamilyIndex=srcQueueFamilyIndex,
 			.dstQueueFamilyIndex=dstQueueFamilyIndex,
-			.image=image->image,
+			.image=dynamic_cast<IE::Graphics::detail::ImageVulkan *>(image.get())->m_id,
 			.subresourceRange=subresourceRange
 	};
 }

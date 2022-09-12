@@ -8,23 +8,12 @@ std::vector<std::shared_ptr<IEBuffer>> IEDependencyInfo::getBuffers() const {
 	return buffers;
 }
 
-std::vector<std::shared_ptr<IEImage>> IEDependencyInfo::getImages() const {
-	std::vector<std::shared_ptr<IEImage>> images{imageMemoryBarriers.size()};
+std::vector<std::shared_ptr<IE::Graphics::Image>> IEDependencyInfo::getImages() const {
+	std::vector<std::shared_ptr<IE::Graphics::Image>> images{imageMemoryBarriers.size()};
 	for (const IEImageMemoryBarrier &imageBarrier: imageMemoryBarriers) {
 		images.push_back(imageBarrier.image);
 	}
 	return images;
-}
-
-std::vector<std::shared_ptr<IEDependency>> IEDependencyInfo::getDependencies() const {
-	std::vector<std::shared_ptr<IEDependency>> dependencies{};
-	for (const IEBufferMemoryBarrier &bufferBarrier: bufferMemoryBarriers) {
-		dependencies.push_back(bufferBarrier.buffer);
-	}
-	for (const IEImageMemoryBarrier &imageBarrier: imageMemoryBarriers) {
-		dependencies.push_back(imageBarrier.image);
-	}
-	return dependencies;
 }
 
 IEDependencyInfo::operator VkDependencyInfo() {

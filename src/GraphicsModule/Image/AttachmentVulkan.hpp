@@ -1,14 +1,7 @@
-//
-// Created by sophia on 9/9/22.
-//
+#pragma once
 
-#ifndef ILLUMINATIONENGINE_ATTACHMENTVULKAN_HPP
-#define ILLUMINATIONENGINE_ATTACHMENTVULKAN_HPP
+namespace IE::Graphics { class AttachmentVulkan {
+public:
 
 
-class AttachmentVulkan {
-
-};
-
-
-#endif //ILLUMINATIONENGINE_ATTACHMENTVULKAN_HPP
+}; }

@@ -127,7 +127,6 @@ IERenderPassBeginInfo IERenderPass::beginRenderPass(uint8_t index) {
 }
 
 void IERenderPass::destroy() {
-	invalidateDependents();
 	for (std::function<void()> &function: deletionQueue) {
 		function();
 	}

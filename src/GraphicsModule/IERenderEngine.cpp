@@ -257,7 +257,6 @@ void IERenderEngine::setAPI(const IEAPI &API) {
 	IERenderable::setAPI(API);
 	IEMesh::setAPI(API);
 	IEMaterial::setAPI(API);
-	IEImage::setAPI(API);
 	IEBuffer::setAPI(API);
 	IEShader::setAPI(API);
 	IEPipeline::setAPI(API);

@@ -1,14 +1,5 @@
-//
-// Created by sophia on 9/9/22.
-//
-
-#ifndef ILLUMINATIONENGINE_ATTACHMENTOPENGL_HPP
-#define ILLUMINATIONENGINE_ATTACHMENTOPENGL_HPP
-
+#pragma once
 
 class AttachmentOpenGL {
 
 };
-
-
-#endif //ILLUMINATIONENGINE_ATTACHMENTOPENGL_HPP

@@ -16,10 +16,8 @@ public:
 
 	[[nodiscard]] std::vector<std::shared_ptr<IEBuffer>> getBuffers() const;
 
-	[[nodiscard]] std::vector<std::shared_ptr<IEImage>> getImages() const;
-
-	[[nodiscard]] std::vector<std::shared_ptr<IEDependency>> getDependencies() const;
-
+	[[nodiscard]] std::vector<std::shared_ptr<IE::Graphics::Image>> getImages() const;
+	
 	explicit operator VkDependencyInfo();
 
 private:

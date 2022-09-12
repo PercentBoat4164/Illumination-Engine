@@ -3,9 +3,12 @@
 /* Predefine classes used with pointers or as return values for functions. */
 class IERenderEngine;
 
+class IERenderPass;
+
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "GraphicsModule/Image/IEImage.hpp"
+#include "GraphicsModule/Image/Attachment.hpp"
+#include "Image/Image.hpp"
 
 // External dependencies
 #include <vulkan/vulkan.h>
@@ -15,11 +18,11 @@ class IERenderEngine;
 #include <vector>
 
 
-class IEFramebuffer : public IEDependency {
+class IEFramebuffer {
 public:
 	class Attachment {
 	public:
-		std::shared_ptr<IEImage> image{};
+		std::shared_ptr<IE::Graphics::Image> image{};
 		VkImageLayout forceLayout{};
 		uint8_t location{};
 	};
@@ -34,7 +37,7 @@ public:
 	std::vector<VkClearValue> clearValues{3};
 	std::vector<float> defaultColor{1.0F, 0.0F, 0.0F, 1.0F};
 	std::weak_ptr<IERenderPass> renderPass{};
-	std::vector<std::shared_ptr<IEImage>> attachments{};
+	std::vector<std::shared_ptr<IE::Graphics::Image>> attachments{};
 	IERenderEngine *linkedRenderEngine{};
 	uint16_t width{};
 	uint16_t height{};
@@ -42,8 +45,6 @@ public:
 	VkFramebuffer getFramebuffer(uint8_t index);
 
 	IEFramebuffer();
-
-	~IEFramebuffer() override;
 	
 	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 	
