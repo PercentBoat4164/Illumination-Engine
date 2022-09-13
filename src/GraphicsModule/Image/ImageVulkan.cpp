@@ -5,21 +5,22 @@
 #include <utility>
 #include <mutex>
 
-IE::Graphics::detail::ImageVulkan::ImageVulkan() : m_format{VK_FORMAT_UNDEFINED},
-												   m_layout{VK_IMAGE_LAYOUT_UNDEFINED},
-												   m_type{VK_IMAGE_TYPE_1D},
-												   m_viewType{VK_IMAGE_VIEW_TYPE_1D},
-												   m_tiling{VK_IMAGE_TILING_OPTIMAL},
-												   m_usage{VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
-												   m_flags{0},
-												   m_aspect{VK_IMAGE_ASPECT_NONE},
-												   m_samples{VK_SAMPLE_COUNT_1_BIT},
-												   m_mipLevel{1},
-												   m_allocationUsage{VMA_MEMORY_USAGE_AUTO},
-												   m_allocation(),
-												   m_allocationInfo(),
-												   m_id(nullptr),
-												   m_view(nullptr) {}
+IE::Graphics::detail::ImageVulkan::ImageVulkan() :
+		m_format{VK_FORMAT_UNDEFINED},
+		m_layout{VK_IMAGE_LAYOUT_UNDEFINED},
+		m_type{VK_IMAGE_TYPE_1D},
+		m_viewType{VK_IMAGE_VIEW_TYPE_1D},
+		m_tiling{VK_IMAGE_TILING_OPTIMAL},
+		m_usage{VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
+		m_flags{0},
+		m_aspect{VK_IMAGE_ASPECT_NONE},
+		m_samples{VK_SAMPLE_COUNT_1_BIT},
+		m_mipLevel{1},
+		m_allocationUsage{VMA_MEMORY_USAGE_AUTO},
+		m_allocation(),
+		m_allocationInfo(),
+		m_id(nullptr),
+		m_view(nullptr) {}
 
 IE::Graphics::detail::ImageVulkan &IE::Graphics::detail::ImageVulkan::operator=(const IE::Graphics::detail::ImageVulkan &t_other) {
 	if (&t_other != this) {
@@ -63,22 +64,24 @@ IE::Graphics::detail::ImageVulkan &IE::Graphics::detail::ImageVulkan::operator=(
 	return *this;
 }
 
-IE::Graphics::detail::ImageVulkan::ImageVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink) : m_format{VK_FORMAT_UNDEFINED},
-																									m_layout{VK_IMAGE_LAYOUT_UNDEFINED},
-																									m_type{VK_IMAGE_TYPE_1D},
-																									m_viewType{VK_IMAGE_VIEW_TYPE_1D},
-																									m_tiling{VK_IMAGE_TILING_OPTIMAL},
-																									m_usage{VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
-																									m_flags{0},
-																									m_aspect{VK_IMAGE_ASPECT_NONE},
-																									m_samples{VK_SAMPLE_COUNT_1_BIT},
-																									m_mipLevel{1},
-																									m_allocationUsage{VMA_MEMORY_USAGE_AUTO},
-																									m_allocation(),
-																									m_allocationInfo(),
-																									m_id(nullptr),
-																									m_view(nullptr),
-																									IE::Graphics::Image(t_engineLink) {}
+template<typename... Args>
+IE::Graphics::detail::ImageVulkan::ImageVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions) :
+		Image(t_engineLink, t_dimensions...),
+		m_format{VK_FORMAT_UNDEFINED},
+		m_layout{VK_IMAGE_LAYOUT_UNDEFINED},
+		m_type{VK_IMAGE_TYPE_1D},
+		m_viewType{VK_IMAGE_VIEW_TYPE_1D},
+		m_tiling{VK_IMAGE_TILING_OPTIMAL},
+		m_usage{VK_IMAGE_USAGE_TRANSFER_SRC_BIT},
+		m_flags{0},
+		m_aspect{VK_IMAGE_ASPECT_NONE},
+		m_samples{VK_SAMPLE_COUNT_1_BIT},
+		m_mipLevel{1},
+		m_allocationUsage{VMA_MEMORY_USAGE_AUTO},
+		m_allocation(),
+		m_allocationInfo(),
+		m_id(nullptr),
+		m_view(nullptr) {}
 
 
 uint8_t IE::Graphics::detail::ImageVulkan::getBytesInFormat() const {
@@ -356,7 +359,7 @@ uint8_t IE::Graphics::detail::ImageVulkan::getBytesInFormat() const {
 }
 
 void IE::Graphics::detail::ImageVulkan::transitionLayout(VkImageLayout) {
-
+	/**@todo Implement me! (ImageVulkan::transitionLayout)*/
 }
 
 void IE::Graphics::detail::ImageVulkan::setLocation(IE::Graphics::Image::Location t_location) {
@@ -496,13 +499,13 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
 
 IE::Graphics::detail::ImageVulkan::~ImageVulkan() {
 	std::unique_lock<std::mutex> lock(*m_mutex);
-	_destroyImage();
+	(this->*IE::Graphics::detail::ImageVulkan::destroyImage)();
 }
 
 void IE::Graphics::detail::ImageVulkan::_destroyImage() {
 	std::unique_lock<std::mutex> lock(*m_mutex);
-	vmaDestroyImage(m_linkedRenderEngine.lock()->allocator, m_id, m_allocation);
 	vkDestroyImageView(m_linkedRenderEngine.lock()->device.device, m_view, nullptr);
+	vmaDestroyImage(m_linkedRenderEngine.lock()->allocator, m_id, m_allocation);
 }
 
 void IE::Graphics::detail::ImageVulkan::_getImageData(IE::Core::MultiDimensionalVector<unsigned char> *t_pData) const {
@@ -532,3 +535,5 @@ void IE::Graphics::detail::ImageVulkan::_setImageData(const IE::Core::MultiDimen
 	memcpy(data, t_data.m_data.data(), t_data.m_data.size());
 	vmaUnmapMemory(m_linkedRenderEngine.lock()->allocator, m_allocation);
 }
+
+void (IE::Graphics::detail::ImageVulkan::* const IE::Graphics::detail::ImageVulkan::destroyImage)() {&IE::Graphics::detail::ImageVulkan::_destroyImage};

@@ -13,14 +13,30 @@ namespace IE::Graphics::detail {
 		VkCompareOp m_compareOp;
 		VkBorderColor m_borderColor;
 		
-		bool _createSampler();
+		TextureVulkan() noexcept;
 		
-		void _destroyVkSampler();
+		template<typename... Args>
+		explicit TextureVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions);
+		
+		TextureVulkan &operator=(TextureVulkan &&t_other) noexcept;
+		
+		TextureVulkan &operator=(const TextureVulkan &t_other);
 		
 		~TextureVulkan() override;
 		
 		static std::unordered_map<Filter, VkFilter> filter;
 		
 		static std::unordered_map<AddressMode, VkSamplerAddressMode> addressMode;
+	
+	protected:
+		bool _createSampler() override;
+		
+		bool _createImage(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) override;
+		
+		void _destroyImage() override;
+	
+	private:
+		// Used to call the _destroyImage function of this class in the destructor without worrying about virtuality.
+		static void (IE::Graphics::detail::TextureVulkan::* const destroyTexture)();
 	};
 }

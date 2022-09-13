@@ -23,16 +23,19 @@ IE::Graphics::detail::ImageOpenGL &IE::Graphics::detail::ImageOpenGL::operator=(
 	return *this;
 }
 
-IE::Graphics::detail::ImageOpenGL::ImageOpenGL() : m_id{},
-												   m_format{},
-												   m_type{},
-												   m_size{} {}
+IE::Graphics::detail::ImageOpenGL::ImageOpenGL() noexcept:
+		m_id{},
+		m_format{},
+		m_type{},
+		m_size{} {}
 
-IE::Graphics::detail::ImageOpenGL::ImageOpenGL(const std::weak_ptr<IERenderEngine> &t_engineLink) : m_id{},
-																									m_format{},
-																									m_type{},
-																									m_size{},
-																									IE::Graphics::Image(t_engineLink) {}
+template<typename... Args>
+IE::Graphics::detail::ImageOpenGL::ImageOpenGL(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions) :
+		Image(t_engineLink, t_dimensions...),
+		m_id{},
+		m_format{},
+		m_type{},
+		m_size{} {}
 
 void IE::Graphics::detail::ImageOpenGL::setLocation(IE::Graphics::Image::Location t_location) {
 	std::unique_lock<std::mutex> lock(*m_mutex);
@@ -112,4 +115,8 @@ void IE::Graphics::detail::ImageOpenGL::_setImageData(const IE::Core::MultiDimen
 					 0, m_components > 3 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, t_data.m_data.data());
 	}
 	glBindTexture(m_type, 0);
+}
+
+IE::Graphics::detail::ImageOpenGL::~ImageOpenGL() {
+	_destroyImage();
 }

@@ -25,20 +25,19 @@ namespace IE::Graphics {
 		
 		size_t m_components;  // The number of channels in each pixel.
 		Location m_location;  // The location(s) that the image is stored in.
-		std::vector<size_t> m_dimensions;
+		std::vector<size_t> m_dimensions;  // The dimensions of the data stored in video memory.
 		IE::Core::MultiDimensionalVector<unsigned char> m_data;  // The location that image data is stored on the CPU.
 		std::weak_ptr<IERenderEngine> m_linkedRenderEngine;  // A pointer to the IE::RenderEngine that controls this pointer.
-		std::shared_ptr<std::mutex> m_mutex;
+		std::shared_ptr<std::mutex> m_mutex;  // The mutex responsible for synchronizing this image.
 		
-		/** @brief A factory function that creates an IE::Graphics::Image from the render engine provided.
-		 * @details Creates a blank IE::Graphics::Image of no particular size or shape. The only defining characteristic of the created image is its
-		 * link to the render engine.
+		/** @brief A factory function that creates an IE::Graphics::Image from the render engine, and shape provided.
+		 * @details Creates a unique pointer to an image of the specified size and shape if given. If no size and shape is given then the only
+		 * defining characteristic of the created image is the render engine that it is linked with.
 		 * @param t_engineLink
 		 * @return A std::unique_ptr<IE::Graphics::Image>
 		 */
-		static std::unique_ptr<IE::Graphics::Image> create(const std::weak_ptr<IERenderEngine> &t_engineLink);
-		
-		explicit Image(const std::weak_ptr<IERenderEngine> &t_engineLink);
+		template<typename... Args>
+		static std::unique_ptr<IE::Graphics::Image> create(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions);
 		
 		/** @brief This constructor allows the user to specify a multi-dimensional image.
 		 * @details The uses of the multi-dimensionality that this constructor enables may include 1D, 2D, or 3D images which can be used in a
@@ -47,7 +46,7 @@ namespace IE::Graphics {
 		 * @return This IE::Graphics::Image
 		 */
 		template<typename... Args>
-		explicit Image(Args... t_dimensions);
+		explicit Image(std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions);
 		
 		/** @brief Default constructor as it is needed by classes that inherit from IE::Graphics::Image.
 		 * @return This IE::Graphics::Image
@@ -91,11 +90,11 @@ namespace IE::Graphics {
 		
 		/** @brief [] operator support for images.
 		 * @details Takes a number of arguments equal to the number of dimensions in the image. Supports Python-like negative indexing.
-		 * @param args Any number of signed integers.
+		 * @param t_args Any number of signed integers.
 		 * @return The pixel value located at the given index.
 		 */
 		template<typename ...Args>
-		unsigned char operator[](Args... args);
+		unsigned char operator[](Args... t_args);
 		
 		[[nodiscard]] virtual uint8_t getBytesInFormat() const = 0;
 		

@@ -7,6 +7,8 @@ class IERenderEngine;
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
+#include <functional>
+
 namespace IE::Graphics::detail {
 	class ImageVulkan : virtual public IE::Graphics::Image {
 	public:
@@ -28,11 +30,8 @@ namespace IE::Graphics::detail {
 		
 		ImageVulkan();
 		
-		explicit ImageVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink);
-		
-		ImageVulkan(ImageVulkan &&t_other) noexcept = default;
-		
-		ImageVulkan(const ImageVulkan &t_other) = default;
+		template<typename... Args>
+		explicit ImageVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions);
 		
 		ImageVulkan &operator=(ImageVulkan &&t_other) noexcept;
 		
@@ -55,6 +54,10 @@ namespace IE::Graphics::detail {
 		
 		void _getImageData(Core::MultiDimensionalVector<unsigned char> *pVector) const override;
 		
-		void _destroyImage() final;
+		void _destroyImage() override;
+	
+	private:
+		// Used to call the _destroyImage function of this class in the destructor without worrying about virtuality.
+		static void (IE::Graphics::detail::ImageVulkan::* const destroyImage)();
 	};
 }

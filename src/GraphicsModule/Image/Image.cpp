@@ -1,5 +1,7 @@
 #include "Image.hpp"
 
+#include <utility>
+
 #include "ImageVulkan.hpp"
 #include "ImageOpenGL.hpp"
 
@@ -65,8 +67,13 @@ constexpr IE::Graphics::Image::Location operator~(IE::Graphics::Image::Location 
 // ===================== Implementation of IE::Graphics::Image =====================
 //
 
-IE::Graphics::Image::Image() noexcept: m_location{IE_IMAGE_LOCATION_NULL},
-									   m_components{0} {}
+IE::Graphics::Image::Image() noexcept:
+		m_components{0},
+		m_location{IE_IMAGE_LOCATION_NULL},
+		m_dimensions(),
+		m_data(),
+		m_linkedRenderEngine(),
+		m_mutex() {}
 
 IE::Graphics::Image &IE::Graphics::Image::operator=(const IE::Graphics::Image &t_other) {
 	std::unique_lock<std::mutex> lock(*m_mutex);
@@ -110,31 +117,33 @@ IE::Graphics::Image &IE::Graphics::Image::operator=(IE::Graphics::Image &&t_othe
 	return *this;
 }
 
-std::unique_ptr<IE::Graphics::Image> IE::Graphics::Image::create(const std::weak_ptr<IERenderEngine> &t_engineLink) {
+template<typename... Args>
+std::unique_ptr<IE::Graphics::Image> IE::Graphics::Image::create(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions) {
 	if (t_engineLink.lock()->API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-		return std::unique_ptr<IE::Graphics::Image>{static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageVulkan(t_engineLink))};
-	}
-	if (t_engineLink.lock()->API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-		return std::unique_ptr<IE::Graphics::Image>{static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageOpenGL(t_engineLink))};
+		return std::unique_ptr<IE::Graphics::Image>{
+				static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageVulkan(t_engineLink, t_dimensions...))};
+	} else if (t_engineLink.lock()->API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+		return std::unique_ptr<IE::Graphics::Image>{
+				static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageOpenGL(t_engineLink, t_dimensions...))};
 	}
 	t_engineLink.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
-											  "failed to create image because render engine is neither Vulkan or OpenGL.");
+											  "failed to create image because render engine is using neither Vulkan or OpenGL.");
 	return nullptr;
 }
 
 template<typename... Args>
-unsigned char IE::Graphics::Image::operator[](Args... args) {
-	return m_data[std::forward<Args...>(args...)];
+unsigned char IE::Graphics::Image::operator[](Args... t_args) {
+	return m_data[std::forward<Args...>(t_args...)];
 }
 
 template<typename... Args>
-IE::Graphics::Image::Image(Args... t_dimensions) : m_components{4},
-												   m_location{IE_IMAGE_LOCATION_SYSTEM},
-												   m_data{IE::Core::MultiDimensionalVector<unsigned char>(t_dimensions...)} {}
-
-IE::Graphics::Image::Image(const std::weak_ptr<IERenderEngine> &t_engineLink) : m_location{IE_IMAGE_LOCATION_NULL},
-																				m_components{0},
-																				m_linkedRenderEngine{t_engineLink.lock()} {}
+IE::Graphics::Image::Image(std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions) :
+		m_components{4},
+		m_location{IE_IMAGE_LOCATION_SYSTEM},
+		m_dimensions(),
+		m_data{IE::Core::MultiDimensionalVector<unsigned char>(t_dimensions...)},
+		m_linkedRenderEngine{std::move(t_engineLink)},
+		m_mutex() {}
 
 IE::Graphics::Image::Location IE::Graphics::Image::getLocation() const {
 	return m_location;
@@ -168,4 +177,3 @@ void IE::Graphics::Image::setData(const IE::Core::MultiDimensionalVector<unsigne
 		}
 	}
 }
-

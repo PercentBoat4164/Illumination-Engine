@@ -11,19 +11,16 @@ namespace IE::Graphics::detail {
 		GLuint m_type;
 		size_t m_size;  // Specifies the size of the image in OpenGL memory
 		
-		ImageOpenGL();
+		ImageOpenGL() noexcept;
 		
-		explicit ImageOpenGL(const std::weak_ptr<IERenderEngine> &t_engineLink);
-		
-		ImageOpenGL(ImageOpenGL &&t_other) noexcept = default;
-		
-		ImageOpenGL(const ImageOpenGL &t_other) = default;
+		template<typename... Args>
+		explicit ImageOpenGL(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions);
 		
 		ImageOpenGL &operator=(ImageOpenGL &&t_other) noexcept;
 		
 		ImageOpenGL &operator=(const ImageOpenGL &t_other);
 		
-		~ImageOpenGL() override = default;
+		~ImageOpenGL() override;
 		
 		[[nodiscard]] uint8_t getBytesInFormat() const override;
 		

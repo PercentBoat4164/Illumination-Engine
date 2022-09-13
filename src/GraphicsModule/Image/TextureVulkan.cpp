@@ -3,6 +3,7 @@
 #include "IERenderEngine.hpp"
 
 bool IE::Graphics::detail::TextureVulkan::_createSampler() {
+	std::unique_lock<std::mutex> lock(*m_mutex);
 	VkSamplerCreateInfo samplerCreateInfo{
 			.sType=VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
 			.magFilter=filter[m_magnificationFilter],
@@ -32,11 +33,7 @@ bool IE::Graphics::detail::TextureVulkan::_createSampler() {
 }
 
 IE::Graphics::detail::TextureVulkan::~TextureVulkan() {
-	_destroyVkSampler();
-}
-
-void IE::Graphics::detail::TextureVulkan::_destroyVkSampler() {
-	vkDestroySampler(m_linkedRenderEngine.lock()->device.device, m_sampler, nullptr);
+	(this->*IE::Graphics::detail::TextureVulkan::destroyTexture)();
 }
 
 std::unordered_map<IE::Graphics::Texture::Filter, VkFilter> IE::Graphics::detail::TextureVulkan::filter{
@@ -46,9 +43,50 @@ std::unordered_map<IE::Graphics::Texture::Filter, VkFilter> IE::Graphics::detail
 };
 
 std::unordered_map<IE::Graphics::Texture::AddressMode, VkSamplerAddressMode> IE::Graphics::detail::TextureVulkan::addressMode{
-		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_REPEAT,                 VK_SAMPLER_ADDRESS_MODE_REPEAT},
-		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_MIRRORED_REPEAT,        VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT},
-		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_CLAMP_TO_EDGE,          VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE},
-		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_CLAMP_TO_BORDER,        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER},
-		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_MIRRORED_CLAMP_TO_EDGE, VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE}
+		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_REPEAT,               VK_SAMPLER_ADDRESS_MODE_REPEAT},
+		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_MIRRORED_REPEAT,      VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT},
+		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_CLAMP_TO_EDGE,        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE},
+		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_CLAMP_TO_BORDER,      VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER},
+		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE, VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE}
 };
+
+bool IE::Graphics::detail::TextureVulkan::_createImage(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) {
+	return ImageVulkan::_createImage(t_data) && _createSampler();
+}
+
+void IE::Graphics::detail::TextureVulkan::_destroyImage() {
+	vkDestroySampler(m_linkedRenderEngine.lock()->device.device, m_sampler, nullptr);
+	ImageVulkan::_destroyImage();
+}
+
+void (IE::Graphics::detail::TextureVulkan::* const IE::Graphics::detail::TextureVulkan::destroyTexture)() {&IE::Graphics::detail::TextureVulkan::_destroyImage};
+
+IE::Graphics::detail::TextureVulkan::TextureVulkan() noexcept:
+		m_sampler{VK_NULL_HANDLE},
+		m_compareOp{VK_COMPARE_OP_NEVER},
+		m_borderColor{VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK} {}
+
+template<typename... Args>
+IE::Graphics::detail::TextureVulkan::TextureVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions) :
+		Texture(t_engineLink, t_dimensions...),
+		m_sampler{VK_NULL_HANDLE},
+		m_compareOp{VK_COMPARE_OP_NEVER},
+		m_borderColor{VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK} {}
+
+IE::Graphics::detail::TextureVulkan &IE::Graphics::detail::TextureVulkan::operator=(IE::Graphics::detail::TextureVulkan &&t_other) noexcept {
+	if (&t_other != this) {
+		m_sampler = std::exchange(t_other.m_sampler, VK_NULL_HANDLE);
+		m_compareOp = std::exchange(t_other.m_compareOp, VK_COMPARE_OP_NEVER);
+		m_borderColor = std::exchange(t_other.m_borderColor, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
+	}
+	return *this;
+}
+
+IE::Graphics::detail::TextureVulkan &IE::Graphics::detail::TextureVulkan::operator=(const IE::Graphics::detail::TextureVulkan &t_other) {
+	if (&t_other != this) {
+		m_sampler = t_other.m_sampler;
+		m_compareOp = t_other.m_compareOp;
+		m_borderColor = t_other.m_borderColor;
+	}
+	return *this;
+}
