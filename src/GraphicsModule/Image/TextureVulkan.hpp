@@ -24,9 +24,9 @@ namespace IE::Graphics::detail {
 		
 		~TextureVulkan() override;
 		
-		static std::unordered_map<Filter, VkFilter> filter;
+		static const std::unordered_map<Filter, VkFilter> filter;
 		
-		static std::unordered_map<AddressMode, VkSamplerAddressMode> addressMode;
+		static const std::unordered_map<AddressMode, VkSamplerAddressMode> addressMode;
 	
 	protected:
 		bool _createSampler() override;

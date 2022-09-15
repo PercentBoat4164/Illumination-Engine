@@ -13,7 +13,6 @@ struct GLFWmonitor;
 // Internal dependencies
 #include "IEAPI.hpp"
 #include "IECamera.hpp"
-#include "RenderPass/IERenderPass.hpp"
 #include "IESettings.hpp"
 #include "CommandBuffer/IECommandPool.hpp"
 #include "RenderPass/IEFramebuffer.hpp"

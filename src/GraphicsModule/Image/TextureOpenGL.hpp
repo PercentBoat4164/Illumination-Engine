@@ -20,8 +20,8 @@ namespace IE::Graphics::detail {
 		
 		bool _createSampler() override;
 		
-		static std::unordered_map<Filter, GLint> filter;
+		static const std::unordered_map<Filter, GLint> filter;
 		
-		static std::unordered_map<AddressMode, GLint> addressMode;
+		static const std::unordered_map<AddressMode, GLint> addressMode;
 	};
 }

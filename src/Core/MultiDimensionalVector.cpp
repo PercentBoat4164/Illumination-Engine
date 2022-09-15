@@ -1,28 +1,39 @@
 #include "MultiDimensionalVector.hpp"
-template<typename StoredType> IE::Core::MultiDimensionalVector<StoredType>::MultiDimensionalVector(std::vector<size_t> t_dimensions) : m_data{},
-																																	   m_dimensions(std::move(t_dimensions)) {
+
+template<typename StoredType>
+IE::Core::MultiDimensionalVector<StoredType>::MultiDimensionalVector(std::vector<size_t> t_dimensions) :
+		m_data{},
+		m_dimensions(std::move(t_dimensions)) {
 	size_t i{0};
-	m_data.resize(std::accumulate(m_dimensions.cbegin(), m_dimensions.cend(), !m_dimensions.empty(), [&] (size_t result, const int &) { return result + m_dimensions[i++]; }), {});
+	m_data.resize(std::accumulate(m_dimensions.cbegin(), m_dimensions.cend(), !m_dimensions.empty(),
+								  [&](size_t result, const int &) { return result + m_dimensions[i++]; }), {});
 }
 
-template<typename StoredType> template<typename... Args> IE::Core::MultiDimensionalVector<StoredType>::MultiDimensionalVector(Args... t_args) : m_data{},
-																																				m_dimensions() {
+template<typename StoredType>
+template<typename... Args>
+IE::Core::MultiDimensionalVector<StoredType>::MultiDimensionalVector(Args... t_args) :
+		m_data{},
+		m_dimensions() {
 	m_dimensions.assign({t_args...});
 	size_t size{!m_dimensions.empty()};
 	((size *= t_args), ...);
 	m_data.resize(size, {});
 }
 
-template<typename StoredType> void IE::Core::MultiDimensionalVector<StoredType>::clear() {
+template<typename StoredType>
+void IE::Core::MultiDimensionalVector<StoredType>::clear() {
 	m_data.clear();
 	m_dimensions.clear();
 }
 
-template<typename StoredType> bool IE::Core::MultiDimensionalVector<StoredType>::empty() {
+template<typename StoredType>
+bool IE::Core::MultiDimensionalVector<StoredType>::empty() {
 	return m_data.empty();
 }
 
-template<typename StoredType> template<typename IndexType> StoredType &IE::Core::MultiDimensionalVector<StoredType>::operator[](std::initializer_list<IndexType> point) {
+template<typename StoredType>
+template<typename IndexType>
+StoredType &IE::Core::MultiDimensionalVector<StoredType>::operator[](std::initializer_list<IndexType> point) {
 	// Convert the point to a vector for indexing purposes
 	std::vector<IndexType> point1(point.begin(), point.end());
 	
@@ -33,10 +44,13 @@ template<typename StoredType> template<typename IndexType> StoredType &IE::Core:
 	std::generate(dimensions.begin() + 1, dimensions.end(), [&] { return m_dimensions[i]; });
 	
 	// Find index and return data
-	return m_data[(size_t)std::accumulate(point1.cbegin(), point1.cend(), 0, [&] (int, const int &) { return point1[i] * dimensions[i]; })];
+	return m_data[(size_t) std::accumulate(point1.cbegin(), point1.cend(), 0, [&](int, const int &) { return point1[i] * dimensions[i]; })];
 }
 
-template<typename StoredType> template<typename IndexType> IE::Core::MultiDimensionalVector<StoredType> IE::Core::MultiDimensionalVector<StoredType>::operator[](std::initializer_list<std::initializer_list<IndexType>> t_points) {
+template<typename StoredType>
+template<typename IndexType>
+IE::Core::MultiDimensionalVector<StoredType>
+IE::Core::MultiDimensionalVector<StoredType>::operator[](std::initializer_list<std::initializer_list<IndexType>> t_points) {
 	// Check parameter validity.
 	if (t_points.size() != 2) {
 		throw std::range_error("Invalid range. Found " + std::to_string((long) t_points.size()) + " indices. Should be 2.");
@@ -50,7 +64,7 @@ template<typename StoredType> template<typename IndexType> IE::Core::MultiDimens
 	
 	// Convert to vectors for ease of iteration and such
 	std::vector<IndexType> point1(t_points.begin()->begin(), t_points.begin()->end());
-	std::vector<IndexType> point2((t_points.end()-1)->begin(), (t_points.end()-1)->end());
+	std::vector<IndexType> point2((t_points.end() - 1)->begin(), (t_points.end() - 1)->end());
 	
 	// Add 1 in front of the dimensions so that it can easily be used for length calculations
 	std::vector<size_t> dimensions(m_dimensions.size());
@@ -60,9 +74,15 @@ template<typename StoredType> template<typename IndexType> IE::Core::MultiDimens
 	
 	// Generate the index locations
 	i = -1;
-	size_t index1{(size_t)std::accumulate(point1.cbegin(), point1.cend(), 0, [&] (size_t result, const int &) { ++i; return result + point1[i] * dimensions[i]; })};
+	size_t index1{(size_t) std::accumulate(point1.cbegin(), point1.cend(), 0, [&](size_t result, const int &) {
+		++i;
+		return result + point1[i] * dimensions[i];
+	})};
 	i = -1;
-	size_t index2{(size_t)std::accumulate(point2.cbegin(), point2.cend(), 0, [&] (size_t result, const int &) { ++i; return result + point2[i] * dimensions[i]; })};
+	size_t index2{(size_t) std::accumulate(point2.cbegin(), point2.cend(), 0, [&](size_t result, const int &) {
+		++i;
+		return result + point2[i] * dimensions[i];
+	})};
 	
 	// Generate dimensions of the new multidimensional array
 	i = 0;
@@ -75,7 +95,9 @@ template<typename StoredType> template<typename IndexType> IE::Core::MultiDimens
 	return *result;
 }
 
-template<typename StoredType> IE::Core::MultiDimensionalVector<StoredType> & IE::Core::MultiDimensionalVector<StoredType>::operator=(const IE::Core::MultiDimensionalVector<StoredType> &other) {
+template<typename StoredType>
+IE::Core::MultiDimensionalVector<StoredType> &
+IE::Core::MultiDimensionalVector<StoredType>::operator=(const IE::Core::MultiDimensionalVector<StoredType> &other) {
 	m_dimensions = other.m_dimensions;
 	m_data = other.m_data;
 	return *this;
