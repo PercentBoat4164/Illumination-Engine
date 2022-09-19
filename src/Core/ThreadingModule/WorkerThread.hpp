@@ -1,14 +1,15 @@
 #pragma once
 
-#include <cstdint>
-#include <functional>
-#include <mutex>
+#include <cstdint>  // for uint32_t
 
+namespace IE::Core {
 class ThreadPool;
+}  // namespace IE::Core
 
+namespace IE::Core::detail {
 class WorkerThread {
 public:
-    explicit WorkerThread(ThreadPool *threadPool);
+    explicit WorkerThread(IE::Core::ThreadPool *threadPool);
 
     void operator()();
 
@@ -17,3 +18,4 @@ private:
     uint32_t        m_id;
     ThreadPool     *m_threadPool;
 };
+}  // namespace IE::Core::detail

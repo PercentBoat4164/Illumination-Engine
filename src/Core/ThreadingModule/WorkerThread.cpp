@@ -4,23 +4,24 @@
 #include "ThreadPool.hpp"  // for ThreadPool
 
 #include <condition_variable>  // for condition_variable
+#include <cstdint>             // for uint32_t
 #include <functional>          // for function
 #include <mutex>               // for mutex, unique_lock
 
-void WorkerThread::operator()() {
+void IE::Core::detail::WorkerThread::operator()() {
     std::function<void()> func;
     bool                  dequeued;
-    while (!m_threadPool->m_shutdown) {
+    while (!m_threadPool->isShutdown()) {
         {
-            std::unique_lock<std::mutex> lock(m_threadPool->m_conditional_mutex);
-            if (m_threadPool->m_queue.empty()) m_threadPool->m_conditional_lock.wait(lock);
-            dequeued = m_threadPool->m_queue.dequeue(func);
+            std::unique_lock<std::mutex> lock(m_threadPool->getConditionalMutex());
+            if (m_threadPool->getQueue().empty()) m_threadPool->getConditionalLock().wait(lock);
+            dequeued = m_threadPool->getQueue().dequeue(func);
         }
         if (dequeued) func();
     }
 }
 
-WorkerThread::WorkerThread(ThreadPool *threadPool) : m_threadPool{threadPool}, m_id{m_nextId++} {
+IE::Core::detail::WorkerThread::WorkerThread(ThreadPool *threadPool) : m_threadPool{threadPool}, m_id{m_nextId++} {
 }
 
-uint32_t WorkerThread::m_nextId{0};
+uint32_t IE::Core::detail::WorkerThread::m_nextId{};
