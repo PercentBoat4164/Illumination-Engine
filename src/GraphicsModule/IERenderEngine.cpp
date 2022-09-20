@@ -245,9 +245,9 @@ void IERenderEngine::createCommandPools() {
 
 void IERenderEngine::createRenderPass() {
 	// Create the renderPass
-	renderPass = std::make_shared<IE::Graphics::RenderPass>();
+	renderPass = std::make_shared<IERenderPass>();
 	graphicsCommandPool->prepareCommandBuffers(swapchainImageViews.size());
-	IE::Graphics::RenderPass::CreateInfo renderPassCreateInfo{
+	IERenderPass::CreateInfo renderPassCreateInfo{
 			.msaaSamples=1
 	};
 	renderPass->create(this, &renderPassCreateInfo);
@@ -257,6 +257,7 @@ void IERenderEngine::setAPI(const IEAPI &API) {
 	IERenderable::setAPI(API);
 	IEMesh::setAPI(API);
 	IEMaterial::setAPI(API);
+	IEImage::setAPI(API);
 	IEBuffer::setAPI(API);
 	IEShader::setAPI(API);
 	IEPipeline::setAPI(API);
@@ -368,14 +369,14 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 	deletionQueue.insert(deletionQueue.begin(), [&] {
 		destroySyncObjects();
 	});
-	
+
 	// Create command pools
 	createCommandPools();
 	deletionQueue.insert(deletionQueue.begin(), [&] {
 		destroyCommandPools();
 	});
-	
-	IE::Graphics::Attachment::CreateInfo depthImageCreateInfo{
+
+	IEImage::CreateInfo depthImageCreateInfo{
 			.format=VK_FORMAT_D32_SFLOAT_S8_UINT,
 			.layout=VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
 			.usage=VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
@@ -385,15 +386,15 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 			.height=swapchain.extent.height,
 			.channels=1,
 	};
-	depthImage = std::make_shared<IE::Graphics::Image>(this, &depthImageCreateInfo);
-	depthImage->setLocation(IE::Graphics::Image::IE_IMAGE_LOCATION_VIDEO);
-	
+	depthImage = std::make_shared<IEImage>(this, &depthImageCreateInfo);
+	depthImage->uploadToVRAM();
+
 	// Create render pass
 	createRenderPass();
 	deletionQueue.insert(deletionQueue.begin(), [&] {
 		renderPass->destroy();
 	});
-	
+
 	graphicsCommandPool->index(0)->execute();
 	camera.create(this);
 	settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);

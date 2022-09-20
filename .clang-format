@@ -114,8 +114,10 @@ IndentCaseBlocks: false
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
 IndentExternBlock: Indent
+# IndentRequiresClause: false  # Not available in clang-format 14
 IndentWidth: 4
 IndentWrappedFunctionNames: false
+# InsertBraces: false  # Not available in clang-format 14
 KeepEmptyLinesAtTheStartOfBlocks: true
 LambdaBodyIndentation: Signature
 MacroBlockBegin: ''
