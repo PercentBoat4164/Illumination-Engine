@@ -2,41 +2,35 @@
 add_subdirectory(DefaultShaders)
 
 set(IEGraphicsModuleSourceFiles  # Gather sources
-		Buffer/IEBuffer.cpp
-		CommandBuffer/IECommandBuffer.cpp
-		CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.cpp
-		CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.cpp
-		CommandBuffer/DependencyStructs/IEDependencyInfo.cpp
-		CommandBuffer/DependencyStructs/IEImageMemoryBarrier.cpp
-		CommandBuffer/DependencyStructs/IERenderPassBeginInfo.cpp
-		CommandBuffer/IECommandPool.cpp
-		IEAPI.cpp
-		IECamera.cpp
-		IEMonitor.cpp
-		IERenderEngine.cpp
-		IESettings.cpp
-		IEVersion.cpp
-		RenderPass/IEFramebuffer.cpp
-		RenderPass/SubPass.cpp
-		Renderable/IEMaterial.cpp
-		Renderable/IEMesh.cpp
-		Renderable/IERenderable.cpp
-		Renderable/IEVertex.cpp
-		Shader/IEDescriptorSet.cpp
-		Shader/IEPipeline.cpp
-		Shader/IEShader.cpp
-		Shader/IEUniformBufferObject.cpp
-		Image/Image.cpp
-		Image/ImageOpenGL.cpp
-		Image/ImageVulkan.cpp
-		Image/Texture.cpp
-		Image/TextureOpenGL.cpp
-		Image/TextureVulkan.cpp
-		RenderPass/RenderPassController.cpp
-		RenderPass/RenderPass.cpp
-		RenderPass/ShadowRenderPass.cpp
-		RenderPass/ColorRenderPass.cpp
-		RenderPass/Framebuffer.cpp RenderPass/Framebuffer.hpp)
+#		Buffer/IEBuffer.cpp
+#		CommandBuffer/IECommandBuffer.cpp
+#		CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.cpp
+#		CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.cpp
+#		CommandBuffer/DependencyStructs/IEDependencyInfo.cpp
+#		CommandBuffer/DependencyStructs/IEImageMemoryBarrier.cpp
+#		CommandBuffer/DependencyStructs/IERenderPassBeginInfo.cpp
+#		CommandBuffer/IECommandPool.cpp
+#		IEAPI.cpp
+#		IECamera.cpp
+#		IEMonitor.cpp
+#		IERenderEngine.cpp
+#		IESettings.cpp
+#		IEVersion.cpp
+#		Renderable/IEMaterial.cpp
+#		Renderable/IEMesh.cpp
+#		Renderable/IERenderable.cpp
+#		Renderable/IEVertex.cpp
+#		Shader/IEDescriptorSet.cpp
+#		Shader/IEPipeline.cpp
+#		Shader/IEShader.cpp
+#		Shader/IEUniformBufferObject.cpp
+#		Image/Image.cpp
+#		Image/ImageOpenGL.cpp
+#		Image/ImageVulkan.cpp
+#		Image/Texture.cpp
+#		Image/TextureOpenGL.cpp
+#		Image/TextureVulkan.cpp
+		RenderPass/Framebuffer.cpp RenderPass/Framebuffer.hpp RenderPass/RenderPass.cpp RenderPass/RenderPass.hpp RenderPass/Subpass.cpp RenderPass/Subpass.hpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

@@ -12,28 +12,21 @@
 //
 //}
 
-#include "RenderPass/RenderPassController.hpp"
-#include "RenderPass/ColorRenderPass.hpp"
-#include "RenderPass/ShadowRenderPass.hpp"
+#include "RenderPass/RenderPass.hpp"
 
 int main() {
-	IE::Graphics::RenderPassController controller{};
+	std::vector<IE::Graphics::Subpass> cascadeSubpasses(4);
+	for (size_t i{}; i < cascadeSubpasses.size(); ++i) {
+		std::string name{"shadowMap" + std::to_string(i)};
+		cascadeSubpasses[i].recordsDepthStencilTo(name);
+	}
 	
-	// Build shadow pass
-	IE::Graphics::ShadowRenderPass shadowPass{};
-	shadowPass.setResolution({2048, 2048});
+	IE::Graphics::RenderPass shadowRenderPass;
+	shadowRenderPass.setResolution(2048, 2048).addSubpass(cascadeSubpasses).addOutput({"shadowMap0", "shadowMap1", "shadowMap2", "shadowMap3"}).build();
 	
-	// Build color pass
-	IE::Graphics::ColorRenderPass colorPass{};
-	colorPass.setResolution({1920, 1080});
-	
-	// Build and link the render passes
-	controller.addRenderPass(shadowPass, "shadowCascade0");
-	controller.addRenderPass(colorPass, "color");
-	controller.build();
-	
-	// Get created assets from the passes to be used in descriptor sets and such
-	shadowPass.getMaps();
+	IE::Graphics::RenderPass outputRenderPass;
+	outputRenderPass.setResolution(2560, 1440).addSubpass().recordsColorTo("colorImage").recordsDepthStencilTo("sceneDepthMap").resolvesTo("swapchain").build();
+
 
 //	IESettings settings{};
 //	auto OpenGLEngine{std::make_shared<IERenderEngine>(settings)};

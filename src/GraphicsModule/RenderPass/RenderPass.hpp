@@ -1,38 +1,72 @@
 #pragma once
 
-#include "SubPass.hpp"
-#include "Image/Attachment.hpp"
-
-#include <vulkan/vulkan_core.h>
+#include "Framebuffer.hpp"
+#include "Subpass.hpp"
 
 #include <vector>
-#include <array>
-#include <unordered_map>
+#include <memory>
+#include <map>
 
 namespace IE::Graphics {
-	/** @brief An implementation of the render pass concept in modern graphics programming
-	 * @details This class is not meant to be instantiated, instead specific render pass types are created. Calling the constructor of the other
-	 * render pass types will use the functions available from this class to create themselves with the required specifics. The results may then be
-	 * upcast to this type for general use.
-	 * @todo Implement a CustomRenderPass type that allows the user to build their own render pass from scratch.
-	 */
 	class RenderPass {
+		// As subpasses are added, the named attachments that are required are added here.
+		std::map<std::string, std::shared_ptr<IE::Graphics::Attachment>> m_attachments;
+		std::vector<VkAttachmentDescription> m_attachmentStateHistory;
+		std::vector<std::string> m_outputAttachments;
+		IE::Graphics::Framebuffer m_framebuffer;
+		std::vector<IE::Graphics::Subpass> m_subpasses;
+		std::vector<VkSubpassDescription> m_subpassDescriptions;
+		std::array<size_t, 2> m_resolution;
+	
 	public:
-		std::vector<std::unique_ptr<IE::Graphics::SubPass>> m_subPasses;
-		std::array<size_t, 2> m_dimensions;
-		std::vector<std::weak_ptr<IE::Graphics::Attachment>> m_attachments;
-		std::vector<std::weak_ptr<IE::Graphics::Attachment>> m_outputAttachments;
-		VkRenderPass m_renderPass;
-		std::weak_ptr<IERenderEngine> m_linkedRenderEngine;
+		auto addSubpass() -> decltype(*this);
 		
-		RenderPass();
+		auto addSubpass(const IE::Graphics::Subpass &t_subpass) -> decltype(*this);
 		
-		void addSubPass(VkSubpassDescription t_description, VkSubpassDependency t_dependency);
+		auto addSubpass(const std::vector<IE::Graphics::Subpass> &t_subpass) -> decltype(*this);
 		
-		void addAttachment(const std::weak_ptr<IE::Graphics::Attachment> &t_attachment);
+		auto setResolution(std::array<size_t, 2> t_resolution) -> decltype(*this);
 		
-		std::unordered_map<IE::Graphics::Attachment *, uint32_t> getAttachmentIndex;
+		auto setResolution(size_t t_width, size_t t_height) -> decltype(*this);
 		
-		auto setResolution(std::array<size_t, 2> t_dimensions) -> std::remove_reference<decltype(*this)>::type;
-	};
+		auto addOutput(const std::string &t_attachment) -> decltype(*this);
+		
+		auto addOutput(const std::vector<std::string> &t_attachments) -> decltype(*this);
+		
+		std::vector<std::weak_ptr<IE::Graphics::Attachment>> build();
+		
+		// Functions piped through to the topmost subpass
+		auto takesInput(const std::string &t_attachment) -> decltype(*this);
+		
+		auto takesInput(const std::vector<std::string> &t_attachments) -> decltype(*this);
+		
+		auto require(const std::string &t_attachment) -> decltype(*this);
+		
+		auto require(const std::vector<std::string> &t_attachments) -> decltype(*this);
+		
+		auto recordsColorTo(const std::string &t_attachment) -> decltype(*this);
+		
+		auto recordsColorTo(const std::vector<std::string> &t_attachments) -> decltype(*this);
+		
+		auto resolvesTo(const std::string &t_attachment) -> decltype(*this);
+		
+		auto resolvesTo(const std::vector<std::string> &t_attachments) -> decltype(*this);
+		
+		auto recordsDepthStencilTo(const std::string &t_attachment) -> decltype(*this);
+		
+		auto setBindPoint(VkPipelineBindPoint t_bindPoint) -> decltype(*this);
+	
+	private:
+		VkAttachmentReference *buildAttachmentReference(const std::string &t_attachment);
+		
+		std::vector<VkAttachmentReference> buildReferencesFromSource(std::vector<std::string> &t_attachments);
+		
+		static std::vector<std::string> getAllAttachmentsInSubpass(const IE::Graphics::Subpass &subpass);;
+		
+		VkAttachmentDescription buildAttachmentDescriptionForSubpass(size_t i, const std::string &t_attachment);
+		
+		IE::Graphics::Subpass *findNextAttachmentUseAfter(size_t i, const std::string &t_att);
+
+        bool isRequired(const std::string &t_attachment);
+        };
 }

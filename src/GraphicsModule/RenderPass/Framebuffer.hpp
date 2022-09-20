@@ -1,5 +1,9 @@
 #pragma once
 
-class Framebuffer {
+#include "Image/Attachment.hpp"
 
-};
+namespace IE::Graphics {
+	class Framebuffer {
+	
+	};
+}
