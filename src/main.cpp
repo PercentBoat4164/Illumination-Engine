@@ -72,29 +72,29 @@ int main() {
 
     IE::Core::ThreadPool threadPool{};
 
-    auto fbxFuture{threadPool.submit([&]() {
-        std::shared_ptr<IEAsset> fbx(std::make_shared<IEAsset>());
+    std::shared_ptr<IEAsset> fbx(std::make_shared<IEAsset>());
+    auto                     fbxFuture{threadPool.submit([&] {
         fbx->filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
         fbx->position = {2, 1, 0};
         fbx->addAspect(std::make_shared<IERenderable>().get());
         renderEngine->addAsset(fbx);
     })};
-    auto objFuture{threadPool.submit([&]() {
-        std::shared_ptr<IEAsset> obj(std::make_shared<IEAsset>());
+    std::shared_ptr<IEAsset> obj(std::make_shared<IEAsset>());
+    auto                     objFuture{threadPool.submit([&] {
         obj->filename = "res/assets/AncientStatue/models/ancientStatue.obj";
         obj->position = {0, 1, 0};
         obj->addAspect(std::make_shared<IERenderable>().get());
         renderEngine->addAsset(obj);
     })};
-    auto glbFuture{threadPool.submit([&]() {
-        std::shared_ptr<IEAsset> glb(std::make_shared<IEAsset>());
+    std::shared_ptr<IEAsset> glb(std::make_shared<IEAsset>());
+    auto                     glbFuture{threadPool.submit([&] {
         glb->filename = "res/assets/AncientStatue/models/ancientStatue.glb";
         glb->position = {-2, 1, 0};
         glb->addAspect(std::make_shared<IERenderable>().get());
         renderEngine->addAsset(glb);
     })};
-    auto floorFuture{threadPool.submit([&]() {
-        std::shared_ptr<IEAsset> floor(std::make_shared<IEAsset>());
+    std::shared_ptr<IEAsset> floor(std::make_shared<IEAsset>());
+    auto                     floorFuture{threadPool.submit([&] {
         floor->filename = "res/assets/DeepslateFloor/models/DeepslateFloor.fbx";
         floor->position = {0, 0, -1};
         floor->addAspect(std::make_shared<IERenderable>().get());
@@ -108,7 +108,7 @@ int main() {
     glbFuture.wait();
     floorFuture.wait();
 
-    threadPool.shutdown();
+    //    threadPool.shutdown();
 
     renderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Beginning main loop.");
 

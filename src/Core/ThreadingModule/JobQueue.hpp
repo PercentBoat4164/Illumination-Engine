@@ -29,11 +29,12 @@ public:
 
     bool dequeue(T &t) {
         std::unique_lock<std::mutex> lock(m_mutex);
-        if (!m_queue.empty()) {
-            t = m_queue.front();
-            m_queue.pop();
-        }
-        return m_queue.empty();
+
+        if (m_queue.empty()) return false;
+        t = std::move(m_queue.front());
+
+        m_queue.pop();
+        return true;
     }
 };
 }  // namespace IE::Core::detail
