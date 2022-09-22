@@ -410,7 +410,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
     for (std::shared_ptr<IEAspect> &aspect : asset->aspects) {
         // If aspect is downcast-able to a renderable
-        if (static_cast<IERenderable *>(aspect.get())) {
+        if (dynamic_cast<IERenderable *>(aspect.get())) {
             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
             std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->filename);
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
