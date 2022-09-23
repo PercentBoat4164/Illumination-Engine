@@ -3,7 +3,7 @@
 #include "TextureVulkan.hpp"
 #include "ImageOpenGL.hpp"
 
-#include "IERenderEngine.hpp"
+#include "RenderEngine.hpp"
 
 IE::Graphics::Texture::Texture() noexcept:
 		m_mipLodBias{},
@@ -15,7 +15,7 @@ IE::Graphics::Texture::Texture() noexcept:
 		w{} {}
 
 template<typename... Args>
-IE::Graphics::Texture::Texture(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... args) :
+IE::Graphics::Texture::Texture(const std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... args) :
 		Image(t_engineLink, args...),
 		m_mipLodBias{},
 		m_anisotropyLevel{},
@@ -56,15 +56,17 @@ IE::Graphics::Texture &IE::Graphics::Texture::operator=(const IE::Graphics::Text
 }
 
 template<typename... Args>
-std::unique_ptr<IE::Graphics::Texture> IE::Graphics::Texture::create(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions) {
-	if (t_engineLink.lock()->API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+std::unique_ptr<IE::Graphics::Texture> IE::Graphics::Texture::create(const std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... t_dimensions) {
+	if (t_engineLink.lock()->getAPI().name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
 		return std::unique_ptr<IE::Graphics::Texture>{
 				static_cast<IE::Graphics::Texture *>(new IE::Graphics::detail::TextureVulkan(t_engineLink, t_dimensions...))};
-	} else if (t_engineLink.lock()->API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+	} else if (t_engineLink.lock()->getAPI().name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		return std::unique_ptr<IE::Graphics::Texture>{
 				static_cast<IE::Graphics::Texture *>(new IE::Graphics::detail::TextureVulkan(t_engineLink, t_dimensions...))};
 	}
-	t_engineLink.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
-											  "failed to create image because render engine is using neither Vulkan or OpenGL.");
+    t_engineLink.lock()->getCore()->logger.log(
+      "failed to create image because render engine is using neither Vulkan or OpenGL.",
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+    );
 	return nullptr;
 }

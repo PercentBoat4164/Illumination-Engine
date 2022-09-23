@@ -42,7 +42,8 @@ auto IE::Graphics::Subpass::resolvesTo(const std::vector<std::string> &t_attachm
 	return *this;
 }
 
-auto IE::Graphics::Subpass::recordsDepthStencilTo(const std::string &t_attachment) -> decltype(*this) {
+auto IE::Graphics::Subpass::recordsDepthStencilTo(const std::string &t_attachment, Attachment::Preset preset)
+  -> Subpass {
 	if (!m_depthStencilAttachment.empty()) {
 		std::cout << "Cannot overwrite previous depth / stencil map";
 		return *this;

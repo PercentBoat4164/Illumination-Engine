@@ -1,11 +1,11 @@
 /* Include this file's header. */
-#include "IEVersion.hpp"
+#include "Version.hpp"
 
 /* Include external dependencies. */
 #include <vulkan/vulkan.h>
 
 
-IEVersion::IEVersion(const std::string &versionName) {
+IE::Graphics::Version::Version(const std::string &versionName) {
 	uint32_t nameLength = (name + ' ').find_first_of(' ');
 	name = versionName.substr(0, nameLength);
 	uint32_t firstBreak = name.find_first_of('.');
@@ -18,7 +18,7 @@ IEVersion::IEVersion(const std::string &versionName) {
 	number = VK_MAKE_VERSION(major, minor, patch);
 }
 
-IEVersion::IEVersion(const std::vector<uint32_t> &versionNumbers) {
+IE::Graphics::Version::Version(const std::vector<uint32_t> &versionNumbers) {
 	version = versionNumbers;
 	major = versionNumbers[0];
 	minor = versionNumbers[1];
@@ -27,7 +27,7 @@ IEVersion::IEVersion(const std::vector<uint32_t> &versionNumbers) {
 	number = VK_MAKE_VERSION(major, minor, patch);
 }
 
-IEVersion::IEVersion(uint32_t versionMajor, uint32_t versionMinor, uint32_t versionPatch) {
+IE::Graphics::Version::Version(uint32_t versionMajor, uint32_t versionMinor, uint32_t versionPatch) {
 	major = versionMajor;
 	minor = versionMinor;
 	patch = versionPatch;
@@ -36,7 +36,7 @@ IEVersion::IEVersion(uint32_t versionMajor, uint32_t versionMinor, uint32_t vers
 	number = VK_MAKE_VERSION(major, minor, patch);
 }
 
-IEVersion::IEVersion(uint32_t versionNumber) {
+IE::Graphics::Version::Version(uint32_t versionNumber) {
 	number = versionNumber;
 	major = VK_VERSION_MAJOR(versionNumber);
 	minor = VK_VERSION_MINOR(versionNumber);
@@ -45,4 +45,4 @@ IEVersion::IEVersion(uint32_t versionNumber) {
 	version = {major, minor, patch};
 }
 
-IEVersion::IEVersion() = default;
+IE::Graphics::Version::Version() = default;

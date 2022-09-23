@@ -9,7 +9,7 @@ IEMaterial::IEMaterial(IERenderEngine *engineLink) {
 	create(engineLink);
 }
 
-void IEMaterial::setAPI(const IEAPI &API) {
+void IEMaterial::setAPI(const API &API) {
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_create = &IEMaterial::_openglCreate;
 		_loadFromDiskToRAM = &IEMaterial::_openglLoadFromDiskToRAM;

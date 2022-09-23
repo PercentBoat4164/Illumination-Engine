@@ -16,7 +16,7 @@ public:
 
 	explicit IEMesh(IERenderEngine *);
 
-	static void setAPI(const IEAPI &API);
+	static void setAPI(const API &API);
 
 
 	void create(IERenderEngine *);

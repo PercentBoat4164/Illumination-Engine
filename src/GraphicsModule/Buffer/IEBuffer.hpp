@@ -5,7 +5,7 @@ class IERenderEngine;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "IEAPI.hpp"
+#include "API/API.hpp"
 #include "Image/Image.hpp"
 #include "Image/ImageVulkan.hpp"
 
@@ -113,7 +113,7 @@ public:
 	IEBuffer(IERenderEngine *engineLink, size_t bufferSize, VkBufferUsageFlags usageFlags, VmaMemoryUsage memoryUsage, GLenum bufferType);
 
 
-	static void setAPI(const IEAPI &API);
+	static void setAPI(const API &API);
 
 
 	void create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);

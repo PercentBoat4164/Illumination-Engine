@@ -57,7 +57,7 @@ public:
 
 	IERenderable(IERenderEngine *, const std::string &);
 
-	static void setAPI(const IEAPI &);
+	static void setAPI(const API &);
 
 	/* API dependent functions */
 	static std::function<void(IERenderable &, IERenderEngine *, const std::string &)> _create;

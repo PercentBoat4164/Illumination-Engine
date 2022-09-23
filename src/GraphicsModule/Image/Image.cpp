@@ -1,25 +1,23 @@
 #include "Image.hpp"
 
-#include <utility>
-
-#include "ImageVulkan.hpp"
 #include "ImageOpenGL.hpp"
+#include "ImageVulkan.hpp"
+#include "RenderEngine.hpp"
 
-#include "IERenderEngine.hpp"
+#include <utility>
 
 /**
  * @brief Basic private 'constructor' for the Location enum.
  * @details This is used to create IE::Graphics::Image::Locations from the uint8_ts that are used to perform the
- * binary operators. Before converting the t_location to an IE::Graphics::Image::Location, validity checks are performed to ensure that the t_location does not
- * represent a physically impossible scenario.
+ * binary operators. Before converting the t_location to an IE::Graphics::Image::Location, validity checks are
+ *performed to ensure that the t_location does not represent a physically impossible scenario.
  * @param t_location The value that the new Location should take on.
  * @return A verified IE::Graphics::Image::Location.
  **/
 constexpr IE::Graphics::Image::Location Location(uint8_t t_location) {
-	if (t_location & IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NONE &&
-		(t_location & ~IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NONE) > IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NULL)
-		throw std::logic_error("IE_IMAGE_LOCATION_NONE mix error!");
-	return (IE::Graphics::Image::Location) t_location;
+    if (t_location & IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NONE && (t_location & ~IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NONE) > IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NULL)
+        throw std::logic_error("IE_IMAGE_LOCATION_NONE mix error!");
+    return static_cast<IE::Graphics::Image::Location>(t_location);
 }
 
 /**
@@ -28,8 +26,9 @@ constexpr IE::Graphics::Image::Location Location(uint8_t t_location) {
  * @param t_second Operand.
  * @return t_first | t_second.
  */
-constexpr IE::Graphics::Image::Location operator|(IE::Graphics::Image::Location t_first, IE::Graphics::Image::Location t_second) {
-	return Location((uint8_t) t_first | (uint8_t) t_second);
+constexpr IE::Graphics::Image::Location
+operator|(IE::Graphics::Image::Location t_first, IE::Graphics::Image::Location t_second) {
+    return Location(static_cast<uint8_t>(t_first) | static_cast<uint8_t>(t_second));
 }
 
 /**
@@ -38,8 +37,9 @@ constexpr IE::Graphics::Image::Location operator|(IE::Graphics::Image::Location 
  * @param t_second Operand.
  * @return t_first & t_second.
  */
-constexpr IE::Graphics::Image::Location operator&(IE::Graphics::Image::Location t_first, IE::Graphics::Image::Location t_second) noexcept {
-	return Location((uint8_t) t_first & (uint8_t) t_second);
+constexpr IE::Graphics::Image::Location
+operator&(IE::Graphics::Image::Location t_first, IE::Graphics::Image::Location t_second) noexcept {
+    return Location(static_cast<uint8_t>(t_first) & static_cast<uint8_t>(t_second));
 }
 
 /**
@@ -48,132 +48,142 @@ constexpr IE::Graphics::Image::Location operator&(IE::Graphics::Image::Location 
  * @param t_second Operand.
  * @return t_first ^ t_second.
  */
-constexpr IE::Graphics::Image::Location operator^(IE::Graphics::Image::Location t_first, IE::Graphics::Image::Location t_second) noexcept {
-	return Location((uint8_t) t_first ^ (uint8_t) t_second);
+constexpr IE::Graphics::Image::Location
+operator^(IE::Graphics::Image::Location t_first, IE::Graphics::Image::Location t_second) noexcept {
+    return Location(static_cast<uint8_t>(t_first) ^ static_cast<uint8_t>(t_second));
 }
 
 /**
  * @brief An implementation of the NOT operator for the IE::Graphics::Image::Location enum.
- * @details This operator does not necessarily return a valid location. It may return a location that has both the IE_IMAGE_LOCATION_NONE and
- * IE_IMAGE_LOCATION_SYSTEM bits set for example
+ * @details This operator does not necessarily return a valid location. It may return a location that has both the
+ * IE_IMAGE_LOCATION_NONE and IE_IMAGE_LOCATION_SYSTEM bits set for example
  * @param t_first Operand.
  * @return ~t_first
  */
 constexpr IE::Graphics::Image::Location operator~(IE::Graphics::Image::Location t_first) noexcept {
-	return static_cast<IE::Graphics::Image::Location>(~(uint8_t) t_first);
+    return static_cast<IE::Graphics::Image::Location>(~static_cast<uint8_t>(t_first));
 }
 
 //
 // ===================== Implementation of IE::Graphics::Image =====================
 //
 
-IE::Graphics::Image::Image() noexcept:
-		m_components{0},
-		m_location{IE_IMAGE_LOCATION_NULL},
-		m_dimensions(),
-		m_data(),
-		m_linkedRenderEngine(),
-		m_mutex() {}
+IE::Graphics::Image::Image() noexcept :
+        m_components{0},
+        m_location{IE_IMAGE_LOCATION_NULL},
+        m_dimensions(),
+        m_data(),
+        m_linkedRenderEngine(),
+        m_mutex() {
+}
 
 IE::Graphics::Image &IE::Graphics::Image::operator=(const IE::Graphics::Image &t_other) {
-	std::unique_lock<std::mutex> lock(*m_mutex);
-	std::unique_lock<std::mutex> otherLock(*t_other.m_mutex);
-	if (&t_other != this) {
-		if (m_linkedRenderEngine.lock() != t_other.m_linkedRenderEngine.lock()) {
-			IE::Core::MultiDimensionalVector<unsigned char> *temp{new IE::Core::MultiDimensionalVector<unsigned char>()};
-			otherLock.release();
-			t_other._getImageData(temp);
-			otherLock.lock();
-			lock.release();
-			_createImage(*temp);
-			lock.lock();
-		}
-		m_components = t_other.m_components;
-		m_location = t_other.m_location;
-		m_data = t_other.m_data;
-		m_dimensions = t_other.m_dimensions;
-	}
-	return *this;
+    std::unique_lock<std::mutex> lock(*m_mutex);
+    std::unique_lock<std::mutex> otherLock(*t_other.m_mutex);
+    if (&t_other != this) {
+        if (m_linkedRenderEngine.lock() != t_other.m_linkedRenderEngine.lock()) {
+            IE::Core::MultiDimensionalVector<unsigned char> *temp{
+              new IE::Core::MultiDimensionalVector<unsigned char>()};
+            otherLock.release();
+            t_other._getImageData(temp);
+            otherLock.lock();
+            lock.release();
+            _createImage(*temp);
+            lock.lock();
+        }
+        m_components = t_other.m_components;
+        m_location   = t_other.m_location;
+        m_data       = t_other.m_data;
+        m_dimensions = t_other.m_dimensions;
+    }
+    return *this;
 }
 
 IE::Graphics::Image &IE::Graphics::Image::operator=(IE::Graphics::Image &&t_other) noexcept {
-	std::unique_lock<std::mutex> lock(*m_mutex);
-	std::unique_lock<std::mutex> otherLock(*t_other.m_mutex);
-	if (&t_other != this) {
-		if (m_linkedRenderEngine.lock() != t_other.m_linkedRenderEngine.lock()) {
-			IE::Core::MultiDimensionalVector<unsigned char> *temp{new IE::Core::MultiDimensionalVector<unsigned char>()};
-			otherLock.release();
-			t_other._getImageData(temp);
-			otherLock.lock();
-			lock.release();
-			_createImage(*temp);
-			lock.lock();
-		}
-		m_components = std::exchange(t_other.m_components, 0);
-		m_location = std::exchange(t_other.m_location, IE_IMAGE_LOCATION_NULL);
-		m_data = std::exchange(t_other.m_data, IE::Core::MultiDimensionalVector<unsigned char>{});
-		m_dimensions = std::exchange(t_other.m_dimensions, {});
-	}
-	return *this;
+    std::unique_lock<std::mutex> lock(*m_mutex);
+    std::unique_lock<std::mutex> otherLock(*t_other.m_mutex);
+    if (&t_other != this) {
+        if (m_linkedRenderEngine.lock() != t_other.m_linkedRenderEngine.lock()) {
+            IE::Core::MultiDimensionalVector<unsigned char> *temp{
+              new IE::Core::MultiDimensionalVector<unsigned char>()};
+            otherLock.release();
+            t_other._getImageData(temp);
+            otherLock.lock();
+            lock.release();
+            _createImage(*temp);
+            lock.lock();
+        }
+        m_components = std::exchange(t_other.m_components, 0);
+        m_location   = std::exchange(t_other.m_location, IE_IMAGE_LOCATION_NULL);
+        m_data       = std::exchange(t_other.m_data, IE::Core::MultiDimensionalVector<unsigned char>{});
+        m_dimensions = std::exchange(t_other.m_dimensions, {});
+    }
+    return *this;
 }
 
 template<typename... Args>
-std::unique_ptr<IE::Graphics::Image> IE::Graphics::Image::create(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions) {
-	if (t_engineLink.lock()->API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-		return std::unique_ptr<IE::Graphics::Image>{
-				static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageVulkan(t_engineLink, t_dimensions...))};
-	} else if (t_engineLink.lock()->API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-		return std::unique_ptr<IE::Graphics::Image>{
-				static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageOpenGL(t_engineLink, t_dimensions...))};
-	}
-	t_engineLink.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
-											  "failed to create image because render engine is using neither Vulkan or OpenGL.");
-	return nullptr;
+std::unique_ptr<IE::Graphics::Image>
+IE::Graphics::Image::create(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLink, Args... t_dimensions) {
+    if (t_engineLink.lock()->getAPI().name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+        return std::unique_ptr<IE::Graphics::Image>{
+          static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageVulkan(t_engineLink, t_dimensions...)
+          )};
+    } else if (t_engineLink.lock()->getAPI().name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+        return std::unique_ptr<IE::Graphics::Image>{
+          static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageOpenGL(t_engineLink, t_dimensions...)
+          )};
+    }
+    t_engineLink.lock()->getCore()->logger.log(
+      "failed to create image because render engine is using neither Vulkan or OpenGL.",
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+    );
+    return nullptr;
 }
 
 template<typename... Args>
 unsigned char IE::Graphics::Image::operator[](Args... t_args) {
-	return m_data[std::forward<Args...>(t_args...)];
+    return m_data[std::forward<Args...>(t_args...)];
 }
 
 template<typename... Args>
-IE::Graphics::Image::Image(std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions) :
-		m_components{4},
-		m_location{IE_IMAGE_LOCATION_SYSTEM},
-		m_dimensions(),
-		m_data{IE::Core::MultiDimensionalVector<unsigned char>(t_dimensions...)},
-		m_linkedRenderEngine{std::move(t_engineLink)},
-		m_mutex() {}
+IE::Graphics::Image::Image(std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... t_dimensions) :
+        m_components{4},
+        m_location{IE_IMAGE_LOCATION_SYSTEM},
+        m_dimensions(),
+        m_data{IE::Core::MultiDimensionalVector<unsigned char>(t_dimensions...)},
+        m_linkedRenderEngine{std::move(t_engineLink)},
+        m_mutex() {
+}
 
 IE::Graphics::Image::Location IE::Graphics::Image::getLocation() const {
-	return m_location;
+    return m_location;
 }
 
 IE::Core::MultiDimensionalVector<unsigned char> IE::Graphics::Image::getData() const {
-	return m_data;
+    return m_data;
 }
 
 void IE::Graphics::Image::setData(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) {
-	std::unique_lock<std::mutex> lock(*m_mutex);
-	if (m_location & IE_IMAGE_LOCATION_NONE) {  // Nowhere for image data to go.
-		// warn and return
-		m_linkedRenderEngine.lock()->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-														  "Attempted to set data to an image stored in IE_IMAGE_LOCATION_NONE!");
-		return;
-	}
-	if (m_location & IE_IMAGE_LOCATION_SYSTEM) {
-		m_data = t_data;
-	}
-	if (m_location & IE_IMAGE_LOCATION_VIDEO) {
-		if (m_dimensions == t_data.m_dimensions) {
-			lock.release();
-			_setImageData(t_data);
-			lock.lock();
-		} else {
-			lock.release();
-			_destroyImage();
-			_createImage(t_data);
-			lock.lock();
-		}
-	}
+    std::unique_lock<std::mutex> lock(*m_mutex);
+    if (m_location & IE_IMAGE_LOCATION_NONE) {  // Nowhere for image data to go.
+        // warn and return
+        m_linkedRenderEngine.lock()->getCore()->logger.log(
+          "Attempted to set data to an image stored in IE_IMAGE_LOCATION_NONE!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
+        return;
+    }
+    if (m_location & IE_IMAGE_LOCATION_SYSTEM) m_data = t_data;
+    if (m_location & IE_IMAGE_LOCATION_VIDEO) {
+        if (m_dimensions == t_data.getDimensions()) {
+            lock.release();
+            _setImageData(t_data);
+            lock.lock();
+        } else {
+            lock.release();
+            _destroyImage();
+            _createImage(t_data);
+            lock.lock();
+        }
+    }
 }

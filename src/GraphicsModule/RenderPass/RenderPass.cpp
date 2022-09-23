@@ -1,13 +1,18 @@
 #include "RenderPass.hpp"
 
+#include "RenderEngine.hpp"
+#include "Image/AttachmentVulkan.hpp"
+
 #include <iostream>
+#include <memory>
+#include <utility>
 
 template<typename T>
 constexpr std::vector<T> &operator<<(std::vector<T> &t_first, const std::vector<T> &t_second) {
-    auto   oldFirstEnd = t_first.end();
-    size_t i{};
-    t_first.resize(t_first.size() + t_second.size());
-    std::generate(oldFirstEnd, t_first.end(), [&t_second, &i] { return t_second[i++]; });
+    size_t i{t_first.size()};
+    size_t j{};
+    t_first.reserve(t_first.size() + t_second.size());
+    for (; i < t_first.capacity(); ++i) t_first.push_back(t_second[j++]);
     return t_first;
 }
 
@@ -54,20 +59,37 @@ std::vector<std::weak_ptr<IE::Graphics::Attachment>> IE::Graphics::RenderPass::b
         }
         for (const auto &attachment : subpass.m_inputAttachments) {
             std::shared_ptr<IE::Graphics::Attachment> &output = m_attachments[attachment];
-            if (!output) output = std::make_shared<IE::Graphics::Attachment>();
+            if (!output)
+                output = std::make_shared<IE::Graphics::detail::AttachmentVulkan>(
+                  m_linkedRenderEngine,
+                  subpass.attachmentPresets.at(attachment)
+                );
         }
         for (const auto &attachment : subpass.m_colorAttachments) {
             std::shared_ptr<IE::Graphics::Attachment> &output = m_attachments[attachment];
-            if (!output) output = std::make_shared<IE::Graphics::Attachment>();
+            if (!output)
+                output = std::make_shared<IE::Graphics::detail::AttachmentVulkan>(
+                  m_linkedRenderEngine,
+                  subpass.attachmentPresets.at(attachment)
+                );
         }
         for (const auto &attachment : subpass.m_resolveAttachments) {
             std::shared_ptr<IE::Graphics::Attachment> &output = m_attachments[attachment];
-            if (!output) output = std::make_shared<IE::Graphics::Attachment>();
+            if (!output)
+                output = std::make_shared<IE::Graphics::detail::AttachmentVulkan>(
+                  m_linkedRenderEngine,
+                  subpass.attachmentPresets.at(attachment)
+                );
         }
         std::shared_ptr<IE::Graphics::Attachment> &output = m_attachments[subpass.m_depthStencilAttachment];
-        if (!output) output = std::make_shared<IE::Graphics::Attachment>();
+        if (!output)
+            output = std::make_shared<IE::Graphics::detail::AttachmentVulkan>(
+              m_linkedRenderEngine,
+              subpass.attachmentPresets.at(subpass.m_depthStencilAttachment)
+            );
     }
 
+    m_attachmentStateHistory.resize(m_attachments.size());
     m_subpassDescriptions.reserve(m_subpasses.size());
 
     // Generate subpasses
@@ -133,10 +155,24 @@ std::vector<std::weak_ptr<IE::Graphics::Attachment>> IE::Graphics::RenderPass::b
     i = 0;
     for (const auto &attachment : m_attachments) buildAttachmentDescriptionForSubpass(i, attachment.first);
 
+    std::vector<VkSubpassDependency> allDependencies{};
+
+
     VkRenderPassCreateInfo renderPassCreateInfo{
-      .sType        = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-      .subpassCount = static_cast<uint32_t>(m_subpassDescriptions.size()),
-      .pSubpasses   = m_subpassDescriptions.data()};
+      .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+      .attachmentCount = static_cast<uint32_t>(allDescriptions.size()),
+      .pAttachments    = allDescriptions.data(),
+      .subpassCount    = static_cast<uint32_t>(m_subpassDescriptions.size()),
+      .pSubpasses      = m_subpassDescriptions.data(),
+      .dependencyCount = static_cast<uint32_t>(allDependencies.size()),
+      .pDependencies   = allDependencies.data()};
+
+    vkCreateRenderPass(
+      m_linkedRenderEngine.lock()->getDevice(),
+      &renderPassCreateInfo,
+      nullptr,
+      &m_renderPass
+    );
 
     return attachments;
 }
@@ -146,48 +182,76 @@ auto IE::Graphics::RenderPass::addSubpass() -> decltype(*this) {
     return *this;
 }
 
-auto IE::Graphics::RenderPass::takesInput(const std::string &t_attachment) -> decltype(*this) {
+auto IE::Graphics::RenderPass::takesInput(
+  const std::string               &t_attachment,
+  IE::Graphics::Attachment::Preset t_preset
+) -> decltype(*this) {
     m_subpasses[m_subpasses.size() - 1].takesInput(t_attachment);
     return *this;
 }
 
-auto IE::Graphics::RenderPass::takesInput(const std::vector<std::string> &t_attachments) -> decltype(*this) {
+auto IE::Graphics::RenderPass::takesInput(
+  const std::vector<std::string>  &t_attachments,
+  IE::Graphics::Attachment::Preset t_preset
+) -> decltype(*this) {
     m_subpasses[m_subpasses.size() - 1].takesInput(t_attachments);
     return *this;
 }
 
-auto IE::Graphics::RenderPass::require(const std::string &t_attachment) -> decltype(*this) {
+auto IE::Graphics::RenderPass::require(const std::string &t_attachment, IE::Graphics::Attachment::Preset t_preset)
+  -> decltype(*this) {
     m_subpasses[m_subpasses.size() - 1].require(t_attachment);
     return *this;
 }
 
-auto IE::Graphics::RenderPass::require(const std::vector<std::string> &t_attachments) -> decltype(*this) {
+auto IE::Graphics::RenderPass::require(
+  const std::vector<std::string>  &t_attachments,
+  IE::Graphics::Attachment::Preset t_preset
+) -> decltype(*this) {
     m_subpasses[m_subpasses.size() - 1].require(t_attachments);
     return *this;
 }
 
-auto IE::Graphics::RenderPass::recordsColorTo(const std::string &t_attachment) -> decltype(*this) {
+auto IE::Graphics::RenderPass::recordsColorTo(
+  const std::string               &t_attachment,
+  IE::Graphics::Attachment::Preset t_preset
+) -> decltype(*this) {
     m_subpasses[m_subpasses.size() - 1].recordsColorTo(t_attachment);
     return *this;
 }
 
-auto IE::Graphics::RenderPass::recordsColorTo(const std::vector<std::string> &t_attachments) -> decltype(*this) {
+auto IE::Graphics::RenderPass::recordsColorTo(
+  const std::vector<std::string>  &t_attachments,
+  IE::Graphics::Attachment::Preset t_preset
+) -> decltype(*this) {
     m_subpasses[m_subpasses.size() - 1].recordsColorTo(t_attachments);
     return *this;
 }
 
-auto IE::Graphics::RenderPass::resolvesTo(const std::string &t_attachment) -> decltype(*this) {
+auto IE::Graphics::RenderPass::resolvesTo(
+  const std::string               &t_attachment,
+  IE::Graphics::Attachment::Preset t_preset
+) -> decltype(*this) {
     m_subpasses[m_subpasses.size() - 1].resolvesTo(t_attachment);
     return *this;
 }
 
-auto IE::Graphics::RenderPass::resolvesTo(const std::vector<std::string> &t_attachments) -> decltype(*this) {
+auto IE::Graphics::RenderPass::resolvesTo(
+  const std::vector<std::string>  &t_attachments,
+  IE::Graphics::Attachment::Preset t_preset
+) -> decltype(*this) {
     m_subpasses[m_subpasses.size() - 1].resolvesTo(t_attachments);
     return *this;
 }
 
-auto IE::Graphics::RenderPass::recordsDepthStencilTo(const std::string &t_attachment) -> decltype(*this) {
-    m_subpasses[m_subpasses.size() - 1].recordsDepthStencilTo(t_attachment);
+auto IE::Graphics::RenderPass::recordsDepthStencilTo(
+  const std::string               &t_attachment,
+  IE::Graphics::Attachment::Preset t_preset
+) -> RenderPass {
+    m_subpasses[m_subpasses.size() - 1].recordsDepthStencilTo(
+      t_attachment,
+      Attachment::IE_ATTACHMENT_PRESET_SHADOW_MAP_MULTISAMPLE
+    );
     return *this;
 }
 
@@ -229,7 +293,7 @@ VkAttachmentReference *IE::Graphics::RenderPass::buildAttachmentReference(const 
     auto attachment{m_attachments.find(t_attachment)};
     return new VkAttachmentReference{
       .attachment = static_cast<uint32_t>(std::distance(m_attachments.begin(), attachment)),
-      .layout     = attachment->second->m_layout,
+      .layout     = dynamic_cast<IE::Graphics::detail::AttachmentVulkan *>(attachment->second.get())->m_layout,
     };
 }
 
@@ -251,11 +315,11 @@ IE::Graphics::RenderPass::buildAttachmentDescriptionForSubpass(size_t i, const s
       static_cast<size_t>(std::distance(m_attachments.begin(), m_attachments.find(t_attachment)))};
     std::shared_ptr<IE::Graphics::Attachment> image{m_attachments.at(t_attachment)};
     VkAttachmentDescription                   description{
-                        .flags          = 0x0,
-                        .format         = image->m_format,
-                        .samples        = image->m_samples,
-                        .loadOp         = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                        .storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                        .flags   = 0x0,
+                        .format  = dynamic_cast<IE::Graphics::detail::AttachmentVulkan *>(image.get())->m_format,
+                        .samples = dynamic_cast<IE::Graphics::detail::AttachmentVulkan *>(image.get())->m_samples,
+                        .loadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                        .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
                         .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
                         .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
@@ -277,11 +341,14 @@ IE::Graphics::RenderPass::buildAttachmentDescriptionForSubpass(size_t i, const s
         if (subpass.m_depthStencilAttachment == t_attachment)
             description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
         else description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        /**@todo Find some way of getting the final image layout needed from this subpass. */
-        description.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+        description.finalLayout =
+          IE::Graphics::detail::AttachmentVulkan::layoutFromPreset.at(subpass.attachmentPresets.at(t_attachment));
     }
 
     m_attachmentStateHistory[attachmentHistoryIndex] = description;
 
     return description;
+}
+
+IE::Graphics::RenderPass::RenderPass(std::weak_ptr<IE::Graphics::RenderEngine>  t_engineLink) : m_linkedRenderEngine(std::move(t_engineLink)) {
 }

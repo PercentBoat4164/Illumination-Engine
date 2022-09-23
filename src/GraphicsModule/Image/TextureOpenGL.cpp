@@ -4,11 +4,11 @@ bool IE::Graphics::detail::TextureOpenGL::_createSampler() {
 	std::unique_lock<std::mutex> lock(*m_mutex);
 	glActiveTexture(m_unit);
 	glBindTexture(m_type, m_id);
-	glTexParameteri(m_type, GL_TEXTURE_WRAP_R, addressMode[u]);
-	glTexParameteri(m_type, GL_TEXTURE_WRAP_S, addressMode[v]);
-	glTexParameteri(m_type, GL_TEXTURE_WRAP_T, addressMode[w]);
-	glTexParameteri(m_type, GL_TEXTURE_MIN_FILTER, filter[m_minificationFilter]);
-	glTexParameteri(m_type, GL_TEXTURE_MAG_FILTER, filter[m_magnificationFilter]);
+	glTexParameteri(m_type, GL_TEXTURE_WRAP_R, addressMode.at(u));
+	glTexParameteri(m_type, GL_TEXTURE_WRAP_S, addressMode.at(v));
+	glTexParameteri(m_type, GL_TEXTURE_WRAP_T, addressMode.at(w));
+	glTexParameteri(m_type, GL_TEXTURE_MIN_FILTER, filter.at(m_minificationFilter));
+	glTexParameteri(m_type, GL_TEXTURE_MAG_FILTER, filter.at(m_magnificationFilter));
 	glBindTexture(m_type, 0);
 	glActiveTexture(0);
 	return true;
@@ -18,14 +18,14 @@ IE::Graphics::detail::TextureOpenGL::TextureOpenGL() noexcept:
 		m_unit{} {}
 
 
-std::unordered_map<IE::Graphics::Texture::Filter, GLint> IE::Graphics::detail::TextureOpenGL::filter{
-		{IE_TEXTURE_FILTER_NEAREST, GL_NEAREST},
-		{IE_TEXTURE_FILTER_LINEAR,  GL_LINEAR},
-		{IE_TEXTURE_FILTER_CUBIC,   GL_CUBIC_IMG}
+const std::unordered_map<IE::Graphics::Texture::Filter, GLint> IE::Graphics::detail::TextureOpenGL::filter{
+		{IE::Graphics::Texture::IE_TEXTURE_FILTER_NEAREST, GL_NEAREST},
+		{IE::Graphics::Texture::IE_TEXTURE_FILTER_LINEAR,  GL_LINEAR},
+		{IE::Graphics::Texture::IE_TEXTURE_FILTER_CUBIC,   GL_CUBIC_IMG}
 };
 
 
-std::unordered_map<IE::Graphics::Texture::AddressMode, GLint> IE::Graphics::detail::TextureOpenGL::addressMode{
+const std::unordered_map<IE::Graphics::Texture::AddressMode, GLint> IE::Graphics::detail::TextureOpenGL::addressMode{
 		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_REPEAT,               GL_REPEAT},
 		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_MIRRORED_REPEAT,      GL_MIRRORED_REPEAT},
 		{IE::Graphics::Texture::IE_TEXTURE_ADDRESS_MODE_CLAMP_TO_EDGE,        GL_CLAMP_TO_EDGE},
@@ -34,7 +34,7 @@ std::unordered_map<IE::Graphics::Texture::AddressMode, GLint> IE::Graphics::deta
 };
 
 template<typename... Args>
-IE::Graphics::detail::TextureOpenGL::TextureOpenGL(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_args):
+IE::Graphics::detail::TextureOpenGL::TextureOpenGL(const std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... t_args):
 		Texture(t_engineLink, t_args...),
 		m_unit{} {}
 

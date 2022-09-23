@@ -5,7 +5,7 @@
 #include "IERenderEngine.hpp"
 
 
-void IEBuffer::setAPI(const IEAPI &API) {
+void IEBuffer::setAPI(const API &API) {
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_uploadToRAM = &IEBuffer::_openglUploadToRAM;
 		_uploadToVRAM = &IEBuffer::_openglUploadToVRAM;
@@ -121,7 +121,10 @@ void IEBuffer::uploadToVRAM() {
 
 void IEBuffer::_openglUploadToVRAM() {
 	if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to load buffer with no contents in RAM to VRAM.");
+        linkedRenderEngine->settings->m_logger.log(
+          "Attempt to load buffer with no contents in RAM to VRAM.",
+          ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
 	}
 	if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM
 		glGenBuffers(1, &id);  // Put it in VRAM
@@ -135,7 +138,10 @@ void IEBuffer::_openglUploadToVRAM() {
 
 void IEBuffer::_vulkanUploadToVRAM() {
 	if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to load buffer with no contents in RAM to VRAM.");
+        linkedRenderEngine->settings->m_logger.log(
+          "Attempt to load buffer with no contents in RAM to VRAM.",
+          ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
 	}
 	if ((status & IE_BUFFER_STATUS_DATA_IN_VRAM) == 0) {
 		// Create the VkBuffer because it does not yet exist.
@@ -161,7 +167,7 @@ void IEBuffer::_vulkanUploadToVRAM() {
 		if ((usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U) {
 			VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
 			bufferDeviceAddressInfo.buffer = buffer;
-			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
+			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.m_device, &bufferDeviceAddressInfo);
 		}
 	}
 
@@ -217,7 +223,7 @@ void IEBuffer::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
 		if ((usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U) {
 			VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
 			bufferDeviceAddressInfo.buffer = buffer;
-			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
+			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.m_device, &bufferDeviceAddressInfo);
 		}
 		status = static_cast<IEBufferStatus>(status | IE_BUFFER_STATUS_DATA_IN_VRAM);
 	}
@@ -274,7 +280,7 @@ void IEBuffer::_vulkanUploadToVRAM_void(void *data, size_t size) {
 		if ((usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U) {
 			VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
 			bufferDeviceAddressInfo.buffer = buffer;
-			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.device, &bufferDeviceAddressInfo);
+			deviceAddress = linkedRenderEngine->vkGetBufferDeviceAddressKHR(linkedRenderEngine->device.m_device, &bufferDeviceAddressInfo);
 		}
 
 		this->size = size;

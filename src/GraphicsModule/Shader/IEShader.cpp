@@ -8,7 +8,7 @@
 /* Include dependencies from Core. */
 #include "Core/FileSystemModule/IEFile.hpp"
 
-void IEShader::setAPI(const IEAPI &API) {
+void IEShader::setAPI(const API &API) {
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_create = &IEShader::_openglCreate;
 		_compile = &IEShader::_openglCompile;
@@ -58,13 +58,15 @@ void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
 			.codeSize=static_cast<size_t>(file->length),
 			.pCode=reinterpret_cast<const uint32_t *>(fileContents.data()),
 	};
-	VkResult result = vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &module);
+	VkResult result = vkCreateShaderModule(linkedRenderEngine->device.m_device, &shaderModuleCreateInfo, nullptr, &module);
 	if (result != VK_SUCCESS) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
-												 "Failed to create shader module! Error: " + IERenderEngine::translateVkResultCodes(result));
+        linkedRenderEngine->settings->m_logger.log(
+          "Failed to create shader module! Error: " + IERenderEngine::translateVkResultCodes(result),
+          ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
 	} else {
 		deletionQueue.emplace_back([&] {
-			vkDestroyShaderModule(linkedRenderEngine->device.device, module, nullptr);
+			vkDestroyShaderModule(linkedRenderEngine->device.m_device, module, nullptr);
 		});
 	}
 }

@@ -1,19 +1,19 @@
 #pragma once
 
-#include "../Core/IEWindowUser.hpp"
-
 #ifndef GLEW_IMPLEMENTATION
 #define GLEW_IMPLEMENTATION
 #include <include/GL/glew.h>
 #endif
 
-#include <GLFW/glfw3.h>
+#include "Core/Core.hpp"
 
-#include <functional>
-#include <vector>
 #include <any>
-#include <string>
 #include <cstdint>
+#include <functional>
+#include <GLFW/glfw3.h>
+#include <memory>
+#include <string>
+#include <vector>
 
 /**
  * @brief A class that stores the data related to a key press action.
@@ -61,7 +61,7 @@ template<> struct [[maybe_unused]] std::hash<IEKeyPressDescription> {
 class IEKeyboard {
 public:
 	void *attachment; // pointer to object for access through the window user pointer
-	IEWindowUser windowUser;
+	std::shared_ptr<IE::Core::Core> windowUser;
 
 	/**
 	 * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the IeKeyboard object.

@@ -1,14 +1,15 @@
 #pragma once
 
-#include <iostream>
+#include "API/API.hpp"
 #include "assimp/material.h"
-#include "stb_image.h"
-#include "assimp/texture.h"
 #include "assimp/scene.h"
-#include <unordered_map>
-#include <string>
+#include "assimp/texture.h"
 #include "Image/Texture.hpp"
-#include "IEAPI.hpp"
+#include "stb_image.h"
+
+#include <iostream>
+#include <string>
+#include <unordered_map>
 
 #define GLM_FORCE_RADIANS
 
@@ -27,7 +28,7 @@ public:
 
 	explicit IEMaterial(IERenderEngine *engineLink);
 
-	static void setAPI(const IEAPI &API);
+	static void setAPI(const API &API);
 
 
 	static std::function<void(IEMaterial &)> _create;

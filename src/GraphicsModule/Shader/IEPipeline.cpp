@@ -12,7 +12,7 @@
 #include <memory>
 
 
-void IEPipeline::setAPI(const IEAPI &API) {
+void IEPipeline::setAPI(const API &API) {
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_create = &IEPipeline::_openglCreate;
 	} else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
@@ -61,12 +61,15 @@ void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInf
 			.setLayoutCount=1,
 			.pSetLayouts=&createdWith.descriptorSet.lock()->descriptorSetLayout,
 	};
-	if (vkCreatePipelineLayout(linkedRenderEngine->device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Failed to create pipeline layout!");
+	if (vkCreatePipelineLayout(linkedRenderEngine->device.m_device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+        linkedRenderEngine->settings->m_logger.log(
+          "Failed to create pipeline layout!",
+          ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
 	}
 
 	deletionQueue.emplace_back([&] {
-		vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr);
+		vkDestroyPipelineLayout(linkedRenderEngine->device.m_device, pipelineLayout, nullptr);
 	});
 
 	// Prepare shaders
@@ -183,11 +186,14 @@ void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInf
 			.renderPass=createdWith.renderPass.lock()->renderPass,
 			.basePipelineHandle=VK_NULL_HANDLE
 	};
-	if (vkCreateGraphicsPipelines(linkedRenderEngine->device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create pipeline!");
+	if (vkCreateGraphicsPipelines(linkedRenderEngine->device.m_device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) {
+        linkedRenderEngine->settings->m_logger.log(
+          "Failed to create pipeline!",
+          ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
 	}
 	deletionQueue.emplace_back([&] {
-		vkDestroyPipeline(linkedRenderEngine->device.device, pipeline, nullptr);
+		vkDestroyPipeline(linkedRenderEngine->device.m_device, pipeline, nullptr);
 	});
 }
 

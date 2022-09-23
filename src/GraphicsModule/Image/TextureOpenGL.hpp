@@ -12,7 +12,7 @@ namespace IE::Graphics::detail {
 		TextureOpenGL() noexcept;
 		
 		template<typename... Args>
-		explicit TextureOpenGL(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_args);
+		explicit TextureOpenGL(const std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... t_args);
 		
 		TextureOpenGL &operator=(TextureOpenGL &&t_other) noexcept;
 		

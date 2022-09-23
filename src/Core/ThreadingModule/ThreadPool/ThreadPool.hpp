@@ -40,6 +40,8 @@ public:
 
     ThreadPool &operator=(ThreadPool &&) = delete;
 
+    ~ThreadPool();
+
 public:
     [[nodiscard]] std::condition_variable &getCondition();
 

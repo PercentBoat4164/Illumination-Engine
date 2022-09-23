@@ -18,7 +18,7 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
 	create(engineLink, filePath);
 }
 
-void IERenderable::setAPI(const IEAPI &API) {
+void IERenderable::setAPI(const API &API) {
 	if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
 		_create = &IERenderable::_openglCreate;
 		_update = &IERenderable::_openglUpdate;
@@ -92,8 +92,11 @@ void IERenderable::_openglLoadFromDiskToRAM() {
 	// Read input file
 	const aiScene *scene = importer.ReadFile(directory + modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_RemoveRedundantMaterials | aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_SortByPType | aiProcess_GenUVCoords | aiProcess_GenNormals | aiProcess_ValidateDataStructure | aiProcess_ImproveCacheLocality | aiProcess_FixInfacingNormals | aiProcess_FindDegenerates | aiProcess_FindInvalidData | aiProcess_FindInstances | aiProcess_Debone);
 	if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-												 "Failed to prepare scene from file: " + std::string(directory + modelName) + "\t\tError: " + importer.GetErrorString());
+        linkedRenderEngine->settings->m_logger.log(
+          "Failed to prepare scene from file: " + std::string(directory + modelName) +
+            "\t\tError: " + importer.GetErrorString(),
+          ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
 	}
 
 	meshes.resize(scene->mNumMeshes);
@@ -112,8 +115,11 @@ void IERenderable::_vulkanLoadFromDiskToRAM() {
 	// Read input file
 	const aiScene *scene = importer.ReadFile(directory + modelName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_RemoveRedundantMaterials | aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_SortByPType | aiProcess_GenUVCoords | aiProcess_GenNormals | aiProcess_ValidateDataStructure | aiProcess_ImproveCacheLocality | aiProcess_FixInfacingNormals | aiProcess_FindDegenerates | aiProcess_FindInvalidData | aiProcess_FindInstances | aiProcess_Debone);
 	if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
-												 "Failed to prepare scene from file: " + std::string(directory + modelName) + "\t\tError: " + importer.GetErrorString());
+        linkedRenderEngine->settings->m_logger.log(
+          "Failed to prepare scene from file: " + std::string(directory + modelName) +
+            "\t\tError: " + importer.GetErrorString(),
+          ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
 	}
 
 	meshes.resize(scene->mNumMeshes);

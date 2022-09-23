@@ -1,15 +1,15 @@
 #pragma once
 
-class IERenderEngine;
+class RenderEngine;
 
 #include "Core/MultiDimensionalVector.hpp"
-
+#include "RenderEngine.hpp"
 #include "stb_image.h"
 
 #include <cstdint>
 #include <memory>
-#include <vector>
 #include <mutex>
+#include <vector>
 
 
 ///@todo Add static create functions for all constructors.
@@ -27,7 +27,7 @@ namespace IE::Graphics {
 		Location m_location;  // The location(s) that the image is stored in.
 		std::vector<size_t> m_dimensions;  // The dimensions of the data stored in video memory.
 		IE::Core::MultiDimensionalVector<unsigned char> m_data;  // The location that image data is stored on the CPU.
-		std::weak_ptr<IERenderEngine> m_linkedRenderEngine;  // A pointer to the IE::RenderEngine that controls this pointer.
+		std::weak_ptr<IE::Graphics::RenderEngine> m_linkedRenderEngine;  // A pointer to the IE::RenderEngine that controls this pointer.
 		std::shared_ptr<std::mutex> m_mutex;  // The mutex responsible for synchronizing this image.
 		
 		/** @brief A factory function that creates an IE::Graphics::Image from the render engine, and shape provided.
@@ -37,7 +37,7 @@ namespace IE::Graphics {
 		 * @return A std::unique_ptr<IE::Graphics::Image>
 		 */
 		template<typename... Args>
-		static std::unique_ptr<IE::Graphics::Image> create(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions);
+		static std::unique_ptr<IE::Graphics::Image> create(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLink, Args... t_dimensions);
 		
 		/** @brief This constructor allows the user to specify a multi-dimensional image.
 		 * @details The uses of the multi-dimensionality that this constructor enables may include 1D, 2D, or 3D images which can be used in a
@@ -46,7 +46,7 @@ namespace IE::Graphics {
 		 * @return This IE::Graphics::Image
 		 */
 		template<typename... Args>
-		explicit Image(std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions);
+		explicit Image(std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... t_dimensions);
 		
 		/** @brief Default constructor as it is needed by classes that inherit from IE::Graphics::Image.
 		 * @return This IE::Graphics::Image

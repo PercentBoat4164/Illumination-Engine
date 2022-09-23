@@ -45,17 +45,17 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 	}
 	descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
 	descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayoutBindings.size());
-	if (vkCreateDescriptorSetLayout(linkedRenderEngine->device.device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) !=
+	if (vkCreateDescriptorSetLayout(linkedRenderEngine->device.m_device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) !=
 		VK_SUCCESS) { throw std::runtime_error("failed to create descriptor m_layout!"); }
-	deletionQueue.emplace_back([&] { vkDestroyDescriptorSetLayout(linkedRenderEngine->device.device, descriptorSetLayout, nullptr); });
+	deletionQueue.emplace_back([&] { vkDestroyDescriptorSetLayout(linkedRenderEngine->device.m_device, descriptorSetLayout, nullptr); });
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
 	descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(createdWith.poolSizes.size());
 	descriptorPoolCreateInfo.pPoolSizes = createdWith.poolSizes.data();
 	descriptorPoolCreateInfo.maxSets = 1;
-	if (vkCreateDescriptorPool(linkedRenderEngine->device.device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) !=
+	if (vkCreateDescriptorPool(linkedRenderEngine->device.m_device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) !=
 		VK_SUCCESS) { throw std::runtime_error("failed to create descriptor pool!"); }
 	deletionQueue.emplace_back([&] {
-		vkDestroyDescriptorPool(linkedRenderEngine->device.device, descriptorPool, nullptr);
+		vkDestroyDescriptorPool(linkedRenderEngine->device.m_device, descriptorPool, nullptr);
 	});
 	VkDescriptorSetVariableDescriptorCountAllocateInfoEXT descriptorSetVariableDescriptorCountAllocateInfo{
 			VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT};
@@ -68,7 +68,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 	descriptorSetAllocateInfo.descriptorPool = descriptorPool;
 	descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
 	descriptorSetAllocateInfo.descriptorSetCount = 1;
-	if (vkAllocateDescriptorSets(linkedRenderEngine->device.device, &descriptorSetAllocateInfo, &descriptorSet) !=
+	if (vkAllocateDescriptorSets(linkedRenderEngine->device.m_device, &descriptorSetAllocateInfo, &descriptorSet) !=
 		VK_SUCCESS) { throw std::runtime_error("failed to allocate descriptor set!"); }
 	std::vector<int> bindings{};
 	bindings.reserve(createdWith.data.size());
@@ -148,7 +148,7 @@ void IEDescriptorSet::update(std::vector<std::optional<std::variant<IE::Graphics
 		}
 	}
 	if (!descriptorWrites.empty()) {
-		vkUpdateDescriptorSets(linkedRenderEngine->device.device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+		vkUpdateDescriptorSets(linkedRenderEngine->device.m_device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 	}
 }
 

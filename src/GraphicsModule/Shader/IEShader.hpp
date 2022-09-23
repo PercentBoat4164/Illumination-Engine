@@ -11,7 +11,7 @@
 class IERenderEngine;
 
 /* Include classes used as attributes or function arguments. */
-#include "IEAPI.hpp"
+#include "API/API.hpp"
 
 // External dependencies
 #include <vulkan/vulkan.h>
@@ -58,5 +58,5 @@ public:
 
 	void create(IERenderEngine *, IEFile *);
 
-	static void setAPI(const IEAPI &);
+	static void setAPI(const API &);
 };
