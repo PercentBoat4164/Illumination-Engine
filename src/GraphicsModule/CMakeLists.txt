@@ -45,7 +45,7 @@ target_link_libraries(IEGraphicsModule PUBLIC IECore)
 
 # Add external dependency libraries and include directories to the target
 target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm vk-bootstrap::vk-bootstrap ${Vulkan_LIBRARIES})
-target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR} ${vma_DIR} ${Vulkan_INCLUDE_DIR})
+target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR} ${vma_DIR} ${Vulkan_INCLUDE_DIR} ${vk-bootstrap_DIR})
 
 add_dependencies(IEGraphicsModule IEGMShaders)  # Add shader pre-compilation as a dependency
 

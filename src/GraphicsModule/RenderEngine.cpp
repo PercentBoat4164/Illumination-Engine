@@ -31,19 +31,25 @@ vkb::Instance IE::Graphics::RenderEngine::createVulkanInstance() {
     builder.set_app_name(m_applicationName.c_str()).set_app_version(m_applicationVersion.number);
 
     // Set vulkan version requirements
-    builder.desire_api_version(m_desiredVulkanVersion.number).require_api_version(m_minimumVulkanVersion.number);
+    builder.set_minimum_instance_version(m_desiredVulkanVersion.number)
+      .require_api_version(m_minimumVulkanVersion.number);
 
 // If debugging and components are available, add validation layers and a debug messenger
 #ifndef NDEBUG
     builder
-      .request_validation_layers()
-      // Is mutually exclusive with VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT
-      //      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
-      //      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT)
-      //      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT)
-      // Is mutually exclusive with VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT
-      //      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT)
-      //      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT)
+      //      .enable_layer("VK_LAYER_LUNARG_standard_validation")
+      //      .enable_layer("VK_LAYER_LUNARG_parameter_validation")
+      //      .enable_layer("VK_LAYER_LUNARG_core_validation")
+      .enable_validation_layers()
+      //    if (vkb::) {
+      //       Is mutually exclusive with VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT
+      //        builder.add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
+      //          .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT)
+      //          .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT)
+      //          //       Is mutually exclusive with VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT
+      //          //      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT)
+      //          .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT)
+      //    }
 
       .set_debug_callback(APIDebugMessenger)
       .set_debug_callback_user_data_pointer(&m_graphicsAPICallbackLog);
@@ -53,10 +59,9 @@ vkb::Instance IE::Graphics::RenderEngine::createVulkanInstance() {
     // Build the instance and check for errors.
     auto instanceBuilder = builder.build();
     if (!instanceBuilder) {
-        std::cout << "BADNESS DETECTED!";
         m_graphicsAPICallbackLog.log(
           "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message(),
-          IE::Core::Logger::Level::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+          IE::Core::Logger::Level::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL
         );
     }
     m_instance = instanceBuilder.value();
@@ -70,6 +75,7 @@ IE::Graphics::RenderEngine::create(const std::shared_ptr<IE::Core::Core> &t_core
 }
 
 GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
+    m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
     // Initialize GLFW
     if (glfwInit() != GLFW_TRUE) {
         const char *description;
@@ -82,7 +88,7 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
 
     // Set GLFW window hints
     /// IF USING VULKAN
-    if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {}
+    if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     /// IF USING OPENGL
     if (m_api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
@@ -92,10 +98,8 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
 #ifndef NDEBUG
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
-        glfwWindowHint(
-          GLFW_OPENGL_FORWARD_COMPAT,
-          GL_TRUE
-        );  // To make macOS happy. Put into macOS only code block.
+        // To make macOS happy. Put into macOS only code block.
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     }
 
