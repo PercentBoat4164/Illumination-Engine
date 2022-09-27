@@ -20,60 +20,6 @@ VkBool32 IE::Graphics::RenderEngine::APIDebugMessenger(
     return VK_TRUE;
 }
 
-vkb::Instance IE::Graphics::RenderEngine::createVulkanInstance() {
-    vkb::InstanceBuilder builder{};
-
-    // Set engine properties
-    builder.set_engine_name(m_applicationName.c_str())
-      .set_engine_version(m_applicationVersion.major, m_applicationVersion.minor, m_applicationVersion.patch);
-
-    // Set application properties
-    builder.set_app_name(m_applicationName.c_str()).set_app_version(m_applicationVersion.number);
-
-    // Set vulkan version requirements
-    builder.set_minimum_instance_version(m_desiredVulkanVersion.number)
-      .require_api_version(m_minimumVulkanVersion.number);
-
-// If debugging and components are available, add validation layers and a debug messenger
-#ifndef NDEBUG
-    builder
-      //      .enable_layer("VK_LAYER_LUNARG_standard_validation")
-      //      .enable_layer("VK_LAYER_LUNARG_parameter_validation")
-      //      .enable_layer("VK_LAYER_LUNARG_core_validation")
-      .enable_validation_layers()
-      //    if (vkb::) {
-      //       Is mutually exclusive with VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT
-      //        builder.add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
-      //          .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT)
-      //          .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT)
-      //          //       Is mutually exclusive with VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT
-      //          //      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT)
-      //          .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT)
-      //    }
-
-      .set_debug_callback(APIDebugMessenger)
-      .set_debug_callback_user_data_pointer(&m_graphicsAPICallbackLog);
-    m_graphicsAPICallbackLog.setLogLevel(IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_1);
-#endif
-
-    // Build the instance and check for errors.
-    auto instanceBuilder = builder.build();
-    if (!instanceBuilder) {
-        m_graphicsAPICallbackLog.log(
-          "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message(),
-          IE::Core::Logger::Level::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL
-        );
-    }
-    m_instance = instanceBuilder.value();
-    return m_instance;
-}
-
-std::shared_ptr<IE::Graphics::RenderEngine>
-IE::Graphics::RenderEngine::create(const std::shared_ptr<IE::Core::Core> &t_core) {
-
-    return std::make_shared<IE::Graphics::RenderEngine>(t_core);
-}
-
 GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
     m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
     // Initialize GLFW
@@ -124,8 +70,10 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
           ")"
         );
 
+    /// IF USING OPENGL
+    if (m_api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) glfwMakeContextCurrent(m_window);
+
     // Set up window
-    glfwMakeContextCurrent(m_window);
     glfwSetWindowSizeLimits(m_window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwSetWindowPos(m_window, (int) defaultPosition[0], (int) defaultPosition[1]);
     glfwSetWindowAttrib(m_window, GLFW_AUTO_ICONIFY, 0);
@@ -135,13 +83,12 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
 
 
     // Set icon
-    int                                       iconSizeX, iconSizeY;
-    IE::Core::MultiDimensionalVector<stbi_uc> pixels{256u, 256u};
-    pixels =
+    int      iconSizeX, iconSizeY;
+    stbi_uc *pixels =
       stbi_load(ILLUMINATION_ENGINE_ICON_PATH, (int *) &iconSizeX, (int *) &iconSizeY, nullptr, STBI_rgb_alpha);
-    GLFWimage icon{iconSizeX, iconSizeY, pixels.data()};
+    GLFWimage icon{iconSizeX, iconSizeY, pixels};
     glfwSetWindowIcon(m_window, 1, &icon);
-    pixels.clear();
+    stbi_image_free(pixels);
 
     /// IF USING OPENGL
     if (m_api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
@@ -155,7 +102,48 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
             );
         else m_graphicsAPICallbackLog.log("Initialized GLEW");
     }
+    return m_window;
+}
 
+vkb::Instance IE::Graphics::RenderEngine::createInstance() {
+    if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+        vkb::InstanceBuilder builder{};
+
+        // Set engine properties
+        builder.set_engine_name(m_applicationName.c_str())
+          .set_engine_version(m_applicationVersion.major, m_applicationVersion.minor, m_applicationVersion.patch);
+
+        // Set application properties
+        builder.set_app_name(m_applicationName.c_str()).set_app_version(m_applicationVersion.number);
+
+        // Set vulkan version requirements
+        builder.set_minimum_instance_version(m_desiredVulkanVersion.number)
+          .require_api_version(m_minimumVulkanVersion.number);
+
+// If debugging and components are available, add validation layers and a debug messenger
+#ifndef NDEBUG
+        builder.request_validation_layers()
+          .set_debug_callback(APIDebugMessenger)
+          .set_debug_callback_user_data_pointer(&m_graphicsAPICallbackLog);
+        m_graphicsAPICallbackLog.setLogLevel(IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_TRACE);
+#else
+        m_graphicsAPICallbackLog.setLogLevel(IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
+#endif
+
+        // Build the instance and check for errors.
+        auto instanceBuilder = builder.build();
+        if (!instanceBuilder)
+            m_graphicsAPICallbackLog.log(
+              "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message(),
+              IE::Core::Logger::Level::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL
+            );
+        else m_graphicsAPICallbackLog.log("Created Vulkan Instance");
+        m_instance = instanceBuilder.value();
+        return m_instance;
+    } else return {};
+}
+
+VkSurfaceKHR IE::Graphics::RenderEngine::createSurface() {
     /// IF USING VULKAN
     if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
         // Create vulkan surface
@@ -167,15 +155,42 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
               "Failed to create window surface! Error: " + std::to_string(code) + " " + description,
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
-        } else m_graphicsAPICallbackLog.log("Created window surface!");
+        } else m_graphicsAPICallbackLog.log("Created window surface");
+        return m_surface;
     }
-
-    return m_window;
+    return {};
 }
 
 vkb::Device IE::Graphics::RenderEngine::createDevice() {
+    if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+        vkb::PhysicalDeviceSelector selector{m_instance};
+        // Use a list of lists of required extensions for a given feature to get a master list of all required
+        // extensions. Check if those extensions are supported by this GPU, then label the unsupported features as
+        // such.
+        selector.prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).set_surface(m_surface);
+        auto physicalDeviceBuilder = selector.select();
+        if (!physicalDeviceBuilder)
+            m_graphicsAPICallbackLog.log(
+              "Failed to find adequate GPU!",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+            );
+        else {
+            m_graphicsAPICallbackLog.log("Selected GPU: " + physicalDeviceBuilder->name);
+            m_graphicsAPICallbackLog.log(
+              "GPU Driver version: " + std::to_string(physicalDeviceBuilder->properties.driverVersion)
+            );
+        }
 
-    return m_device;
+        vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
+        auto               logicalDevice = logicalDeviceBuilder.build();
+        if (!logicalDevice)
+            m_graphicsAPICallbackLog.log(
+              "Failed to create Vulkan Device! Error: " + logicalDevice.error().message()
+            );
+        else m_graphicsAPICallbackLog.log("Created Vulkan Device");
+        m_device = logicalDevice.value();
+        return m_device;
+    } else return {};
 }
 
 vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
@@ -184,9 +199,16 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
     return swapchainBuilder.build().value();
 }
 
+std::shared_ptr<IE::Graphics::RenderEngine>
+IE::Graphics::RenderEngine::create(const std::shared_ptr<IE::Core::Core> &t_core) {
+    return std::make_shared<IE::Graphics::RenderEngine>(t_core);
+}
+
 IE::Graphics::RenderEngine::RenderEngine(std::shared_ptr<IE::Core::Core> t_core) : m_core(std::move(t_core)) {
-    m_instance = createVulkanInstance();
     m_window   = createWindow();
+    m_instance = createInstance();
+    m_surface  = createSurface();
+    m_device   = createDevice();
 }
 
 std::shared_ptr<IE::Core::Core> IE::Graphics::RenderEngine::getCore() {
@@ -252,6 +274,8 @@ std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result
 }
 
 IE::Graphics::RenderEngine::~RenderEngine() {
+    vkb::destroy_device(m_device);
+    vkb::destroy_surface(m_instance, m_surface);
     vkb::destroy_instance(m_instance);
 }
 

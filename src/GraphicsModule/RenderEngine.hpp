@@ -63,17 +63,19 @@ private:
       void                                       *pUserData
     );
 
-    vkb::Instance createVulkanInstance();
-
     GLFWwindow *createWindow();
+
+    vkb::Instance createInstance();
+
+    VkSurfaceKHR createSurface();
 
     vkb::Device createDevice();
 
     vkb::Swapchain createSwapchain();
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int x, int y);
-
 public:
+
     std::shared_ptr<IE::Core::Core> getCore();
 
     GLFWwindow *getWindow();
@@ -95,7 +97,6 @@ public:
     static std::shared_ptr<RenderEngine> create(const std::shared_ptr<IE::Core::Core> &t_core);
 
     static std::string translateVkResultCodes(VkResult t_result);
-
     ~RenderEngine();
 };
 }  // namespace IE::Graphics
