@@ -65,21 +65,6 @@ set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS} PARENT_SCOPE)  # Move package var
 FetchContent_MakeAvailable(assimp glm spdlog)  # Build all libraries
 set_target_properties(assimp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-
-# SKIPPING SWIG IN FAVOR OF INDIVIDUAL APIS FOR EACH LANGUAGE
-
-# Get SWIG for scripting module
-# REQUIRES:
-# libpcre2-dev libpcre3-dev autoconf automake libtool bison
-
-#message("Downloading SWIG from master")
-#FetchContent_Declare(swig GIT_REPOSITORY https://github.com/swig/swig GIT_TAG master OVERRIDE_FIND_PACKAGE)
-
-# For now note that swig is required to be installed.
-# Ubuntu:
-#	sudo apt install swig
-#include(FindSWIG)
-
 # Lua and sol2 for scripting language support
 include(FindLua)
 FetchContent_Declare(sol2 GIT_REPOSITORY https://github.com/ThePhD/sol2 GIT_TAG main)
