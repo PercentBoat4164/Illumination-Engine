@@ -66,7 +66,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Shader/IEShader.hpp
         Shader/IEUniformBufferObject.cpp
         Shader/IEUniformBufferObject.hpp
-        )
+        Renderable/Tracker.cpp Renderable/Tracker.hpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

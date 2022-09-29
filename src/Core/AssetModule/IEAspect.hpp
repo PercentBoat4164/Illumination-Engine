@@ -18,6 +18,4 @@ class IEAsset;
 class IEAspect {
 public:
 	virtual ~IEAspect() = default;
-
-	std::vector<std::weak_ptr<IEAsset>> associatedAssets{};  // A vector of assets that this aspect belongs to
 };

@@ -4,7 +4,7 @@ add_subdirectory(LogModule)
 add_subdirectory(FileSystemModule)
 
 # Create and define properties for the library
-add_library(IECore IEWindowUser.cpp IEWindowUser.hpp)
+add_library(IECore IEWindowUser.cpp IEWindowUser.hpp EngineModule/Engine.cpp EngineModule/Engine.hpp)
 set_target_properties(IECore PROPERTIES LINKER_LANGUAGE CXX)
 
 # Add internal dependency libraries to the target

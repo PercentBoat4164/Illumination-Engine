@@ -1,6 +1,7 @@
 #include "IEAsset.hpp"
 
-void IEAsset::addAspect(IEAspect *aspect) {
-	aspects.emplace_back(aspect);
-	aspect->associatedAssets.push_back(weak_from_this());
+#include "Core/EngineModule/Engine.hpp"
+
+void IEAsset::addAspect(IE::Core::Engine *t_engine, const std::string &t_filename) {
+    aspects.emplace_back(t_engine->createAspect(t_filename));
 }

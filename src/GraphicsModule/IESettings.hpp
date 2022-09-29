@@ -42,7 +42,7 @@ public:
 		currentPosition = fullscreen ? &fullscreenPosition : &windowedPosition;
 	}
 
-	IELogger logger{};
+	IE::Core::Logger logger{"Graphics API"};
 	bool rayTracing{false};
 	std::string applicationName{"Illumination Engine"};
 	IEVersion applicationVersion{0, 0, 1};

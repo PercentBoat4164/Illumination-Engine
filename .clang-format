@@ -1,6 +1,6 @@
 ---
-Language:        Cpp
-BasedOnStyle:    'LLVM'
+Language: Cpp
+BasedOnStyle: 'LLVM'
 AccessModifierOffset: -4
 AlignAfterOpenBracket: BlockIndent
 # AlignAfterOpenBracket: Align
@@ -10,7 +10,7 @@ AlignConsecutiveAssignments: AcrossComments
 AlignConsecutiveBitFields: AcrossComments
 AlignConsecutiveDeclarations: AcrossComments
 AlignEscapedNewlines: Left
-AlignOperands:   DontAlign
+AlignOperands: DontAlign
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
@@ -31,27 +31,26 @@ AttributeMacros:
 BinPackArguments: false
 BinPackParameters: false
 BraceWrapping:
-  AfterCaseLabel:  false
-  AfterClass:      false
+  AfterCaseLabel: false
+  AfterClass: false
   AfterControlStatement: Never
-  AfterEnum:       false
-  AfterFunction:   false
-  AfterNamespace:  false
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
   AfterObjCDeclaration: false
-  AfterStruct:     false
-  AfterUnion:      false
+  AfterStruct: false
+  AfterUnion: false
   AfterExternBlock: false
-  BeforeCatch:     false
-  BeforeElse:      false
+  BeforeCatch: false
+  BeforeElse: false
   BeforeLambdaBody: false
-  BeforeWhile:     false
-  IndentBraces:    false
+  BeforeWhile: false
+  IndentBraces: false
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
 BreakAfterJavaFieldAnnotations: true
 BreakBeforeBinaryOperators: None
-BreakBeforeConceptDeclarations: Always
 BreakBeforeBraces: Attach
 BreakBeforeInheritanceComma: false
 BreakInheritanceList: AfterColon
@@ -59,7 +58,7 @@ BreakBeforeTernaryOperators: false
 BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: AfterColon
 BreakStringLiterals: true
-ColumnLimit:     115  # Previously 80
+ColumnLimit: 115  # Previously 80
 #CommentPragmas:  ''
 QualifierAlignment: Custom
 QualifierOrder:
@@ -76,7 +75,7 @@ ContinuationIndentWidth: 2
 Cpp11BracedListStyle: true
 DeriveLineEnding: false
 DerivePointerAlignment: false
-DisableFormat:   false  # Do not set this to true.
+DisableFormat: false  # Do not set this to true.
 EmptyLineAfterAccessModifier: Never
 EmptyLineBeforeAccessModifier: LogicalBlock
 # ExperimentalAutoDetectBinPacking: false  # This option is experimental.
@@ -89,20 +88,20 @@ ForEachMacros:
   - FOREACH
 IfMacros:
   - IF
-IncludeBlocks:   Regroup
+IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
-    Priority:        2
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
-    Priority:        3
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '.*'
-    Priority:        1
-    SortPriority:    0
-    CaseSensitive:   false
+  - Regex: '^"(llvm|llvm-c|clang|clang-c)/'
+    Priority: 2
+    SortPriority: 0
+    CaseSensitive: false
+  - Regex: '^(<|"(gtest|gmock|isl|json)/)'
+    Priority: 3
+    SortPriority: 0
+    CaseSensitive: false
+  - Regex: '.*'
+    Priority: 1
+    SortPriority: 0
+    CaseSensitive: false
     # We want the directly related files on top. (First priority)
     # Next is internal deps
     # Next is external deps
@@ -115,14 +114,14 @@ IndentCaseBlocks: false
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
 IndentExternBlock: Indent
-IndentRequiresClause: false
-IndentWidth:     4
+# IndentRequiresClause: false  # Not available in clang-format 14
+IndentWidth: 4
 IndentWrappedFunctionNames: false
-InsertBraces: false
+# InsertBraces: false  # Not available in clang-format 14
 KeepEmptyLinesAtTheStartOfBlocks: true
 LambdaBodyIndentation: Signature
 MacroBlockBegin: ''
-MacroBlockEnd:   ''
+MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: None
 PenaltyBreakAssignment: 2
@@ -136,13 +135,13 @@ PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
 PenaltyIndentedWhitespace: 0
 PointerAlignment: Right
-PPIndentWidth:   -1
+PPIndentWidth: -1
 ReferenceAlignment: Pointer
-ReflowComments:  true
+ReflowComments: true
 RemoveBracesLLVM: true  # This could be a problem later.
 SeparateDefinitionBlocks: Always
 ShortNamespaceLines: 0
-SortIncludes:    CaseInsensitive
+SortIncludes: CaseInsensitive
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: true
 SpaceAfterLogicalNot: false
@@ -153,12 +152,12 @@ SpaceBeforeCpp11BracedList: false
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatementsExceptControlMacros
-SpaceBeforeParensOptions:  # This is ignored because SpaceBeforeParens is not custom.
+SpaceBeforeParensOptions: # This is ignored because SpaceBeforeParens is not custom.
   AfterControlStatements: true
   AfterForeachMacros: true
   AfterFunctionDefinitionName: false
   AfterFunctionDeclarationName: false
-  AfterIfMacros:   true
+  AfterIfMacros: true
   AfterOverloadedOperator: false
   BeforeNonEmptyParentheses: false
 SpaceAroundPointerQualifiers: Default  # This default to pointer alignment.
@@ -166,23 +165,23 @@ SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyBlock: false
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 2
-SpacesInAngles:  Never
+SpacesInAngles: Never
 SpacesInConditionalStatement: false
 SpacesInContainerLiterals: false
 SpacesInCStyleCastParentheses: false
 SpacesInLineCommentPrefix:
-  Minimum:         1
-  Maximum:         -1
+  Minimum: 1
+  Maximum: -1
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 SpaceBeforeSquareBrackets: false
 BitFieldColonSpacing: Both
-Standard:        Latest
-StatementAttributeLikeMacros: []  # Add to array for attribute macros not parsed as identifiers.
-StatementMacros: []
-TabWidth:        4
-UseCRLF:         false
-UseTab:          Never
-WhitespaceSensitiveMacros: []
+Standard: Latest
+StatementAttributeLikeMacros: [ ]  # Add to array for attribute macros not parsed as identifiers.
+StatementMacros: [ ]
+TabWidth: 4
+UseCRLF: false
+UseTab: Never
+WhitespaceSensitiveMacros: [ ]
 ...
 

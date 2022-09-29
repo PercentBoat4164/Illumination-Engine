@@ -38,19 +38,17 @@ enum IERenderableStatus {
 	IE_RENDERABLE_STATE_IN_VRAM = 0x4
 };
 
-class IERenderable : public IEAspect {
+class IERenderable {
 public:
 	std::string modelName{};
 	std::vector<IEMesh> meshes{};
 	IEBuffer modelBuffer{};
 	IERenderEngine *linkedRenderEngine{};
-	IEUniformBufferObject uniformBufferObject{};
 	std::vector<IEShader> shaders{};
 	Assimp::Importer importer{};
 	bool render{true};
 	uint32_t commandBufferIndex{};
 	std::string directory{};
-	glm::mat4 modelMatrix{};
 	IERenderableStatus status{IE_RENDERABLE_STATE_UNKNOWN};
 
 	IERenderable() = default;

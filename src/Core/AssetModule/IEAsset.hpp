@@ -1,12 +1,15 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include "Core/EngineModule/Engine.hpp"
+#include "IEAspect.hpp"
+
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+
 #include <algorithm>
+#include <string>
+#include <vector>
 #include <memory>
-#include "IEAspect.hpp"
 
 class IEAsset : public std::enable_shared_from_this<IEAsset> {
 public:
@@ -15,41 +18,7 @@ public:
 	glm::vec3 rotation{0.0, 0.0, 0.0};
 	glm::vec3 scale{1.0, 1.0, 1.0};
 	std::string filename{};
-	std::vector<std::shared_ptr<IEAspect>> aspects{};
+	std::vector<std::weak_ptr<IEAspect>> aspects{};
 
-	void addAspect(IEAspect *aspect);
+	void addAspect(IE::Core::Engine *, const std::string &);
 };
-
-/*
- * AssetName
- * |--models
- * |  |--model1
- * |  |--model2
- * |
- * |--textures
- * |  |--texture1
- * |  |--texture2
- * |
- * |--sounds
- * |  |--scarySounds!
- * |  |  |--sound1
- * |  |
- * |  |--normalSounds
- * |     |--sound2
- * |
- * AssetName
- * |--models
- * |  |--model1
- * |  |--model3
- */
-
-/*
- * ExampleAsset
- * |--models
- * |  |--BillyBobJoe Jr.
- * |
- * ExampleAsset2
- * |--models
- * |  |--BillyBobJoe Jr.
- * |  |--Cube
- */

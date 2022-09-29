@@ -32,7 +32,7 @@ struct GLFWmonitor;
 #include <algorithm>
 
 
-class IERenderEngine {
+class IERenderEngine : public IE::Core::Engine {
 private:
 
 /**
@@ -113,6 +113,8 @@ private:
 	void destroyCommandPools();
 
 public:
+    std::weak_ptr<IEAspect> createAspect(const std::string &filename) override;
+
 	struct ExtensionAndFeatureInfo {
 		// Extension Features
 		// NOTE: Ray tracing features are on the bottom of the pNext stack so that a pointer to higher up on the stack can grab only the structures supported by RenderDoc.
