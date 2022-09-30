@@ -17,7 +17,7 @@ void IECommandPool::create(IERenderEngine *engineLink, IECommandPool::CreateInfo
 			.queueFamilyIndex=linkedRenderEngine->device.get_queue_index(createInfo->commandQueue).value()
 	};
 	if (vkCreateCommandPool(linkedRenderEngine->device.device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
-		linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG, "Failed to create command pool!");
+		linkedRenderEngine->settings->logger.log("Failed to create command pool!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG);
 	}
 	deletionQueue.emplace_back([&] {
 		vkDestroyCommandPool(linkedRenderEngine->device.device, commandPool, nullptr);
@@ -39,7 +39,8 @@ std::shared_ptr<IECommandBuffer> IECommandPool::index(uint32_t index) {
 		}
 		return commandBuffers[index];
 	}
-	linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to access a command buffer that does not exist!");
+	linkedRenderEngine->settings->logger.log("Attempt to access a command buffer that does not exist!",
+                                             IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
 	return commandBuffers[commandBuffers.size() - 1];
 }
 

@@ -17,7 +17,9 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
 		if (std::find(disallowedLayouts.begin(), disallowedLayouts.end(), attachment.forceLayout) == disallowedLayouts.end()) {
 			attachments.push_back(attachment.image);
 		} else {
-			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "Attempt to attach to framebuffer with invalid layout!" + std::to_string(attachment.forceLayout));
+            linkedRenderEngine->settings->logger.log(
+                    "Attempt to attach to framebuffer with invalid layout!" + std::to_string(attachment.forceLayout),
+                    IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
 		}
 	}
 

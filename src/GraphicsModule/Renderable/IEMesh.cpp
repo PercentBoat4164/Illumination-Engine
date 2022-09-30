@@ -80,8 +80,9 @@ void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScen
 	size_t j;
 	for (size_t i = 0; i < triangleCount; ++i) {
 		if (mesh->mFaces[i].mNumIndices != 3) {
-			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-													 "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.");
+			linkedRenderEngine->settings->logger.log(
+					"Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.",
+                    IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
 		}
 		for (j = 0; j < mesh->mFaces[i].mNumIndices; ++j) {
 			indices.push_back(mesh->mFaces[i].mIndices[j]);
@@ -141,8 +142,9 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
 	size_t j;
 	for (size_t i = 0; i < triangleCount; ++i) {
 		if (mesh->mFaces[i].mNumIndices != 3) {
-			linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-													 "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.");
+			linkedRenderEngine->settings->logger.log(
+					"Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.",
+                    IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
 		}
 		for (j = 0; j < mesh->mFaces[i].mNumIndices; ++j) {
 			indices.push_back(mesh->mFaces[i].mIndices[j]);

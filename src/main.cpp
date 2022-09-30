@@ -45,7 +45,7 @@ int main() {
 
 	renderEngine->camera.position = {0.0F, -2.0F, 1.0F};
 
-	renderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, "Beginning main loop.");
+    renderEngine->settings->logger.log("Beginning main loop.", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 
 	glfwSetTime(0);
 	while (renderEngine->update()) {

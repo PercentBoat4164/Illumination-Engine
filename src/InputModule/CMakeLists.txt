@@ -1,6 +1,5 @@
 set(IEInputModuleSourceFiles  # Gather sources
         IEKeyboard.cpp
-        IEKeyboard.hpp
         )
 
 # Create and define properties for the library
