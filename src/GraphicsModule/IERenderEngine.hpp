@@ -113,7 +113,7 @@ private:
 	void destroyCommandPools();
 
 public:
-    std::weak_ptr<IEAspect> createAspect(const std::string &filename) override;
+    std::weak_ptr<IEAspect> createAspect(std::weak_ptr<IEAsset> asset, const std::string &filename) override;
 
 	struct ExtensionAndFeatureInfo {
 		// Extension Features
@@ -226,8 +226,6 @@ public:
 	int frameNumber{};
 	// global depth image used by all framebuffers. Should this be here?
 	std::shared_ptr<IEImage> depthImage{};
-
-	void addAsset(const std::shared_ptr<IEAsset> &asset);
 
 	explicit IERenderEngine(IESettings &settings);
 

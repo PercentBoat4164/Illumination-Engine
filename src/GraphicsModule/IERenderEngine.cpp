@@ -338,7 +338,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
      * abstraction.*/
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     window = createWindow();
-    setWindowIcons("res/icons");
+    setWindowIcons("res/logos");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
@@ -413,8 +413,15 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
 
-std::weak_ptr<IEAspect> IERenderEngine::createAspect(const std::string &filename) {
-    return aspects[filename] = std::make_shared<IERenderable>(this, filename);
+std::weak_ptr<IEAspect> IERenderEngine::createAspect(std::weak_ptr<IEAsset> asset, const std::string &filename) {
+    auto renderable   = std::static_pointer_cast<IEAspect>(std::make_shared<IERenderable>(this, filename));
+    aspects[filename] = renderable;
+    renderables.push_back(std::dynamic_pointer_cast<IERenderable>(renderable));
+    std::dynamic_pointer_cast<IERenderable>(renderable)->create(this, filename);
+    std::dynamic_pointer_cast<IERenderable>(renderable)->loadFromDiskToRAM();
+    std::dynamic_pointer_cast<IERenderable>(renderable)->loadFromRAMToVRAM();
+    if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) graphicsCommandPool->index(0)->execute();
+    return renderable;
 }
 
 // void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
@@ -740,7 +747,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
     window = createWindow();
 
-    setWindowIcons("res/icons");
+    setWindowIcons("res/logos");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwGetWindowPos(window, &(*settings.currentPosition)[0], &(*settings.currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);

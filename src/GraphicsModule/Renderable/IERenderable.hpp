@@ -19,6 +19,7 @@ class IECamera;
 // Modular dependencies
 #include "Core/AssetModule/IEAspect.hpp"
 #include "IEMesh.hpp"
+#include "Tracker.hpp"
 
 // External dependencies
 #include <assimp/Importer.hpp>
@@ -38,7 +39,7 @@ enum IERenderableStatus {
 	IE_RENDERABLE_STATE_IN_VRAM = 0x4
 };
 
-class IERenderable {
+class IERenderable : public IEAspect {
 public:
 	std::string modelName{};
 	std::vector<IEMesh> meshes{};
@@ -50,6 +51,7 @@ public:
 	uint32_t commandBufferIndex{};
 	std::string directory{};
 	IERenderableStatus status{IE_RENDERABLE_STATE_UNKNOWN};
+    std::vector<std::weak_ptr<IEAsset>> assets;
 
 	IERenderable() = default;
 
