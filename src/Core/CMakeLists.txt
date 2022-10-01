@@ -13,4 +13,4 @@ target_link_libraries(IECore PUBLIC IEFileSystemModule)
 target_link_libraries(IECore PUBLIC IELogModule)
 
 # Add internal includes to the target
-target_include_directories(IECore PUBLIC ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/src)
+target_include_directories(IECore PUBLIC ${IE_BASE_DIR}/src)

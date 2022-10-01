@@ -70,7 +70,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})
-target_include_directories(IEGraphicsModule PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(IEGraphicsModule PUBLIC ${IE_BASE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX)
 
 # Add internal dependency libraries to the target
