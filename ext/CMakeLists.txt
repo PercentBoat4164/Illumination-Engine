@@ -1,77 +1,162 @@
-find_package(Vulkan REQUIRED)  # Check for Vulkan
-find_package(OpenGL REQUIRED)  # Check for OpenGL
+# @todo Enable offline CMake reloading.
+# @todo Make this easier to maintain with the use of for( loops.
 
 include(FetchContent)  # Requires CMake 3.14
 
+set(IE_DEPS_DOWNLOAD_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/deps)
+set(IE_DEPS_BUILD_DIR      ${CMAKE_CURRENT_BINARY_DIR}/deps)
+set(IE_DOWNLOAD_GUARD_FILE ${CMAKE_SOURCE_DIR}/__DOWNLOAD_GUARD__)
+
+set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
+
 # Possibly add https://github.com/libvips/libvips as the image importer of choice. (high speed, high compatibility, highly maintained, but does not use CMake)
 
-# Get AssImp
-# ASSIMP settings ignored on first buildset(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-message("Downloading AssImp master")
-FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG master)
 
-# Get GLM
-message("Downloading GLM master")
-FetchContent_Declare(glm GIT_REPOSITORY https://github.com/g-truc/glm GIT_TAG master)
 
-# Get spdlog
-message("Downloading spdlog v1.x")
-FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog GIT_TAG v1.x)
+# All options for Dependencies should go here
+# AssImp Options
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF FORCE)
+set(ASSIMP_BUILD_SAMPLES OFF FORCE)
+set(ASSIMP_BUILD_TESTS OFF FORCE)
+set(ASSIMP_BUILD_ZLIB ON FORCE)
 
-set(Vulkan_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
-set(Vulkan_LIBRARIES ${Vulkan_LIBRARIES} PARENT_SCOPE)  # Move package variable up to parent scope
-set(Vulkan_INCLUDE_DIR ${Vulkan_INCLUDE_DIR} PARENT_SCOPE)  # Move package variable up to parent scope
+# GLEW Options
+set(GLEW_VERBOSE OFF)
+set(GLEW_USE_STATIC_LIBS $<NOT:${BUILD_SHARED_LIBS}> FORCE)
 
 # Get GLFW
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-message("Downloading GLFW master")
-FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw GIT_TAG master)
+set(GLFW_BUILD_DOCS OFF FORCE)
+set(GLFW_BUILD_TESTS OFF FORCE)
+set(GLFW_INSTALL OFF FORCE)
+set(GLFW_BUILD_EXAMPLES OFF FORCE)
 
-# Get GLEW
-if (BUILD_SHARED_LIBS)
-	set(glew-cmake_BUILD_SHARED ON CACHE BOOL "" FORCE)
-	set(glew-cmake_BUILD_STATIC OFF CACHE BOOL "" FORCE)
+
+
+# Library versions
+set(assimp_VERSION master)
+set(assimp_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/assimp_version.txt)
+
+set(glm_VERSION master)
+set(glm_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/glm_version.txt)
+
+set(glew_VERSION https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
+set(glew_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/glew_version.txt)
+
+set(glfw_VERSION master)
+set(glfw_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/glfw_version.txt)
+
+set(spdlog_VERSION v1.x)
+set(spdlog_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/spdlog_version.txt)
+
+set(vk-bootstrap_VERSION master)
+set(vk-bootstrap_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/vk-bootstrap_version.txt)
+
+set(vma_VERSION master)
+set(vma_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/vma_version.txt)
+
+# Download arguments
+set(assimp_DOWNLOAD_ARGS       GIT_REPOSITORY https://github.com/assimp/assimp                                  GIT_TAG       ${assimp_VERSION})
+set(glm_DOWNLOAD_ARGS          GIT_REPOSITORY https://github.com/g-truc/glm                                     GIT_TAG       ${glm_VERSION})
+set(glew_DOWNLOAD_ARGS         URL            ${glew_VERSION}                                                   SOURCE_SUBDIR build/cmake)
+set(glfw_DOWNLOAD_ARGS         GIT_REPOSITORY https://github.com/glfw/glfw                                      GIT_TAG       ${glfw_VERSION})
+set(spdlog_DOWNLOAD_ARGS       GIT_REPOSITORY https://github.com/gabime/spdlog                                  GIT_TAG       ${spdlog_VERSION})
+set(vk-bootstrap_DOWNLOAD_ARGS GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                    GIT_TAG       ${vk-bootstrap_VERSION})
+set(vma_DOWNLOAD_ARGS          GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG       ${vma_VERSION})
+
+
+
+# FetchContent_Declare should go before the Download Guard
+FetchContent_Declare(assimp       ${assimp_DOWNLOAD_ARGS}       FIND_PACKAGE_ARGS NAMES AssImp)
+FetchContent_Declare(glm          ${glm_DOWNLOAD_ARGS}          FIND_PACKAGE_ARGS NAMES GLM)
+FetchContent_Declare(glew         ${glew_DOWNLOAD_ARGS}         FIND_PACKAGE_ARGS NAMES GLEW)
+FetchContent_Declare(glfw         ${glfw_DOWNLOAD_ARGS}         FIND_PACKAGE_ARGS NAMES GLFW)
+FetchContent_Declare(spdlog       ${spdlog_DOWNLOAD_ARGS}       FIND_PACKAGE_ARGS NAMES spdlog)
+FetchContent_Declare(vk-bootstrap ${vk-bootstrap_DOWNLOAD_ARGS} FIND_PACKAGE_ARGS NAMES vk-bootstrap)
+FetchContent_Declare(vma          ${vma_DOWNLOAD_ARGS}          FIND_PACKAGE_ARGS NAMES vma)
+
+# Lock the Download Guard
+file(LOCK ${IE_DOWNLOAD_GUARD_FILE} RESULT_VARIABLE HAS_DOWNLOAD_GUARD_LOCK TIMEOUT 0)
+if (NOT ${HAS_DOWNLOAD_GUARD_LOCK} MATCHES 0)
+	# Wait until the Download Guard is unlocked
+	file(LOCK ${IE_DOWNLOAD_GUARD_FILE})
+	file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
 else ()
-	set(glew-cmake_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-	set(glew-cmake_BUILD_STATIC ON CACHE BOOL "" FORCE)
+	# Do all the downloads here. They will only run in a single CMake instance no matter how many are running
+	file(APPEND ${assimp_VERSION_FILE})
+	file(APPEND ${glm_VERSION_FILE})
+	file(APPEND ${glew_VERSION_FILE})
+	file(APPEND ${glfw_VERSION_FILE})
+	file(APPEND ${spdlog_VERSION_FILE})
+	file(APPEND ${vk-bootstrap_VERSION_FILE})
+	file(APPEND ${vma_VERSION_FILE})
+
+	file(READ ${assimp_VERSION_FILE}       assimp_OLD_VERSION)
+	file(READ ${glm_VERSION_FILE}          glm_OLD_VERSION)
+	file(READ ${glew_VERSION_FILE}         glew_OLD_VERSION)
+	file(READ ${glfw_VERSION_FILE}         glfw_OLD_VERSION)
+	file(READ ${spdlog_VERSION_FILE}       spdlog_OLD_VERSION)
+	file(READ ${vk-bootstrap_VERSION_FILE} vk-bootstrap_OLD_VERSION)
+	file(READ ${vma_VERSION_FILE}          vma_OLD_VERSION)
+
+	# Should only include FetchContent_Populate
+	if (NOT assimp_OLD_VERSION STREQUAL assimp_VERSION)
+		FetchContent_Populate(assimp       SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/assimp_build		  SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/assimp_src       BINARY_DIR ${IE_DEPS_BUILD_DIR}/assimp_bin       ${assimp_DOWNLOAD_ARGS})
+	endif ()
+	if (NOT glm_OLD_VERSION STREQUAL glm_VERSION)
+		FetchContent_Populate(glm          SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/glm_build		  SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/glm_src          BINARY_DIR ${IE_DEPS_BUILD_DIR}/glm_bin          ${glm_DOWNLOAD_ARGS})
+	endif ()
+	if (NOT glew_OLD_VERSION STREQUAL glew_VERSION)
+		FetchContent_Populate(glew         SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/glew_build		  SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/glew_src         BINARY_DIR ${IE_DEPS_BUILD_DIR}/glew_bin         ${glew_DOWNLOAD_ARGS})
+	endif ()
+	if (NOT glfw_OLD_VERSION STREQUAL glfw_VERSION)
+		FetchContent_Populate(glfw         SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/glfw_build		  SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/glfw_src         BINARY_DIR ${IE_DEPS_BUILD_DIR}/glfw_bin         ${glfw_DOWNLOAD_ARGS})
+	endif ()
+	if (NOT spdlog_OLD_VERSION STREQUAL spdlog_VERSION)
+		FetchContent_Populate(spdlog       SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/spdlog_build		  SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/spdlog_src       BINARY_DIR ${IE_DEPS_BUILD_DIR}/spdlog_bin       ${spdlog_DOWNLOAD_ARGS})
+	endif ()
+	if (NOT vk-bootstrap_OLD_VERSION STREQUAL vk-bootstrap_VERSION)
+		FetchContent_Populate(vk-bootstrap SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/vk-bootstrap_build SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/vk-bootstrap_src BINARY_DIR ${IE_DEPS_BUILD_DIR}/vk-bootstrap_bin ${vk-bootstrap_DOWNLOAD_ARGS})
+	endif ()
+	if (NOT vma_OLD_VERSION STREQUAL vma_VERSION)
+		FetchContent_Populate(vma          SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/vma_build		  SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/vma_src          BINARY_DIR ${IE_DEPS_BUILD_DIR}/vma_bin          ${vma_DOWNLOAD_ARGS})
+	endif ()
+
+	# Unlock the Download Guard
+	file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
+
+	# Update version information
+	file(WRITE ${assimp_VERSION_FILE}       ${assimp_VERSION})
+	file(WRITE ${glm_VERSION_FILE}          ${glm_VERSION})
+	file(WRITE ${glew_VERSION_FILE}         ${glew_VERSION})
+	file(WRITE ${glfw_VERSION_FILE}         ${glfw_VERSION})
+	file(WRITE ${spdlog_VERSION_FILE}       ${spdlog_VERSION})
+	file(WRITE ${vk-bootstrap_VERSION_FILE} ${vk-bootstrap_VERSION})
+	file(WRITE ${vma_VERSION_FILE}          ${vma_VERSION})
 endif ()
-message("Downloading GLEW glew-2.2.0")
-FetchContent_Declare(glew URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz SOURCE_SUBDIR build/cmake)
 
-FetchContent_MakeAvailable(glfw glew)  # Generate all external dependencies which require OpenGL
+set(OLD_FETCHCONTENT_FULLY_DISCONNECTED ${FETCHCONTENT_FULLY_DISCONNECTED})
+set(FETCHCONTENT_FULLY_DISCONNECTED ON)
 
-set(OpenGL_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
+# FetchContent_MakeAvailable should go after the Download Guard
+FetchContent_MakeAvailable(assimp)
+FetchContent_MakeAvailable(glew)
+FetchContent_MakeAvailable(glfw)
+FetchContent_MakeAvailable(glm)
+FetchContent_MakeAvailable(spdlog)
+FetchContent_MakeAvailable(vk-bootstrap)
+FetchContent_MakeAvailable(vma)
 
-# Get vk-bootstrap
-message("Downloading vk-bootstrap from master")
-FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG master)
+set(FETCHCONTENT_FULLY_DISCONNECTED ${OLD_FETCHCONTENT_FULLY_DISCONNECTED})
 
-# Get VMA from master because latest release was from 2017. Master is generally considered stable.
-message("Downloading VMA from master")
-FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG master)
 
-FetchContent_MakeAvailable(vk-bootstrap vma)  # Generate all external dependencies which require Vulkan
 
-set(Vulkan_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
-set(Vulkan_LIBRARIES ${Vulkan_LIBRARIES} PARENT_SCOPE)  # Move package variable up to parent scope
-set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS} PARENT_SCOPE)  # Move package variable up to parent scope
-
-FetchContent_MakeAvailable(assimp glm spdlog)  # Build all libraries
-set_target_properties(assimp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
-# Setup all needed includes
-set(assimp_DIR ${assimp_SOURCE_DIR} PARENT_SCOPE)
-set(spdlog_DIR ${spdlog_SOURCE_DIR} PARENT_SCOPE)
-set(glfw_DIR ${glfw_SOURCE_DIR} PARENT_SCOPE)
-set(glew_DIR ${glew_SOURCE_DIR} PARENT_SCOPE)
-set(glm_DIR ${glm_SOURCE_DIR} PARENT_SCOPE)
-set(stb_image_DIR ${assimp_SOURCE_DIR}/contrib/stb PARENT_SCOPE)
-set(vk-bootstrap_DIR ${vk-bootstrap_SOURCE_DIR}/src PARENT_SCOPE)
-set(vma_DIR ${vma_SOURCE_DIR} PARENT_SCOPE)
-set(vulkan_DIR ${_vulkanheaders_SOURCE_DIR} PARENT_SCOPE)
+# find_package should go after FetchContent_MakeAvailable
+find_package(Vulkan COMPONENTS glslc REQUIRED)  # Check for Vulkan and GLSLC
+find_package(OpenGL REQUIRED)  # Check for OpenGL
+find_package(AssImp REQUIRED)  # Check for AssImp
+find_package(GLM REQUIRED)  # Check for GLM
+find_package(GLEW REQUIRED)  # Check for GLEW
+find_package(GLFW REQUIRED)  # Check for GLFW
+find_package(spdlog REQUIRED)  # Check for spdlog
+find_package(vk-bootstrap REQUIRED)  # Check for vk-bootstrap
+find_package(vma REQUIRED)  # Check for vma
