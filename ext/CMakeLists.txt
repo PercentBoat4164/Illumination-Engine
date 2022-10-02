@@ -1,5 +1,7 @@
-# @todo Enable offline CMake reloading.
 # @todo Make this easier to maintain with the use of for( loops.
+# @todo Select individual versions for each library.
+# @todo Populate all options available in each library.
+# @todo Allow usage of local libraries instead of remotes. (Already implemented?)
 
 include(FetchContent)  # Requires CMake 3.14
 
@@ -15,16 +17,45 @@ set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
 
 # All options for Dependencies should go here
 # AssImp Options
-set(ASSIMP_BUILD_ASSIMP_TOOLS OFF FORCE)
-set(ASSIMP_BUILD_SAMPLES OFF FORCE)
-set(ASSIMP_BUILD_TESTS OFF FORCE)
-set(ASSIMP_BUILD_ZLIB ON FORCE)
+set(ASSIMP_HUNTER_ENABLED OFF)
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+if (MACOS)
+	set(ASSIMP_BUILD_FRAMEWORK OFF)
+else ()
+	set(ASSIMP_BUILD_FRAMEWORK OFF)
+endif ()
+set(ASSIMP_DOUBLE_PRECISION OFF)
+set(ASSIMP_OPT_BUILD_PACKAGES OFF)
+set(ASSIMP_ANDROID_JNIIOSYSTEM OFF)
+set(ASSIMP_NO_EXPORT ON)
+set(ASSIMP_BUILD_ZLIB ON)
+set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF)
+set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT ON)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
+set(ASSIMP_BUILD_SAMPLES OFF)
+set(ASSIMP_BUILD_TESTS OFF)
+set(ASSIMP_COVERALLS OFF)
+set(ASSIMP_INSTALL OFF)
+set(ASSIMP_WARNINGS_AS_ERRORS ON)
+set(ASSIMP_ASAN N)
+set(ASSIMP_UBSAN ON)
+set(ASSIMP_BUILD_DOCS OFF)  # Obsolete
+set(ASSIMP_INJECT_DEBUG_POSTFIX OFF)
+set(ASSIMP_IGNORE_GIT_HASH ON)
+set(ASSIMP_INSTALL_PDB OFF)
+set(USE_STATIC_CRT OFF)
+set(ASSIMP_BUILD_DRACO OFF)  # Fails as of AssImp v5.2.5
+if (WINDOWS)
+	set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
+else()
+	set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
+endif()
 
 # GLEW Options
 set(GLEW_VERBOSE OFF)
-set(GLEW_USE_STATIC_LIBS $<NOT:${BUILD_SHARED_LIBS}> FORCE)
+set(GLEW_USE_STATIC_LIBS NOT ${BUILD_SHARED_LIBS} FORCE)
 
-# Get GLFW
+# GLFW Options
 set(GLFW_BUILD_DOCS OFF FORCE)
 set(GLFW_BUILD_TESTS OFF FORCE)
 set(GLFW_INSTALL OFF FORCE)
@@ -33,7 +64,7 @@ set(GLFW_BUILD_EXAMPLES OFF FORCE)
 
 
 # Library versions
-set(assimp_VERSION master)
+set(assimp_VERSION v5.2.5)
 set(assimp_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/assimp_version.txt)
 
 set(glm_VERSION master)
@@ -134,9 +165,6 @@ else ()
 	file(WRITE ${vma_VERSION_FILE}          ${vma_VERSION})
 endif ()
 
-set(OLD_FETCHCONTENT_FULLY_DISCONNECTED ${FETCHCONTENT_FULLY_DISCONNECTED})
-set(FETCHCONTENT_FULLY_DISCONNECTED ON)
-
 # FetchContent_MakeAvailable should go after the Download Guard
 FetchContent_MakeAvailable(assimp)
 FetchContent_MakeAvailable(glew)
@@ -145,9 +173,6 @@ FetchContent_MakeAvailable(glm)
 FetchContent_MakeAvailable(spdlog)
 FetchContent_MakeAvailable(vk-bootstrap)
 FetchContent_MakeAvailable(vma)
-
-set(FETCHCONTENT_FULLY_DISCONNECTED ${OLD_FETCHCONTENT_FULLY_DISCONNECTED})
-
 
 
 # find_package should go after FetchContent_MakeAvailable
@@ -160,3 +185,22 @@ find_package(GLFW REQUIRED)  # Check for GLFW
 find_package(spdlog REQUIRED)  # Check for spdlog
 find_package(vk-bootstrap REQUIRED)  # Check for vk-bootstrap
 find_package(vma REQUIRED)  # Check for vma
+
+add_library(Vulkan INTERFACE)
+target_link_libraries(Vulkan INTERFACE Vulkan::Vulkan)
+add_library(OpenGL INTERFACE)
+target_link_libraries(OpenGL INTERFACE OpenGL::GL OpenGL::GLU)
+add_library(AssImp INTERFACE)
+target_link_libraries(AssImp INTERFACE assimp)
+add_library(GLEW INTERFACE)
+target_link_libraries(GLEW INTERFACE GLEW::GLEW)
+add_library(GLFW INTERFACE)
+target_link_libraries(GLFW INTERFACE GLFW::GLFW)
+add_library(GLM INTERFACE)
+target_link_libraries(GLM INTERFACE glm::glm)
+add_library(SpdLog INTERFACE)
+target_link_libraries(SpdLog INTERFACE spdlog)
+add_library(VkBootstrap INTERFACE)
+target_link_libraries(VkBootstrap INTERFACE VkBootstrap)
+add_library(VMA INTERFACE)
+target_link_libraries(VMA INTERFACE vma)

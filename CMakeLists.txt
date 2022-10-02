@@ -20,7 +20,7 @@ add_custom_command(
 		TARGET CopyResources
 		COMMAND ${CMAKE_COMMAND} -E copy_directory
 		${IE_BASE_DIR}/res
-		${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res
+		${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res &
 		DEPENDS ${IE_BASE_DIR}/res
 		COMMENT "Copying resource files...")
 

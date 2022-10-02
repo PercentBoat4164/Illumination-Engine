@@ -8,3 +8,5 @@
 /CMakeSettings.json
 # Ignore pre-compiled shaders
 /res/Shaders/*/*.spv
+# Ignore dependencies
+/ext/deps/
