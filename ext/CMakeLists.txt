@@ -1,4 +1,3 @@
-# @todo Make this easier to maintain with the use of for( loops.
 # @todo Select individual versions for each library.
 # @todo Populate all options available in each library.
 # @todo Allow usage of local libraries instead of remotes.
@@ -15,6 +14,15 @@ set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
 
 # Possibly add https://github.com/libvips/libvips as the image importer of choice. (high speed, high compatibility, highly maintained, but does not use CMake)
 
+# package_DATA = $NAME $CMAKE_BUILD_LOCATION $INCLUDE_DIR $DOWNLOAD_ARGS
+set(assimp_DATA      assimp      ""             ""     GIT_REPOSITORY https://github.com/assimp/assimp                                               GIT_PROGRESS ON GIT_TAG master)
+set(glm_DATA         glm         ""             ""     GIT_REPOSITORY https://github.com/g-truc/glm                                                  GIT_PROGRESS ON GIT_TAG master)
+set(glew_DATA        glew        "/build/cmake" ""     URL            https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
+set(glfw_DATA        glfw        ""             ""     GIT_REPOSITORY https://github.com/glfw/glfw                                                   GIT_PROGRESS ON GIT_TAG master)
+set(spdlog_DATA      spdlog      ""             ""     GIT_REPOSITORY https://github.com/gabime/spdlog                                               GIT_PROGRESS ON GIT_TAG v1.x)
+set(VkBootstrap_DATA VkBootstrap ""             "/src" GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                                 GIT_PROGRESS ON GIT_TAG master)
+set(vma_DATA         vma         ""             ""     GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator              GIT_PROGRESS ON GIT_TAG master)
+set(DATA assimp_DATA glm_DATA glew_DATA glfw_DATA spdlog_DATA VkBootstrap_DATA vma_DATA)
 
 
 # All options for Dependencies should go here
@@ -49,9 +57,9 @@ set(USE_STATIC_CRT OFF)
 set(ASSIMP_BUILD_DRACO OFF)  # Fails as of AssImp v5.2.5
 if (WINDOWS)
 	set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
-else()
+else ()
 	set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
-endif()
+endif ()
 
 # GLEW Options
 set(GLEW_VERBOSE OFF)
@@ -64,47 +72,6 @@ set(GLFW_INSTALL OFF)
 set(GLFW_BUILD_EXAMPLES OFF)
 
 
-
-# Library versions
-set(assimp_VERSION master)
-set(assimp_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/assimp_version.txt)
-
-set(glm_VERSION master)
-set(glm_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/glm_version.txt)
-
-set(glew_VERSION https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
-set(glew_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/glew_version.txt)
-
-set(glfw_VERSION master)
-set(glfw_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/glfw_version.txt)
-
-set(spdlog_VERSION v1.x)
-set(spdlog_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/spdlog_version.txt)
-
-set(VkBootstrap_VERSION master)
-set(VkBootstrap_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/VkBootstrap_version.txt)
-
-set(vma_VERSION master)
-set(vma_VERSION_FILE ${IE_DEPS_DOWNLOAD_DIR}/vma_version.txt)
-
-# Download arguments
-set(assimp_DOWNLOAD_ARGS      GIT_REPOSITORY https://github.com/assimp/assimp                                  GIT_TAG       ${assimp_VERSION})
-set(glm_DOWNLOAD_ARGS         GIT_REPOSITORY https://github.com/g-truc/glm                                     GIT_TAG       ${glm_VERSION})
-set(glew_DOWNLOAD_ARGS        URL            ${glew_VERSION}                                                   SOURCE_SUBDIR build/cmake)
-set(glfw_DOWNLOAD_ARGS        GIT_REPOSITORY https://github.com/glfw/glfw                                      GIT_TAG       ${glfw_VERSION})
-set(spdlog_DOWNLOAD_ARGS      GIT_REPOSITORY https://github.com/gabime/spdlog                                  GIT_TAG       ${spdlog_VERSION})
-set(VkBootstrap_DOWNLOAD_ARGS GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                    GIT_TAG       ${VkBootstrap_VERSION})
-set(vma_DOWNLOAD_ARGS         GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG       ${vma_VERSION})
-
-# FetchContent_Declare should go before the Download Guard
-FetchContent_Declare(assimp      ${assimp_DOWNLOAD_ARGS}      FIND_PACKAGE_ARGS NAMES assimp)
-FetchContent_Declare(glm         ${glm_DOWNLOAD_ARGS}         FIND_PACKAGE_ARGS NAMES glm)
-FetchContent_Declare(glew        ${glew_DOWNLOAD_ARGS}        FIND_PACKAGE_ARGS NAMES glew)
-FetchContent_Declare(glfw        ${glfw_DOWNLOAD_ARGS}        FIND_PACKAGE_ARGS NAMES glfw)
-FetchContent_Declare(spdlog      ${spdlog_DOWNLOAD_ARGS}      FIND_PACKAGE_ARGS NAMES spdlog)
-FetchContent_Declare(VkBootstrap ${VkBootstrap_DOWNLOAD_ARGS} FIND_PACKAGE_ARGS NAMES VkBootstrap)
-FetchContent_Declare(vma         ${vma_DOWNLOAD_ARGS}         FIND_PACKAGE_ARGS NAMES vma)
-
 # Lock the Download Guard
 file(LOCK ${IE_DOWNLOAD_GUARD_FILE} RESULT_VARIABLE HAS_DOWNLOAD_GUARD_LOCK TIMEOUT 0)
 if (NOT ${HAS_DOWNLOAD_GUARD_LOCK} MATCHES 0)
@@ -112,76 +79,45 @@ if (NOT ${HAS_DOWNLOAD_GUARD_LOCK} MATCHES 0)
 	file(LOCK ${IE_DOWNLOAD_GUARD_FILE})
 endif ()
 
+# FetchContent loop is guarded by the Download Guard
+foreach (LIST ${DATA})
+	list(GET ${LIST} 0 NAME)
+	list(SUBLIST ${LIST} 3 -1 ARGS)
+	FetchContent_Declare(${NAME} ${ARGS})
+endforeach ()
+
+
 # Do all the downloads here. They will only run in a single CMake instance at a time no matter how many are running.
-file(APPEND ${assimp_VERSION_FILE})
-file(APPEND ${glm_VERSION_FILE})
-file(APPEND ${glew_VERSION_FILE})
-file(APPEND ${glfw_VERSION_FILE})
-file(APPEND ${spdlog_VERSION_FILE})
-file(APPEND ${VkBootstrap_VERSION_FILE})
-file(APPEND ${vma_VERSION_FILE})
+foreach (LIST ${DATA})
+	list(GET ${LIST} 0 NAME)
+	list(GET ${LIST} -1 VERSION)
+	list(SUBLIST ${LIST} 3 -1 ARGS)
 
-file(READ ${assimp_VERSION_FILE}      assimp_OLD_VERSION)
-file(READ ${glm_VERSION_FILE}         glm_OLD_VERSION)
-file(READ ${glew_VERSION_FILE}        glew_OLD_VERSION)
-file(READ ${glfw_VERSION_FILE}        glfw_OLD_VERSION)
-file(READ ${spdlog_VERSION_FILE}      spdlog_OLD_VERSION)
-file(READ ${VkBootstrap_VERSION_FILE} VkBootstrap_OLD_VERSION)
-file(READ ${vma_VERSION_FILE}         vma_OLD_VERSION)
+	# Check old version information
+	file(APPEND ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version)
+	file(READ ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version OLD_VERSION)
 
-# Should only include FetchContent_Populate
-if (NOT assimp_OLD_VERSION      STREQUAL assimp_VERSION)
-	FetchContent_Populate(assimp      SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/assimp_subbuild	     SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/assimp_src      BINARY_DIR ${IE_DEPS_BUILD_DIR}/assimp_build      ${assimp_DOWNLOAD_ARGS})
-endif ()
-if (NOT glm_OLD_VERSION         STREQUAL glm_VERSION)
-	FetchContent_Populate(glm         SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/glm_subbuild		 SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/glm_src         BINARY_DIR ${IE_DEPS_BUILD_DIR}/glm_build         ${glm_DOWNLOAD_ARGS})
-endif ()
-if (NOT glew_OLD_VERSION        STREQUAL glew_VERSION)
-	FetchContent_Populate(glew        SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/glew_subbuild		 SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/glew_src        BINARY_DIR ${IE_DEPS_BUILD_DIR}/glew_build        ${glew_DOWNLOAD_ARGS})
-endif ()
-if (NOT glfw_OLD_VERSION        STREQUAL glfw_VERSION)
-	FetchContent_Populate(glfw        SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/glfw_subbuild		 SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/glfw_src        BINARY_DIR ${IE_DEPS_BUILD_DIR}/glfw_build        ${glfw_DOWNLOAD_ARGS})
-endif ()
-if (NOT spdlog_OLD_VERSION      STREQUAL spdlog_VERSION)
-	FetchContent_Populate(spdlog      SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/spdlog_subbuild      SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/spdlog_src      BINARY_DIR ${IE_DEPS_BUILD_DIR}/spdlog_build      ${spdlog_DOWNLOAD_ARGS})
-endif ()
-if (NOT VkBootstrap_OLD_VERSION STREQUAL VkBootstrap_VERSION)
-	FetchContent_Populate(VkBootstrap SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/VkBootstrap_subbuild SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/VkBootstrap_src BINARY_DIR ${IE_DEPS_BUILD_DIR}/VkBootstrap_build ${VkBootstrap_DOWNLOAD_ARGS})
-endif ()
-if (NOT vma_OLD_VERSION         STREQUAL vma_VERSION)
-	FetchContent_Populate(vma         SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/vma_subbuild		 SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/vma_src         BINARY_DIR ${IE_DEPS_BUILD_DIR}/vma_build         ${vma_DOWNLOAD_ARGS})
-endif ()
+	# Download content if needed
+	if (NOT OLD_VERSION STREQUAL VERSION)
+		FetchContent_Populate(${NAME} SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_subbuild SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src BINARY_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_build ${ARGS})
+	endif ()
 
-# Update version information
-file(WRITE ${assimp_VERSION_FILE}      ${assimp_VERSION})
-file(WRITE ${glm_VERSION_FILE}         ${glm_VERSION})
-file(WRITE ${glew_VERSION_FILE}        ${glew_VERSION})
-file(WRITE ${glfw_VERSION_FILE}        ${glfw_VERSION})
-file(WRITE ${spdlog_VERSION_FILE}      ${spdlog_VERSION})
-file(WRITE ${VkBootstrap_VERSION_FILE} ${VkBootstrap_VERSION})
-file(WRITE ${vma_VERSION_FILE}         ${vma_VERSION})
+	# Update version information
+	file(WRITE ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version ${VERSION})
+endforeach ()
 
 # Unlock the Download Guard
 file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
 
 # add_subdirectory( calls should go after the Download Guard
-add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/assimp_src)
-add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/glm_src)
-add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/glew_src/build/cmake)
-add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/glfw_src)
-add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/spdlog_src)
-add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/VkBootstrap_src)
-add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/vma_src)
+foreach (LIST ${DATA})
+	list(GET ${LIST} 0 NAME)
+	list(GET ${LIST} 1 CMAKE_DIR)
+	list(GET ${LIST} 2 INCLUDE_DIR)
+	add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src/${CMAKE_DIR})
+	list(APPEND INCLUDE_DIRS ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src${INCLUDE_DIR})
+endforeach ()
 
-set(INCLUDE_DIRS
-		${IE_DEPS_DOWNLOAD_DIR}/assimp_src
-		${IE_DEPS_DOWNLOAD_DIR}/glm_src
-		${IE_DEPS_DOWNLOAD_DIR}/glew_src
-		${IE_DEPS_DOWNLOAD_DIR}/glfw_src
-		${IE_DEPS_DOWNLOAD_DIR}/spdlog_src
-		${IE_DEPS_DOWNLOAD_DIR}/VkBootstrap_src/src
-		${IE_DEPS_DOWNLOAD_DIR}/vma_src
-		${Vulkan_INCLUDE_DIRS}
-		PARENT_SCOPE)
+set(INCLUDE_DIRS ${INCLUDE_DIRS} ${IE_BASE_DIR} PARENT_SCOPE)
 
 set(Vulkan_LIBRARIES ${Vulkan_LIBRARIES} PARENT_SCOPE)
