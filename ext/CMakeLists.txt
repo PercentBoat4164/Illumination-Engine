@@ -1,7 +1,5 @@
-find_package(Vulkan REQUIRED COMPONENTS glslc)
-find_package(OpenGL REQUIRED)
-
 include(FetchContent)  # Requires CMake 3.14
+include(FindPkgConfig)  # Requires
 
 set(IE_DEPS_DOWNLOAD_DIR   ${IE_BASE_DIR}/ext/deps)
 set(IE_DEPS_BUILD_DIR      ${CMAKE_BINARY_DIR}/deps)
@@ -11,15 +9,17 @@ set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
 
 # Possibly add https://github.com/libvips/libvips as the image importer of choice. (high speed, high compatibility, highly maintained, but does not use CMake)
 
-# package_DATA =     NAME        MODULE_NAME  BUILD_DIR      INCLUDE_DIR DOWNLOAD_ARGS
-set(assimp_DATA      assimp      assimp       ""             "/include"  GIT_REPOSITORY https://github.com/assimp/assimp                                               GIT_PROGRESS ON GIT_TAG v5.2.5)
-set(glm_DATA         glm         glm          ""             ""          GIT_REPOSITORY https://github.com/g-truc/glm                                                  GIT_PROGRESS ON GIT_TAG master)
-set(glew_DATA        glew        glew         "/build/cmake" "/include"  URL            https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
-set(glfw_DATA        GLFW        glfw3        ""             "/include"  GIT_REPOSITORY https://github.com/glfw/glfw                                                   GIT_PROGRESS ON GIT_TAG 3.3.8)
-set(spdlog_DATA      spdlog      spdlog       ""             "/include"  GIT_REPOSITORY https://github.com/gabime/spdlog                                               GIT_PROGRESS ON GIT_TAG v1.x)
-set(VkBootstrap_DATA VkBootstrap vk-bootstrap ""             "/src"      GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                                 GIT_PROGRESS ON GIT_TAG v0.5)
-set(vma_DATA         vma         vma          ""             "/include"  GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator              GIT_PROGRESS ON GIT_TAG v3.0.1)
-set(DATA assimp_DATA glm_DATA glew_DATA glfw_DATA spdlog_DATA VkBootstrap_DATA vma_DATA)
+# package_DATA =     NAME        MODULE_NAME  EXPORT_LIB  BUILD_DIR      INCLUDE_DIR DOWNLOAD_ARGS
+set(assimp_DATA      assimp      assimp       EXT_AssImp ""             "/include"  GIT_REPOSITORY https://github.com/assimp/assimp                                               GIT_PROGRESS ON GIT_TAG v5.2.5)
+set(glm_DATA         glm         glm          EXT_GLM    ""             ""          GIT_REPOSITORY https://github.com/g-truc/glm                                                  GIT_PROGRESS ON GIT_TAG master)
+set(glew_DATA        glew        glew         EXT_OpenGL "/build/cmake" "/include"  URL            https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
+set(glfw_DATA        GLFW        glfw3        EXT_GLFW   ""             "/include"  GIT_REPOSITORY https://github.com/glfw/glfw                                                   GIT_PROGRESS ON GIT_TAG 3.3.8)
+set(spdlog_DATA      spdlog      spdlog       EXT_SpdLog ""             "/include"  GIT_REPOSITORY https://github.com/gabime/spdlog                                               GIT_PROGRESS ON GIT_TAG v1.x)
+set(VkBootstrap_DATA VkBootstrap vk-bootstrap EXT_Vulkan ""             "/src"      GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                                 GIT_PROGRESS ON GIT_TAG v0.5)
+set(vma_DATA         vma         vma          EXT_Vulkan ""             "/include"  GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator              GIT_PROGRESS ON GIT_TAG v3.0.1)
+set(Vulkan_DATA      Vulkan      Vulkan       EXT_Vulkan)
+set(OpenGL_DATA      OpenGL      OpenGL       EXT_OpenGL)
+set(DATA assimp_DATA glm_DATA glew_DATA glfw_DATA spdlog_DATA VkBootstrap_DATA vma_DATA Vulkan_DATA OpenGL_DATA)
 
 
 # All options for Dependencies should go here
@@ -121,8 +121,6 @@ set(VMA_DEBUG_INITIALIZE_ALLOCATIONS)
 set(VMA_DEBUG_GLOBAL_MUTEX)
 set(VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT)
 
-include(FindPkgConfig)
-
 # Lock the Download Guard
 file(LOCK ${IE_DOWNLOAD_GUARD_FILE} RESULT_VARIABLE HAS_DOWNLOAD_GUARD_LOCK TIMEOUT 0)
 if (NOT ${HAS_DOWNLOAD_GUARD_LOCK} MATCHES 0)
@@ -131,44 +129,49 @@ if (NOT ${HAS_DOWNLOAD_GUARD_LOCK} MATCHES 0)
 endif ()
 
 # FetchContent loop is guarded by the Download Guard
-foreach (LIST ${DATA})
-	list(GET ${LIST} 0 NAME)
-	list(SUBLIST ${LIST} 3 -1 ARGS)
-	FetchContent_Declare(${NAME} ${ARGS})
-endforeach ()
-
-
 # Do all the downloads here. They will only run in a single CMake instance at a time no matter how many are running.
 foreach (LIST ${DATA})
+	list(LENGTH ${LIST} LEN)
 	list(GET ${LIST} 0 NAME)
-
-	if (${IE_PREFER_LOCAL_LIBS})
-		find_package(${NAME} QUIET)
-		if (${NAME}_FOUND)
-			message("Using local ${NAME} version ${${NAME}_VERSION}.")
+	if (${LEN} MATCHES 3)
+		# If the package has no download arguments, then it must be in local storage
+		find_package(${NAME} REQUIRED QUIET)
+		if (${NAME}_VERSION)
+			message(STATUS "Using required local package ${NAME} v${${NAME}_VERSION}.")
 		else ()
-			list(GET ${LIST} 1 PACKAGE)
-			pkg_search_module(${NAME} ${PACKAGE} QUIET)
+			message(STATUS "Using required local package ${NAME}.")
+		endif ()
+	else ()
+		if (${IE_PREFER_LOCAL_LIBS})
+			# Get package from local storage
+			find_package(${NAME} QUIET)
 			if (${NAME}_FOUND)
-				message("Using local ${NAME} version ${${NAME}_VERSION}.")
+				message(STATUS "Using local ${NAME} version ${${NAME}_VERSION}.")
+			else ()
+				list(GET ${LIST} 1 PACKAGE)
+				pkg_search_module(${NAME} ${PACKAGE} QUIET)
+				if (${NAME}_FOUND)
+					message(STATUS "Using local ${NAME} version ${${NAME}_VERSION}.")
+				endif ()
 			endif ()
 		endif ()
-	endif ()
+		if (NOT ${NAME}_FOUND)
+			message("Downloading ${NAME}")
+			list(GET ${LIST} -1 VERSION)
+			list(SUBLIST ${LIST} 5 -1 ARGS)
+			FetchContent_Declare(${NAME} ${ARGS})
 
-	if (NOT ${NAME}_FOUND)
-		list(GET ${LIST} -1 VERSION)
-		list(SUBLIST ${LIST} 4 -1 ARGS)
+			# Check old version information
+			file(APPEND ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version)
+			file(READ ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version OLD_VERSION)
 
-		# Check old version information
-		file(APPEND ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version)
-		file(READ ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version OLD_VERSION)
+			# Download content if needed
+			if (NOT OLD_VERSION STREQUAL VERSION)
+				FetchContent_Populate(${NAME} SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_subbuild SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src BINARY_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_build ${ARGS})
 
-		# Download content if needed
-		if (NOT OLD_VERSION STREQUAL VERSION)
-			FetchContent_Populate(${NAME} SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_subbuild SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src BINARY_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_build ${ARGS})
-
-			# Update version information
-			file(WRITE ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version ${VERSION})
+				# Update version information
+				file(WRITE ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version ${VERSION})
+			endif ()
 		endif ()
 	endif ()
 endforeach ()
@@ -179,22 +182,23 @@ file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
 # add_subdirectory( calls should go after the Download Guard
 foreach (LIST ${DATA})
 	list(GET ${LIST} 0 NAME)
-	list(GET ${LIST} 2 CMAKE_DIR)
-	list(GET ${LIST} 3 INCLUDE_DIR)
+	list(GET ${LIST} 2 EXPORT_LIB)
+	if (NOT TARGET ${EXPORT_LIB})
+		add_library(${EXPORT_LIB} main.cpp)
+		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_BASE_DIR})
+	endif ()
 	if (NOT ${NAME}_FOUND)
+		list(GET ${LIST} 3 CMAKE_DIR)
+		list(GET ${LIST} 4 INCLUDE_DIR)
 		add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src/${CMAKE_DIR})
-		list(APPEND INCLUDE_DIRS ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src${INCLUDE_DIR})
+		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src${INCLUDE_DIR})
+
 		list(GET ${LIST} 1 PKG_NAME)
 		if (TARGET ${PKG_NAME})
-			list(APPEND LIBRARIES ${PKG_NAME})
+			target_link_libraries(${EXPORT_LIB} PUBLIC ${PKG_NAME})
 		endif ()
 	else ()
-		list(APPEND INCLUDE_DIRS ${${NAME}_INCLUDE_DIRS})
-		list(APPEND LIBRARIES ${${NAME}_LIBRARIES})
+		target_link_libraries(${EXPORT_LIB} PUBLIC ${${NAME}_LIBRARIES})
+		target_include_directories(${EXPORT_LIB} PUBLIC ${${NAME}_INCLUDE_DIRS})
 	endif ()
 endforeach ()
-
-set(LIBRARIES ${LIBRARIES} ${Vulkan_LIBRARIES} PARENT_SCOPE)
-set(INCLUDE_DIRS ${INCLUDE_DIRS} ${IE_BASE_DIR} PARENT_SCOPE)
-
-set(Vulkan_LIBRARIES ${Vulkan_LIBRARIES} PARENT_SCOPE)

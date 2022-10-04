@@ -4,6 +4,5 @@ set(IELogModuleSourceFiles  # Gather sources
 
 # Create and define properties for the library
 add_library(IELogModule ${IELogModuleSourceFiles})
-target_link_libraries(IELogModule PUBLIC spdlog)
-target_include_directories(IELogModule PUBLIC ${INCLUDE_DIRS})
+target_link_libraries(IELogModule PUBLIC EXT_SpdLog)
 set_target_properties(IELogModule PROPERTIES LINKER_LANGUAGE CXX)
