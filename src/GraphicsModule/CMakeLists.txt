@@ -45,7 +45,7 @@ set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(IEGraphicsModule PUBLIC IECore)
 
 # Add external dependency libraries and include directories to the target
-target_link_libraries(IEGraphicsModule PUBLIC glfw glew assimp glm vk-bootstrap ${Vulkan_LIBRARIES})
+target_link_libraries(IEGraphicsModule PUBLIC ${LIBRARIES})
 target_include_directories(IEGraphicsModule PUBLIC ${INCLUDE_DIRS})
 
 add_dependencies(IEGraphicsModule IEGMShaders)  # Add shader pre-compilation as a dependency

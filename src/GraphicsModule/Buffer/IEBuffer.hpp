@@ -11,10 +11,10 @@ class IERenderEngine;
 #include "IEAPI.hpp"
 
 // External dependencies
-#include <include/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 #define GLEW_IMPLEMENTATION
-#include <include/GL/glew.h>
+#include <GL/glew.h>
 
 #include <vulkan/vulkan.h>
 

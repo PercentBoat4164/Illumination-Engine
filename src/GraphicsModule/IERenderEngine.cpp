@@ -11,16 +11,16 @@
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <include/GL/glew.h>
 
 #define VMA_IMPLEMENTATION
 
-#include <include/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 
-#include <contrib/stb/stb_image.h>
+#include <../contrib/stb/stb_image.h>
 
 /* Include system dependencies. */
 #include <filesystem>
@@ -725,7 +725,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
     //	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only code
-    //block. 	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
+    // block. 	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
     //	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = createWindow();

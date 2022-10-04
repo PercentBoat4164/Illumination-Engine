@@ -4,7 +4,7 @@
 #include <mutex>
 #include <cassert>
 #include <vector>
-#include <contrib/stb/stb_image.h>
+#include <../contrib/stb/stb_image.h>
 
 enum IEImageLocation {
 	IE_IMAGE_LOCATION_NULL = 0x0,

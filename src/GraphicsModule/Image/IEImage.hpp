@@ -11,11 +11,11 @@ class IEBuffer;
 #include "IEAPI.hpp"
 
 #define GLEW_IMPLEMENTATION
-#include <include/GL/glew.h>
+#include <GL/glew.h>
 
 // External dependencies
-#include <contrib/stb/stb_image.h>
-#include <include/vk_mem_alloc.h>
+#include <../contrib/stb/stb_image.h>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 // System dependencies

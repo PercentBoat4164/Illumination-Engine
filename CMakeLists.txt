@@ -24,6 +24,8 @@ add_custom_command(
 		DEPENDS ${IE_BASE_DIR}/res
 		COMMENT "Copying resource files...")
 
+#set(IE_PREFER_LOCAL_LIBS ON)
+
 add_subdirectory(ext)  # Generate external dependencies from source
 add_subdirectory(src)  # Generate Illumination Engine from source
 
