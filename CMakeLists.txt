@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)  # 3.14 is required for FetchContent
+cmake_minimum_required(VERSION 3.11 FATAL_ERROR)  # 3.11 is required for FetchContent
 project(IlluminationEngine VERSION 0.0.0)
 
 set(CMAKE_CXX_STANDARD 23)

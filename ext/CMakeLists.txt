@@ -1,4 +1,4 @@
-include(FetchContent)  # Requires CMake 3.14
+include(FetchContent)  # Requires CMake 3.11
 include(FindPkgConfig)
 
 set(IE_DEPS_DOWNLOAD_DIR   ${IE_BASE_DIR}/ext/deps)
