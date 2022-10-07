@@ -3,7 +3,7 @@ Language:        Cpp
 BasedOnStyle:    'LLVM'
 AccessModifierOffset: -4
 AlignAfterOpenBracket: BlockIndent
-# AlignAfterOpenBracket: Align
+# AlignAfterOpenBracket: Align  # This is an alternate option.
 AlignArrayOfStructures: Left
 AlignConsecutiveMacros: AcrossComments
 AlignConsecutiveAssignments: AcrossComments
@@ -14,14 +14,13 @@ AlignOperands:   DontAlign
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
-AllowShortEnumsOnASingleLine: false # This is different on purpose.
+AllowShortEnumsOnASingleLine: false  # This is different on purpose.
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: None # This is also different on purpose.
+AllowShortFunctionsOnASingleLine: None  # This is also different on purpose.
 AllowShortLambdasOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLoopsOnASingleLine: true
-# AlwaysBreakAfterDefinitionReturnType: None  # This option is deprecated.
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: Yes
@@ -51,7 +50,7 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakAfterJavaFieldAnnotations: true
 BreakBeforeBinaryOperators: None
-BreakBeforeConceptDeclarations: true
+# BreakBeforeConceptDeclarations: Always  # Disabled for old versions.
 BreakBeforeBraces: Attach
 BreakBeforeInheritanceComma: false
 BreakInheritanceList: AfterColon
@@ -60,7 +59,7 @@ BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: AfterColon
 BreakStringLiterals: true
 ColumnLimit:     115  # Previously 80
-#CommentPragmas:  ''
+CommentPragmas:  '^ IWYU pragma:'
 QualifierAlignment: Custom
 QualifierOrder:
   - restrict
@@ -115,10 +114,10 @@ IndentCaseBlocks: false
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
 IndentExternBlock: Indent
-# IndentRequiresClause: false  # Not available in clang-format 14
+#IndentRequiresClause: false  # Disabled for old versions.
 IndentWidth:     4
 IndentWrappedFunctionNames: false
-# InsertBraces: false  # Not available in clang-format 14
+#InsertBraces: false  # Disabled for old versions.
 KeepEmptyLinesAtTheStartOfBlocks: true
 LambdaBodyIndentation: Signature
 MacroBlockBegin: ''
