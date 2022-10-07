@@ -49,7 +49,7 @@ void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
 		compile(file->path.string(), (file->path / ".spv").string());
 		file = new IEFile{file->path / ".spv"};
 	}
-	fileContents = file->read((size_t)file->size, 0);
+	fileContents = file->read();
 	VkShaderModuleCreateInfo shaderModuleCreateInfo{
 			.sType=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
 			.codeSize=static_cast<size_t>(file->size),
@@ -77,13 +77,14 @@ void IEShader::compile(const std::string &input, const std::string &output) {
 }
 
 void IEShader::_openglCompile(const std::string &input, std::string) {
-	std::string contents = (std::string)file->read(file->size, 0);
+	std::string contents = (std::string)file->read();
 
 	// Compile shader
 	GLint result = GL_FALSE;
 	int infoLogLength;
 	const GLchar *shader = contents.c_str();
-	glShaderSource(shaderID, 1, &shader, nullptr);
+	const GLint length = -1;
+	glShaderSource(shaderID, 1, &shader, &length);
 	glCompileShader(shaderID);
 	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
 	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
