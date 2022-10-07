@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IEFile.hpp"
-#include "IETempFile.hpp"
 #include "IEImporter.hpp"
 
 #include <vector>
@@ -46,5 +45,4 @@ public:
 
 private:
     std::unordered_map<std::string, IEFile> files;
-    std::unordered_map<std::string, IETempFile> tempFiles;
 };

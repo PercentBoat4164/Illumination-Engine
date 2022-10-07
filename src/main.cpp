@@ -6,7 +6,7 @@
 #include "Core/FileSystemModule/IEFileSystem.hpp"
 
 int main() {
-	IEFileSystem fileSystem{"C:/Users/ethan/CLionProjects/Illumination-Engine/src"};
+	IEFileSystem fileSystem{"C:/Users/ethan/Documents"};
 
     std::string testString = "";
 
