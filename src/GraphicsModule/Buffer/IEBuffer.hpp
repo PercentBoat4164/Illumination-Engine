@@ -10,8 +10,6 @@ class IERenderEngine;
 #include "Image/ImageVulkan.hpp"
 
 // External dependencies
-#include <vk_mem_alloc.h>
-
 #define GLEW_IMPLEMENTATION
 #include <include/GL/glew.h>
 

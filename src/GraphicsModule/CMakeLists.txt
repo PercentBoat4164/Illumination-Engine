@@ -29,11 +29,11 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         Image/TextureOpenGL.cpp
         Image/TextureVulkan.cpp
         RenderPass/Framebuffer.cpp
-        RenderPass/Framebuffer.hpp
         RenderPass/RenderPass.cpp
-        RenderPass/RenderPass.hpp
         RenderPass/Subpass.cpp
-        RenderPass/Subpass.hpp)
+        SyncObjects/Semaphore.cpp
+        SyncObjects/Fence.cpp
+        )
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

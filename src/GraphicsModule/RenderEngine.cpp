@@ -1,9 +1,11 @@
 #include "RenderEngine.hpp"
 
-#include "Image/Image.hpp"
-
+#define STB_IMAGE_IMPLEMENTATION
+#include <contrib/stb/stb_image.h>
+#define VMA_IMPLEMENTATION
 #include <iostream>
 #include <utility>
+#include <vk_mem_alloc.h>
 
 VkBool32 IE::Graphics::RenderEngine::APIDebugMessenger(
   VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
@@ -51,8 +53,8 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
 
     // Create window
     m_window = glfwCreateWindow(
-      (int) defaultResolution[0],
-      (int) defaultResolution[1],
+      (int) m_defaultResolution[0],
+      (int) m_defaultResolution[1],
       m_applicationName.c_str(),
       nullptr,
       nullptr
@@ -66,8 +68,8 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
         );
     } else
         m_graphicsAPICallbackLog.log(
-          "Created window (" + std::to_string(defaultResolution[0]) + ", " + std::to_string(defaultResolution[1]) +
-          ")"
+          "Created window (" + std::to_string(m_defaultResolution[0]) + ", " +
+          std::to_string(m_defaultResolution[1]) + ")"
         );
 
     /// IF USING OPENGL
@@ -75,11 +77,11 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
 
     // Set up window
     glfwSetWindowSizeLimits(m_window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    glfwSetWindowPos(m_window, (int) defaultPosition[0], (int) defaultPosition[1]);
+    glfwSetWindowPos(m_window, (int) m_defaultPosition[0], (int) m_defaultPosition[1]);
     glfwSetWindowAttrib(m_window, GLFW_AUTO_ICONIFY, 0);
     glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
     glfwSetWindowUserPointer(m_window, this);
-    glfwSwapInterval(useVsync ? 1 : 0);
+    glfwSwapInterval(m_useVsync ? 1 : 0);
 
 
     // Set icon
@@ -193,10 +195,62 @@ vkb::Device IE::Graphics::RenderEngine::createDevice() {
     } else return {};
 }
 
-vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
-    // Create Swapchain
-    vkb::SwapchainBuilder swapchainBuilder{m_device};
-    return swapchainBuilder.build().value();
+VmaAllocator IE::Graphics::RenderEngine::createAllocator() {
+    if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+        VmaAllocatorCreateInfo allocatorInfo{
+          .physicalDevice   = m_device.physical_device.physical_device,
+          .device           = m_device.device,
+          .instance         = m_instance.instance,
+          .vulkanApiVersion = m_api.version.number};
+        VkResult result{vmaCreateAllocator(&allocatorInfo, &m_allocator)};
+        if (result != VK_SUCCESS)
+            m_graphicsAPICallbackLog.log(
+              "Failed to create VmaAllocator with error: " + translateVkResultCodes(result),
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL
+            );
+        else m_graphicsAPICallbackLog.log("Created VmaAllocator");
+        return m_allocator;
+    }
+    return {};
+}
+
+vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain(bool useOldSwapchain = true) {
+    if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+        // Create swapchain builder
+        vkb::SwapchainBuilder swapchainBuilder{m_device};
+        swapchainBuilder
+          .set_desired_present_mode(m_useVsync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
+          .set_desired_extent(m_currentResolution[0], m_currentResolution[1])
+          // This may have to change in the event that HDR is to be supported.
+          .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})
+          .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+        if (useOldSwapchain && m_swapchain)  // Use the old swapchain if it exists and its usage was requested.
+            swapchainBuilder.set_old_swapchain(m_swapchain);
+        vkb::detail::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
+        if (!thisSwapchain) {
+            // Failure! Log it then continue without deleting the old swapchain.
+            m_graphicsAPICallbackLog.log(
+              "Failed to create swapchain! Error: " + thisSwapchain.error().message(),
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+            );
+        }
+
+        m_graphicsAPICallbackLog.log("Created Swapchain");
+
+        // Success! Delete the old swapchain and images and replace them with the new ones.
+        vkb::destroy_swapchain(m_swapchain);
+        m_swapchain           = thisSwapchain.value();
+        m_swapchainImageViews = m_swapchain.get_image_views().value();
+
+        // Ensure that the vectors have the correct size
+        m_imageAvailableSemaphores.resize(m_swapchain.image_count, weak_from_this());
+        m_renderFinishedSemaphores.resize(m_swapchain.image_count, {weak_from_this()});
+        m_inFlightFences.resize(m_swapchain.image_count, {weak_from_this(), false});
+        m_imagesInFlight.resize(m_swapchain.image_count, {weak_from_this(), false});
+
+        return m_swapchain;
+    }
+    return {};
 }
 
 std::shared_ptr<IE::Graphics::RenderEngine>
@@ -205,10 +259,12 @@ IE::Graphics::RenderEngine::create(const std::shared_ptr<IE::Core::Core> &t_core
 }
 
 IE::Graphics::RenderEngine::RenderEngine(std::shared_ptr<IE::Core::Core> t_core) : m_core(std::move(t_core)) {
-    m_window   = createWindow();
-    m_instance = createInstance();
-    m_surface  = createSurface();
-    m_device   = createDevice();
+    createWindow();
+    createInstance();
+    createSurface();
+    createDevice();
+    createAllocator();
+    createSwapchain();
 }
 
 std::shared_ptr<IE::Core::Core> IE::Graphics::RenderEngine::getCore() {
@@ -224,7 +280,7 @@ IE::Graphics::API IE::Graphics::RenderEngine::getAPI() {
 }
 
 VmaAllocator IE::Graphics::RenderEngine::getAllocator() {
-    return allocator;
+    return m_allocator;
 }
 
 std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result) {
@@ -274,8 +330,12 @@ std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result
 }
 
 IE::Graphics::RenderEngine::~RenderEngine() {
-    vkb::destroy_device(m_device);
+    vmaDestroyAllocator(m_allocator);
+    vkb::destroy_swapchain(m_swapchain);
+    for (VkImageView swapchainImageView : m_swapchainImageViews)
+        vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
     vkb::destroy_surface(m_instance, m_surface);
+    vkb::destroy_device(m_device);
     vkb::destroy_instance(m_instance);
 }
 
@@ -284,5 +344,9 @@ void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, 
     renderEngine->m_graphicsAPICallbackLog.log(
       "Changing window size to (" + std::to_string(x) + ", " + std::to_string(y) + ")"
     );
-    renderEngine->currentResolution = {static_cast<size_t>(x), static_cast<size_t>(y)};
+    renderEngine->m_currentResolution = {static_cast<size_t>(x), static_cast<size_t>(y)};
+}
+
+IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
+    return m_graphicsAPICallbackLog;
 }
