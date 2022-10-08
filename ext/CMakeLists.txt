@@ -12,7 +12,7 @@ set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
 # package_DATA =     NAME        MODULE_NAME  EXPORT_LIB  BUILD_DIR      INCLUDE_DIR DOWNLOAD_ARGS
 set(assimp_DATA      assimp      assimp       EXT_AssImp ""             "/include"  GIT_REPOSITORY https://github.com/assimp/assimp                                               GIT_PROGRESS ON GIT_TAG v5.2.5)
 set(glm_DATA         glm         glm          EXT_GLM    ""             ""          GIT_REPOSITORY https://github.com/g-truc/glm                                                  GIT_PROGRESS ON GIT_TAG master)
-set(glew_DATA        GLEW        glew         EXT_OpenGL "/build/cmake" "/include"  URL            https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
+set(glew_DATA        glew        glew         EXT_OpenGL "/build/cmake" "/include"  URL            https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
 set(glfw_DATA        glfw        glfw3        EXT_GLFW   ""             "/include"  GIT_REPOSITORY https://github.com/glfw/glfw                                                   GIT_PROGRESS ON GIT_TAG 3.3.8)
 set(spdlog_DATA      spdlog      spdlog       EXT_SpdLog ""             "/include"  GIT_REPOSITORY https://github.com/gabime/spdlog                                               GIT_PROGRESS ON GIT_TAG v1.x)
 set(VkBootstrap_DATA VkBootstrap vk-bootstrap EXT_Vulkan ""             "/src"      GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                                 GIT_PROGRESS ON GIT_TAG v0.5)
@@ -187,7 +187,6 @@ foreach (LIST ${DATA})
 endforeach ()
 
 # Unlock the Download Guard
-file(LOCK ${IE_DOWNLOAD_GUARD_FILE} RELEASE)
 file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
 
 # add_subdirectory( calls should go after the Download Guard
