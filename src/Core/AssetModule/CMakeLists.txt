@@ -1,8 +1,6 @@
 set(IEAssetModuleSourceFiles  # Gather sources
         IEAspect.cpp
-        IEAspect.hpp
         IEAsset.cpp
-        IEAsset.hpp
         )
 
 # Create and define properties for the executable target

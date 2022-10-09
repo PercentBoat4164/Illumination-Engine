@@ -3,69 +3,37 @@ add_subdirectory(DefaultShaders)
 
 set(IEGraphicsModuleSourceFiles  # Gather sources
         Buffer/IEBuffer.cpp
-        Buffer/IEBuffer.hpp
         CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.cpp
-        CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.hpp
         CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.cpp
-        CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.hpp
         CommandBuffer/DependencyStructs/IEDependencyInfo.cpp
-        CommandBuffer/DependencyStructs/IEDependencyInfo.hpp
         CommandBuffer/DependencyStructs/IEImageMemoryBarrier.cpp
-        CommandBuffer/DependencyStructs/IEImageMemoryBarrier.hpp
         CommandBuffer/DependencyStructs/IERenderPassBeginInfo.cpp
-        CommandBuffer/DependencyStructs/IERenderPassBeginInfo.hpp
         CommandBuffer/IECommandBuffer.cpp
-        CommandBuffer/IECommandBuffer.hpp
         CommandBuffer/IECommandPool.cpp
-        CommandBuffer/IECommandPool.hpp
         CommandBuffer/IEDependency.cpp
-        CommandBuffer/IEDependency.hpp
         CommandBuffer/IEDependent.cpp
-        CommandBuffer/IEDependent.hpp
         IEAPI.cpp
-        IEAPI.hpp
         IECamera.cpp
-        IECamera.hpp
         IEMonitor.cpp
-        IEMonitor.hpp
         IERenderEngine.cpp
-        IERenderEngine.hpp
         IESettings.cpp
-        IESettings.hpp
         IEVersion.cpp
-        IEVersion.hpp
         Image/IEImage.cpp
-        Image/IEImage.hpp
         Image/IEImageNEW.cpp
-        Image/IEImageNEW.hpp
         Image/IENDimensionalResizableImage.cpp
-        Image/IENDimensionalResizableImage.hpp
         Image/IETexture.cpp
-        Image/IETexture.hpp
         Image/IETextureNEW.cpp
-        Image/IETextureNEW.hpp
         RenderPass/IEFramebuffer.cpp
-        RenderPass/IEFramebuffer.hpp
         RenderPass/IERenderPass.cpp
-        RenderPass/IERenderPass.hpp
         RenderPass/SubPass.cpp
-        RenderPass/SubPass.hpp
         Renderable/IEMaterial.cpp
-        Renderable/IEMaterial.hpp
         Renderable/IEMesh.cpp
-        Renderable/IEMesh.hpp
         Renderable/IERenderable.cpp
-        Renderable/IERenderable.hpp
         Renderable/IEVertex.cpp
-        Renderable/IEVertex.hpp
         Shader/IEDescriptorSet.cpp
-        Shader/IEDescriptorSet.hpp
         Shader/IEPipeline.cpp
-        Shader/IEPipeline.hpp
         Shader/IEShader.cpp
-        Shader/IEShader.hpp
         Shader/IEUniformBufferObject.cpp
-        Shader/IEUniformBufferObject.hpp
         )
 
 # Create and define properties for the library

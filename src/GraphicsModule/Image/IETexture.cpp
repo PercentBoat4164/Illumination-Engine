@@ -49,8 +49,8 @@ std::function<void(IETexture &)> IETexture::_uploadToVRAM{nullptr};
 void IETexture::uploadToVRAM() {
     if (width * height * channels == 0) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG,
-          "Attempt to load image with size of zero into VRAM"
+          "Attempt to load image with size of zero into VRAM",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG
         );
     }
     if (status & IE_IMAGE_STATUS_QUEUED_VRAM) _uploadToVRAM(*this);
@@ -128,9 +128,9 @@ void IETexture::_openglUpdate_aiTexture(aiTexture *texture) {
       std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
     if (data.empty()) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
           std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
-            stbi_failure_reason()
+            stbi_failure_reason(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
     _openglUpdate_vector(data);
@@ -161,9 +161,9 @@ void IETexture::_vulkanUpdate_aiTexture(aiTexture *texture) {
       std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
     if (data.empty()) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
           std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
-            stbi_failure_reason()
+            stbi_failure_reason(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
     _vulkanUpdate_vector(data);
@@ -200,9 +200,9 @@ void IETexture::_openglUploadToVRAM_texture(aiTexture *texture) {
       std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
     if (data.empty()) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
           std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
-            stbi_failure_reason()
+            stbi_failure_reason(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
 
@@ -255,9 +255,9 @@ void IETexture::_vulkanUploadToVRAM_texture(aiTexture *texture) {
       std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
     if (data.empty()) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
           std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
-            stbi_failure_reason()
+            stbi_failure_reason(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
 
@@ -298,9 +298,9 @@ void IETexture::_openglUploadToRAM_texture(aiTexture *texture) {
     data     = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
     if (data.empty()) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
           std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
-            stbi_failure_reason()
+            stbi_failure_reason(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
 }
@@ -329,9 +329,9 @@ void IETexture::_vulkanUploadToRAM_texture(aiTexture *texture) {
     data     = std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
     if (data.empty()) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
           std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
-            stbi_failure_reason()
+            stbi_failure_reason(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
 }
