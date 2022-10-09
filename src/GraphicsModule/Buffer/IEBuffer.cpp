@@ -126,7 +126,8 @@ void IEBuffer::_openglUploadToVRAM() {
     if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
         linkedRenderEngine->settings->logger.log(
           "Attempt to load buffer with no contents in RAM to VRAM.",
-                                                 IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
     }
     if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM))  // Not in VRAM
         glGenBuffers(1, &id);                       // Put it in VRAM
@@ -141,7 +142,8 @@ void IEBuffer::_vulkanUploadToVRAM() {
     if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
         linkedRenderEngine->settings->logger.log(
           "Attempt to load buffer with no contents in RAM to VRAM.",
-                                                 IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
     }
     if ((status & IE_BUFFER_STATUS_DATA_IN_VRAM) == 0) {
         // Create the VkBuffer because it does not yet exist.
