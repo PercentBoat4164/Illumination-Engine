@@ -32,8 +32,8 @@ std::vector<char> IEFile::read() {
     open(std::fstream::in | std::fstream::binary);
     getSize();
     fileIO.seekg(0, std::fstream::beg);
-    std::vector<char> *data =
-      new std::vector<char>{std::istreambuf_iterator<char>(fileIO), std::istreambuf_iterator<char>()};
+    auto *data{new std::vector<char>(size)};
+    fileIO.read(data->data(), size);
     close();
     return *data;
 }
@@ -41,11 +41,10 @@ std::vector<char> IEFile::read() {
 std::vector<char> IEFile::read(std::streamsize numBytes, std::streamsize startPosition) {
     open();
     fileIO.seekg(startPosition);
-    std::vector<char> data;
-    fileIO.read(data.data(), numBytes);
-    fileIO.close();
+    auto *data{new std::vector<char>(size)};
+    fileIO.read(data->data(), numBytes);
     close();
-    return data;
+    return *data;
 }
 
 void IEFile::write(const std::vector<char> &data) {

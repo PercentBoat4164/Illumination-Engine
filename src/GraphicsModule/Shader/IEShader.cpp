@@ -33,16 +33,15 @@ void IEShader::_openglCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
     file               = shaderFile;
     linkedRenderEngine = renderEngineLink;
     GLenum shaderType  = GL_VERTEX_SHADER;
-    if (file->extension == "frag") shaderType = GL_FRAGMENT_SHADER;
+    if (file->extension == ".frag") shaderType = GL_FRAGMENT_SHADER;
     shaderID = glCreateShader(shaderType);
     compile(file->path.string(), file->path.string());
 }
 
 void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
-    file                                = shaderFile;
-    linkedRenderEngine                  = renderEngineLink;
-    //std::vector<std::string> extensions = file->extensions();
-    std::string              fileContents;
+    file               = shaderFile;
+    linkedRenderEngine = renderEngineLink;
+    std::string fileContents;
     if (file->extension == ".spv") {
         compile(file->path.string(), file->path.string() + ".spv");
         file = new IEFile{file->path.string() + ".spv"};
@@ -81,7 +80,8 @@ void IEShader::_openglCompile(const std::string &input, std::string) {
     // Compile shader
     GLint         result = GL_FALSE;
     int           infoLogLength;
-    const GLchar *shader = file->read().data();
+    std::string   contents{file->read()};
+    const GLchar *shader = contents.data();
     glShaderSource(shaderID, 1, &shader, nullptr);
     glCompileShader(shaderID);
     glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
