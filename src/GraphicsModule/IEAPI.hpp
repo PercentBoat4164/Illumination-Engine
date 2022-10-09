@@ -16,16 +16,16 @@ class IERenderEngine;
 
 class IEAPI {
 public:
-	explicit IEAPI(const std::string &apiName);
+    explicit IEAPI(const std::string &apiName);
 
-	IEAPI();
+    IEAPI();
 
-	std::string name{}; // The name of the API to use
-	IEVersion version{}; // The version of the API to use
+    std::string name{};     // The name of the API to use
+    IEVersion   version{};  // The version of the API to use
 
-	/**
-	 * @brief Finds the highest supported API version.
-	 * @return An IEVersion populated with all the data about the highest supported API version
-	 */
-	IEVersion getHighestSupportedVersion(IERenderEngine *linkedRenderEngine) const;
+    /**
+     * @brief Finds the highest supported API version.
+     * @return An IEVersion populated with all the data about the highest supported API version
+     */
+    IEVersion getHighestSupportedVersion(IERenderEngine *linkedRenderEngine) const;
 };

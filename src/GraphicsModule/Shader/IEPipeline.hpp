@@ -9,8 +9,8 @@ class IERenderPass;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "GraphicsModule/Shader/IEShader.hpp"
 #include "GraphicsModule/CommandBuffer/IEDependency.hpp"
+#include "GraphicsModule/Shader/IEShader.hpp"
 
 // External dependencies
 #include <vulkan/vulkan.h>
@@ -19,43 +19,42 @@ class IERenderPass;
 #include <functional>
 #include <vector>
 
-
 class IEPipeline : public IEDependency {
 public:
-	struct CreateInfo {
-		//Required
-		std::vector<std::shared_ptr<IEShader>> shaders{};
-		std::weak_ptr<IEDescriptorSet> descriptorSet{};
-		std::weak_ptr<IERenderPass> renderPass{};
-	};
+    struct CreateInfo {
+        // Required
+        std::vector<std::shared_ptr<IEShader>> shaders{};
+        std::weak_ptr<IEDescriptorSet>         descriptorSet{};
+        std::weak_ptr<IERenderPass>            renderPass{};
+    };
 
-	#ifndef NDEBUG
-	struct Created {
-		bool pipelineLayout{};
-	} created;
-	#endif
+#ifndef NDEBUG
+    struct Created {
+        bool pipelineLayout{};
+    } created;
+#endif
 
-	VkPipelineLayout pipelineLayout{};
-	CreateInfo createdWith{};
-	VkPipeline pipeline{};
-	GLuint programID{};
+    VkPipelineLayout pipelineLayout{};
+    CreateInfo       createdWith{};
+    VkPipeline       pipeline{};
+    GLuint           programID{};
 
-	void destroy();
+    void destroy();
 
-	void create(IERenderEngine *engineLink, CreateInfo *createInfo);
+    void create(IERenderEngine *engineLink, CreateInfo *createInfo);
 
-	~IEPipeline() override;
+    ~IEPipeline() override;
 
-	static void setAPI(const IEAPI &API);
+    static void setAPI(const IEAPI &API);
 
 private:
-	static std::function<void(IEPipeline &, IERenderEngine *, IEPipeline::CreateInfo *)> _create;
+    static std::function<void(IEPipeline &, IERenderEngine *, IEPipeline::CreateInfo *)> _create;
 
 protected:
-	void _vulkanCreate(IERenderEngine *, IEPipeline::CreateInfo *);
+    void _vulkanCreate(IERenderEngine *, IEPipeline::CreateInfo *);
 
-	void _openglCreate(IERenderEngine *, IEPipeline::CreateInfo *);
+    void _openglCreate(IERenderEngine *, IEPipeline::CreateInfo *);
 
-	IERenderEngine *linkedRenderEngine{};
-	std::vector<std::function<void()>> deletionQueue{};
+    IERenderEngine                    *linkedRenderEngine{};
+    std::vector<std::function<void()>> deletionQueue{};
 };
