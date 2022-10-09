@@ -9,9 +9,11 @@ struct VkVertexInputAttributeDescription;
 // External dependencies
 
 #define GLM_FORCE_RADIANS
+
 #include <glm/glm.hpp>
 
 #define GLEW_IMPLEMENTATION
+
 #include <include/GL/glew.h>
 
 // System dependencies
@@ -19,18 +21,18 @@ struct VkVertexInputAttributeDescription;
 #include <string>
 
 struct IEVertex {
-	glm::vec3 position{};
-	glm::vec4 color{};
-	glm::vec2 textureCoordinates{};
-	glm::vec3 normal{};
-	glm::vec3 tangent{};
-	glm::vec3 biTangent{};
+    glm::vec3 position{};
+    glm::vec4 color{};
+    glm::vec2 textureCoordinates{};
+    glm::vec3 normal{};
+    glm::vec3 tangent{};
+    glm::vec3 biTangent{};
 
-	static VkVertexInputBindingDescription getBindingDescription();
+    static VkVertexInputBindingDescription getBindingDescription();
 
-	static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
-	
-	static void useVertexAttributesWithProgram(GLint program);
+    static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
 
-	bool operator==(IEVertex &other) const;
+    static void useVertexAttributesWithProgram(GLint program);
+
+    bool operator==(IEVertex &other) const;
 };
