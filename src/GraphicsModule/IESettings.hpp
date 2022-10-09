@@ -12,11 +12,12 @@
 #include "IEVersion.hpp"
 
 // External dependencies
-#include <vulkan/vulkan.h>
-
 #define GLEW_IMPLEMENTATION
-#include <GLFW/glfw3.h>
 #include <include/GL/glew.h>
+
+// GL/glew.h must be included before GLFW/glfw3.h
+#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 
 // System dependencies
@@ -33,8 +34,8 @@ public:
         windowedResolution   = {defaultResolution};
         currentResolution    = fullscreen ? &fullscreenResolution : &windowedResolution;
         defaultPosition      = {
-          (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
-          (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
+               (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
+               (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
         fullscreenPosition = {0, 0};
         windowedPosition   = {defaultPosition};
         currentPosition    = fullscreen ? &fullscreenPosition : &windowedPosition;
