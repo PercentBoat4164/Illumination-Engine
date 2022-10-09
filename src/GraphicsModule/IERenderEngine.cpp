@@ -11,7 +11,6 @@
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
-
 #include <GLFW/glfw3.h>
 #include <include/GL/glew.h>
 
@@ -41,7 +40,7 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     builder.set_app_name(settings->applicationName.c_str());
     builder.set_app_version(settings->applicationVersion.number);
 
-    // If debugging and components are available, add validation layers and a debug messenger
+// If debugging and components are available, add validation layers and a debug messenger
 #ifndef NDEBUG
     if (systemInfo->validation_layers_available) builder.request_validation_layers();
     if (systemInfo->debug_utils_available)
@@ -216,7 +215,7 @@ void IERenderEngine::createSyncObjects() {
 }
 
 void IERenderEngine::createCommandPools() {
-    IECommandPool::CreateInfo commandPoolCreateInfo{};
+    IECommandPool::CreateInfo    commandPoolCreateInfo{};
     vkb::Result<VkQueue>      graphicsQueueDetails = device.get_queue(vkb::QueueType::graphics);
     if (graphicsQueueDetails.has_value()) graphicsQueue = graphicsQueueDetails.value();
     if (graphicsQueue != nullptr) {
@@ -726,7 +725,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
     //	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only code
-    // block. 	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
+    //block. 	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
     //	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = createWindow();
