@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 
 class IEAsset;
 
@@ -17,7 +17,7 @@ class IEAsset;
  */
 class IEAspect {
 public:
-	virtual ~IEAspect() = default;
+    virtual ~IEAspect() = default;
 
-	std::vector<std::weak_ptr<IEAsset>> associatedAssets{};  // A vector of assets that this aspect belongs to
+    std::vector<std::weak_ptr<IEAsset>> associatedAssets{};  // A vector of assets that this aspect belongs to
 };

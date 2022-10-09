@@ -11,22 +11,15 @@ std::string IEFile::getDirectory() const {
 
 void IEFile::createDirectory() const {
     std::string thisDirectory{getDirectory()};
-    for (size_t i = 0; i < thisDirectory.size(); ++i) {
-        if (thisDirectory[i] == '/') {
-            std::filesystem::create_directory(thisDirectory.substr(0, i));
-        }
-    }
+    for (size_t i = 0; i < thisDirectory.size(); ++i)
+        if (thisDirectory[i] == '/') std::filesystem::create_directory(thisDirectory.substr(0, i));
     std::filesystem::create_directory(thisDirectory);
 }
 
 bool IEFile::open() {
-    if (file.is_open()) {
-        return true;
-    }
+    if (file.is_open()) return true;
     file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::ate | std::ios_base::binary);
-    if (!file.is_open()) {
-        file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
-    }
+    if (!file.is_open()) file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
     if (!file.is_open()) {
         createDirectory();
         file.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
@@ -39,16 +32,13 @@ bool IEFile::open() {
 }
 
 void IEFile::close() {
-    if (!file.is_open()) {
-        return;
-    }
+    if (!file.is_open()) return;
     file.close();
 }
 
 std::string IEFile::read(size_t numBytes, std::streamsize startPosition) {
-    if (startPosition == -1) {  // If no starting position
+    if (startPosition == -1)           // If no starting position
         startPosition = file.tellg();  // Start here
-    }
     // Go to start position
     file.seekg(startPosition);
 
@@ -68,9 +58,8 @@ void IEFile::insert(const std::string &data, std::streamsize startPosition) {
         // Attempt to insert from beyond the length of the file!
         return;
     }
-    if (startPosition == -1) {  // If no starting position
+    if (startPosition == -1)           // If no starting position
         startPosition = file.tellg();  // Start here
-    }
 
     // Read data that is about to be overwritten
     std::string bytes = read((size_t) (length - startPosition), startPosition);
@@ -84,16 +73,15 @@ void IEFile::insert(const std::string &data, std::streamsize startPosition) {
 
     // Update file length
     auto dataSize = static_cast<std::streamsize>(startPosition + data.size());
-    length = static_cast<std::streamsize>(dataSize + bytes.size());
+    length        = static_cast<std::streamsize>(dataSize + bytes.size());
 
     // Go to end of new data
     file.seekg(dataSize);
 }
 
 void IEFile::overwrite(const std::string &data, std::streamsize startPosition) {
-    if (startPosition == -1) {  // If no starting position
+    if (startPosition == -1)           // If no starting position
         startPosition = file.tellg();  // Start here
-    }
 
     // Go to starting position
     file.seekg(startPosition);
@@ -107,9 +95,8 @@ void IEFile::overwrite(const std::string &data, std::streamsize startPosition) {
 }
 
 void IEFile::erase(std::streamsize numBytes, std::streamsize startPosition) {
-    if (startPosition == -1) {  // If no starting position
+    if (startPosition == -1)           // If no starting position
         startPosition = file.tellg();  // Start here
-    }
 
     // Go to where file should stop being erased
     file.seekg(startPosition + numBytes);
@@ -126,14 +113,12 @@ void IEFile::erase(std::streamsize numBytes, std::streamsize startPosition) {
 }
 
 std::vector<std::string> IEFile::extensions() const {
-    std::string temporaryPath = path.substr(path.find_last_of('/') + 1);
-    std::vector<std::string> result;
-    std::regex rgx("[.]");
+    std::string                temporaryPath = path.substr(path.find_last_of('/') + 1);
+    std::vector<std::string>   result;
+    std::regex                 rgx("[.]");
     std::sregex_token_iterator iter(temporaryPath.begin(), temporaryPath.end(), rgx, -1);
     std::sregex_token_iterator end;
-    for (++iter; iter != end; ++iter) {
-        result.push_back(*iter);
-    }
+    for (++iter; iter != end; ++iter) result.push_back(*iter);
     return result;
 }
 
@@ -143,7 +128,7 @@ IEFile::~IEFile() {
 
 IEFile &IEFile::operator=(const IEFile &other) {
     // Copy over data from other
-    path = other.path;
+    path   = other.path;
     length = other.length;
 
     // Close this file to avoid memory leaks

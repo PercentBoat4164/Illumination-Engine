@@ -14,36 +14,35 @@ class IEDescriptorSet;
 
 class IERenderPass;
 
+#include <memory>
+#include <string>
 #include <vector>
 #include <vulkan/vulkan.h>
-#include <string>
-#include <memory>
-
 
 class IEDependency {
 private:
-	std::vector<IEDependent *> dependents{};
+    std::vector<IEDependent *> dependents{};
 
 public:
-	void addDependent(IEDependent *);
+    void addDependent(IEDependent *);
 
-	void addDependent(IEDependent &);
+    void addDependent(IEDependent &);
 
-	void addDependents(const std::vector<IEDependent *> &);
+    void addDependents(const std::vector<IEDependent *> &);
 
-	void addDependents(std::vector<IEDependent> &);
+    void addDependents(std::vector<IEDependent> &);
 
-	void removeDependent(IEDependent *);
+    void removeDependent(IEDependent *);
 
-	void removeDependent(IEDependent &);
+    void removeDependent(IEDependent &);
 
-	void removeDependents(const std::vector<IEDependent *> &);
+    void removeDependents(const std::vector<IEDependent *> &);
 
-	void removeDependents(std::vector<IEDependent> &);
+    void removeDependents(std::vector<IEDependent> &);
 
-	void invalidateDependents();
+    void invalidateDependents();
 
-	bool canBeDestroyed(bool= false);
+    bool canBeDestroyed(bool = false);
 
-	virtual ~IEDependency() = default;
+    virtual ~IEDependency() = default;
 };
