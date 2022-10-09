@@ -1,25 +1,23 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include <filesystem>
 #include <fstream>
-
+#include <string>
+#include <vector>
 
 class IEFile {
 public:
-
-    std::string name;
+    std::string           name;
     std::filesystem::path path;
-    std::fstream fileIO;
-    std::streamsize size;
-    std::string extension;
+    std::fstream          fileIO;
+    std::streamsize       size;
+    std::string           extension;
 
     // Constructor
-    explicit IEFile(const std::filesystem::path& filePath);
+    explicit IEFile(const std::filesystem::path &filePath);
 
     // Copy constructor and = overload must be defined explicitly because fstream has no defaults for them
-    IEFile(const IEFile& file);
+    IEFile(const IEFile &file);
 
     IEFile &operator=(const IEFile &file);
 
@@ -33,10 +31,9 @@ public:
     void write(const std::vector<char> &data);
 
     // Overwrite a section of the file
-    void overwrite(const std::vector<char> &data, std::streamsize startPosition= -1);
+    void overwrite(const std::vector<char> &data, std::streamsize startPosition = -1);
 
 private:
-
     std::streamsize getSize();
 
     // Open a file for reading and writing

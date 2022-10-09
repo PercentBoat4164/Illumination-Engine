@@ -33,26 +33,24 @@ void IEShader::_openglCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
     file               = shaderFile;
     linkedRenderEngine = renderEngineLink;
     GLenum shaderType  = GL_VERTEX_SHADER;
-    if (file->extensions()[0] == "frag") shaderType = GL_FRAGMENT_SHADER;
+    if (file->extension == "frag") shaderType = GL_FRAGMENT_SHADER;
     shaderID = glCreateShader(shaderType);
-    compile(file->path, file->path);
+    compile(file->path.string(), file->path.string());
 }
 
 void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
     file                                = shaderFile;
     linkedRenderEngine                  = renderEngineLink;
-    std::vector<std::string> extensions = file->extensions();
+    //std::vector<std::string> extensions = file->extensions();
     std::string              fileContents;
-    if (std::find(extensions.begin(), extensions.end(), "spv") == extensions.end()) {
-        compile(file->path, file->path + ".spv");
-        file = new IEFile{file->path + ".spv"};
+    if (file->extension == ".spv") {
+        compile(file->path.string(), file->path.string() + ".spv");
+        file = new IEFile{file->path.string() + ".spv"};
     }
-    file->open();
-    fileContents = file->read((size_t) file->length, 0);
-    file->close();
+    fileContents = file->read();
     VkShaderModuleCreateInfo shaderModuleCreateInfo{
       .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-      .codeSize = static_cast<size_t>(file->length),
+      .codeSize = static_cast<size_t>(file->size),
       .pCode    = reinterpret_cast<const uint32_t *>(fileContents.data()),
     };
     VkResult result =
@@ -80,13 +78,10 @@ void IEShader::compile(const std::string &input, const std::string &output) {
 }
 
 void IEShader::_openglCompile(const std::string &input, std::string) {
-    file->open();
-    std::string contents = file->read((size_t) file->length, 0);
-
     // Compile shader
     GLint         result = GL_FALSE;
     int           infoLogLength;
-    const GLchar *shader = contents.c_str();
+    const GLchar *shader = file->read().data();
     glShaderSource(shaderID, 1, &shader, nullptr);
     glCompileShader(shaderID);
     glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
