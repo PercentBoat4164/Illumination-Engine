@@ -1,8 +1,7 @@
 #include "IELogger.hpp"
 
-#include <include/spdlog/spdlog.h>
 #include <include/spdlog/sinks/basic_file_sink.h>
-
+#include <include/spdlog/spdlog.h>
 
 IELogger::IELogger(const std::string &name, const std::string &path) {
     logger = spdlog::basic_logger_mt(name, path, true);
