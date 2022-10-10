@@ -19,7 +19,7 @@ public:
 
     [[nodiscard]] std::vector<std::shared_ptr<IE::Graphics::Image>> getImages() const;
 
-	explicit operator VkDependencyInfo();
+    explicit operator VkDependencyInfo();
 
 private:
     std::vector<VkBufferMemoryBarrier2> bufferBarriers{};

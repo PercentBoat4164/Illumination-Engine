@@ -11,7 +11,7 @@
 #include <vulkan/vulkan.h>
 
 #define GLEW_IMPLEMENTATION
-#include "include/GL/glew.h"
+#include <GL/glew.h>
 
 IE::Graphics::API::API(const std::string &apiName) {
     name = apiName;
@@ -19,7 +19,8 @@ IE::Graphics::API::API(const std::string &apiName) {
 
 IE::Graphics::API::API() = default;
 
-IE::Graphics::Version IE::Graphics::API::getHighestSupportedVersion(IE::Graphics::RenderEngine *linkedRenderEngine) const {
+IE::Graphics::Version IE::Graphics::API::getHighestSupportedVersion(IE::Graphics::RenderEngine *linkedRenderEngine
+) const {
     Version temporaryVersion;
     if (name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
         VkPhysicalDeviceProperties properties;

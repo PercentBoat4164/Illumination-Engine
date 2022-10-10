@@ -1,14 +1,12 @@
 #include "Core/FileSystemModule/IEFileSystem.hpp"
 #include "Core/ThreadingModule/ThreadPool/ThreadPool.hpp"
-#include "GraphicsModule/IERenderEngine.hpp"
-#include "InputModule/IEKeyboard.hpp"
+#include "GraphicsModule/RenderEngine.hpp"
+#include "InputModule/Keyboard.hpp"
 
 int main() {
-    IESettings                      settings = IESettings();
-    std::shared_ptr<IERenderEngine> renderEngine =
-      std::make_shared<IERenderEngine>(settings);  // RenderEngine must be allocated on the heap.
+    std::shared_ptr<IE::Graphics::RenderEngine> renderEngine = IE::Graphics::RenderEngine::create();  // RenderEngine must be allocated on the heap.
 
-    IEKeyboard keyboard{renderEngine->window};
+    IE::Input::Keyboard keyboard{renderEngine->getWindow()};
     keyboard.editActions(
       GLFW_KEY_W,
       [&](GLFWwindow *) {
@@ -66,9 +64,6 @@ int main() {
     keyboard.editActions({GLFW_KEY_ESCAPE, GLFW_REPEAT}, [&](GLFWwindow *) {
         glfwSetWindowShouldClose(renderEngine->window, 1);
     });
-
-    IEWindowUser windowUser{std::shared_ptr<IERenderEngine>(renderEngine), &keyboard};
-    glfwSetWindowUserPointer(renderEngine->window, &windowUser);
 
     IE::Core::ThreadPool threadPool{};
 

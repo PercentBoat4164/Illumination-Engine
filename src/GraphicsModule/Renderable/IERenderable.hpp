@@ -9,12 +9,12 @@ class IECamera;
 // Internal dependencies
 #include "Buffer/IEBuffer.hpp"
 #include "Image/Texture.hpp"
-#include "Shader/IEDescriptorSet.hpp"
 #include "Renderable/IEMaterial.hpp"
+#include "Renderable/IEVertex.hpp"
+#include "Shader/IEDescriptorSet.hpp"
 #include "Shader/IEPipeline.hpp"
 #include "Shader/IEShader.hpp"
 #include "Shader/IEUniformBufferObject.hpp"
-#include "Renderable/IEVertex.hpp"
 
 // Modular dependencies
 #include "Core/AssetModule/IEAspect.hpp"

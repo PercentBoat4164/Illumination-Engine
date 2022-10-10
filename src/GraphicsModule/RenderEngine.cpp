@@ -1,7 +1,7 @@
 #include "RenderEngine.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <contrib/stb/stb_image.h>
+#include <../contrib/stb/stb_image.h>
 #define VMA_IMPLEMENTATION
 #include <iostream>
 #include <utility>
@@ -80,7 +80,6 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
     glfwSetWindowPos(m_window, (int) m_defaultPosition[0], (int) m_defaultPosition[1]);
     glfwSetWindowAttrib(m_window, GLFW_AUTO_ICONIFY, 0);
     glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
-    glfwSetWindowUserPointer(m_window, this);
     glfwSwapInterval(m_useVsync ? 1 : 0);
 
 
@@ -214,7 +213,7 @@ VmaAllocator IE::Graphics::RenderEngine::createAllocator() {
     return {};
 }
 
-vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain(bool useOldSwapchain = true) {
+vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
     if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
         // Create swapchain builder
         vkb::SwapchainBuilder swapchainBuilder{m_device};
@@ -224,7 +223,7 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain(bool useOldSwapchain 
           // This may have to change in the event that HDR is to be supported.
           .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})
           .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-        if (useOldSwapchain && m_swapchain)  // Use the old swapchain if it exists and its usage was requested.
+        if (m_swapchain)  // Use the old swapchain if it exists.
             swapchainBuilder.set_old_swapchain(m_swapchain);
         vkb::detail::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
         if (!thisSwapchain) {
@@ -243,32 +242,39 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain(bool useOldSwapchain 
         m_swapchainImageViews = m_swapchain.get_image_views().value();
 
         // Ensure that the vectors have the correct size
-        m_imageAvailableSemaphores.resize(m_swapchain.image_count, weak_from_this());
-        m_renderFinishedSemaphores.resize(m_swapchain.image_count, {weak_from_this()});
-        m_inFlightFences.resize(m_swapchain.image_count, {weak_from_this(), false});
-        m_imagesInFlight.resize(m_swapchain.image_count, {weak_from_this(), false});
+        m_imageAvailableSemaphores.resize(
+          m_swapchain.image_count,
+          IE::Graphics::Semaphore(weak_from_this<IE::Graphics::RenderEngine>())
+        );
+        m_renderFinishedSemaphores.resize(
+          m_swapchain.image_count,
+          IE::Graphics::Semaphore(weak_from_this<IE::Graphics::RenderEngine>())
+        );
+        m_inFlightFences.resize(
+          m_swapchain.image_count,
+          IE::Graphics::Fence(weak_from_this<IE::Graphics::RenderEngine>(), false)
+        );
+        m_imagesInFlight.resize(
+          m_swapchain.image_count,
+          IE::Graphics::Fence(weak_from_this<IE::Graphics::RenderEngine>(), false)
+        );
 
         return m_swapchain;
     }
     return {};
 }
 
-std::shared_ptr<IE::Graphics::RenderEngine>
-IE::Graphics::RenderEngine::create(const std::shared_ptr<IE::Core::Core> &t_core) {
-    return std::make_shared<IE::Graphics::RenderEngine>(t_core);
+std::shared_ptr<IE::Graphics::RenderEngine> IE::Graphics::RenderEngine::create() {
+    return std::make_shared<IE::Graphics::RenderEngine>();
 }
 
-IE::Graphics::RenderEngine::RenderEngine(std::shared_ptr<IE::Core::Core> t_core) : m_core(std::move(t_core)) {
+IE::Graphics::RenderEngine::RenderEngine() {
     createWindow();
     createInstance();
     createSurface();
     createDevice();
     createAllocator();
     createSwapchain();
-}
-
-std::shared_ptr<IE::Core::Core> IE::Graphics::RenderEngine::getCore() {
-    return m_core;
 }
 
 GLFWwindow *IE::Graphics::RenderEngine::getWindow() {

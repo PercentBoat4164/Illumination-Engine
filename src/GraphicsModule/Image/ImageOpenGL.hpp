@@ -3,7 +3,7 @@
 #include "Image.hpp"
 
 #define GLEW_IMPLEMENTATION
-#include "include/GL/glew.h"
+#include <GL/glew.h>
 
 namespace IE::Graphics::detail {
 class ImageOpenGL : virtual public IE::Graphics::Image {

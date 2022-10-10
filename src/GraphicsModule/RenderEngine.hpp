@@ -3,7 +3,6 @@
 #include "API/API.hpp"
 #include "API/Version.hpp"
 #include "Core/Core.hpp"
-#include "Core/Engine.hpp"
 #include "Core/LogModule/IELogger.hpp"
 #include "SyncObjects/Fence.hpp"
 #include "SyncObjects/Semaphore.hpp"
@@ -11,7 +10,7 @@
 #include <vulkan/vulkan.h>
 
 #define GLEW_IMPLEMENTATION
-#include "include/GL/glew.h"
+#include "GL/glew.h"
 
 #define GLFW_IMPLEMENTATION
 #include "GLFW/glfw3.h"
@@ -27,7 +26,7 @@
 #define ILLUMINATION_ENGINE_VERSION_PATCH 0
 #define ILLUMINATION_ENGINE_NAME          "Illumination Engine"
 
-#define ILLUMINATION_ENGINE_ICON_PATH                "res/icons/IlluminationEngineLogo_256.png"
+#define ILLUMINATION_ENGINE_ICON_PATH                "res/logos/IlluminationEngineLogo.png"
 #define ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME     "Graphics API"
 #define ILLUMINATION_ENGINE_GRAPHICS_LOGGER_FILENAME "logs/GraphicsAPI.log"
 
@@ -79,17 +78,11 @@ private:
 
     VmaAllocator createAllocator();
 
-    vkb::Swapchain createSwapchain(bool useOldSwapchain);
+    vkb::Swapchain createSwapchain();
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int x, int y);
 
-    template<typename T>
-    auto weak_from_this() -> std::weak_ptr<typename std::remove_pointer<T>::type> {
-    }
-
 public:
-    std::shared_ptr<IE::Core::Core> getCore();
-
     GLFWwindow *getWindow();
 
     VmaAllocator getAllocator();
@@ -106,9 +99,9 @@ public:
 
     IE::Graphics::API getAPI();
 
-    explicit RenderEngine(std::shared_ptr<IE::Core::Core> t_core);
+    explicit RenderEngine();
 
-    static std::shared_ptr<RenderEngine> create(const std::shared_ptr<IE::Core::Core> &t_core);
+    static std::shared_ptr<RenderEngine> create();
 
     static std::string translateVkResultCodes(VkResult t_result);
 

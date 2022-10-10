@@ -73,7 +73,7 @@ bool IE::Graphics::detail::ImageOpenGL::_createImage(const IE::Core::MultiDimens
     std::unique_lock<std::mutex> lock(*m_mutex);
     m_dimensions = t_data.getDimensions();
     if (t_data.getDimensionality() > 3 || t_data.empty()) {
-        m_linkedRenderEngine.lock()->getCore()->logger.log(
+        IE::Core::Core::getInst().logger.log(
           "Images with more than 3 dimensions or less than 1 cannot be put on the GPU with OpenGL.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );

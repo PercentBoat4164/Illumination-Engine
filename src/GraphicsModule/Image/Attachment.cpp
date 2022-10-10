@@ -19,7 +19,7 @@ std::unique_ptr<IE::Graphics::Attachment> IE::Graphics::Attachment::create(
           new IE::Graphics::detail::AttachmentOpenGL(t_engineLink, t_preset, t_args...)
         )};
     }
-    t_engineLink.lock()->getCore()->logger.log(
+    IE::Core::Core::getInst().logger.log(
       "failed to create attachment because render engine is using neither Vulkan or OpenGL.",
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
     );

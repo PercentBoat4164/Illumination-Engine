@@ -2,7 +2,9 @@
 
 /* Predefine classes used with pointers or as return values for functions. */
 
-namespace IE::Graphics { class Image; }
+namespace IE::Graphics {
+class Image;
+}  // namespace IE::Graphics
 class IEBuffer;
 
 class IERenderEngine;
@@ -26,8 +28,8 @@ class IEDescriptorSet {
 public:
     struct CreateInfo {
         // Required
-        std::vector<VkDescriptorPoolSize>                               poolSizes{};
-        std::vector<VkShaderStageFlagBits>                              shaderStages{};
+        std::vector<VkDescriptorPoolSize>                                           poolSizes{};
+        std::vector<VkShaderStageFlagBits>                                          shaderStages{};
         std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> data{};
 
         // Optional
@@ -47,9 +49,11 @@ public:
     void create(IERenderEngine *renderEngineLink, CreateInfo *createInfo);
 
     void update(
-      std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> newData, std::vector<int> bindings = {});
+      std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> newData,
+      std::vector<int>                                                            bindings = {}
+    );
 
-	virtual ~IEDescriptorSet();
+    virtual ~IEDescriptorSet();
 
 private:
     IERenderEngine                    *linkedRenderEngine{};

@@ -1,10 +1,12 @@
 #include "MultiDimensionalVector.hpp"
 
+#include <algorithm>
+
 template<typename StoredType>
 IE::Core::MultiDimensionalVector<StoredType>::MultiDimensionalVector(std::vector<size_t> t_dimensions) :
         m_data{},
         m_dimensions(std::move(t_dimensions)) {
-    size_t i{0};
+    size_t i{};
     m_data.resize(
       std::accumulate(
         m_dimensions.cbegin(),

@@ -93,19 +93,19 @@ IE::Graphics::detail::ImageVulkan::ImageVulkan(
 uint8_t IE::Graphics::detail::ImageVulkan::getBytesInFormat() const {
     switch (m_format) {
         case VK_FORMAT_UNDEFINED:
-            m_linkedRenderEngine.lock()->getCore()->logger.log(
+            IE::Core::Core::getInst().logger.log(
               "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
             return 0x0;
         case VK_FORMAT_MAX_ENUM:
-            m_linkedRenderEngine.lock()->getCore()->logger.log(
+            IE::Core::Core::getInst().logger.log(
               "Attempt to get number of bytes in pixel of format VK_FORMAT_MAX_ENUM!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
             return 0x0;
         default:
-            m_linkedRenderEngine.lock()->getCore()->logger.log(
+            IE::Core::Core::getInst().logger.log(
               "Attempt to get number of bytes in pixel of unknown format",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
@@ -398,7 +398,7 @@ void IE::Graphics::detail::ImageVulkan::setData(const IE::Core::MultiDimensional
     std::unique_lock<std::mutex> lock(*m_mutex);
     if (m_location & IE_IMAGE_LOCATION_NONE) {  // Nowhere for image data to go.
         // warn and return
-        m_linkedRenderEngine.lock()->getCore()->logger.log(
+        IE::Core::Core::getInst().logger.log(
           "Attempted to set data to an image stored in IE_IMAGE_LOCATION_NONE!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -423,7 +423,7 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
 ) {
     std::unique_lock<std::mutex> lock(*m_mutex);
     if (t_data.getDimensionality() > 4 || t_data.empty()) {
-        m_linkedRenderEngine.lock()->getCore()->logger.log(
+        IE::Core::Core::getInst().logger.log(
           "Images with more than 4 dimensions or less than 1 cannot be put on the GPU.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -471,7 +471,7 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
       &m_allocationInfo
     )};
     if (!result) {
-        m_linkedRenderEngine.lock()->getCore()->logger.log(
+        IE::Core::Core::getInst().logger.log(
           "failed to create image with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result) +
             ". Use Vulkan's validation layers for more information.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -504,7 +504,7 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
 
     result = vkCreateImageView(m_linkedRenderEngine.lock()->getDevice(), &imageViewCreateInfo, nullptr, &m_view);
     if (!result) {
-        m_linkedRenderEngine.lock()->getCore()->logger.log(
+        IE::Core::Core::getInst().logger.log(
           "failed to create image view with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result) +
             ". Use Vulkan's validation layers for more information.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -540,7 +540,7 @@ void IE::Graphics::detail::ImageVulkan::_setImageData(const IE::Core::MultiDimen
 ) {
     std::unique_lock<std::mutex> lock(*m_mutex);
     if (m_allocationInfo.size != t_data.size()) {
-        m_linkedRenderEngine.lock()->getCore()->logger.log(
+        IE::Core::Core::getInst().logger.log(
           "attempt to fill image with data that does not match its size! This may lead to broken textures or "
           "images.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN

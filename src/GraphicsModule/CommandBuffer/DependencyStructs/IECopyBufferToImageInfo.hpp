@@ -8,10 +8,10 @@
 
 class IECopyBufferToImageInfo {
 public:
-    const void                     *pNext;
-    std::shared_ptr<IEBuffer>       srcBuffer;
-    std::shared_ptr<IE::Graphics::Image>        dstImage;
-    std::vector<VkBufferImageCopy2> regions;
+    const void                          *pNext;
+    std::shared_ptr<IEBuffer>            srcBuffer;
+    std::shared_ptr<IE::Graphics::Image> dstImage;
+    std::vector<VkBufferImageCopy2>      regions;
 
     [[nodiscard]] std::vector<std::shared_ptr<IEBuffer>> getBuffers() const;
 

@@ -133,7 +133,7 @@ IE::Graphics::Image::create(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLi
           static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageOpenGL(t_engineLink, t_dimensions...)
           )};
     }
-    t_engineLink.lock()->getCore()->logger.log(
+    IE::Core::Core::getInst().logger.log(
       "failed to create image because render engine is using neither Vulkan or OpenGL.",
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
     );
@@ -167,7 +167,7 @@ void IE::Graphics::Image::setData(const IE::Core::MultiDimensionalVector<unsigne
     std::unique_lock<std::mutex> lock(*m_mutex);
     if (m_location & IE_IMAGE_LOCATION_NONE) {  // Nowhere for image data to go.
         // warn and return
-        m_linkedRenderEngine.lock()->getCore()->logger.log(
+        IE::Core::Core::getInst().logger.log(
           "Attempted to set data to an image stored in IE_IMAGE_LOCATION_NONE!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );

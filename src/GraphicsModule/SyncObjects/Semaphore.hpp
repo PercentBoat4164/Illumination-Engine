@@ -1,9 +1,9 @@
 #pragma once
 
 #include <future>
+#include <memory>
 #include <mutex>
 #include <utility>
-#include <memory>
 #include <vulkan/vulkan_core.h>
 
 namespace IE::Graphics {

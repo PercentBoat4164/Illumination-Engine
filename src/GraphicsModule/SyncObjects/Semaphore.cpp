@@ -17,7 +17,7 @@ std::future<void> IE::Graphics::Semaphore::wait() {
     std::packaged_task<void()> wait{[&] {
         blocking_wait();
     }};
-    linkedRenderEngine.lock()->getCore()->threadPool.submit([&] { wait(); });
+    IE::Core::Core::getInst().threadPool.submit([&] { wait(); });
     return wait.get_future();
 }
 

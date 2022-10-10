@@ -55,7 +55,6 @@ void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInf
     };
     if (vkCreatePipelineLayout(linkedRenderEngine->device.device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(
-
           "Failed to create pipeline layout!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -64,11 +63,11 @@ void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInf
     created.pipelineLayout = true;
 #endif
     deletionQueue.emplace_back([&] {
-#ifndef NDEBUG
+        #ifndef NDEBUG
         if (created.pipelineLayout) {
 #endif
             vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr);
-#ifndef NDEBUG
+    #ifndef NDEBUG
             created.pipelineLayout = false;
         }
 #endif
@@ -191,7 +190,6 @@ void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInf
       .basePipelineHandle  = VK_NULL_HANDLE};
     if (vkCreateGraphicsPipelines(linkedRenderEngine->device.device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(
-
           "Failed to create pipeline!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );

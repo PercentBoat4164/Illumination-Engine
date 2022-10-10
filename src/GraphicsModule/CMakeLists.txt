@@ -10,7 +10,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         #        CommandBuffer/DependencyStructs/IEImageMemoryBarrier.cpp
         #        CommandBuffer/DependencyStructs/IERenderPassBeginInfo.cpp
         #        CommandBuffer/IECommandPool.cpp
-#        Camera/IECamera.cpp
+        #        Camera/IECamera.cpp
         #        Renderable/IEMaterial.cpp
         #        Renderable/IEMesh.cpp
         #        Renderable/IERenderable.cpp
@@ -46,7 +46,7 @@ target_link_libraries(IEGraphicsModule PUBLIC IECore)
 # Add external dependency libraries and include directories to the target
 target_link_libraries(IEGraphicsModule PUBLIC EXT_AssImp EXT_GLM EXT_GLFW EXT_OpenGL EXT_Vulkan)
 
-add_dependencies(IEGraphicsModule IEGMShaders)  # Add shader pre-compilation as a dependency
+add_dependencies(IEGraphicsModule IEGMShaders CopyResources)  # Add shader pre-compilation as a dependency
 
 add_executable(IEGMmain main.cpp)
 target_link_libraries(IEGMmain PUBLIC IEGraphicsModule)

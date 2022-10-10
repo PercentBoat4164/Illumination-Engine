@@ -1,7 +1,7 @@
 #include "RenderPass.hpp"
 
-#include "RenderEngine.hpp"
 #include "Image/AttachmentVulkan.hpp"
+#include "RenderEngine.hpp"
 
 #include <iostream>
 #include <memory>
@@ -167,12 +167,7 @@ std::vector<std::weak_ptr<IE::Graphics::Attachment>> IE::Graphics::RenderPass::b
       .dependencyCount = static_cast<uint32_t>(allDependencies.size()),
       .pDependencies   = allDependencies.data()};
 
-    vkCreateRenderPass(
-      m_linkedRenderEngine.lock()->getDevice(),
-      &renderPassCreateInfo,
-      nullptr,
-      &m_renderPass
-    );
+    vkCreateRenderPass(m_linkedRenderEngine.lock()->getDevice(), &renderPassCreateInfo, nullptr, &m_renderPass);
 
     return attachments;
 }
@@ -350,5 +345,6 @@ IE::Graphics::RenderPass::buildAttachmentDescriptionForSubpass(size_t i, const s
     return description;
 }
 
-IE::Graphics::RenderPass::RenderPass(std::weak_ptr<IE::Graphics::RenderEngine>  t_engineLink) : m_linkedRenderEngine(std::move(t_engineLink)) {
+IE::Graphics::RenderPass::RenderPass(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLink) :
+        m_linkedRenderEngine(std::move(t_engineLink)) {
 }

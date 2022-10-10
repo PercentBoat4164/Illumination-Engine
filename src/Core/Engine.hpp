@@ -1,14 +1,19 @@
 #pragma once
 
+#include "InheritableSharedFromThis.hpp"
+
 #include <memory>
 
-namespace IE::Core { class Core; }
+namespace IE::Core {
+class Core;
+}  // namespace IE::Core
 
 namespace IE::Core {
-class Engine : private std::enable_shared_from_this<Engine> {
+class Engine : public IE::Core::InheritableSharedFromThis<Engine> {
 public:
-    virtual auto weak_from_this() -> std::weak_ptr<std::remove_pointer<decltype(this)>::type>;
+    uint64_t                        m_id;    // The ID of this Engine.
 
-    std::shared_ptr<IE::Core::Core> m_core;
+private:
+    static uint64_t m_nextId;
 };
 }  // namespace IE::Core

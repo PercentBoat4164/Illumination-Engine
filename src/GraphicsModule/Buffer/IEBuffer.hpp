@@ -19,7 +19,7 @@ class IERenderEngine;
 #include <cstdint>
 #include <functional>
 #include <memory>
-
+#include <vector>
 
 class IEBuffer : public std::enable_shared_from_this<IEBuffer> {
 public:
@@ -155,8 +155,7 @@ public:
     void unloadFromVRAM();
 
 
-	void destroy();
-
+    void destroy();
 protected:
     IERenderEngine *linkedRenderEngine{};
     VmaAllocation   allocation{};

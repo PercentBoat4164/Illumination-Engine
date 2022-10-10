@@ -11,11 +11,18 @@
 namespace IE::Core {
 struct Core {
 public:
-    IE::Core::Logger    logger;
-    std::mutex          enginesMutex;
-    std::vector<Engine> engines;
-    ThreadPool          threadPool;
-    IEFileSystem        filesystem{"res"};
+    IE::Core::Logger                                  logger;
+    std::mutex                                        enginesMutex;
+    std::unordered_map<std::string, IE::Core::Engine> engines;
+    ThreadPool                                        threadPool;
+    IEFileSystem                                      filesystem{"res"};
+
+    static IE::Core::Core &getInst() {
+        static IE::Core::Core inst{};
+        return inst;
+    }
+
+private:
     Core();
 };
 }  // namespace IE::Core

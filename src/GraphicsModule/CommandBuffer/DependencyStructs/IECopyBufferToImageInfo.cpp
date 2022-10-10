@@ -1,5 +1,7 @@
 #include "IECopyBufferToImageInfo.hpp"
+
 #include "Image/ImageVulkan.hpp"
+
 #include <vector>
 
 std::vector<std::shared_ptr<IEBuffer>> IECopyBufferToImageInfo::getBuffers() const {

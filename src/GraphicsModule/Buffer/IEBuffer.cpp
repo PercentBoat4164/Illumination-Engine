@@ -57,7 +57,10 @@ void IEBuffer::toImage(const std::shared_ptr<IE::Graphics::detail::ImageVulkan> 
     VkBufferImageCopy region{};
     region.imageSubresource.aspectMask = image->m_aspect & (VK_IMAGE_ASPECT_COLOR_BIT | VK_IMAGE_ASPECT_DEPTH_BIT);
     region.imageSubresource.layerCount = 1;
-    region.imageExtent                 = {static_cast<uint32_t>(image->m_dimensions[0]), static_cast<uint32_t>(image->m_dimensions[0]), 1};
+    region.imageExtent                 = {
+      static_cast<uint32_t>(image->m_dimensions[0]),
+      static_cast<uint32_t>(image->m_dimensions[0]),
+      1};
     if (image->m_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         VkImageLayout oldLayout = image->m_layout;
         image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -125,7 +128,6 @@ void IEBuffer::uploadToVRAM() {
 void IEBuffer::_openglUploadToVRAM() {
     if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
         linkedRenderEngine->settings->logger.log(
-
           "Attempt to load buffer with no contents in RAM to VRAM.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -142,7 +144,6 @@ void IEBuffer::_openglUploadToVRAM() {
 void IEBuffer::_vulkanUploadToVRAM() {
     if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
         linkedRenderEngine->settings->logger.log(
-
           "Attempt to load buffer with no contents in RAM to VRAM.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );

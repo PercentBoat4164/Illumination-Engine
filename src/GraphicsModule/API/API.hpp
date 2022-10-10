@@ -5,7 +5,9 @@
 #define IE_RENDER_ENGINE_API_NAME_OPENGL "OpenGL"
 
 /* Predefine classes used with pointers or as return values for functions. */
-namespace IE::Graphics { class RenderEngine; }
+namespace IE::Graphics {
+class RenderEngine;
+}  // namespace IE::Graphics
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
@@ -25,9 +27,9 @@ public:
     Version     version{};  // The version of the API to use
 
     /**
-	 * @brief Finds the highest supported API version.
-	 * @return An Version populated with all the data about the highest supported API version
+     * @brief Finds the highest supported API version.
+     * @return An Version populated with all the data about the highest supported API version
      */
     Version getHighestSupportedVersion(IE::Graphics::RenderEngine *linkedRenderEngine) const;
 };
-}
+}  // namespace IE::Graphics

@@ -4,7 +4,6 @@
 /* Include dependencies within this module. */
 #include "Buffer/IEBuffer.hpp"
 #include "IERenderEngine.hpp"
-
 #include "Image/Image.hpp"
 #include "Image/TextureVulkan.hpp"
 
@@ -98,7 +97,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 
 void IEDescriptorSet::update(
   std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> newData,
-  std::vector<int>                                                bindings
+  std::vector<int>                                                            bindings
 ) {
     std::vector<VkDescriptorImageInfo> imageDescriptorInfos{};
     imageDescriptorInfos.reserve(createdWith.poolSizes.size());
@@ -117,18 +116,38 @@ void IEDescriptorSet::update(
               writeDescriptorSet.dstBinding == createdWith.data.size() ? createdWith.maxIndex : 1;
             if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
                 VkDescriptorImageInfo storageImageDescriptorInfo{};
-                storageImageDescriptorInfo.imageView   = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_view;
-                storageImageDescriptorInfo.sampler     = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_sampler;
-                storageImageDescriptorInfo.imageLayout = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_layout;
+                storageImageDescriptorInfo.imageView = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(
+                                                         std::get<IE::Graphics::Image *>(newData[i].value())
+                )
+                                                         ->m_view;
+                storageImageDescriptorInfo.sampler = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(
+                                                       std::get<IE::Graphics::Image *>(newData[i].value())
+                )
+                                                       ->m_sampler;
+                storageImageDescriptorInfo.imageLayout = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(
+                                                           std::get<IE::Graphics::Image *>(newData[i].value())
+                )
+                                                           ->m_layout;
                 if (storageImageDescriptorInfo.imageView == VK_NULL_HANDLE)
                     throw std::runtime_error("no image given or given image does not have an associated view!");
                 imageDescriptorInfos.push_back(storageImageDescriptorInfo);
                 writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
                 VkDescriptorImageInfo combinedImageSamplerDescriptorInfo{};
-                combinedImageSamplerDescriptorInfo.imageView   = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_view;
-                combinedImageSamplerDescriptorInfo.sampler     = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_sampler;
-                combinedImageSamplerDescriptorInfo.imageLayout = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(std::get<IE::Graphics::Image *>(newData[i].value()))->m_layout;
+                combinedImageSamplerDescriptorInfo.imageView =
+                  dynamic_cast<IE::Graphics::detail::TextureVulkan *>(
+                    std::get<IE::Graphics::Image *>(newData[i].value())
+                  )
+                    ->m_view;
+                combinedImageSamplerDescriptorInfo.sampler = dynamic_cast<IE::Graphics::detail::TextureVulkan *>(
+                                                               std::get<IE::Graphics::Image *>(newData[i].value())
+                )
+                                                               ->m_sampler;
+                combinedImageSamplerDescriptorInfo.imageLayout =
+                  dynamic_cast<IE::Graphics::detail::TextureVulkan *>(
+                    std::get<IE::Graphics::Image *>(newData[i].value())
+                  )
+                    ->m_layout;
                 if (combinedImageSamplerDescriptorInfo.sampler == VK_NULL_HANDLE)
                     throw std::runtime_error("no image given or given image does not have an associated sampler!");
                 imageDescriptorInfos.push_back(combinedImageSamplerDescriptorInfo);
