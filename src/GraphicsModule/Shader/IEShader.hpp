@@ -24,8 +24,8 @@ class IERenderEngine;
 #include <vector>
 
 #define GLEW_IMPLEMENTATION
-#include <GL/glew.h>
 
+#include <GL/glew.h>
 class IEShader {
 public:
     std::vector<char>                  data;

@@ -11,6 +11,7 @@ class IEBuffer;
 #include "IEAPI.hpp"
 
 #define GLEW_IMPLEMENTATION
+
 #include <GL/glew.h>
 
 // External dependencies

@@ -3,6 +3,7 @@
 /* Include classes used as attributes or function arguments. */
 // External dependencies
 #define GLM_FORCE_RADIANS
+
 #include "glm/glm.hpp"
 
 #include <string>
