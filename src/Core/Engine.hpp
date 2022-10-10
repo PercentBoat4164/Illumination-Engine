@@ -9,9 +9,9 @@ class Core;
 }  // namespace IE::Core
 
 namespace IE::Core {
-class Engine : public IE::Core::InheritableSharedFromThis<Engine> {
+class Engine : public inheritable_enable_shared_from_this<Engine> {
 public:
-    uint64_t                        m_id;    // The ID of this Engine.
+    uint64_t m_id;  // The ID of this Engine.
 
 private:
     static uint64_t m_nextId;

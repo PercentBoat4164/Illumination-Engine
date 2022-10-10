@@ -11,7 +11,6 @@ IE::Graphics::Fence::Fence(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLin
       .pNext = nullptr,
       .flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0u,
     };
-    std::unique_lock<std::mutex> lock(*fenceMutex);
     vkCreateFence(linkedRenderEngine.lock()->getDevice(), &createInfo, nullptr, &fence);
     linkedRenderEngine.lock()->getLogger().log("Created Fence");
 }

@@ -244,19 +244,19 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
         // Ensure that the vectors have the correct size
         m_imageAvailableSemaphores.resize(
           m_swapchain.image_count,
-          IE::Graphics::Semaphore(weak_from_this<IE::Graphics::RenderEngine>())
+          IE::Graphics::Semaphore(downcasted_shared_from_this<IE::Graphics::RenderEngine>())
         );
         m_renderFinishedSemaphores.resize(
           m_swapchain.image_count,
-          IE::Graphics::Semaphore(weak_from_this<IE::Graphics::RenderEngine>())
+          IE::Graphics::Semaphore(downcasted_shared_from_this<IE::Graphics::RenderEngine>())
         );
         m_inFlightFences.resize(
           m_swapchain.image_count,
-          IE::Graphics::Fence(weak_from_this<IE::Graphics::RenderEngine>(), false)
+          IE::Graphics::Fence(downcasted_shared_from_this<IE::Graphics::RenderEngine>(), false)
         );
         m_imagesInFlight.resize(
           m_swapchain.image_count,
-          IE::Graphics::Fence(weak_from_this<IE::Graphics::RenderEngine>(), false)
+          IE::Graphics::Fence(downcasted_shared_from_this<IE::Graphics::RenderEngine>(), false)
         );
 
         return m_swapchain;
@@ -265,16 +265,17 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
 }
 
 std::shared_ptr<IE::Graphics::RenderEngine> IE::Graphics::RenderEngine::create() {
-    return std::make_shared<IE::Graphics::RenderEngine>();
+    auto engine{std::make_shared<IE::Graphics::RenderEngine>()};
+    engine->createWindow();
+    engine->createInstance();
+    engine->createSurface();
+    engine->createDevice();
+    engine->createAllocator();
+    engine->createSwapchain();
+    return engine;
 }
 
 IE::Graphics::RenderEngine::RenderEngine() {
-    createWindow();
-    createInstance();
-    createSurface();
-    createDevice();
-    createAllocator();
-    createSwapchain();
 }
 
 GLFWwindow *IE::Graphics::RenderEngine::getWindow() {

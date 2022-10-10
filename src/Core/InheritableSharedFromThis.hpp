@@ -2,41 +2,21 @@
 
 #include <memory>
 
-namespace IE::Core {
-namespace detail {
-struct MultipleInheritableEnableSharedFromThis :
+class MultipleInheritableEnableSharedFromThis :
         public std::enable_shared_from_this<MultipleInheritableEnableSharedFromThis> {
-    virtual ~MultipleInheritableEnableSharedFromThis(){};
+    virtual void MAKE_POLYMORPHIC() {
+    }
 };
-}  // namespace detail
 
 template<class T>
-class InheritableSharedFromThis : virtual public IE::Core::detail::MultipleInheritableEnableSharedFromThis {
+class inheritable_enable_shared_from_this : virtual public MultipleInheritableEnableSharedFromThis {
 public:
     std::shared_ptr<T> shared_from_this() {
-        return std::dynamic_pointer_cast<T>(
-          IE::Core::detail::MultipleInheritableEnableSharedFromThis::shared_from_this()
-        );
+        return std::dynamic_pointer_cast<T>(MultipleInheritableEnableSharedFromThis::shared_from_this());
     }
 
-    template<class DowncastType>
-    std::shared_ptr<DowncastType> shared_from_this() {
-        return std::dynamic_pointer_cast<DowncastType>(
-          IE::Core::detail::MultipleInheritableEnableSharedFromThis::shared_from_this()
-        );
-    }
-
-    std::weak_ptr<T> weak_from_this() {
-        return std::dynamic_pointer_cast<T>(
-          IE::Core::detail::MultipleInheritableEnableSharedFromThis::shared_from_this()
-        );
-    }
-
-    template<class DowncastType>
-    std::weak_ptr<DowncastType> weak_from_this() {
-        return std::dynamic_pointer_cast<DowncastType>(
-          IE::Core::detail::MultipleInheritableEnableSharedFromThis::shared_from_this()
-        );
+    template<class Down>
+    std::shared_ptr<Down> downcasted_shared_from_this() {
+        return std::dynamic_pointer_cast<Down>(MultipleInheritableEnableSharedFromThis::shared_from_this());
     }
 };
-}  // namespace IE::Core

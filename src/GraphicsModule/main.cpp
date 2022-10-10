@@ -2,6 +2,6 @@
 #include "RenderEngine.hpp"
 
 int main() {
-    IE::Graphics::RenderEngine renderEngine{};
-    while (!glfwWindowShouldClose(renderEngine.getWindow())) glfwPollEvents();
+    auto renderEngine{IE::Graphics::RenderEngine::create()};
+    while (!glfwWindowShouldClose(renderEngine->getWindow())) glfwPollEvents();
 }
