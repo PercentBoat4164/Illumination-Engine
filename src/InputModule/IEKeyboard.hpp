@@ -4,7 +4,7 @@
 
 #ifndef GLEW_IMPLEMENTATION
 #    define GLEW_IMPLEMENTATION
-#    include <include/GL/glew.h>
+#    include <GL/glew.h>
 #endif
 
 #include <any>

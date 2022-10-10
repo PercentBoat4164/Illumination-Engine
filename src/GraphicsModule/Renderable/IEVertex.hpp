@@ -13,8 +13,7 @@ struct VkVertexInputAttributeDescription;
 #include <glm/glm.hpp>
 
 #define GLEW_IMPLEMENTATION
-
-#include <include/GL/glew.h>
+#include <GL/glew.h>
 
 // System dependencies
 #include <array>

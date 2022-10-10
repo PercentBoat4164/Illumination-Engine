@@ -128,6 +128,7 @@ void IETexture::_openglUpdate_aiTexture(aiTexture *texture) {
       std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
     if (data.empty()) {
         linkedRenderEngine->settings->logger.log(
+
           std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
             stbi_failure_reason(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
@@ -161,6 +162,7 @@ void IETexture::_vulkanUpdate_aiTexture(aiTexture *texture) {
       std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
     if (data.empty()) {
         linkedRenderEngine->settings->logger.log(
+
           std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
             stbi_failure_reason(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
@@ -255,6 +257,7 @@ void IETexture::_vulkanUploadToVRAM_texture(aiTexture *texture) {
       std::vector<char>{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
     if (data.empty()) {
         linkedRenderEngine->settings->logger.log(
+
           std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
             stbi_failure_reason(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN

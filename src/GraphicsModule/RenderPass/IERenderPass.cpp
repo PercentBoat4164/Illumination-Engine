@@ -90,6 +90,7 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
       .pDependencies   = &subpassDependency};
     if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(
+
           "Failed to create render pass!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );

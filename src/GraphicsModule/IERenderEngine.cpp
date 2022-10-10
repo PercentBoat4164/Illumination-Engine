@@ -11,16 +11,16 @@
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <include/GL/glew.h>
 
 #define VMA_IMPLEMENTATION
 
-#include <include/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 
-#include <stb_image.h>
+#include <../contrib/stb/stb_image.h>
 
 /* Include system dependencies. */
 #include <filesystem>
@@ -48,9 +48,10 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
 #endif
 
     // Build the instance and check for errors.
-    vkb::Result<vkb::Instance> instanceBuilder = builder.build();
+    vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
     if (!instanceBuilder) {
         settings->logger.log(
+
           "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -72,6 +73,7 @@ GLFWwindow *IERenderEngine::createWindow() const {
         const char *description;
         int         code = glfwGetError(&description);
         settings->logger.log(
+
           "Failed to create window! Error: " + std::to_string(code) + " " + description,
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -96,6 +98,7 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
         );  // Load image from disk
         if (pixels == nullptr) {
             settings->logger.log(
+
               "Failed to load icon " + file.path().generic_string() + ". Is this file an image?",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
@@ -107,12 +110,11 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
-    if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS)
         settings->logger.log(
           "Failed to create window surface!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-    }
     deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_surface(instance.instance, surface); });
     return surface;
 }
@@ -132,7 +134,7 @@ vkb::Device IERenderEngine::setUpDevice(
     selector.prefer_gpu_device_type(vkb::PreferredDeviceType::discrete);
 
     // Set surface for physical device.
-    vkb::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(surface).select();
+    vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(surface).select();
 
     // Prepare to build logical device
     vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
@@ -141,7 +143,7 @@ vkb::Device IERenderEngine::setUpDevice(
     if (desiredExtensionFeatures != nullptr) logicalDeviceBuilder.add_pNext(desiredExtensionFeatures);
 
     // Build logical device.
-    vkb::Result<vkb::Device> logicalDevice = logicalDeviceBuilder.build();
+    vkb::detail::Result<vkb::Device> logicalDevice = logicalDeviceBuilder.build();
     if (!logicalDevice) {
         // Failed? Report the error.
         settings->logger.log(
@@ -180,10 +182,11 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
       .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     if (useOldSwapchain)  // Use the old swapchain if it exists and its usage was requested.
         swapchainBuilder.set_old_swapchain(swapchain);
-    vkb::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
+    vkb::detail::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
     if (!thisSwapchain) {
         // Failure! Log it then continue without deleting the old swapchain.
         settings->logger.log(
+
           "Failed to create swapchain! Error: " + thisSwapchain.error().message(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -219,29 +222,29 @@ void IERenderEngine::createSyncObjects() {
 }
 
 void IERenderEngine::createCommandPools() {
-    IECommandPool::CreateInfo commandPoolCreateInfo{};
-    vkb::Result<VkQueue>      graphicsQueueDetails = device.get_queue(vkb::QueueType::graphics);
+    IECommandPool::CreateInfo    commandPoolCreateInfo{};
+    vkb::detail::Result<VkQueue> graphicsQueueDetails = device.get_queue(vkb::QueueType::graphics);
     if (graphicsQueueDetails.has_value()) graphicsQueue = graphicsQueueDetails.value();
     if (graphicsQueue != nullptr) {
         graphicsCommandPool                = std::make_shared<IECommandPool>();
         commandPoolCreateInfo.commandQueue = vkb::QueueType::graphics;
         graphicsCommandPool->create(this, &commandPoolCreateInfo);
     }
-    vkb::Result<VkQueue> presentQueueDetails = device.get_queue(vkb::QueueType::present);
+    vkb::detail::Result<VkQueue> presentQueueDetails = device.get_queue(vkb::QueueType::present);
     if (presentQueueDetails.has_value()) presentQueue = presentQueueDetails.value();
     if (presentQueue != nullptr) {
         presentCommandPool                 = std::make_shared<IECommandPool>();
         commandPoolCreateInfo.commandQueue = vkb::QueueType::present;
         presentCommandPool->create(this, &commandPoolCreateInfo);
     }
-    vkb::Result<VkQueue> transferQueueDetails = device.get_queue(vkb::QueueType::transfer);
+    vkb::detail::Result<VkQueue> transferQueueDetails = device.get_queue(vkb::QueueType::transfer);
     if (transferQueueDetails.has_value()) transferQueue = transferQueueDetails.value();
     if (transferQueue != nullptr) {
         transferCommandPool                = std::make_shared<IECommandPool>();
         commandPoolCreateInfo.commandQueue = vkb::QueueType::transfer;
         transferCommandPool->create(this, &commandPoolCreateInfo);
     }
-    vkb::Result<VkQueue> computeQueueDetails = device.get_queue(vkb::QueueType::compute);
+    vkb::detail::Result<VkQueue> computeQueueDetails = device.get_queue(vkb::QueueType::compute);
     if (computeQueueDetails.has_value()) computeQueue = computeQueueDetails.value();
     if (computeQueue != nullptr) {
         computeCommandPool                 = std::make_shared<IECommandPool>();
@@ -531,6 +534,7 @@ bool IERenderEngine::_vulkanUpdate() {
     currentFrame = (currentFrame + 1) % (int) swapchain.image_count;
     if (frameTime > 1.0 / 30.0) {
         settings->logger.log(
+
           "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime * 1000) + "ms to compute.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -766,6 +770,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
     camera.create(this);
     this->settings->logger.log(
+
       reinterpret_cast<const char *>(glGetString(GL_RENDERER)),
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );

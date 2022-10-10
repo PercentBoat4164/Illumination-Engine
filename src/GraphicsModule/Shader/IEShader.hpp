@@ -25,7 +25,7 @@ class IERenderEngine;
 
 #define GLEW_IMPLEMENTATION
 
-#include <include/GL/glew.h>
+#include <GL/glew.h>
 
 class IEShader {
 public:

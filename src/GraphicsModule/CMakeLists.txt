@@ -38,14 +38,13 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})
-target_include_directories(IEGraphicsModule PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(IEGraphicsModule PUBLIC ${IE_BASE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX)
 
 # Add internal dependency libraries to the target
 target_link_libraries(IEGraphicsModule PUBLIC IECore)
 
 # Add external dependency libraries and include directories to the target
-target_link_libraries(IEGraphicsModule PUBLIC glfw glew spdlog assimp glm vk-bootstrap ${Vulkan_LIBRARIES})
-target_include_directories(IEGraphicsModule PUBLIC ${glew_DIR} ${glfw_DIR} ${glm_DIR} ${stb_image_DIR} ${assimp_DIR} ${vk-bootstrap_DIR} ${vma_DIR} ${Vulkan_INCLUDE_DIR})
+target_link_libraries(IEGraphicsModule PUBLIC EXT_AssImp EXT_GLM EXT_GLFW EXT_OpenGL EXT_Vulkan)
 
 add_dependencies(IEGraphicsModule IEGMShaders)  # Add shader pre-compilation as a dependency

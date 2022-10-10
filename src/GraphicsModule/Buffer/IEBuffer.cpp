@@ -125,6 +125,7 @@ void IEBuffer::uploadToVRAM() {
 void IEBuffer::_openglUploadToVRAM() {
     if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
         linkedRenderEngine->settings->logger.log(
+
           "Attempt to load buffer with no contents in RAM to VRAM.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -141,6 +142,7 @@ void IEBuffer::_openglUploadToVRAM() {
 void IEBuffer::_vulkanUploadToVRAM() {
     if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
         linkedRenderEngine->settings->logger.log(
+
           "Attempt to load buffer with no contents in RAM to VRAM.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
