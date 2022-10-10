@@ -7,10 +7,10 @@
 #    include <GL/glew.h>
 #endif
 
-#include <GLFW/glfw3.h>
 #include <any>
 #include <cstdint>
 #include <functional>
+#include <GLFW/glfw3.h>
 #include <string>
 #include <vector>
 

@@ -59,6 +59,7 @@ void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
       vkCreateShaderModule(linkedRenderEngine->device.device, &shaderModuleCreateInfo, nullptr, &module);
     if (result != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(
+
           "Failed to create shader module! Error: " + IERenderEngine::translateVkResultCodes(result),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );

@@ -13,6 +13,7 @@
 #define GLEW_IMPLEMENTATION
 
 #include <GL/glew.h>
+
 IEAPI::IEAPI(const std::string &apiName) {
     name = apiName;
 }

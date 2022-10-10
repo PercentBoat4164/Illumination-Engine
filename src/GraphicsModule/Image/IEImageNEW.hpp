@@ -1,12 +1,10 @@
 #pragma once
 
-#include "stb_image.h"
-
+#include <../contrib/stb/stb_image.h>
 #include <cassert>
 #include <cstdint>
 #include <mutex>
 #include <vector>
-#include <../contrib/stb/stb_image.h>
 
 enum IEImageLocation {
     IE_IMAGE_LOCATION_NULL   = 0x0,

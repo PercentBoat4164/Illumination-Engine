@@ -13,7 +13,7 @@
 
 // External dependencies
 #define GLEW_IMPLEMENTATION
-#include <GL/glew.h>// GL/glew.h must be included before GLFW/glfw3.h
+#include <GL/glew.h>  // GL/glew.h must be included before GLFW/glfw3.h
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 
@@ -32,14 +32,14 @@ public:
         windowedResolution   = {defaultResolution};
         currentResolution    = fullscreen ? &fullscreenResolution : &windowedResolution;
         defaultPosition      = {
-               (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
-               (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
+          (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
+          (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
         fullscreenPosition = {0, 0};
         windowedPosition   = {defaultPosition};
         currentPosition    = fullscreen ? &fullscreenPosition : &windowedPosition;
     }
 
-    IE::Core::Logger            logger{"Graphics Logger"};
+    IE::Core::Logger    logger{"Graphics Logger"};
     bool                rayTracing{false};
     std::string         applicationName{"Illumination Engine"};
     IEVersion           applicationVersion{0, 0, 1};
