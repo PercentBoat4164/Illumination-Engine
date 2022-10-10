@@ -339,7 +339,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
      * abstraction.*/
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     window = createWindow();
-    setWindowIcons("res/icons");
+    setWindowIcons("res/logos");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
@@ -737,7 +737,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
     window = createWindow();
 
-    setWindowIcons("res/icons");
+    setWindowIcons("res/logos");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwGetWindowPos(window, &(*settings.currentPosition)[0], &(*settings.currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
