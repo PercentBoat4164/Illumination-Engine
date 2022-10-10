@@ -2,9 +2,9 @@
 
 /* Define macros used throughout the file. */
 #ifdef WIN32
-#define GLSLC "glslc.exe "
+#    define GLSLC "glslc.exe "
 #else
-#define GLSLC "glslc "
+#    define GLSLC "glslc "
 #endif
 
 /* Predefine classes used with pointers or as return values for functions. */
@@ -17,46 +17,47 @@ class IERenderEngine;
 #include <vulkan/vulkan.h>
 
 // System dependencies
-#include <string>
-#include <vector>
-#include <functional>
 #include "Core/FileSystemModule/IEFile.hpp"
 
-#define GLEW_IMPLEMENTATION
-#include <include/GL/glew.h>
+#include <functional>
+#include <string>
+#include <vector>
 
+#define GLEW_IMPLEMENTATION
+
+#include <GL/glew.h>
 
 class IEShader {
 public:
-	std::vector<char> data;
-	std::vector<std::function<void()>> deletionQueue;
-	VkShaderModule module;
-	IERenderEngine *linkedRenderEngine;
-	IEFile *file;
-	GLuint shaderID;
+    std::vector<char>                  data;
+    std::vector<std::function<void()>> deletionQueue;
+    VkShaderModule                     module;
+    IERenderEngine                    *linkedRenderEngine;
+    IEFile                            *file;
+    GLuint                             shaderID;
 
 private:
-	static std::function<void(IEShader &, IERenderEngine *, IEFile *)> _create;
-	static std::function<void(IEShader &, const std::string &, std::string)> _compile;
+    static std::function<void(IEShader &, IERenderEngine *, IEFile *)>       _create;
+    static std::function<void(IEShader &, const std::string &, std::string)> _compile;
 
 protected:
-	void _openglCompile(const std::string &, std::string);
+    void _openglCompile(const std::string &, std::string);
 
-	void _vulkanCompile(const std::string &, std::string);
+    void _vulkanCompile(const std::string &, std::string);
 
 
-	void _openglCreate(IERenderEngine *, IEFile *);
+    void _openglCreate(IERenderEngine *, IEFile *);
 
-	void _vulkanCreate(IERenderEngine *, IEFile *);
+    void _vulkanCreate(IERenderEngine *, IEFile *);
 
 public:
-	void destroy();
+    void destroy();
 
-	~IEShader();
+    ~IEShader();
 
-	void compile(const std::string &, const std::string &);
+    void compile(const std::string &, const std::string &);
 
-	void create(IERenderEngine *, IEFile *);
+    void create(IERenderEngine *, IEFile *);
 
-	static void setAPI(const API &);
+    static void setAPI(const API &);
 };

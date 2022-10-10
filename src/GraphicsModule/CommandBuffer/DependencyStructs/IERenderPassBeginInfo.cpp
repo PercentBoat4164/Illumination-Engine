@@ -3,21 +3,20 @@
 #include "GraphicsModule/RenderPass/IERenderPass.hpp"
 
 std::vector<std::shared_ptr<IEFramebuffer>> IERenderPassBeginInfo::getFramebuffers() const {
-	return {framebuffer};
+    return {framebuffer};
 }
 
 std::vector<std::shared_ptr<IERenderPass>> IERenderPassBeginInfo::getRenderPasses() const {
-	return {renderPass};
+    return {renderPass};
 }
 
 IERenderPassBeginInfo::operator VkRenderPassBeginInfo() const {
-	return {
-			.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-			.pNext=pNext,
-			.renderPass=renderPass->renderPass,
-			.framebuffer=framebuffer->getFramebuffer(framebufferIndex),
-			.renderArea=renderArea,
-			.clearValueCount=clearValueCount,
-			.pClearValues=pClearValues
-	};
+    return {
+      .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      .pNext           = pNext,
+      .renderPass      = renderPass->renderPass,
+      .framebuffer     = framebuffer->getFramebuffer(framebufferIndex),
+      .renderArea      = renderArea,
+      .clearValueCount = clearValueCount,
+      .pClearValues    = pClearValues};
 }

@@ -53,11 +53,11 @@ int main() {
     );
     keyboard.editActions(
       {GLFW_KEY_LEFT_CONTROL, GLFW_PRESS},
-      [&](GLFWwindow *) { renderEngine->camera.speed *= 6.0; }
+      [&](GLFWwindow *) { renderEngine->camera.speed *= 6; }
     );
     keyboard.editActions(
       {GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE},
-      [&](GLFWwindow *) { renderEngine->camera.speed /= 6.0; }
+      [&](GLFWwindow *) { renderEngine->camera.speed /= 6; }
     );
     keyboard.editActions(
       {GLFW_KEY_F11, GLFW_PRESS},
@@ -108,7 +108,10 @@ int main() {
     glbFuture.wait();
     floorFuture.wait();
 
-    //    threadPool.shutdown();
+    renderEngine->settings->logger.log(
+      "Beginning main loop.",
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
+    );
 
     renderEngine->settings->m_logger.log("Beginning main loop.", ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 

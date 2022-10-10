@@ -59,6 +59,7 @@ public:
 
     static void init();
 };
+
 /**
  * @brief Basic private 'constructor' for the Flags enum.
  * @details This is used to create IE::Graphics::Image::Locations from the uint8_ts that are used to perform the

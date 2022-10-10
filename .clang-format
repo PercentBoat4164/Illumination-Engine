@@ -1,27 +1,26 @@
 ---
-Language: Cpp
-BasedOnStyle: 'LLVM'
+Language:        Cpp
+BasedOnStyle:    'LLVM'
 AccessModifierOffset: -4
 AlignAfterOpenBracket: BlockIndent
-# AlignAfterOpenBracket: Align
+# AlignAfterOpenBracket: Align  # This is an alternate option.
 AlignArrayOfStructures: Left
 AlignConsecutiveMacros: AcrossComments
 AlignConsecutiveAssignments: AcrossComments
 AlignConsecutiveBitFields: AcrossComments
 AlignConsecutiveDeclarations: AcrossComments
 AlignEscapedNewlines: Left
-AlignOperands: DontAlign
+AlignOperands:   DontAlign
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
-AllowShortEnumsOnASingleLine: false # This is different on purpose.
+AllowShortEnumsOnASingleLine: false  # This is different on purpose.
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: None # This is also different on purpose.
+AllowShortFunctionsOnASingleLine: None  # This is also different on purpose.
 AllowShortLambdasOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLoopsOnASingleLine: true
-# AlwaysBreakAfterDefinitionReturnType: None  # This option is deprecated.
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: Yes
@@ -58,8 +57,8 @@ BreakBeforeTernaryOperators: false
 BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: AfterColon
 BreakStringLiterals: true
-ColumnLimit: 115  # Previously 80
-#CommentPragmas:  ''
+ColumnLimit:     115  # Previously 80
+CommentPragmas:  '^ IWYU pragma:'
 QualifierAlignment: Custom
 QualifierOrder:
   - restrict
@@ -88,20 +87,20 @@ ForEachMacros:
   - FOREACH
 IfMacros:
   - IF
-IncludeBlocks: Regroup
+IncludeBlocks:   Regroup
 IncludeCategories:
-  - Regex: '^"(llvm|llvm-c|clang|clang-c)/'
-    Priority: 2
-    SortPriority: 0
-    CaseSensitive: false
-  - Regex: '^(<|"(gtest|gmock|isl|json)/)'
-    Priority: 3
-    SortPriority: 0
-    CaseSensitive: false
-  - Regex: '.*'
-    Priority: 1
-    SortPriority: 0
-    CaseSensitive: false
+  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
+    Priority:        2
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
+    Priority:        3
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '.*'
+    Priority:        1
+    SortPriority:    0
+    CaseSensitive:   false
     # We want the directly related files on top. (First priority)
     # Next is internal deps
     # Next is external deps
@@ -135,13 +134,13 @@ PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
 PenaltyIndentedWhitespace: 0
 PointerAlignment: Right
-PPIndentWidth: -1
+PPIndentWidth:   -1
 ReferenceAlignment: Pointer
-ReflowComments: true
+ReflowComments:  true
 RemoveBracesLLVM: true  # This could be a problem later.
 SeparateDefinitionBlocks: Always
 ShortNamespaceLines: 0
-SortIncludes: CaseInsensitive
+SortIncludes:    CaseInsensitive
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: true
 SpaceAfterLogicalNot: false
@@ -152,7 +151,7 @@ SpaceBeforeCpp11BracedList: false
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatementsExceptControlMacros
-SpaceBeforeParensOptions: # This is ignored because SpaceBeforeParens is not custom.
+SpaceBeforeParensOptions:  # This is ignored because SpaceBeforeParens is not custom.
   AfterControlStatements: true
   AfterForeachMacros: true
   AfterFunctionDefinitionName: false
@@ -170,18 +169,18 @@ SpacesInConditionalStatement: false
 SpacesInContainerLiterals: false
 SpacesInCStyleCastParentheses: false
 SpacesInLineCommentPrefix:
-  Minimum: 1
-  Maximum: -1
+  Minimum:         1
+  Maximum:         -1
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 SpaceBeforeSquareBrackets: false
 BitFieldColonSpacing: Both
-Standard: Latest
-StatementAttributeLikeMacros: [ ]  # Add to array for attribute macros not parsed as identifiers.
-StatementMacros: [ ]
-TabWidth: 4
-UseCRLF: false
-UseTab: Never
-WhitespaceSensitiveMacros: [ ]
+Standard:        Latest
+StatementAttributeLikeMacros: []  # Add to array for attribute macros not parsed as identifiers.
+StatementMacros: []
+TabWidth:        4
+UseCRLF:         false
+UseTab:          Never
+WhitespaceSensitiveMacros: []
 ...
 

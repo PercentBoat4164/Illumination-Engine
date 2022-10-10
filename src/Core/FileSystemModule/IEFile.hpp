@@ -1,41 +1,41 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include <filesystem>
 #include <fstream>
-#include <regex>
 #include <iostream>
+#include <regex>
+#include <string>
+#include <vector>
 
 class IEFile {
 public:
-	IEFile() = default;
+    IEFile() = default;
 
-	explicit IEFile(const std::string &initialPath);
+    explicit IEFile(const std::string &initialPath);
 
-	std::streamsize length{};
-	std::string path{};
-	std::fstream file{};
+    std::streamsize length{};
+    std::string     path{};
+    std::fstream    file{};
 
-	std::string getDirectory() const;
+    std::string getDirectory() const;
 
-	void createDirectory() const;
+    void createDirectory() const;
 
-	bool open();
+    bool open();
 
-	void close();
+    void close();
 
-	virtual std::string read(size_t numBytes, std::streamsize startPosition = -1);
+    virtual std::string read(size_t numBytes, std::streamsize startPosition = -1);
 
-	void insert(const std::string &data, std::streamsize startPosition = -1);
+    void insert(const std::string &data, std::streamsize startPosition = -1);
 
-	void overwrite(const std::string &data, std::streamsize startPosition = -1);
+    void overwrite(const std::string &data, std::streamsize startPosition = -1);
 
-	void erase(std::streamsize numBytes, std::streamsize startPosition = -1);
+    void erase(std::streamsize numBytes, std::streamsize startPosition = -1);
 
-	std::vector<std::string> extensions() const;
+    std::vector<std::string> extensions() const;
 
-	~IEFile();
+    ~IEFile();
 
-	IEFile &operator=(const IEFile &other);
+    IEFile &operator=(const IEFile &other);
 };
