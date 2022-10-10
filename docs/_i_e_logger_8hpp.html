@@ -31,7 +31,7 @@ DoxygenAwesomeFragmentCopyButton.init()
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr id="projectrow">
-  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo128.png"/></td>
+  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo.png"/></td>
   <td id="projectalign">
    <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.0</span>
    </div>
@@ -81,356 +81,60 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#define-members">Macros</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">IELogger.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;include/spdlog/logger.h&gt;</code><br />
-<code>#include &lt;string&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;vulkan/vulkan.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for IELogger.hpp:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="_i_e_logger_8hpp__incl.svg" width="470" height="179"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="_i_e_logger_8hpp__incl.svg" width="660" height="179"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="_i_e_logger_8hpp__dep__incl.svg" width="4779" height="491"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="_i_e_logger_8hpp__dep__incl.svg" width="4779" height="491"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
+</div>
 </div>
 </div>
 <p><a href="_i_e_logger_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_logger.html">IELogger</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A small logging tool that is a very thin wrapper for spdlog.  <a href="class_i_e_logger.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_e_1_1_core_1_1_logger.html">IE::Core::Logger</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a1123d0d0d1ef0db249f83a2ae77e596e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a1123d0d0d1ef0db249f83a2ae77e596e">ILLUMINATION_ENGINE_LOG_LEVEL_TRACE</a>&#160;&#160;&#160;spdlog::level::trace</td></tr>
-<tr class="separator:a1123d0d0d1ef0db249f83a2ae77e596e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acf2f155e41f139851f752d287de02309"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#acf2f155e41f139851f752d287de02309">ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG</a>&#160;&#160;&#160;spdlog::level::debug</td></tr>
-<tr class="separator:acf2f155e41f139851f752d287de02309"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a081e5be3e837e43006a9d20fb2de27a0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a081e5be3e837e43006a9d20fb2de27a0">ILLUMINATION_ENGINE_LOG_LEVEL_INFO</a>&#160;&#160;&#160;spdlog::level::info</td></tr>
-<tr class="separator:a081e5be3e837e43006a9d20fb2de27a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ce0a885436ee5af2d0e7c3f9de4024d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a0ce0a885436ee5af2d0e7c3f9de4024d">ILLUMINATION_ENGINE_LOG_LEVEL_WARN</a>&#160;&#160;&#160;spdlog::level::warn</td></tr>
-<tr class="separator:a0ce0a885436ee5af2d0e7c3f9de4024d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9ec32afeb954d88b9db09c4213addcee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a9ec32afeb954d88b9db09c4213addcee">ILLUMINATION_ENGINE_LOG_LEVEL_ERROR</a>&#160;&#160;&#160;spdlog::level::err</td></tr>
-<tr class="separator:a9ec32afeb954d88b9db09c4213addcee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abebd84362dd3549c79a1c6ea88e9c2c7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#abebd84362dd3549c79a1c6ea88e9c2c7">ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL</a>&#160;&#160;&#160;spdlog::level::critical</td></tr>
-<tr class="separator:abebd84362dd3549c79a1c6ea88e9c2c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2f2ae0b61f623dda9055c5b237791b73"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a2f2ae0b61f623dda9055c5b237791b73">ILLUMINATION_ENGINE_LOG_LEVEL_OFF</a>&#160;&#160;&#160;spdlog::level::off</td></tr>
-<tr class="separator:a2f2ae0b61f623dda9055c5b237791b73"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab53c7046baaa6ac7067b01689025a2ca"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#ab53c7046baaa6ac7067b01689025a2ca">ILLUMINATION_ENGINE_LOG_LEVEL_MAX</a>&#160;&#160;&#160;spdlog::level::n_levels</td></tr>
-<tr class="separator:ab53c7046baaa6ac7067b01689025a2ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5d31c1552d90ca7bf4986838aaeebf1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#ad5d31c1552d90ca7bf4986838aaeebf1">ILLUMINATION_ENGINE_LOG_LEVEL_0</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a1123d0d0d1ef0db249f83a2ae77e596e">ILLUMINATION_ENGINE_LOG_LEVEL_TRACE</a></td></tr>
-<tr class="separator:ad5d31c1552d90ca7bf4986838aaeebf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1c1ede1b707797be993f5f52fd7038aa"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a1c1ede1b707797be993f5f52fd7038aa">ILLUMINATION_ENGINE_LOG_LEVEL_1</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#acf2f155e41f139851f752d287de02309">ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG</a></td></tr>
-<tr class="separator:a1c1ede1b707797be993f5f52fd7038aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec9f56b3fbde93dac603b95c8adf69e3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#aec9f56b3fbde93dac603b95c8adf69e3">ILLUMINATION_ENGINE_LOG_LEVEL_2</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a081e5be3e837e43006a9d20fb2de27a0">ILLUMINATION_ENGINE_LOG_LEVEL_INFO</a></td></tr>
-<tr class="separator:aec9f56b3fbde93dac603b95c8adf69e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a219da1dbe37783748f81af7c1b24dd71"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a219da1dbe37783748f81af7c1b24dd71">ILLUMINATION_ENGINE_LOG_LEVEL_3</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a0ce0a885436ee5af2d0e7c3f9de4024d">ILLUMINATION_ENGINE_LOG_LEVEL_WARN</a></td></tr>
-<tr class="separator:a219da1dbe37783748f81af7c1b24dd71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06feefa96e509c5be62d284bca88bd99"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a06feefa96e509c5be62d284bca88bd99">ILLUMINATION_ENGINE_LOG_LEVEL_4</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a9ec32afeb954d88b9db09c4213addcee">ILLUMINATION_ENGINE_LOG_LEVEL_ERROR</a></td></tr>
-<tr class="separator:a06feefa96e509c5be62d284bca88bd99"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aafa8f3a3848e490bd2b11d0905741e01"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#aafa8f3a3848e490bd2b11d0905741e01">ILLUMINATION_ENGINE_LOG_LEVEL_5</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#abebd84362dd3549c79a1c6ea88e9c2c7">ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL</a></td></tr>
-<tr class="separator:aafa8f3a3848e490bd2b11d0905741e01"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26653eba85ada8607835ea0ce9f3cf7c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a26653eba85ada8607835ea0ce9f3cf7c">ILLUMINATION_ENGINE_LOG_LEVEL_6</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a2f2ae0b61f623dda9055c5b237791b73">ILLUMINATION_ENGINE_LOG_LEVEL_OFF</a></td></tr>
-<tr class="separator:a26653eba85ada8607835ea0ce9f3cf7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99adf96b6a7c42e77750f6c4f97e913f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a99adf96b6a7c42e77750f6c4f97e913f">ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_LOW</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a219da1dbe37783748f81af7c1b24dd71">ILLUMINATION_ENGINE_LOG_LEVEL_3</a></td></tr>
-<tr class="separator:a99adf96b6a7c42e77750f6c4f97e913f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9fa7b988aa3b0da4aee451f130030e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#ad9fa7b988aa3b0da4aee451f130030e0">ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_MEDIUM</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a06feefa96e509c5be62d284bca88bd99">ILLUMINATION_ENGINE_LOG_LEVEL_4</a></td></tr>
-<tr class="separator:ad9fa7b988aa3b0da4aee451f130030e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6e2fe80f972d94f75a6fa79740bcd17f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a6e2fe80f972d94f75a6fa79740bcd17f">ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_HIGH</a>&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#aafa8f3a3848e490bd2b11d0905741e01">ILLUMINATION_ENGINE_LOG_LEVEL_5</a></td></tr>
-<tr class="separator:a6e2fe80f972d94f75a6fa79740bcd17f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a38723d0b69cc70c73226823bca38de5a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a38723d0b69cc70c73226823bca38de5a">ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME</a>&#160;&#160;&#160;&quot;Illumination Engine Default Logger&quot;</td></tr>
-<tr class="separator:a38723d0b69cc70c73226823bca38de5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9053c2cfa950c885a626d5538ddd7797"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_i_e_logger_8hpp.html#a9053c2cfa950c885a626d5538ddd7797">ILLUMINATION_ENGINE_DEFAULT_LOG_FILENAME</a>&#160;&#160;&#160;&quot;IlluminationEngine.log&quot;</td></tr>
-<tr class="separator:a9053c2cfa950c885a626d5538ddd7797"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespace_i_e"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_i_e.html">IE</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespace_i_e_1_1_core"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_i_e_1_1_core.html">IE::Core</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a2d28e92810cc8000bbb2334bd154c262"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_i_e_1_1_core.html#a2d28e92810cc8000bbb2334bd154c262">IE::Core::Flags</a> (uint8_t t_flags)</td></tr>
+<tr class="memdesc:a2d28e92810cc8000bbb2334bd154c262"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic private 'constructor' for the Flags enum.  <a href="namespace_i_e_1_1_core.html#a2d28e92810cc8000bbb2334bd154c262">More...</a><br /></td></tr>
+<tr class="separator:a2d28e92810cc8000bbb2334bd154c262"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a488b478273a8d77b742b0a87f845a813"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_i_e_1_1_core.html#a488b478273a8d77b742b0a87f845a813">IE::Core::operator|</a> (<a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> t_first, <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> t_second)</td></tr>
+<tr class="memdesc:a488b478273a8d77b742b0a87f845a813"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of the OR operator for the <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> enum.  <a href="namespace_i_e_1_1_core.html#a488b478273a8d77b742b0a87f845a813">More...</a><br /></td></tr>
+<tr class="separator:a488b478273a8d77b742b0a87f845a813"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe9b336a4ab18e11a98d62a4cf3f9f7c"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_i_e_1_1_core.html#abe9b336a4ab18e11a98d62a4cf3f9f7c">IE::Core::operator&amp;</a> (<a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> t_first, <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> t_second) noexcept</td></tr>
+<tr class="memdesc:abe9b336a4ab18e11a98d62a4cf3f9f7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of the AND operator for the <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> enum.  <a href="namespace_i_e_1_1_core.html#abe9b336a4ab18e11a98d62a4cf3f9f7c">More...</a><br /></td></tr>
+<tr class="separator:abe9b336a4ab18e11a98d62a4cf3f9f7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a777b6df6af02adbc4ddf041f1ef2af21"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_i_e_1_1_core.html#a777b6df6af02adbc4ddf041f1ef2af21">IE::Core::operator^</a> (<a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> t_first, <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> t_second) noexcept</td></tr>
+<tr class="memdesc:a777b6df6af02adbc4ddf041f1ef2af21"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of the XOR operator for the <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> enum.  <a href="namespace_i_e_1_1_core.html#a777b6df6af02adbc4ddf041f1ef2af21">More...</a><br /></td></tr>
+<tr class="separator:a777b6df6af02adbc4ddf041f1ef2af21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a222199752a84e8b7a7d3723e28c99512"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_i_e_1_1_core.html#a222199752a84e8b7a7d3723e28c99512">IE::Core::operator~</a> (<a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> t_first) noexcept</td></tr>
+<tr class="memdesc:a222199752a84e8b7a7d3723e28c99512"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of the NOT operator for the <a class="el" href="class_i_e_1_1_core_1_1_logger.html#a8b58013237abadd1e5882a8dd0ad2506">IE::Core::Logger::Flags</a> enum.  <a href="namespace_i_e_1_1_core.html#a222199752a84e8b7a7d3723e28c99512">More...</a><br /></td></tr>
+<tr class="separator:a222199752a84e8b7a7d3723e28c99512"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a9053c2cfa950c885a626d5538ddd7797" name="a9053c2cfa950c885a626d5538ddd7797"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9053c2cfa950c885a626d5538ddd7797">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_DEFAULT_LOG_FILENAME</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_DEFAULT_LOG_FILENAME&#160;&#160;&#160;&quot;IlluminationEngine.log&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a38723d0b69cc70c73226823bca38de5a" name="a38723d0b69cc70c73226823bca38de5a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a38723d0b69cc70c73226823bca38de5a">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_DEFAULT_LOGGER_NAME&#160;&#160;&#160;&quot;Illumination Engine Default Logger&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ad5d31c1552d90ca7bf4986838aaeebf1" name="ad5d31c1552d90ca7bf4986838aaeebf1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad5d31c1552d90ca7bf4986838aaeebf1">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_0</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_0&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a1123d0d0d1ef0db249f83a2ae77e596e">ILLUMINATION_ENGINE_LOG_LEVEL_TRACE</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a1c1ede1b707797be993f5f52fd7038aa" name="a1c1ede1b707797be993f5f52fd7038aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1c1ede1b707797be993f5f52fd7038aa">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_1</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_1&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#acf2f155e41f139851f752d287de02309">ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aec9f56b3fbde93dac603b95c8adf69e3" name="aec9f56b3fbde93dac603b95c8adf69e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aec9f56b3fbde93dac603b95c8adf69e3">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_2</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_2&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a081e5be3e837e43006a9d20fb2de27a0">ILLUMINATION_ENGINE_LOG_LEVEL_INFO</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a219da1dbe37783748f81af7c1b24dd71" name="a219da1dbe37783748f81af7c1b24dd71"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a219da1dbe37783748f81af7c1b24dd71">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_3</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_3&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a0ce0a885436ee5af2d0e7c3f9de4024d">ILLUMINATION_ENGINE_LOG_LEVEL_WARN</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a06feefa96e509c5be62d284bca88bd99" name="a06feefa96e509c5be62d284bca88bd99"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06feefa96e509c5be62d284bca88bd99">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_4</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_4&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a9ec32afeb954d88b9db09c4213addcee">ILLUMINATION_ENGINE_LOG_LEVEL_ERROR</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aafa8f3a3848e490bd2b11d0905741e01" name="aafa8f3a3848e490bd2b11d0905741e01"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aafa8f3a3848e490bd2b11d0905741e01">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_5</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_5&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#abebd84362dd3549c79a1c6ea88e9c2c7">ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a26653eba85ada8607835ea0ce9f3cf7c" name="a26653eba85ada8607835ea0ce9f3cf7c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26653eba85ada8607835ea0ce9f3cf7c">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_6</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_6&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a2f2ae0b61f623dda9055c5b237791b73">ILLUMINATION_ENGINE_LOG_LEVEL_OFF</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="abebd84362dd3549c79a1c6ea88e9c2c7" name="abebd84362dd3549c79a1c6ea88e9c2c7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abebd84362dd3549c79a1c6ea88e9c2c7">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL&#160;&#160;&#160;spdlog::level::critical</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="acf2f155e41f139851f752d287de02309" name="acf2f155e41f139851f752d287de02309"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acf2f155e41f139851f752d287de02309">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG&#160;&#160;&#160;spdlog::level::debug</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a9ec32afeb954d88b9db09c4213addcee" name="a9ec32afeb954d88b9db09c4213addcee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9ec32afeb954d88b9db09c4213addcee">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_ERROR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_ERROR&#160;&#160;&#160;spdlog::level::err</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a081e5be3e837e43006a9d20fb2de27a0" name="a081e5be3e837e43006a9d20fb2de27a0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a081e5be3e837e43006a9d20fb2de27a0">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_INFO</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_INFO&#160;&#160;&#160;spdlog::level::info</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ab53c7046baaa6ac7067b01689025a2ca" name="ab53c7046baaa6ac7067b01689025a2ca"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab53c7046baaa6ac7067b01689025a2ca">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_MAX</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_MAX&#160;&#160;&#160;spdlog::level::n_levels</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a2f2ae0b61f623dda9055c5b237791b73" name="a2f2ae0b61f623dda9055c5b237791b73"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2f2ae0b61f623dda9055c5b237791b73">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_OFF</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_OFF&#160;&#160;&#160;spdlog::level::off</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a6e2fe80f972d94f75a6fa79740bcd17f" name="a6e2fe80f972d94f75a6fa79740bcd17f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6e2fe80f972d94f75a6fa79740bcd17f">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_HIGH</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_HIGH&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#aafa8f3a3848e490bd2b11d0905741e01">ILLUMINATION_ENGINE_LOG_LEVEL_5</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a99adf96b6a7c42e77750f6c4f97e913f" name="a99adf96b6a7c42e77750f6c4f97e913f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a99adf96b6a7c42e77750f6c4f97e913f">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_LOW</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_LOW&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a219da1dbe37783748f81af7c1b24dd71">ILLUMINATION_ENGINE_LOG_LEVEL_3</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ad9fa7b988aa3b0da4aee451f130030e0" name="ad9fa7b988aa3b0da4aee451f130030e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad9fa7b988aa3b0da4aee451f130030e0">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_MEDIUM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_SEVERITY_MEDIUM&#160;&#160;&#160;<a class="el" href="_i_e_logger_8hpp.html#a06feefa96e509c5be62d284bca88bd99">ILLUMINATION_ENGINE_LOG_LEVEL_4</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a1123d0d0d1ef0db249f83a2ae77e596e" name="a1123d0d0d1ef0db249f83a2ae77e596e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1123d0d0d1ef0db249f83a2ae77e596e">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_TRACE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_TRACE&#160;&#160;&#160;spdlog::level::trace</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a0ce0a885436ee5af2d0e7c3f9de4024d" name="a0ce0a885436ee5af2d0e7c3f9de4024d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ce0a885436ee5af2d0e7c3f9de4024d">&#9670;&nbsp;</a></span>ILLUMINATION_ENGINE_LOG_LEVEL_WARN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ILLUMINATION_ENGINE_LOG_LEVEL_WARN&#160;&#160;&#160;spdlog::level::warn</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -1,11 +1,11 @@
 <map id="IECommandBuffer" name="IECommandBuffer">
-<area shape="rect" id="node1" title=" " alt="" coords="5,401,195,437"/>
-<area shape="rect" id="node2" href="$class_i_e_dependent.html" title=" " alt="" coords="7,293,147,329"/>
-<area shape="rect" id="node3" href="$class_i_e_render_engine.html" title=" " alt="" coords="255,293,422,329"/>
-<area shape="rect" id="node4" href="$class_i_e_camera.html" title=" " alt="" coords="392,401,501,437"/>
-<area shape="rect" id="node5" href="$class_i_e_settings.html" title=" " alt="" coords="105,173,215,209"/>
-<area shape="rect" id="node6" href="$class_i_e_logger.html" title="A small logging tool that is a very thin wrapper for spdlog." alt="" coords="18,5,118,41"/>
-<area shape="rect" id="node7" href="$struct_i_e_version.html" title=" " alt="" coords="247,5,353,41"/>
-<area shape="rect" id="node8" href="$class_i_e_a_p_i.html" title=" " alt="" coords="304,173,373,209"/>
-<area shape="rect" id="node9" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="397,161,661,221"/>
+<area shape="rect" id="node1" title=" " alt="" coords="24,401,213,437"/>
+<area shape="rect" id="node2" href="$class_i_e_dependent.html" title=" " alt="" coords="26,293,166,329"/>
+<area shape="rect" id="node3" href="$class_i_e_render_engine.html" title=" " alt="" coords="274,293,441,329"/>
+<area shape="rect" id="node4" href="$class_i_e_camera.html" title=" " alt="" coords="411,401,520,437"/>
+<area shape="rect" id="node5" href="$class_i_e_settings.html" title=" " alt="" coords="123,173,234,209"/>
+<area shape="rect" id="node6" href="$class_i_e_1_1_core_1_1_logger.html" title=" " alt="" coords="5,5,168,41"/>
+<area shape="rect" id="node7" href="$struct_i_e_version.html" title=" " alt="" coords="280,5,387,41"/>
+<area shape="rect" id="node8" href="$class_i_e_a_p_i.html" title=" " alt="" coords="323,173,392,209"/>
+<area shape="rect" id="node9" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="416,161,680,221"/>
 </map>

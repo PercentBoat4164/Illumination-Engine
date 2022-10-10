@@ -1,12 +1,12 @@
 <map id="IECommandPool" name="IECommandPool">
-<area shape="rect" id="node1" title=" " alt="" coords="1453,89,1628,125"/>
-<area shape="rect" id="node2" title=" " alt="" coords="916,5,1219,65"/>
-<area shape="rect" id="node3" href="$struct_i_e_command_pool_1_1_create_info.html" title=" " alt="" coords="928,89,1207,125"/>
-<area shape="rect" id="node4" href="$class_i_e_render_engine.html" title=" " alt="" coords="984,199,1151,235"/>
-<area shape="rect" id="node5" href="$class_i_e_camera.html" title=" " alt="" coords="1486,225,1595,261"/>
-<area shape="rect" id="node6" href="$class_i_e_settings.html" title=" " alt="" coords="450,139,561,175"/>
-<area shape="rect" id="node7" href="$class_i_e_logger.html" title="A small logging tool that is a very thin wrapper for spdlog." alt="" coords="9,41,109,77"/>
-<area shape="rect" id="node8" href="$struct_i_e_version.html" title=" " alt="" coords="5,171,112,207"/>
-<area shape="rect" id="node9" href="$class_i_e_a_p_i.html" title=" " alt="" coords="471,199,540,235"/>
-<area shape="rect" id="node10" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="373,259,637,319"/>
+<area shape="rect" id="node1" title=" " alt="" coords="1509,89,1684,125"/>
+<area shape="rect" id="node2" title=" " alt="" coords="972,5,1275,65"/>
+<area shape="rect" id="node3" href="$struct_i_e_command_pool_1_1_create_info.html" title=" " alt="" coords="984,89,1263,125"/>
+<area shape="rect" id="node4" href="$class_i_e_render_engine.html" title=" " alt="" coords="1040,199,1207,235"/>
+<area shape="rect" id="node5" href="$class_i_e_camera.html" title=" " alt="" coords="1542,225,1651,261"/>
+<area shape="rect" id="node6" href="$class_i_e_settings.html" title=" " alt="" coords="506,139,617,175"/>
+<area shape="rect" id="node7" href="$class_i_e_1_1_core_1_1_logger.html" title=" " alt="" coords="5,41,168,77"/>
+<area shape="rect" id="node8" href="$struct_i_e_version.html" title=" " alt="" coords="33,171,140,207"/>
+<area shape="rect" id="node9" href="$class_i_e_a_p_i.html" title=" " alt="" coords="527,199,596,235"/>
+<area shape="rect" id="node10" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="429,259,693,319"/>
 </map>

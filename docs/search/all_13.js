@@ -2,7 +2,7 @@ var searchData=
 [
   ['tangent_0',['tangent',['../struct_i_e_vertex.html#a10fbf202467832cff6a7f3db8a07b3f0',1,'IEVertex']]],
   ['target_5finclude_5fdirectories_1',['target_include_directories',['../src_2_graphics_module_2_c_make_lists_8txt.html#af6117337ffedfe40abb6c53b24ef97e9',1,'CMakeLists.txt']]],
-  ['target_5flink_5flibraries_2',['target_link_libraries',['../src_2_core_2_log_module_2_c_make_lists_8txt.html#ac7f24df4f04777fd20b7d8062cbfcb88',1,'target_link_libraries(IELogModule PUBLIC spdlog) target_include_directories(IELogModule PUBLIC $:&#160;CMakeLists.txt'],['../src_2_core_2_asset_module_2_c_make_lists_8txt.html#a77c6232d8577ca9c50fc76293da21bb3',1,'target_link_libraries(IEAssetModule PUBLIC glm) target_include_directories(IEAssetModule PUBLIC $:&#160;CMakeLists.txt']]],
+  ['target_5flink_5flibraries_2',['target_link_libraries',['../src_2_core_2_log_module_2_c_make_lists_8txt.html#a35551636b029b8da5bc574ba79f73ed1',1,'target_link_libraries(IELogModule PUBLIC spdlog ${Vulkan_LIBRARIES}) target_include_directories(IELogModule PUBLIC $:&#160;CMakeLists.txt'],['../src_2_core_2_asset_module_2_c_make_lists_8txt.html#a77c6232d8577ca9c50fc76293da21bb3',1,'target_link_libraries(IEAssetModule PUBLIC glm) target_include_directories(IEAssetModule PUBLIC $:&#160;CMakeLists.txt']]],
   ['texturecoordinates_3',['textureCoordinates',['../struct_i_e_vertex.html#aeebefb7a8ff025c52a6451052e15afb1',1,'IEVertex']]],
   ['texturecount_4',['textureCount',['../class_i_e_material.html#a294f0987fadd1741cda1c4ed3b676b42',1,'IEMaterial']]],
   ['textures_5',['textures',['../class_i_e_render_engine.html#afb22c08add0806b9dfb336bd1a80189d',1,'IERenderEngine']]],

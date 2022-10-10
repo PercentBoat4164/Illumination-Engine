@@ -2,8 +2,8 @@
 <area shape="rect" id="node1" title=" " alt="" coords="6,173,115,209"/>
 <area shape="rect" id="node2" href="$class_i_e_render_engine.html" title=" " alt="" coords="247,293,413,329"/>
 <area shape="rect" id="node3" href="$class_i_e_settings.html" title=" " alt="" coords="229,173,340,209"/>
-<area shape="rect" id="node4" href="$class_i_e_logger.html" title="A small logging tool that is a very thin wrapper for spdlog." alt="" coords="143,5,243,41"/>
-<area shape="rect" id="node5" href="$struct_i_e_version.html" title=" " alt="" coords="371,5,478,41"/>
+<area shape="rect" id="node4" href="$class_i_e_1_1_core_1_1_logger.html" title=" " alt="" coords="111,5,274,41"/>
+<area shape="rect" id="node5" href="$struct_i_e_version.html" title=" " alt="" coords="386,5,493,41"/>
 <area shape="rect" id="node6" href="$class_i_e_a_p_i.html" title=" " alt="" coords="401,173,470,209"/>
 <area shape="rect" id="node7" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="494,161,758,221"/>
 </map>

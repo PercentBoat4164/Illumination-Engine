@@ -6,8 +6,8 @@
 <area shape="rect" id="node5" href="$class_i_e_render_engine.html" title=" " alt="" coords="720,293,887,329"/>
 <area shape="rect" id="node6" href="$class_i_e_camera.html" title=" " alt="" coords="857,401,966,437"/>
 <area shape="rect" id="node7" href="$class_i_e_settings.html" title=" " alt="" coords="569,173,680,209"/>
-<area shape="rect" id="node8" href="$class_i_e_logger.html" title="A small logging tool that is a very thin wrapper for spdlog." alt="" coords="483,5,583,41"/>
-<area shape="rect" id="node9" href="$struct_i_e_version.html" title=" " alt="" coords="711,5,818,41"/>
+<area shape="rect" id="node8" href="$class_i_e_1_1_core_1_1_logger.html" title=" " alt="" coords="451,5,614,41"/>
+<area shape="rect" id="node9" href="$struct_i_e_version.html" title=" " alt="" coords="726,5,833,41"/>
 <area shape="rect" id="node10" href="$class_i_e_a_p_i.html" title=" " alt="" coords="769,173,838,209"/>
 <area shape="rect" id="node11" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="862,161,1126,221"/>
 </map>

@@ -31,7 +31,7 @@ DoxygenAwesomeFragmentCopyButton.init()
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr id="projectrow">
-  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo128.png"/></td>
+  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo.png"/></td>
   <td id="projectalign">
    <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.0</span>
    </div>
@@ -90,34 +90,33 @@ $(function() {
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno"><a class="line" href="struct_i_e_version.html">   10</a></span><span class="keyword">struct </span><a class="code hl_struct" href="struct_i_e_version.html">IEVersion</a> {</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#a51c1f38bc05b7be41dea3e6ca298d04b">   12</a></span>    std::string <a class="code hl_variable" href="struct_i_e_version.html#a51c1f38bc05b7be41dea3e6ca298d04b">name</a>{<span class="stringliteral">&quot;0.0.0&quot;</span>};</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#aa78f339195aa37deb8fab0b437b3aa18">   13</a></span>    std::vector&lt;uint32_t&gt; <a class="code hl_variable" href="struct_i_e_version.html#aa78f339195aa37deb8fab0b437b3aa18">version</a>{0, 0, 0};</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#ad20e08d9c95c8ac8dbf3a30bd3ab678d">   14</a></span>    uint32_t <a class="code hl_variable" href="struct_i_e_version.html#ad20e08d9c95c8ac8dbf3a30bd3ab678d">major</a>{};</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#aa6b839e3122c34067ee6f6328d781963">   15</a></span>    uint32_t <a class="code hl_variable" href="struct_i_e_version.html#aa6b839e3122c34067ee6f6328d781963">minor</a>{};</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#a57dd4cfc2d145eb094a221e7c996ed0a">   16</a></span>    uint32_t <a class="code hl_variable" href="struct_i_e_version.html#a57dd4cfc2d145eb094a221e7c996ed0a">patch</a>{};</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#a695ebfbf1dff604272c2460754b51135">   17</a></span>    uint32_t <a class="code hl_variable" href="struct_i_e_version.html#a695ebfbf1dff604272c2460754b51135">number</a>{};</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keyword">explicit</span> <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>(<span class="keyword">const</span> std::string &amp;versionName);</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keyword">explicit</span> <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>(<span class="keyword">const</span> std::vector&lt;uint32_t&gt; &amp;versionNumbers);</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>(uint32_t versionMajor, uint32_t versionMinor, uint32_t versionPatch);</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keyword">explicit</span> <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>(uint32_t versionNumber);</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">   27</a></span>    <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>();</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>};</div>
-<div class="ttc" id="astruct_i_e_version_html"><div class="ttname"><a href="struct_i_e_version.html">IEVersion</a></div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:10</div></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="struct_i_e_version.html">    9</a></span><span class="keyword">struct </span><a class="code hl_struct" href="struct_i_e_version.html">IEVersion</a> {</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#a51c1f38bc05b7be41dea3e6ca298d04b">   11</a></span>    std::string           <a class="code hl_variable" href="struct_i_e_version.html#a51c1f38bc05b7be41dea3e6ca298d04b">name</a>{<span class="stringliteral">&quot;0.0.0&quot;</span>};</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#aa78f339195aa37deb8fab0b437b3aa18">   12</a></span>    std::vector&lt;uint32_t&gt; <a class="code hl_variable" href="struct_i_e_version.html#aa78f339195aa37deb8fab0b437b3aa18">version</a>{0, 0, 0};</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#ad20e08d9c95c8ac8dbf3a30bd3ab678d">   13</a></span>    uint32_t              <a class="code hl_variable" href="struct_i_e_version.html#ad20e08d9c95c8ac8dbf3a30bd3ab678d">major</a>{};</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#aa6b839e3122c34067ee6f6328d781963">   14</a></span>    uint32_t              <a class="code hl_variable" href="struct_i_e_version.html#aa6b839e3122c34067ee6f6328d781963">minor</a>{};</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#a57dd4cfc2d145eb094a221e7c996ed0a">   15</a></span>    uint32_t              <a class="code hl_variable" href="struct_i_e_version.html#a57dd4cfc2d145eb094a221e7c996ed0a">patch</a>{};</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#a695ebfbf1dff604272c2460754b51135">   16</a></span>    uint32_t              <a class="code hl_variable" href="struct_i_e_version.html#a695ebfbf1dff604272c2460754b51135">number</a>{};</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <span class="keyword">explicit</span> <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>(<span class="keyword">const</span> std::string &amp;versionName);</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keyword">explicit</span> <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>(<span class="keyword">const</span> std::vector&lt;uint32_t&gt; &amp;versionNumbers);</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>(uint32_t versionMajor, uint32_t versionMinor, uint32_t versionPatch);</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keyword">explicit</span> <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>(uint32_t versionNumber);</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">   26</a></span>    <a class="code hl_function" href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion</a>();</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>};</div>
+<div class="ttc" id="astruct_i_e_version_html"><div class="ttname"><a href="struct_i_e_version.html">IEVersion</a></div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:9</div></div>
 <div class="ttc" id="astruct_i_e_version_html_a4f99271931f5a53dc44dc682d09495ac"><div class="ttname"><a href="struct_i_e_version.html#a4f99271931f5a53dc44dc682d09495ac">IEVersion::IEVersion</a></div><div class="ttdeci">IEVersion()</div></div>
-<div class="ttc" id="astruct_i_e_version_html_a51c1f38bc05b7be41dea3e6ca298d04b"><div class="ttname"><a href="struct_i_e_version.html#a51c1f38bc05b7be41dea3e6ca298d04b">IEVersion::name</a></div><div class="ttdeci">std::string name</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:12</div></div>
-<div class="ttc" id="astruct_i_e_version_html_a57dd4cfc2d145eb094a221e7c996ed0a"><div class="ttname"><a href="struct_i_e_version.html#a57dd4cfc2d145eb094a221e7c996ed0a">IEVersion::patch</a></div><div class="ttdeci">uint32_t patch</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:16</div></div>
-<div class="ttc" id="astruct_i_e_version_html_a695ebfbf1dff604272c2460754b51135"><div class="ttname"><a href="struct_i_e_version.html#a695ebfbf1dff604272c2460754b51135">IEVersion::number</a></div><div class="ttdeci">uint32_t number</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:17</div></div>
-<div class="ttc" id="astruct_i_e_version_html_aa6b839e3122c34067ee6f6328d781963"><div class="ttname"><a href="struct_i_e_version.html#aa6b839e3122c34067ee6f6328d781963">IEVersion::minor</a></div><div class="ttdeci">uint32_t minor</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:15</div></div>
-<div class="ttc" id="astruct_i_e_version_html_aa78f339195aa37deb8fab0b437b3aa18"><div class="ttname"><a href="struct_i_e_version.html#aa78f339195aa37deb8fab0b437b3aa18">IEVersion::version</a></div><div class="ttdeci">std::vector&lt; uint32_t &gt; version</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:13</div></div>
-<div class="ttc" id="astruct_i_e_version_html_ad20e08d9c95c8ac8dbf3a30bd3ab678d"><div class="ttname"><a href="struct_i_e_version.html#ad20e08d9c95c8ac8dbf3a30bd3ab678d">IEVersion::major</a></div><div class="ttdeci">uint32_t major</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:14</div></div>
+<div class="ttc" id="astruct_i_e_version_html_a51c1f38bc05b7be41dea3e6ca298d04b"><div class="ttname"><a href="struct_i_e_version.html#a51c1f38bc05b7be41dea3e6ca298d04b">IEVersion::name</a></div><div class="ttdeci">std::string name</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:11</div></div>
+<div class="ttc" id="astruct_i_e_version_html_a57dd4cfc2d145eb094a221e7c996ed0a"><div class="ttname"><a href="struct_i_e_version.html#a57dd4cfc2d145eb094a221e7c996ed0a">IEVersion::patch</a></div><div class="ttdeci">uint32_t patch</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:15</div></div>
+<div class="ttc" id="astruct_i_e_version_html_a695ebfbf1dff604272c2460754b51135"><div class="ttname"><a href="struct_i_e_version.html#a695ebfbf1dff604272c2460754b51135">IEVersion::number</a></div><div class="ttdeci">uint32_t number</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:16</div></div>
+<div class="ttc" id="astruct_i_e_version_html_aa6b839e3122c34067ee6f6328d781963"><div class="ttname"><a href="struct_i_e_version.html#aa6b839e3122c34067ee6f6328d781963">IEVersion::minor</a></div><div class="ttdeci">uint32_t minor</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:14</div></div>
+<div class="ttc" id="astruct_i_e_version_html_aa78f339195aa37deb8fab0b437b3aa18"><div class="ttname"><a href="struct_i_e_version.html#aa78f339195aa37deb8fab0b437b3aa18">IEVersion::version</a></div><div class="ttdeci">std::vector&lt; uint32_t &gt; version</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:12</div></div>
+<div class="ttc" id="astruct_i_e_version_html_ad20e08d9c95c8ac8dbf3a30bd3ab678d"><div class="ttname"><a href="struct_i_e_version.html#ad20e08d9c95c8ac8dbf3a30bd3ab678d">IEVersion::major</a></div><div class="ttdeci">uint32_t major</div><div class="ttdef"><b>Definition:</b> IEVersion.hpp:13</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

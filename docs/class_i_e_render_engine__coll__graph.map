@@ -1,9 +1,9 @@
 <map id="IERenderEngine" name="IERenderEngine">
-<area shape="rect" id="node1" title=" " alt="" coords="243,293,409,329"/>
-<area shape="rect" id="node2" href="$class_i_e_camera.html" title=" " alt="" coords="271,401,381,437"/>
-<area shape="rect" id="node3" href="$class_i_e_settings.html" title=" " alt="" coords="92,173,203,209"/>
-<area shape="rect" id="node4" href="$class_i_e_logger.html" title="A small logging tool that is a very thin wrapper for spdlog." alt="" coords="5,5,105,41"/>
-<area shape="rect" id="node5" href="$struct_i_e_version.html" title=" " alt="" coords="234,5,341,41"/>
-<area shape="rect" id="node6" href="$class_i_e_a_p_i.html" title=" " alt="" coords="291,173,361,209"/>
-<area shape="rect" id="node7" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="385,161,649,221"/>
+<area shape="rect" id="node1" title=" " alt="" coords="274,293,441,329"/>
+<area shape="rect" id="node2" href="$class_i_e_camera.html" title=" " alt="" coords="303,401,412,437"/>
+<area shape="rect" id="node3" href="$class_i_e_settings.html" title=" " alt="" coords="123,173,234,209"/>
+<area shape="rect" id="node4" href="$class_i_e_1_1_core_1_1_logger.html" title=" " alt="" coords="5,5,168,41"/>
+<area shape="rect" id="node5" href="$struct_i_e_version.html" title=" " alt="" coords="280,5,387,41"/>
+<area shape="rect" id="node6" href="$class_i_e_a_p_i.html" title=" " alt="" coords="323,173,392,209"/>
+<area shape="rect" id="node7" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="416,161,680,221"/>
 </map>

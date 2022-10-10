@@ -31,7 +31,7 @@ DoxygenAwesomeFragmentCopyButton.init()
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr id="projectrow">
-  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo128.png"/></td>
+  <td id="projectlogo"><img alt="Logo" src="IlluminationEngineLogo.png"/></td>
   <td id="projectalign">
    <div id="projectname">Illumination Engine<span id="projectnumber">&#160;0.0</span>
    </div>
@@ -91,16 +91,16 @@ $(function() {
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment">/* Include classes used as attributes or function arguments. */</span></div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment">// Internal dependencies</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &quot;<a class="code" href="_i_e_framebuffer_8hpp.html">IEFramebuffer.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &quot;<a class="code" href="_i_e_command_buffer_8hpp.html">CommandBuffer/IECommandBuffer.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &quot;<a class="code" href="_i_e_command_buffer_8hpp.html">CommandBuffer/IECommandBuffer.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &quot;<a class="code" href="_i_e_framebuffer_8hpp.html">IEFramebuffer.hpp</a>&quot;</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment">// External dependencies</span></div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &lt;vulkan/vulkan.h&gt;</span></div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment">// System dependencies</span></div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">class </span><a class="code hl_class" href="class_i_e_render_engine.html">IERenderEngine</a>;</div>
@@ -111,7 +111,7 @@ $(function() {
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="struct_i_e_render_pass_1_1_create_info.html#af84bf63199e73dd2af0881b17b0bb858">   27</a></span>        uint8_t <a class="code hl_variable" href="struct_i_e_render_pass_1_1_create_info.html#af84bf63199e73dd2af0881b17b0bb858">msaaSamples</a>{1};</div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="class_i_e_render_pass.html#a2b69e5c4636ec578f52569a27e8d1d5e">   28</a></span>    } <a class="code hl_variable" href="class_i_e_render_pass.html#a2b69e5c4636ec578f52569a27e8d1d5e">createdWith</a>;</div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="class_i_e_render_pass.html#a005e74efbf6e0505baac18d4b29ebb05">   30</a></span>    VkRenderPass <a class="code hl_variable" href="class_i_e_render_pass.html#a005e74efbf6e0505baac18d4b29ebb05">renderPass</a>{};</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="class_i_e_render_pass.html#a005e74efbf6e0505baac18d4b29ebb05">   30</a></span>    VkRenderPass                   <a class="code hl_variable" href="class_i_e_render_pass.html#a005e74efbf6e0505baac18d4b29ebb05">renderPass</a>{};</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno"><a class="line" href="class_i_e_render_pass.html#a34efb94aa36b76d6e203dfe2d57cd085">   31</a></span>    std::shared_ptr&lt;IEFramebuffer&gt; <a class="code hl_variable" href="class_i_e_render_pass.html#a34efb94aa36b76d6e203dfe2d57cd085">framebuffer</a>{};</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_i_e_render_pass.html#ad318eedac1b2d7965987d1694a6eb7fe">create</a>(<a class="code hl_class" href="class_i_e_render_engine.html">IERenderEngine</a> *engineLink, CreateInfo *createInfo);</div>
@@ -124,21 +124,21 @@ $(function() {
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">private</span>:</div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    std::vector&lt;std::function&lt;void()&gt;&gt; deletionQueue{};</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <a class="code hl_class" href="class_i_e_render_engine.html">IERenderEngine</a> *linkedRenderEngine{};</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <a class="code hl_class" href="class_i_e_render_engine.html">IERenderEngine</a>                    *linkedRenderEngine{};</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>};</div>
 <div class="ttc" id="a_i_e_command_buffer_8hpp_html"><div class="ttname"><a href="_i_e_command_buffer_8hpp.html">IECommandBuffer.hpp</a></div></div>
 <div class="ttc" id="a_i_e_framebuffer_8hpp_html"><div class="ttname"><a href="_i_e_framebuffer_8hpp.html">IEFramebuffer.hpp</a></div></div>
-<div class="ttc" id="aclass_i_e_dependency_html"><div class="ttname"><a href="class_i_e_dependency.html">IEDependency</a></div><div class="ttdef"><b>Definition:</b> IEDependency.hpp:23</div></div>
-<div class="ttc" id="aclass_i_e_render_engine_html"><div class="ttname"><a href="class_i_e_render_engine.html">IERenderEngine</a></div><div class="ttdef"><b>Definition:</b> IERenderEngine.hpp:35</div></div>
-<div class="ttc" id="aclass_i_e_render_pass_begin_info_html"><div class="ttname"><a href="class_i_e_render_pass_begin_info.html">IERenderPassBeginInfo</a></div><div class="ttdef"><b>Definition:</b> IERenderPassBeginInfo.hpp:6</div></div>
+<div class="ttc" id="aclass_i_e_dependency_html"><div class="ttname"><a href="class_i_e_dependency.html">IEDependency</a></div><div class="ttdef"><b>Definition:</b> IEDependency.hpp:22</div></div>
+<div class="ttc" id="aclass_i_e_render_engine_html"><div class="ttname"><a href="class_i_e_render_engine.html">IERenderEngine</a></div><div class="ttdef"><b>Definition:</b> IERenderEngine.hpp:33</div></div>
+<div class="ttc" id="aclass_i_e_render_pass_begin_info_html"><div class="ttname"><a href="class_i_e_render_pass_begin_info.html">IERenderPassBeginInfo</a></div><div class="ttdef"><b>Definition:</b> IERenderPassBeginInfo.hpp:7</div></div>
 <div class="ttc" id="aclass_i_e_render_pass_html"><div class="ttname"><a href="class_i_e_render_pass.html">IERenderPass</a></div><div class="ttdef"><b>Definition:</b> IERenderPass.hpp:24</div></div>
 <div class="ttc" id="aclass_i_e_render_pass_html_a005e74efbf6e0505baac18d4b29ebb05"><div class="ttname"><a href="class_i_e_render_pass.html#a005e74efbf6e0505baac18d4b29ebb05">IERenderPass::renderPass</a></div><div class="ttdeci">VkRenderPass renderPass</div><div class="ttdef"><b>Definition:</b> IERenderPass.hpp:30</div></div>
-<div class="ttc" id="aclass_i_e_render_pass_html_a1541dd5841340f07e526dbb2f7a791a4"><div class="ttname"><a href="class_i_e_render_pass.html#a1541dd5841340f07e526dbb2f7a791a4">IERenderPass::destroy</a></div><div class="ttdeci">void destroy()</div><div class="ttdef"><b>Definition:</b> IERenderPass.cpp:129</div></div>
+<div class="ttc" id="aclass_i_e_render_pass_html_a1541dd5841340f07e526dbb2f7a791a4"><div class="ttname"><a href="class_i_e_render_pass.html#a1541dd5841340f07e526dbb2f7a791a4">IERenderPass::destroy</a></div><div class="ttdeci">void destroy()</div><div class="ttdef"><b>Definition:</b> IERenderPass.cpp:121</div></div>
 <div class="ttc" id="aclass_i_e_render_pass_html_a2b69e5c4636ec578f52569a27e8d1d5e"><div class="ttname"><a href="class_i_e_render_pass.html#a2b69e5c4636ec578f52569a27e8d1d5e">IERenderPass::createdWith</a></div><div class="ttdeci">struct IERenderPass::CreateInfo createdWith</div></div>
 <div class="ttc" id="aclass_i_e_render_pass_html_a34efb94aa36b76d6e203dfe2d57cd085"><div class="ttname"><a href="class_i_e_render_pass.html#a34efb94aa36b76d6e203dfe2d57cd085">IERenderPass::framebuffer</a></div><div class="ttdeci">std::shared_ptr&lt; IEFramebuffer &gt; framebuffer</div><div class="ttdef"><b>Definition:</b> IERenderPass.hpp:31</div></div>
-<div class="ttc" id="aclass_i_e_render_pass_html_a49ebe63736246ab113b43a5820e7d4fb"><div class="ttname"><a href="class_i_e_render_pass.html#a49ebe63736246ab113b43a5820e7d4fb">IERenderPass::~IERenderPass</a></div><div class="ttdeci">~IERenderPass() override</div><div class="ttdef"><b>Definition:</b> IERenderPass.cpp:137</div></div>
-<div class="ttc" id="aclass_i_e_render_pass_html_aa28602fca7a0daeaf223c36a08a6dad2"><div class="ttname"><a href="class_i_e_render_pass.html#aa28602fca7a0daeaf223c36a08a6dad2">IERenderPass::beginRenderPass</a></div><div class="ttdeci">IERenderPassBeginInfo beginRenderPass(uint8_t index)</div><div class="ttdef"><b>Definition:</b> IERenderPass.cpp:114</div></div>
-<div class="ttc" id="aclass_i_e_render_pass_html_ad318eedac1b2d7965987d1694a6eb7fe"><div class="ttname"><a href="class_i_e_render_pass.html#ad318eedac1b2d7965987d1694a6eb7fe">IERenderPass::create</a></div><div class="ttdeci">void create(IERenderEngine *engineLink, CreateInfo *createInfo)</div><div class="ttdef"><b>Definition:</b> IERenderPass.cpp:14</div></div>
+<div class="ttc" id="aclass_i_e_render_pass_html_a49ebe63736246ab113b43a5820e7d4fb"><div class="ttname"><a href="class_i_e_render_pass.html#a49ebe63736246ab113b43a5820e7d4fb">IERenderPass::~IERenderPass</a></div><div class="ttdeci">~IERenderPass() override</div><div class="ttdef"><b>Definition:</b> IERenderPass.cpp:127</div></div>
+<div class="ttc" id="aclass_i_e_render_pass_html_aa28602fca7a0daeaf223c36a08a6dad2"><div class="ttname"><a href="class_i_e_render_pass.html#aa28602fca7a0daeaf223c36a08a6dad2">IERenderPass::beginRenderPass</a></div><div class="ttdeci">IERenderPassBeginInfo beginRenderPass(uint8_t index)</div><div class="ttdef"><b>Definition:</b> IERenderPass.cpp:106</div></div>
+<div class="ttc" id="aclass_i_e_render_pass_html_ad318eedac1b2d7965987d1694a6eb7fe"><div class="ttname"><a href="class_i_e_render_pass.html#ad318eedac1b2d7965987d1694a6eb7fe">IERenderPass::create</a></div><div class="ttdeci">void create(IERenderEngine *engineLink, CreateInfo *createInfo)</div><div class="ttdef"><b>Definition:</b> IERenderPass.cpp:13</div></div>
 <div class="ttc" id="astruct_i_e_render_pass_1_1_create_info_html"><div class="ttname"><a href="struct_i_e_render_pass_1_1_create_info.html">IERenderPass::CreateInfo</a></div><div class="ttdef"><b>Definition:</b> IERenderPass.hpp:26</div></div>
 <div class="ttc" id="astruct_i_e_render_pass_1_1_create_info_html_af84bf63199e73dd2af0881b17b0bb858"><div class="ttname"><a href="struct_i_e_render_pass_1_1_create_info.html#af84bf63199e73dd2af0881b17b0bb858">IERenderPass::CreateInfo::msaaSamples</a></div><div class="ttdeci">uint8_t msaaSamples</div><div class="ttdef"><b>Definition:</b> IERenderPass.hpp:27</div></div>
 </div><!-- fragment --></div><!-- contents -->

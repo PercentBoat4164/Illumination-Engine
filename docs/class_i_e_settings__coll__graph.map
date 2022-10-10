@@ -1,5 +1,5 @@
 <map id="IESettings" name="IESettings">
-<area shape="rect" id="node1" title=" " alt="" coords="64,161,175,197"/>
-<area shape="rect" id="node2" href="$class_i_e_logger.html" title="A small logging tool that is a very thin wrapper for spdlog." alt="" coords="5,5,105,41"/>
-<area shape="rect" id="node3" href="$struct_i_e_version.html" title=" " alt="" coords="130,5,237,41"/>
+<area shape="rect" id="node1" title=" " alt="" coords="110,161,221,197"/>
+<area shape="rect" id="node2" href="$class_i_e_1_1_core_1_1_logger.html" title=" " alt="" coords="5,5,168,41"/>
+<area shape="rect" id="node3" href="$struct_i_e_version.html" title=" " alt="" coords="192,5,299,41"/>
 </map>

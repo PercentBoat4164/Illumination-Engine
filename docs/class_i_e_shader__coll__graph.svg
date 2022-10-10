@@ -76,9 +76,9 @@
 <!-- Node5 -->
 <g id="node5" class="node">
 <title>Node5</title>
-<g id="a_node5"><a xlink:href="class_i_e_logger.html" target="_top" xlink:title="A small logging tool that is a very thin wrapper for spdlog.">
-<polygon fill="white" stroke="black" points="307.45,-297.5 307.45,-323.5 382.45,-323.5 382.45,-297.5 307.45,-297.5"/>
-<text text-anchor="middle" x="344.95" y="-306.7" font-family="Source Sans Pro" font-size="16.00">IELogger</text>
+<g id="a_node5"><a xlink:href="class_i_e_1_1_core_1_1_logger.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="black" points="283.95,-297.5 283.95,-323.5 405.95,-323.5 405.95,-297.5 283.95,-297.5"/>
+<text text-anchor="middle" x="344.95" y="-306.7" font-family="Source Sans Pro" font-size="16.00">IE::Core::Logger</text>
 </a>
 </g>
 </g>

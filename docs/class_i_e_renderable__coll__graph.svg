@@ -145,9 +145,9 @@
 <!-- Node9 -->
 <g id="node9" class="node">
 <title>Node9</title>
-<g id="a_node9"><a xlink:href="class_i_e_logger.html" target="_top" xlink:title="A small logging tool that is a very thin wrapper for spdlog.">
-<polygon fill="white" stroke="black" points="181,-396.5 181,-422.5 256,-422.5 256,-396.5 181,-396.5"/>
-<text text-anchor="middle" x="218.5" y="-405.7" font-family="Source Sans Pro" font-size="16.00">IELogger</text>
+<g id="a_node9"><a xlink:href="class_i_e_1_1_core_1_1_logger.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="black" points="157.5,-396.5 157.5,-422.5 279.5,-422.5 279.5,-396.5 157.5,-396.5"/>
+<text text-anchor="middle" x="218.5" y="-405.7" font-family="Source Sans Pro" font-size="16.00">IE::Core::Logger</text>
 </a>
 </g>
 </g>
@@ -162,16 +162,16 @@
 <g id="node10" class="node">
 <title>Node10</title>
 <g id="a_node10"><a xlink:href="struct_i_e_version.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="352.5,-396.5 352.5,-422.5 432.5,-422.5 432.5,-396.5 352.5,-396.5"/>
-<text text-anchor="middle" x="392.5" y="-405.7" font-family="Source Sans Pro" font-size="16.00">IEVersion</text>
+<polygon fill="white" stroke="black" points="363.5,-396.5 363.5,-422.5 443.5,-422.5 443.5,-396.5 363.5,-396.5"/>
+<text text-anchor="middle" x="403.5" y="-405.7" font-family="Source Sans Pro" font-size="16.00">IEVersion</text>
 </a>
 </g>
 </g>
 <!-- Node10&#45;&gt;Node8 -->
 <g id="edge10" class="edge">
 <title>Node10&#45;&gt;Node8</title>
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M342.5,-407.18C321.11,-403.81 298,-395.84 284.5,-378 266.37,-354.04 276.01,-315.88 282.75,-296.56"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="342.13,-410.66 352.49,-408.45 343.01,-403.72 342.13,-410.66"/>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M353.4,-401.89C324.9,-396.98 293.18,-389.19 284.5,-378 266.08,-354.26 275.85,-316 282.69,-296.61"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="352.87,-405.35 363.31,-403.5 354,-398.44 352.87,-405.35"/>
 <text text-anchor="middle" x="364.5" y="-365.2" font-family="Source Sans Pro" font-size="16.00"> applicationVersion</text>
 <text text-anchor="middle" x="364.5" y="-347.2" font-family="Source Sans Pro" font-size="16.00">desiredVulkanVersion</text>
 <text text-anchor="middle" x="364.5" y="-329.2" font-family="Source Sans Pro" font-size="16.00">minimumVulkanVersion</text>
@@ -188,9 +188,9 @@
 <!-- Node10&#45;&gt;Node11 -->
 <g id="edge12" class="edge">
 <title>Node10&#45;&gt;Node11</title>
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M436.94,-390.67C441.52,-387.13 445.57,-382.94 448.5,-378 460.76,-357.37 455.59,-346.93 448.5,-324 445.36,-313.84 438.61,-303.97 432.64,-296.63"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="434.68,-387.96 428.23,-396.36 438.51,-393.82 434.68,-387.96"/>
-<text text-anchor="middle" x="483" y="-347.2" font-family="Source Sans Pro" font-size="16.00"> version</text>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M438.43,-390.3C442.47,-386.76 446.02,-382.67 448.5,-378 459.74,-356.8 455.59,-346.93 448.5,-324 445.36,-313.84 438.61,-303.97 432.64,-296.63"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="436.15,-387.64 430.23,-396.43 440.34,-393.25 436.15,-387.64"/>
+<text text-anchor="middle" x="482" y="-347.2" font-family="Source Sans Pro" font-size="16.00"> version</text>
 </g>
 <!-- Node11&#45;&gt;Node6 -->
 <g id="edge11" class="edge">

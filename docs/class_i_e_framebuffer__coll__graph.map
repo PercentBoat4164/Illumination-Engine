@@ -1,11 +1,11 @@
 <map id="IEFramebuffer" name="IEFramebuffer">
-<area shape="rect" id="node1" title=" " alt="" coords="29,401,180,437"/>
-<area shape="rect" id="node2" href="$class_i_e_dependency.html" title=" " alt="" coords="5,293,159,329"/>
-<area shape="rect" id="node3" href="$class_i_e_render_engine.html" title=" " alt="" coords="260,293,427,329"/>
-<area shape="rect" id="node4" href="$class_i_e_camera.html" title=" " alt="" coords="397,401,506,437"/>
-<area shape="rect" id="node5" href="$class_i_e_settings.html" title=" " alt="" coords="109,173,220,209"/>
-<area shape="rect" id="node6" href="$class_i_e_logger.html" title="A small logging tool that is a very thin wrapper for spdlog." alt="" coords="23,5,123,41"/>
-<area shape="rect" id="node7" href="$struct_i_e_version.html" title=" " alt="" coords="251,5,358,41"/>
-<area shape="rect" id="node8" href="$class_i_e_a_p_i.html" title=" " alt="" coords="309,173,378,209"/>
-<area shape="rect" id="node9" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="402,161,666,221"/>
+<area shape="rect" id="node1" title=" " alt="" coords="43,401,194,437"/>
+<area shape="rect" id="node2" href="$class_i_e_dependency.html" title=" " alt="" coords="19,293,173,329"/>
+<area shape="rect" id="node3" href="$class_i_e_render_engine.html" title=" " alt="" coords="274,293,441,329"/>
+<area shape="rect" id="node4" href="$class_i_e_camera.html" title=" " alt="" coords="411,401,520,437"/>
+<area shape="rect" id="node5" href="$class_i_e_settings.html" title=" " alt="" coords="123,173,234,209"/>
+<area shape="rect" id="node6" href="$class_i_e_1_1_core_1_1_logger.html" title=" " alt="" coords="5,5,168,41"/>
+<area shape="rect" id="node7" href="$struct_i_e_version.html" title=" " alt="" coords="280,5,387,41"/>
+<area shape="rect" id="node8" href="$class_i_e_a_p_i.html" title=" " alt="" coords="323,173,392,209"/>
+<area shape="rect" id="node9" href="$struct_i_e_render_engine_1_1_extension_and_feature_info.html" title=" " alt="" coords="416,161,680,221"/>
 </map>
