@@ -16,7 +16,7 @@ public:
     }
 
     template<class Down>
-    std::shared_ptr<Down> downcasted_shared_from_this() {
+    std::shared_ptr<Down> shared_from_this() {
         return std::dynamic_pointer_cast<Down>(MultipleInheritableEnableSharedFromThis::shared_from_this());
     }
 };

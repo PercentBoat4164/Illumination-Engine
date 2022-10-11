@@ -60,13 +60,14 @@ private:
     std::vector<IE::Graphics::Fence>     m_inFlightFences{};
     std::vector<IE::Graphics::Fence>     m_imagesInFlight{};
 
-
     static VkBool32 APIDebugMessenger(
       VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
       VkDebugUtilsMessageTypeFlagsEXT             messageType,
       const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
       void                                       *pUserData
     );
+
+    explicit RenderEngine() = default;
 
     GLFWwindow *createWindow();
 
@@ -99,12 +100,14 @@ public:
 
     IE::Graphics::API getAPI();
 
-    explicit RenderEngine();
-
     static std::shared_ptr<RenderEngine> create();
 
     static std::string translateVkResultCodes(VkResult t_result);
 
     ~RenderEngine();
+
+    void destroy();
+
+    static void destroy(IE::Graphics::RenderEngine *t_engineLink);
 };
 }  // namespace IE::Graphics

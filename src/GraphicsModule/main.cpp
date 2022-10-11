@@ -4,4 +4,5 @@
 int main() {
     auto renderEngine{IE::Graphics::RenderEngine::create()};
     while (!glfwWindowShouldClose(renderEngine->getWindow())) glfwPollEvents();
+    renderEngine->destroy();
 }

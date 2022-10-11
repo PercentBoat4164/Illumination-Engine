@@ -242,22 +242,22 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
         m_swapchainImageViews = m_swapchain.get_image_views().value();
 
         // Ensure that the vectors have the correct size
-        m_imageAvailableSemaphores.resize(
-          m_swapchain.image_count,
-          IE::Graphics::Semaphore(downcasted_shared_from_this<IE::Graphics::RenderEngine>())
-        );
-        m_renderFinishedSemaphores.resize(
-          m_swapchain.image_count,
-          IE::Graphics::Semaphore(downcasted_shared_from_this<IE::Graphics::RenderEngine>())
-        );
-        m_inFlightFences.resize(
-          m_swapchain.image_count,
-          IE::Graphics::Fence(downcasted_shared_from_this<IE::Graphics::RenderEngine>(), false)
-        );
-        m_imagesInFlight.resize(
-          m_swapchain.image_count,
-          IE::Graphics::Fence(downcasted_shared_from_this<IE::Graphics::RenderEngine>(), false)
-        );
+        IE::Core::Core::getInst().threadPool.submit([&] {
+            m_imageAvailableSemaphores.resize(m_swapchain.image_count);
+            for (auto &semaphore : m_imageAvailableSemaphores) semaphore.create(shared_from_this<RenderEngine>());
+        });
+        IE::Core::Core::getInst().threadPool.submit([&] {
+            m_renderFinishedSemaphores.resize(m_swapchain.image_count);
+            for (auto &semaphore : m_renderFinishedSemaphores) semaphore.create(shared_from_this<RenderEngine>());
+        });
+        IE::Core::Core::getInst().threadPool.submit([&] {
+            m_inFlightFences.resize(m_swapchain.image_count);
+            for (auto &semaphore : m_inFlightFences) semaphore.create(shared_from_this<RenderEngine>());
+        });
+        IE::Core::Core::getInst().threadPool.submit([&] {
+            m_imagesInFlight.resize(m_swapchain.image_count);
+            for (auto &semaphore : m_imagesInFlight) semaphore.create(shared_from_this<RenderEngine>());
+        });
 
         return m_swapchain;
     }
@@ -265,17 +265,25 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
 }
 
 std::shared_ptr<IE::Graphics::RenderEngine> IE::Graphics::RenderEngine::create() {
-    auto engine{std::make_shared<IE::Graphics::RenderEngine>()};
-    engine->createWindow();
-    engine->createInstance();
-    engine->createSurface();
-    engine->createDevice();
-    engine->createAllocator();
-    engine->createSwapchain();
+    auto              engine{std::make_shared<RenderEngine>()};
+    std::future<void> window{IE::Core::Core::getInst().threadPool.submit([&] { engine->createWindow(); })};
+    std::future<void> device{IE::Core::Core::getInst().threadPool.submit([&] {
+        engine->createInstance();
+        window.wait();
+        engine->createSurface();
+        engine->createDevice();
+    })};
+    std::future<void> swapchain{IE::Core::Core::getInst().threadPool.submit([&] {
+        device.wait();
+        engine->createSwapchain();
+    })};
+    std::future<void> allocator{IE::Core::Core::getInst().threadPool.submit([&] {
+        device.wait();
+        engine->createAllocator();
+    })};
+    swapchain.wait();
+    allocator.wait();
     return engine;
-}
-
-IE::Graphics::RenderEngine::RenderEngine() {
 }
 
 GLFWwindow *IE::Graphics::RenderEngine::getWindow() {
@@ -337,13 +345,7 @@ std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result
 }
 
 IE::Graphics::RenderEngine::~RenderEngine() {
-    vmaDestroyAllocator(m_allocator);
-    vkb::destroy_swapchain(m_swapchain);
-    for (VkImageView swapchainImageView : m_swapchainImageViews)
-        vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
-    vkb::destroy_surface(m_instance, m_surface);
-    vkb::destroy_device(m_device);
-    vkb::destroy_instance(m_instance);
+    //    destroy();
 }
 
 void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int x, int y) {
@@ -356,4 +358,32 @@ void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, 
 
 IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
     return m_graphicsAPICallbackLog;
+}
+
+void IE::Graphics::RenderEngine::destroy() {
+    auto semaphoreDestruction{IE::Core::Core::getInst().threadPool.submit([&] {
+        m_imageAvailableSemaphores.clear();
+        m_renderFinishedSemaphores.clear();
+    })};
+    auto fenceDestruction{IE::Core::Core::getInst().threadPool.submit([&] {
+        m_inFlightFences.clear();
+        m_imagesInFlight.clear();
+    })};
+    auto swapchainImageDestruction{IE::Core::Core::getInst().threadPool.submit([&] {
+        for (VkImageView swapchainImageView : m_swapchainImageViews)
+            vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
+    })};
+    if (m_allocator) vmaDestroyAllocator(m_allocator);
+    if (m_swapchain) vkb::destroy_swapchain(m_swapchain);
+    if (m_instance && m_surface) vkb::destroy_surface(m_instance, m_surface);
+    semaphoreDestruction.wait();
+    fenceDestruction.wait();
+    swapchainImageDestruction.wait();
+    if (m_device) vkb::destroy_device(m_device);
+    if (m_instance) vkb::destroy_instance(m_instance);
+}
+
+
+void IE::Graphics::RenderEngine::destroy(IE::Graphics::RenderEngine *t_engineLink) {
+    t_engineLink->destroy();
 }
