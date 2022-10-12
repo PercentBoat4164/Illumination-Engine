@@ -18,12 +18,12 @@ public:
         IE_SEMAPHORE_STATUS_WAITING = 0x2,
     };
 
-    std::weak_ptr<IE::Graphics::RenderEngine> linkedRenderEngine;
-    VkSemaphore                               semaphore{};
-    std::shared_ptr<std::mutex>               semaphoreMutex;
-    std::atomic<Status>                       status{IE_SEMAPHORE_STATUS_INVALID};
+    IE::Graphics::RenderEngine *linkedRenderEngine;
+    VkSemaphore                 semaphore{};
+    std::shared_ptr<std::mutex> semaphoreMutex;
+    std::atomic<Status>         status{IE_SEMAPHORE_STATUS_INVALID};
 
-    explicit Semaphore(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLink);
+    explicit Semaphore(IE::Graphics::RenderEngine *t_engineLink);
 
     Semaphore(const IE::Graphics::Semaphore &t_other);
 
@@ -31,7 +31,7 @@ public:
 
     ~Semaphore();
 
-    void create(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLink);
+    void create(IE::Graphics::RenderEngine *t_engineLink);
 
     std::future<void> wait();
 

@@ -7,10 +7,6 @@
 #include "Image/Texture.hpp"
 #include "stb_image.h"
 
-#include <iostream>
-#include <string>
-#include <unordered_map>
-
 #include <../contrib/stb/stb_image.h>
 #include <iostream>
 #include <string>

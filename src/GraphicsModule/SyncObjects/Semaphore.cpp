@@ -2,7 +2,7 @@
 
 #include "RenderEngine.hpp"
 
-IE::Graphics::Semaphore::Semaphore(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLink) {
+IE::Graphics::Semaphore::Semaphore(IE::Graphics::RenderEngine *t_engineLink) {
     create(t_engineLink);
 }
 
@@ -28,9 +28,9 @@ void IE::Graphics::Semaphore::blocking_wait() {
     // happening. Therefore, this synchronization does not the waiting if the lock cannot be gotten, but does
     // ensure that the mutex is locked when waiting.
     bool locked{semaphoreMutex->try_lock()};
-    linkedRenderEngine.lock()->getLogger().log("Waiting for Semaphore");
+    linkedRenderEngine->getLogger().log("Waiting for Semaphore");
     status = IE_SEMAPHORE_STATUS_WAITING;
-    vkWaitSemaphores(linkedRenderEngine.lock()->getDevice(), &waitInfo, std::numeric_limits<uint64_t>::max());
+    vkWaitSemaphores(linkedRenderEngine->getDevice(), &waitInfo, std::numeric_limits<uint64_t>::max());
     status = IE_SEMAPHORE_STATUS_VALID;
     if (locked) semaphoreMutex->unlock();
 }
@@ -38,7 +38,7 @@ void IE::Graphics::Semaphore::blocking_wait() {
 IE::Graphics::Semaphore::~Semaphore() {
     std::unique_lock<std::mutex> lock(*semaphoreMutex);
     status = IE_SEMAPHORE_STATUS_INVALID;
-    vkDestroySemaphore(linkedRenderEngine.lock()->getDevice(), semaphore, nullptr);
+    vkDestroySemaphore(linkedRenderEngine->getDevice(), semaphore, nullptr);
 }
 
 IE::Graphics::Semaphore::Semaphore(const IE::Graphics::Semaphore &t_other) {
@@ -51,15 +51,22 @@ IE::Graphics::Semaphore::Semaphore(const IE::Graphics::Semaphore &t_other) {
     }
 }
 
-void IE::Graphics::Semaphore::create(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLink) {
+void IE::Graphics::Semaphore::create(IE::Graphics::RenderEngine *t_engineLink) {
     linkedRenderEngine = t_engineLink;
-    semaphoreMutex = std::make_shared<std::mutex>();
+    semaphoreMutex     = std::make_shared<std::mutex>();
     VkSemaphoreCreateInfo createInfo{
       .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
       .pNext = nullptr,
       .flags = 0,
     };
-    vkCreateSemaphore(linkedRenderEngine.lock()->getDevice(), &createInfo, nullptr, &semaphore);
-    status = IE_SEMAPHORE_STATUS_VALID;
-    linkedRenderEngine.lock()->getLogger().log("Created Semaphore");
+    VkResult result{vkCreateSemaphore(linkedRenderEngine->getDevice(), &createInfo, nullptr, &semaphore)};
+    if (result != VK_SUCCESS)
+        linkedRenderEngine->getLogger().log(
+          "Failed to create Fence with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
+    else {
+        status = IE_SEMAPHORE_STATUS_VALID;
+        linkedRenderEngine->getLogger().log("Created Semaphore");
+    }
 }

@@ -71,7 +71,7 @@ public:
       const std::vector<IEBufferMemoryBarrier> &bufferMemoryBarriers,
       const std::vector<IEImageMemoryBarrier>  &imageMemoryBarriers
 
-);
+    );
     void recordPipelineBarrier(const IEDependencyInfo *dependencyInfo);
 
     void recordCopyBufferToImage(
@@ -107,7 +107,7 @@ public:
       const std::vector<std::shared_ptr<IEDescriptorSet>> &descriptorSets,
       std::vector<uint32_t>                                dynamicOffsets
 
-);
+    );
     void recordDrawIndexed(
       uint32_t indexCount,
       uint32_t instanceCount,

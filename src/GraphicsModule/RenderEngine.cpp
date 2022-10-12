@@ -244,19 +244,19 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
         // Ensure that the vectors have the correct size
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_imageAvailableSemaphores.resize(m_swapchain.image_count);
-            for (auto &semaphore : m_imageAvailableSemaphores) semaphore.create(shared_from_this<RenderEngine>());
+            for (auto &semaphore : m_imageAvailableSemaphores) semaphore.create(this);
         });
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_renderFinishedSemaphores.resize(m_swapchain.image_count);
-            for (auto &semaphore : m_renderFinishedSemaphores) semaphore.create(shared_from_this<RenderEngine>());
+            for (auto &semaphore : m_renderFinishedSemaphores) semaphore.create(this);
         });
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_inFlightFences.resize(m_swapchain.image_count);
-            for (auto &semaphore : m_inFlightFences) semaphore.create(shared_from_this<RenderEngine>());
+            for (auto &fence : m_inFlightFences) fence.create(this);
         });
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_imagesInFlight.resize(m_swapchain.image_count);
-            for (auto &semaphore : m_imagesInFlight) semaphore.create(shared_from_this<RenderEngine>());
+            for (auto &fence : m_imagesInFlight) fence.create(this);
         });
 
         return m_swapchain;
@@ -265,7 +265,7 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
 }
 
 std::shared_ptr<IE::Graphics::RenderEngine> IE::Graphics::RenderEngine::create() {
-    auto              engine{std::make_shared<RenderEngine>()};
+    auto              engine{std::make_shared<IE::Graphics::RenderEngine>()};
     std::future<void> window{IE::Core::Core::getInst().threadPool.submit([&] { engine->createWindow(); })};
     std::future<void> device{IE::Core::Core::getInst().threadPool.submit([&] {
         engine->createInstance();
@@ -345,22 +345,6 @@ std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result
 }
 
 IE::Graphics::RenderEngine::~RenderEngine() {
-    //    destroy();
-}
-
-void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int x, int y) {
-    auto renderEngine = static_cast<IE::Graphics::RenderEngine *>(glfwGetWindowUserPointer(pWindow));
-    renderEngine->m_graphicsAPICallbackLog.log(
-      "Changing window size to (" + std::to_string(x) + ", " + std::to_string(y) + ")"
-    );
-    renderEngine->m_currentResolution = {static_cast<size_t>(x), static_cast<size_t>(y)};
-}
-
-IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
-    return m_graphicsAPICallbackLog;
-}
-
-void IE::Graphics::RenderEngine::destroy() {
     auto semaphoreDestruction{IE::Core::Core::getInst().threadPool.submit([&] {
         m_imageAvailableSemaphores.clear();
         m_renderFinishedSemaphores.clear();
@@ -383,7 +367,14 @@ void IE::Graphics::RenderEngine::destroy() {
     if (m_instance) vkb::destroy_instance(m_instance);
 }
 
+void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int x, int y) {
+    auto renderEngine = static_cast<IE::Graphics::RenderEngine *>(glfwGetWindowUserPointer(pWindow));
+    renderEngine->m_graphicsAPICallbackLog.log(
+      "Changing window size to (" + std::to_string(x) + ", " + std::to_string(y) + ")"
+    );
+    renderEngine->m_currentResolution = {static_cast<size_t>(x), static_cast<size_t>(y)};
+}
 
-void IE::Graphics::RenderEngine::destroy(IE::Graphics::RenderEngine *t_engineLink) {
-    t_engineLink->destroy();
+IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
+    return m_graphicsAPICallbackLog;
 }

@@ -260,7 +260,8 @@ void IECommandBuffer::recordPipelineBarrier(
 }
 
 void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyInfo) {
-    addDependencies(dependencyInfo->getDependencies());commandPool->commandPoolMutex.lock();
+    addDependencies(dependencyInfo->getDependencies());
+    commandPool->commandPoolMutex.lock();
     if (status == IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -275,12 +276,13 @@ void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyIn
 }
 
 void IECommandBuffer::recordCopyBufferToImage(
-  const std::shared_ptr<IEBuffer>            &buffer,
-  const std::shared_ptr<IEImage> &image,
-  std::vector<VkBufferImageCopy>              regions
+  const std::shared_ptr<IEBuffer> &buffer,
+  const std::shared_ptr<IEImage>  &image,
+  std::vector<VkBufferImageCopy>   regions
 
-    ) {
-    addDependencies({image, buffer});commandPool->commandPoolMutex.lock();
+) {
+    addDependencies({image, buffer});
+    commandPool->commandPoolMutex.lock();
     if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -302,7 +304,8 @@ void IECommandBuffer::recordCopyBufferToImage(
 }
 
 void IECommandBuffer::recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo) {
-    addDependencies(copyInfo->getDependencies());commandPool->commandPoolMutex.lock();
+    addDependencies(copyInfo->getDependencies());
+    commandPool->commandPoolMutex.lock();
     if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -384,8 +387,9 @@ void IECommandBuffer::recordBindIndexBuffer(
   uint32_t                         offset,
   VkIndexType                      indexType
 
-    ) {
-    addDependency(buffer);commandPool->commandPoolMutex.lock();
+) {
+    addDependency(buffer);
+    commandPool->commandPoolMutex.lock();
     if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -403,8 +407,7 @@ void IECommandBuffer::recordBindPipeline(
   VkPipelineBindPoint                pipelineBindPoint,
   const std::shared_ptr<IEPipeline> &pipeline
 ) {
-    addDependency(pipeline
-);
+    addDependency(pipeline);
     commandPool->commandPoolMutex.lock();
     if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
@@ -479,7 +482,8 @@ void IECommandBuffer::recordDrawIndexed(
 }
 
 void IECommandBuffer::recordBeginRenderPass(IERenderPassBeginInfo *pRenderPassBegin, VkSubpassContents contents) {
-    addDependencies(pRenderPassBegin->getDependencies());VkRenderPassBeginInfo renderPassBeginInfo = *(VkRenderPassBeginInfo *) pRenderPassBegin;
+    addDependencies(pRenderPassBegin->getDependencies());
+    VkRenderPassBeginInfo renderPassBeginInfo = *(VkRenderPassBeginInfo *) pRenderPassBegin;
     renderPassBeginInfo.sType                 = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassBeginInfo.pNext                 = pRenderPassBegin->pNext;
     renderPassBeginInfo.renderPass            = pRenderPassBegin->renderPass->renderPass;
@@ -507,7 +511,8 @@ void IECommandBuffer::recordSetViewport(
   uint32_t          viewPortCount,
   const VkViewport *pViewPorts
 
-    ) {commandPool->commandPoolMutex.lock();
+) {
+    commandPool->commandPoolMutex.lock();
     if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {

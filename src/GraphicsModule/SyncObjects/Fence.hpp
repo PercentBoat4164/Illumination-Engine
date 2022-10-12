@@ -17,18 +17,18 @@ public:
         IE_FENCE_STATUS_WAITING = 0x2,
     };
 
-    std::weak_ptr<IE::Graphics::RenderEngine> linkedRenderEngine;
-    VkFence                                   fence{};
-    std::shared_ptr<std::mutex>               fenceMutex{};
-    std::atomic<Status>                       status{IE_FENCE_STATUS_INVALID};
+    IE::Graphics::RenderEngine *linkedRenderEngine;
+    VkFence                     fence{};
+    std::shared_ptr<std::mutex> fenceMutex{};
+    std::atomic<Status>         status{IE_FENCE_STATUS_INVALID};
 
-    explicit Fence(std::weak_ptr<IE::Graphics::RenderEngine> weakPtr, bool signaled=false);
+    explicit Fence(IE::Graphics::RenderEngine *t_engineLink, bool t_signaled = false);
 
     Fence(const IE::Graphics::Fence &);
 
     Fence() = default;
 
-    void create(std::weak_ptr<IE::Graphics::RenderEngine> weakPtr, bool signaled=false);
+    void create(IE::Graphics::RenderEngine *t_engineLink, bool t_signaled = false);
 
     ~Fence();
 };

@@ -63,11 +63,11 @@ void IEPipeline::_vulkanCreate(IERenderEngine *engineLink, IEPipeline::CreateInf
     created.pipelineLayout = true;
 #endif
     deletionQueue.emplace_back([&] {
-        #ifndef NDEBUG
+#ifndef NDEBUG
         if (created.pipelineLayout) {
 #endif
             vkDestroyPipelineLayout(linkedRenderEngine->device.device, pipelineLayout, nullptr);
-    #ifndef NDEBUG
+#ifndef NDEBUG
             created.pipelineLayout = false;
         }
 #endif

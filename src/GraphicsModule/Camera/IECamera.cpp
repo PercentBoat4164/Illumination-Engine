@@ -8,6 +8,7 @@
 #define GLM_FORCE_RADIANS
 
 #include "glm/ext/matrix_clip_space.hpp"
+
 void IECamera::create(IERenderEngine *engineLink) {
     linkedRenderEngine = engineLink;
     updateSettings();

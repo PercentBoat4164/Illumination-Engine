@@ -6,7 +6,6 @@ std::vector<std::shared_ptr<IEBuffer>> IEBufferMemoryBarrier::getBuffers() const
     return {buffer};
 }
 
-
 IEBufferMemoryBarrier::operator VkBufferMemoryBarrier() const {
     return {
       .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,

@@ -491,7 +491,7 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
                            .r = VK_COMPONENT_SWIZZLE_B,
                            .g = VK_COMPONENT_SWIZZLE_G,
                            .b = VK_COMPONENT_SWIZZLE_B,
-                           .a = VK_COMPONENT_SWIZZLE_A                                                                            },
+                           .a = VK_COMPONENT_SWIZZLE_A},
       .subresourceRange =
         VkImageSubresourceRange{
                            // View entire image

@@ -67,8 +67,6 @@ private:
       void                                       *pUserData
     );
 
-    explicit RenderEngine() = default;
-
     GLFWwindow *createWindow();
 
     vkb::Instance createInstance();
@@ -84,6 +82,8 @@ private:
     static void framebufferResizeCallback(GLFWwindow *pWindow, int x, int y);
 
 public:
+    explicit RenderEngine() = default;
+
     GLFWwindow *getWindow();
 
     VmaAllocator getAllocator();
@@ -107,7 +107,5 @@ public:
     ~RenderEngine();
 
     void destroy();
-
-    static void destroy(IE::Graphics::RenderEngine *t_engineLink);
 };
 }  // namespace IE::Graphics

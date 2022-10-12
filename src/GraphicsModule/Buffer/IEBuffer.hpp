@@ -156,6 +156,7 @@ public:
 
 
     void destroy();
+
 protected:
     IERenderEngine *linkedRenderEngine{};
     VmaAllocation   allocation{};

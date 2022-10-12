@@ -4,63 +4,41 @@
 #include "InputModule/Keyboard.hpp"
 
 int main() {
-    std::shared_ptr<IE::Graphics::RenderEngine> renderEngine = IE::Graphics::RenderEngine::create();  // RenderEngine must be allocated on the heap.
+    std::shared_ptr<IE::Graphics::RenderEngine> renderEngine =
+      IE::Graphics::RenderEngine::create();  // RenderEngine must be allocated on the heap.
 
     IE::Input::Keyboard keyboard{renderEngine->getWindow()};
-    keyboard.editActions(
-      GLFW_KEY_W,
-      [&](GLFWwindow *) {
-          renderEngine->camera.position +=
-            renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
-      }
-    );
-    keyboard.editActions(
-      GLFW_KEY_A,
-      [&](GLFWwindow *) {
-          renderEngine->camera.position -=
-            renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed;
-      }
-    );
-    keyboard.editActions(
-      GLFW_KEY_S,
-      [&](GLFWwindow *) {
-          renderEngine->camera.position -=
-            renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
-      }
-    );
-    keyboard.editActions(
-      GLFW_KEY_D,
-      [&](GLFWwindow *) {
-          renderEngine->camera.position +=
-            renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed;
-      }
-    );
-    keyboard.editActions(
-      GLFW_KEY_SPACE,
-      [&](GLFWwindow *) {
-          renderEngine->camera.position +=
-            renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
-      }
-    );
-    keyboard.editActions(
-      GLFW_KEY_LEFT_SHIFT,
-      [&](GLFWwindow *) {
-          renderEngine->camera.position -=
-            renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
-      }
-    );
-    keyboard.editActions(
-      {GLFW_KEY_LEFT_CONTROL, GLFW_PRESS},
-      [&](GLFWwindow *) { renderEngine->camera.speed *= 6; }
-    );
-    keyboard.editActions(
-      {GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE},
-      [&](GLFWwindow *) { renderEngine->camera.speed /= 6; }
-    );
-    keyboard.editActions(
-      {GLFW_KEY_F11, GLFW_PRESS},
-      [&](GLFWwindow *) { renderEngine->toggleFullscreen(); }
-    );
+    keyboard.editActions(GLFW_KEY_W, [&](GLFWwindow *) {
+        renderEngine->camera.position +=
+          renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
+    });
+    keyboard.editActions(GLFW_KEY_A, [&](GLFWwindow *) {
+        renderEngine->camera.position -=
+          renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed;
+    });
+    keyboard.editActions(GLFW_KEY_S, [&](GLFWwindow *) {
+        renderEngine->camera.position -=
+          renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
+    });
+    keyboard.editActions(GLFW_KEY_D, [&](GLFWwindow *) {
+        renderEngine->camera.position +=
+          renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed;
+    });
+    keyboard.editActions(GLFW_KEY_SPACE, [&](GLFWwindow *) {
+        renderEngine->camera.position +=
+          renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
+    });
+    keyboard.editActions(GLFW_KEY_LEFT_SHIFT, [&](GLFWwindow *) {
+        renderEngine->camera.position -=
+          renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
+    });
+    keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_PRESS}, [&](GLFWwindow *) {
+        renderEngine->camera.speed *= 6;
+    });
+    keyboard.editActions({GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE}, [&](GLFWwindow *) {
+        renderEngine->camera.speed /= 6;
+    });
+    keyboard.editActions({GLFW_KEY_F11, GLFW_PRESS}, [&](GLFWwindow *) { renderEngine->toggleFullscreen(); });
     keyboard.editActions({GLFW_KEY_ESCAPE, GLFW_REPEAT}, [&](GLFWwindow *) {
         glfwSetWindowShouldClose(renderEngine->window, 1);
     });
