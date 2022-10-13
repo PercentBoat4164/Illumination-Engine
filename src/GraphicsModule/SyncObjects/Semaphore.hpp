@@ -18,7 +18,7 @@ public:
         IE_SEMAPHORE_STATUS_WAITING = 0x2,
     };
 
-    IE::Graphics::RenderEngine *linkedRenderEngine;
+    IE::Graphics::RenderEngine *linkedRenderEngine{};
     VkSemaphore                 semaphore{};
     std::shared_ptr<std::mutex> semaphoreMutex;
     std::atomic<Status>         status{IE_SEMAPHORE_STATUS_INVALID};

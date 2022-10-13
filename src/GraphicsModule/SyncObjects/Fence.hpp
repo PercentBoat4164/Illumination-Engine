@@ -17,7 +17,7 @@ public:
         IE_FENCE_STATUS_WAITING = 0x2,
     };
 
-    IE::Graphics::RenderEngine *linkedRenderEngine;
+    IE::Graphics::RenderEngine *linkedRenderEngine{};
     VkFence                     fence{};
     std::shared_ptr<std::mutex> fenceMutex{};
     std::atomic<Status>         status{IE_FENCE_STATUS_INVALID};
