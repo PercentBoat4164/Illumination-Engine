@@ -1,7 +1,5 @@
 #pragma once
 
-#include "InheritableSharedFromThis.hpp"
-
 #include <memory>
 
 namespace IE::Core {
@@ -9,13 +7,27 @@ class Core;
 }  // namespace IE::Core
 
 namespace IE::Core {
-class Engine : public inheritable_enable_shared_from_this<Engine> {
+class Engine {
 public:
-    const uint64_t m_id;  // The ID of this Engine.
-
     virtual ~Engine() = default;
 
+    Engine(const IE::Core::Engine &t_other) = default;
+
+    Engine(IE::Core::Engine &&t_other) = default;
+
+    Engine &operator=(const IE::Core::Engine &t_other) {
+        if (this == &t_other) m_id = t_other.m_id;
+        return *this;
+    }
+
+    Engine &operator=(IE::Core::Engine &&t_other) noexcept {
+        if (this == &t_other) m_id = std::exchange(t_other.m_id, 0);
+        return *this;
+    }
+
 protected:
+    uint64_t m_id;  // The ID of this Engine.
+
     Engine() : m_id(m_nextId++) {
     }
 

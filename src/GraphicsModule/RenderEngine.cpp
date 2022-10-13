@@ -4,7 +4,6 @@
 #include <../contrib/stb/stb_image.h>
 #define VMA_IMPLEMENTATION
 #include <iostream>
-#include <utility>
 #include <vk_mem_alloc.h>
 
 VkBool32 IE::Graphics::RenderEngine::APIDebugMessenger(
@@ -13,12 +12,11 @@ VkBool32 IE::Graphics::RenderEngine::APIDebugMessenger(
   const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
   void                                       *pUserData
 ) {
-    ((IE::Core::Logger *) pUserData)
-      ->log(
-        messageSeverity,
-        std::string(pCallbackData->pMessageIdName) + " ID: " + std::to_string(pCallbackData->messageIdNumber) +
-          " | " + vkb::to_string_message_type(messageType) + " " + pCallbackData->pMessage
-      );
+    reinterpret_cast<IE::Core::Logger *>(pUserData)->log(
+      messageSeverity,
+      std::string(pCallbackData->pMessageIdName) + " ID: " + std::to_string(pCallbackData->messageIdNumber) +
+        " | " + vkb::to_string_message_type(messageType) + " " + pCallbackData->pMessage
+    );
     return VK_TRUE;
 }
 
@@ -26,8 +24,8 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
     m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
     // Initialize GLFW
     if (glfwInit() != GLFW_TRUE) {
-        const char *description;
-        int         code = glfwGetError(&description);
+        const char *description{};
+        int         code{glfwGetError(&description)};
         m_graphicsAPICallbackLog.log(
           "Failed to initialize GLFW. Error: " + std::to_string(code) + " " + description,
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL
@@ -60,7 +58,7 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
       nullptr
     );
     if (m_window == nullptr) {
-        const char *description;
+        const char *description{};
         int         code = glfwGetError(&description);
         m_graphicsAPICallbackLog.log(
           "Failed to create window! Error: " + std::to_string(code) + " " + description,
@@ -77,16 +75,16 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
 
     // Set up window
     glfwSetWindowSizeLimits(m_window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    glfwSetWindowPos(m_window, (int) m_defaultPosition[0], (int) m_defaultPosition[1]);
+    glfwSetWindowPos(m_window, static_cast<int>(m_defaultPosition[0]), static_cast<int>(m_defaultPosition[1]));
     glfwSetWindowAttrib(m_window, GLFW_AUTO_ICONIFY, 0);
     glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
     glfwSwapInterval(m_useVsync ? 1 : 0);
 
 
     // Set icon
-    int      iconSizeX, iconSizeY;
-    stbi_uc *pixels =
-      stbi_load(ILLUMINATION_ENGINE_ICON_PATH, (int *) &iconSizeX, (int *) &iconSizeY, nullptr, STBI_rgb_alpha);
+    int       iconSizeX{0};
+    int       iconSizeY{0};
+    stbi_uc  *pixels = stbi_load(ILLUMINATION_ENGINE_ICON_PATH, &iconSizeX, &iconSizeY, nullptr, STBI_rgb_alpha);
     GLFWimage icon{iconSizeX, iconSizeY, pixels};
     glfwSetWindowIcon(m_window, 1, &icon);
     stbi_image_free(pixels);
@@ -141,7 +139,8 @@ vkb::Instance IE::Graphics::RenderEngine::createInstance() {
         else m_graphicsAPICallbackLog.log("Created Vulkan Instance");
         m_instance = instanceBuilder.value();
         return m_instance;
-    } else return {};
+    }
+    return {};
 }
 
 VkSurfaceKHR IE::Graphics::RenderEngine::createSurface() {
@@ -150,7 +149,7 @@ VkSurfaceKHR IE::Graphics::RenderEngine::createSurface() {
         // Create vulkan surface
         VkResult result = glfwCreateWindowSurface(m_instance.instance, m_window, nullptr, &m_surface);
         if (result != VK_SUCCESS) {
-            const char *description;
+            const char *description{};
             int         code = glfwGetError(&description);
             m_graphicsAPICallbackLog.log(
               "Failed to create window surface! Error: " + std::to_string(code) + " " + description,
@@ -191,7 +190,8 @@ vkb::Device IE::Graphics::RenderEngine::createDevice() {
         else m_graphicsAPICallbackLog.log("Created Vulkan Device");
         m_device = logicalDevice.value();
         return m_device;
-    } else return {};
+    }
+    return {};
 }
 
 VmaAllocator IE::Graphics::RenderEngine::createAllocator() {
@@ -223,7 +223,7 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
           // This may have to change in the event that HDR is to be supported.
           .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})
           .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-        if (m_swapchain)  // Use the old swapchain if it exists.
+        if (m_swapchain != nullptr)  // Use the old swapchain if it exists.
             swapchainBuilder.set_old_swapchain(m_swapchain);
         vkb::detail::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
         if (!thisSwapchain) {
@@ -244,18 +244,22 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
         // Ensure that the vectors have the correct size
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_imageAvailableSemaphores.resize(m_swapchain.image_count);
+#pragma unroll 1
             for (auto &semaphore : m_imageAvailableSemaphores) semaphore.create(this);
         });
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_renderFinishedSemaphores.resize(m_swapchain.image_count);
+#pragma unroll 1
             for (auto &semaphore : m_renderFinishedSemaphores) semaphore.create(this);
         });
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_inFlightFences.resize(m_swapchain.image_count);
+#pragma unroll 1
             for (auto &fence : m_inFlightFences) fence.create(this);
         });
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_imagesInFlight.resize(m_swapchain.image_count);
+#pragma unroll 1
             for (auto &fence : m_imagesInFlight) fence.create(this);
         });
 
@@ -354,21 +358,22 @@ IE::Graphics::RenderEngine::~RenderEngine() {
         m_imagesInFlight.clear();
     })};
     auto swapchainImageDestruction{IE::Core::Core::getInst().threadPool.submit([&] {
+#pragma unroll 1
         for (VkImageView swapchainImageView : m_swapchainImageViews)
             vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
     })};
-    if (m_allocator) vmaDestroyAllocator(m_allocator);
-    if (m_swapchain) vkb::destroy_swapchain(m_swapchain);
-    if (m_instance && m_surface) vkb::destroy_surface(m_instance, m_surface);
+    if (m_allocator != nullptr) vmaDestroyAllocator(m_allocator);
+    if (m_swapchain != nullptr) vkb::destroy_swapchain(m_swapchain);
+    if ((m_instance != nullptr) && (m_surface != nullptr)) vkb::destroy_surface(m_instance, m_surface);
     semaphoreDestruction.wait();
     fenceDestruction.wait();
     swapchainImageDestruction.wait();
-    if (m_device) vkb::destroy_device(m_device);
-    if (m_instance) vkb::destroy_instance(m_instance);
+    if (m_device != nullptr) vkb::destroy_device(m_device);
+    if (m_instance != nullptr) vkb::destroy_instance(m_instance);
 }
 
 void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int x, int y) {
-    auto renderEngine = static_cast<IE::Graphics::RenderEngine *>(glfwGetWindowUserPointer(pWindow));
+    auto *renderEngine = static_cast<IE::Graphics::RenderEngine *>(glfwGetWindowUserPointer(pWindow));
     renderEngine->m_graphicsAPICallbackLog.log(
       "Changing window size to (" + std::to_string(x) + ", " + std::to_string(y) + ")"
     );
