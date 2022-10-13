@@ -1,8 +1,8 @@
 #include "IELogger.hpp"
 
-#include <include/spdlog/async.h>
-#include <include/spdlog/sinks/basic_file_sink.h>
-#include <include/spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/async.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 IE::Core::Logger::Logger(const std::string &t_name, const std::string &t_path, Flags t_flags) {
     init();
@@ -18,7 +18,7 @@ IE::Core::Logger::Logger(const std::string &t_name, const std::string &t_path, F
         ));
     }
     m_logger = std::make_shared<spdlog::async_logger>(t_name, sinks.begin(), sinks.end(), spdlog::thread_pool());
-    setLogLevel(ILLUMINATION_ENGINE_LOG_LEVEL_TRACE);
+    setLogLevel(IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_TRACE);
     log("Created logger");
 }
 

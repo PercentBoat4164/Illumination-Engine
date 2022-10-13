@@ -28,7 +28,7 @@ void IERenderable::setAPI(const IEAPI &API) {
         _unloadFromRAM     = &IERenderable::_openglUnloadFromRAM;
     } else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
         _create            = &IERenderable::_vulkanCreate;
-        _update            = &IERenderable::_vulkanUpdate;
+        _update            = &::IERenderable::_vulkanUpdate;
         _loadFromDiskToRAM = &IERenderable::_vulkanLoadFromDiskToRAM;
         _loadFromRAMToVRAM = &IERenderable::_vulkanLoadFromRAMToVRAM;
         _unloadFromVRAM    = &IERenderable::_vulkanUnloadFromVRAM;
@@ -168,89 +168,48 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 }
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto &asset : assets) {
-        glm::quat quaternion =
-          glm::yawPitchRoll(asset.lock()->rotation.x, asset.lock()->rotation.y, asset.lock()->rotation.z);
-        auto modelMatrix = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), asset.lock()->scale), asset.lock()->position),
+    for (auto &associatedAsset : associatedAssets) {
+        IEAsset   thisAsset  = *associatedAsset.lock();
+        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
+        modelMatrix          = glm::rotate(
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );
-        IEUniformBufferObject object{
-          .projectionViewModelMatrix = camera.projectionMatrix * camera.viewMatrix,
-          .modelMatrix               = modelMatrix,
-          .normalMatrix              = glm::mat4(glm::transpose(glm::inverse(modelMatrix))),
-          .position                  = camera.position,
-          .time                      = time,
-        };
-        for (auto &mesh : meshes) {
-            object.openglUploadUniform((GLint) mesh.pipeline->programID);
+        uniformBufferObject.projectionViewModelMatrix = camera.projectionMatrix * camera.viewMatrix;
+        uniformBufferObject.modelMatrix               = modelMatrix;
+        uniformBufferObject.normalMatrix              = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
+        uniformBufferObject.position                  = camera.position;
+        uniformBufferObject.time                      = time;
+        //		modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
+        for (IEMesh &mesh : meshes) {
+            // Update uniforms
+            uniformBufferObject.openglUploadUniform((GLint) mesh.pipeline->programID);
             mesh.update(renderCommandBufferIndex);
         }
     }
-
-    //    for (auto &associatedAsset : associatedAssets) {
-    //        IEAsset   thisAsset  = *associatedAsset.lock();
-    //        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y,
-    //        thisAsset.rotation.z); modelMatrix          = glm::rotate(
-    //          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
-    //          glm::angle(quaternion),
-    //          glm::axis(quaternion)
-    //        );
-    //        uniformBufferObject.projectionViewModelMatrix = camera.projectionMatrix * camera.viewMatrix;
-    //        uniformBufferObject.modelMatrix               = modelMatrix;
-    //        uniformBufferObject.normalMatrix              = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
-    //        uniformBufferObject.position                  = camera.position;
-    //        uniformBufferObject.time                      = time;
-    //        //		modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
-    //        for (IEMesh &mesh : meshes) {
-    //            // Update uniforms
-    //            uniformBufferObject.openglUploadUniform((GLint) mesh.pipeline->programID);
-    //            mesh.update(renderCommandBufferIndex);
-    //        }
-    //    }
 }
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto &asset : assets) {
-        glm::quat quaternion =
-          glm::yawPitchRoll(asset.lock()->rotation.x, asset.lock()->rotation.y, asset.lock()->rotation.z);
-        auto modelMatrix = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), asset.lock()->scale), asset.lock()->position),
+    for (auto &associatedAsset : associatedAssets) {
+        IEAsset   thisAsset  = *associatedAsset.lock();
+        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
+        modelMatrix          = glm::rotate(
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );
-        IEUniformBufferObject object{
-          .projectionViewModelMatrix = camera.projectionMatrix * camera.viewMatrix,
-          .modelMatrix               = modelMatrix,
-          .normalMatrix              = glm::mat4(glm::transpose(glm::inverse(object.modelMatrix))),
-          .position                  = camera.position,
-          .time                      = time,
-        };
-        for (auto &mesh : meshes) {
+        uniformBufferObject.projectionViewModelMatrix = camera.projectionMatrix * camera.viewMatrix;
+        uniformBufferObject.modelMatrix               = modelMatrix;
+        uniformBufferObject.normalMatrix              = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
+        uniformBufferObject.position                  = camera.position;
+        uniformBufferObject.time                      = time;
+        modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
+        for (IEMesh &mesh : meshes) {
             mesh.descriptorSet->update({&modelBuffer}, {0});
             mesh.update(renderCommandBufferIndex);
         }
     }
-    //    for (auto &associatedAsset : associatedAssets) {
-    //        IEAsset   thisAsset  = *associatedAsset.lock();
-    //        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y,
-    //        thisAsset.rotation.z); modelMatrix          = glm::rotate(
-    //          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
-    //          glm::angle(quaternion),
-    //          glm::axis(quaternion)
-    //        );
-    //        uniformBufferObject.projectionViewModelMatrix = camera.projectionMatrix * camera.viewMatrix;
-    //        uniformBufferObject.modelMatrix               = modelMatrix;
-    //        uniformBufferObject.normalMatrix              = glm::mat4(glm::transpose(glm::inverse(modelMatrix)));
-    //        uniformBufferObject.position                  = camera.position;
-    //        uniformBufferObject.time                      = time;
-    //        modelBuffer.uploadToVRAM(&uniformBufferObject, sizeof(uniformBufferObject));
-    //        for (IEMesh &mesh : meshes) {
-    //            mesh.descriptorSet->update({&modelBuffer}, {0});
-    //            mesh.update(renderCommandBufferIndex);
-    //        }
-    //    }
 }
 
 std::function<void(IERenderable &)> IERenderable::_unloadFromVRAM{nullptr};

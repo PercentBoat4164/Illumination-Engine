@@ -61,8 +61,9 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
           .width           = linkedRenderEngine->swapchain.extent.width,
           .height          = linkedRenderEngine->swapchain.extent.height,
           .layers          = 1};
-        if (vkCreateFramebuffer(linkedRenderEngine->device.device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS)
+        if (vkCreateFramebuffer(linkedRenderEngine->device.device, &framebufferCreateInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create framebuffers!");
+        }
     }
 }
 

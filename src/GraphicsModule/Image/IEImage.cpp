@@ -108,6 +108,7 @@ void IEImage::uploadToRAM(const std::vector<char> &data) {
     }
     if (data.size() > width * height * channels) {
         linkedRenderEngine->settings->logger.log(
+
           "Attempt to load in more data to RAM than can fit in image!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -126,6 +127,7 @@ void IEImage::uploadToRAM(void *data, size_t size) {
     }
     if (size > width * height * channels) {
         linkedRenderEngine->settings->logger.log(
+
           "Attempt to load in more data to RAM than can fit in image!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -412,7 +414,8 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
         destinationStage                 = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     } else {
         linkedRenderEngine->settings->logger.log(
-          "Attempt to transition with unknown parameters!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+          "Attempt to transition with unknown parameters!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
         return;
     }
@@ -451,11 +454,12 @@ void IEImage::_vulkanCreateImage() {
     }
 
     // Create image
-    if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS)
+    if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(
           "Failed to create image!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
+    }
 }
 
 void IEImage::_vulkanCreateImageView() {
@@ -468,12 +472,12 @@ void IEImage::_vulkanCreateImageView() {
       .components =
         VkComponentMapping{
                            VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-                           VK_COMPONENT_SWIZZLE_IDENTITY                    }, // Unused. All components are mapped to default data.
+                           VK_COMPONENT_SWIZZLE_IDENTITY}, // Unused. All components are mapped to default data.
       .subresourceRange =
         VkImageSubresourceRange{
                            .aspectMask     = aspect,
                            .baseMipLevel   = 0,
-                           .levelCount     = 1, // Unused. Mip-mapping is not yet implemented.
+                           .levelCount     = 1,  // Unused. Mip-mapping is not yet implemented.
           .baseArrayLayer = 0,
                            .layerCount     = 1,
                            },
@@ -490,7 +494,9 @@ uint8_t IEImage::getBytesInFormat() const {
         case VK_FORMAT_MAX_ENUM:
         default:
             linkedRenderEngine->settings->logger.log(
-              "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+
+              "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
             return 0x0;
         case VK_FORMAT_R8_UNORM:

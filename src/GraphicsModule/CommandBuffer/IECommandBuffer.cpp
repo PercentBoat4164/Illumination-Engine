@@ -31,6 +31,7 @@ void IECommandBuffer::allocate(bool synchronize) {
     VkResult result = vkAllocateCommandBuffers(linkedRenderEngine->device.device, &allocateInfo, &commandBuffer);
     if (result != VK_SUCCESS) {  // handle any potential errors
         linkedRenderEngine->settings->logger.log(
+
           "Failure to properly allocate command buffers! Error: " + IERenderEngine::translateVkResultCodes(result),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -155,6 +156,7 @@ void IECommandBuffer::execute(VkSemaphore input, VkSemaphore output, VkFence fen
         finish(false);
     } else if (status != IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
         linkedRenderEngine->settings->logger.log(
+
           "Attempt to execute a command buffer that is not recording or executable!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -190,6 +192,7 @@ void IECommandBuffer::execute(VkSemaphore input, VkSemaphore output, VkFence fen
     vkWaitForFences(linkedRenderEngine->device.device, 1, &fence, VK_TRUE, UINT64_MAX);
     if (result != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(
+
           "Failed to submit command buffer! Error: " + IERenderEngine::translateVkResultCodes(result),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -216,6 +219,7 @@ void IECommandBuffer::recordPipelineBarrier(
   const std::vector<VkMemoryBarrier>       &memoryBarriers,
   const std::vector<IEBufferMemoryBarrier> &bufferMemoryBarriers,
   const std::vector<IEImageMemoryBarrier>  &imageMemoryBarriers
+
 ) {
     std::vector<VkBufferMemoryBarrier> bufferBarriers{};
     bufferBarriers.reserve(bufferMemoryBarriers.size());
@@ -234,6 +238,7 @@ void IECommandBuffer::recordPipelineBarrier(
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
+
               "Attempt to record a pipeline barrier on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
@@ -261,6 +266,7 @@ void IECommandBuffer::recordPipelineBarrier(const IEDependencyInfo *dependencyIn
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
+
               "Attempt to record a pipeline barrier on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
@@ -304,6 +310,7 @@ void IECommandBuffer::recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo)
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
+
               "Attempt to record a buffer to image copy on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
@@ -330,6 +337,7 @@ void IECommandBuffer::recordBindVertexBuffers(
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
+
               "Attempt to record a vertex buffer bind on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
@@ -386,6 +394,7 @@ void IECommandBuffer::recordBindIndexBuffer(
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
+
               "Attempt to record an index buffer bind on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
@@ -405,6 +414,7 @@ void IECommandBuffer::recordBindPipeline(
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
+
               "Attempt to record a pipeline bind on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
@@ -433,6 +443,7 @@ void IECommandBuffer::recordBindDescriptorSets(
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
+
               "Attempt to record a descriptor set bind on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
@@ -457,12 +468,14 @@ void IECommandBuffer::recordDrawIndexed(
   uint32_t firstIndex,
   int32_t  vertexOffset,
   uint32_t firstInstance
+
 ) {
     commandPool->commandPoolMutex.lock();
     if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
+
               "Attempt to record an indexed draw on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
@@ -488,7 +501,9 @@ void IECommandBuffer::recordBeginRenderPass(IERenderPassBeginInfo *pRenderPassBe
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
-              "Attempt to record a render pass beginning on a command buffer that is not recording!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+
+              "Attempt to record a render pass beginning on a command buffer that is not recording!",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
         }
     }
@@ -506,7 +521,9 @@ void IECommandBuffer::recordSetViewport(
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
-              "Attempt to record a viewport set on a command buffer that is not recording!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+
+              "Attempt to record a viewport set on a command buffer that is not recording!",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
         }
     }
@@ -520,7 +537,9 @@ void IECommandBuffer::recordSetScissor(uint32_t firstScissor, uint32_t scissorCo
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
-              "Attempt to record a scissor set on a command buffer that is not recording!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+
+              "Attempt to record a scissor set on a command buffer that is not recording!",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
         }
     }
@@ -534,7 +553,9 @@ void IECommandBuffer::recordEndRenderPass() {
         record(false);
         if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->settings->logger.log(
-              "Attempt to record a render pass ending on a command buffer that is not recording!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+
+              "Attempt to record a render pass ending on a command buffer that is not recording!",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
         }
     }

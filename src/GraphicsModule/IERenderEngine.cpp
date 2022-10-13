@@ -11,16 +11,16 @@
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <include/GL/glew.h>
 
 #define VMA_IMPLEMENTATION
 
-#include <include/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 
-#include <stb_image.h>
+#include <../contrib/stb/stb_image.h>
 
 /* Include system dependencies. */
 #include <filesystem>
@@ -51,6 +51,7 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
     if (!instanceBuilder) {
         settings->logger.log(
+
           "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -72,6 +73,7 @@ GLFWwindow *IERenderEngine::createWindow() const {
         const char *description;
         int         code = glfwGetError(&description);
         settings->logger.log(
+
           "Failed to create window! Error: " + std::to_string(code) + " " + description,
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -96,6 +98,7 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
         );  // Load image from disk
         if (pixels == nullptr) {
             settings->logger.log(
+
               "Failed to load icon " + file.path().generic_string() + ". Is this file an image?",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
@@ -183,6 +186,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
     if (!thisSwapchain) {
         // Failure! Log it then continue without deleting the old swapchain.
         settings->logger.log(
+
           "Failed to create swapchain! Error: " + thisSwapchain.error().message(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -413,29 +417,18 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
 
-std::weak_ptr<IEAspect> IERenderEngine::createAspect(std::weak_ptr<IEAsset> asset, const std::string &filename) {
-    auto renderable   = std::static_pointer_cast<IEAspect>(std::make_shared<IERenderable>(this, filename));
-    aspects[filename] = renderable;
-    renderables.push_back(std::dynamic_pointer_cast<IERenderable>(renderable));
-    std::dynamic_pointer_cast<IERenderable>(renderable)->create(this, filename);
-    std::dynamic_pointer_cast<IERenderable>(renderable)->loadFromDiskToRAM();
-    std::dynamic_pointer_cast<IERenderable>(renderable)->loadFromRAMToVRAM();
+void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
+    for (std::shared_ptr<IEAspect> &aspect : asset->aspects) {
+        // If aspect is downcast-able to a renderable
+        if (dynamic_cast<IERenderable *>(aspect.get())) {
+            renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
+            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->filename);
+            std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
+            std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
+        }
+    }
     if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) graphicsCommandPool->index(0)->execute();
-    return renderable;
 }
-
-// void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
-//     for (std::shared_ptr<IEAspect> &aspect : asset->aspects) {
-//         // If aspect is downcast-able to a renderable
-//         if (dynamic_cast<IERenderable *>(aspect.get())) {
-//             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
-//             std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->filename);
-//             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
-//             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
-//         }
-//     }
-//     if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) graphicsCommandPool->index(0)->execute();
-//}
 
 void IERenderEngine::handleResolutionChange() {
     if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
@@ -541,6 +534,7 @@ bool IERenderEngine::_vulkanUpdate() {
     currentFrame = (currentFrame + 1) % (int) swapchain.image_count;
     if (frameTime > 1.0 / 30.0) {
         settings->logger.log(
+
           "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime * 1000) + "ms to compute.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -776,6 +770,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
     camera.create(this);
     this->settings->logger.log(
+
       reinterpret_cast<const char *>(glGetString(GL_RENDERER)),
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );

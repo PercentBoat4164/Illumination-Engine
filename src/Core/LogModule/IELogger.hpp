@@ -1,9 +1,9 @@
 #pragma once
 
-#include <include/spdlog/logger.h>
 #include <memory>
+#include <spdlog/logger.h>
 #include <string>
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 namespace IE::Core {
 /**
@@ -47,11 +47,13 @@ public:
     explicit Logger(
       const std::string &t_name,
       const std::string &t_path  = "",
-      Flags              t_flags = ILLUMINATION_ENGINE_LOG_TO_STDOUT
+      Flags              t_flags = IE::Core::Logger::ILLUMINATION_ENGINE_LOG_TO_STDOUT
     );
 
-    void
-    log(const std::string &t_msg, IE::Core::Logger::Level t_level = ILLUMINATION_ENGINE_LOG_LEVEL_TRACE) const;
+    void log(
+      const std::string      &t_msg,
+      IE::Core::Logger::Level t_level = IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_TRACE
+    ) const;
 
     void log(VkDebugUtilsMessageSeverityFlagBitsEXT t_level, const std::string &t_msg) const;
 
@@ -59,6 +61,7 @@ public:
 
     static void init();
 };
+
 /**
  * @brief Basic private 'constructor' for the Flags enum.
  * @details This is used to create IE::Graphics::Image::Locations from the uint8_ts that are used to perform the

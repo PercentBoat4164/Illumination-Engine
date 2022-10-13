@@ -1,13 +1,14 @@
 #pragma once
 
-#include <iostream>
 #include "assimp/material.h"
-#include "stb_image.h"
-#include "assimp/texture.h"
 #include "assimp/scene.h"
-#include <unordered_map>
-#include <string>
+#include "assimp/texture.h"
 #include "Image/IETexture.hpp"
+
+#include <../contrib/stb/stb_image.h>
+#include <iostream>
+#include <string>
+#include <unordered_map>
 
 #define GLM_FORCE_RADIANS
 
@@ -17,65 +18,65 @@ class IEMesh;
 
 class IEMaterial {
 public:
-	uint32_t textureCount{};
-	uint32_t diffuseTextureIndex{};
-	glm::vec4 diffuseColor{1.0F, 1.0F, 1.0F, 1.0F};
-	IERenderEngine *linkedRenderEngine{};
+    uint32_t        textureCount{};
+    uint32_t        diffuseTextureIndex{};
+    glm::vec4       diffuseColor{1.0F, 1.0F, 1.0F, 1.0F};
+    IERenderEngine *linkedRenderEngine{};
 
-	IEMaterial() = default;
+    IEMaterial() = default;
 
-	explicit IEMaterial(IERenderEngine *engineLink);
+    explicit IEMaterial(IERenderEngine *engineLink);
 
-	static void setAPI(const IEAPI &API);
-
-
-	static std::function<void(IEMaterial &)> _create;
-
-	void create(IERenderEngine *);
-
-	void _openglCreate();
-
-	void _vulkanCreate();
+    static void setAPI(const IEAPI &API);
 
 
-	static std::function<void(IEMaterial &, const std::string &, const aiScene *, uint32_t)> _loadFromDiskToRAM;
+    static std::function<void(IEMaterial &)> _create;
 
-	void loadFromDiskToRAM(const std::string &, const aiScene *, uint32_t);
+    void create(IERenderEngine *);
 
-	void _openglLoadFromDiskToRAM(const std::string &, const aiScene *, uint32_t);
+    void _openglCreate();
 
-	void _vulkanLoadFromDiskToRAM(const std::string &, const aiScene *, uint32_t);
-
-
-	static std::function<void(IEMaterial &)> _loadFromRAMToVRAM;
-
-	void loadFromRAMToVRAM();
-
-	void _openglLoadFromRAMToVRAM();
-
-	void _vulkanLoadFromRAMToVRAM();
+    void _vulkanCreate();
 
 
-	static std::function<void(IEMaterial &)> _unloadFromVRAM;
+    static std::function<void(IEMaterial &, const std::string &, const aiScene *, uint32_t)> _loadFromDiskToRAM;
 
-	void unloadFromVRAM();
+    void loadFromDiskToRAM(const std::string &, const aiScene *, uint32_t);
 
-	void _openglUnloadFromVRAM();
+    void _openglLoadFromDiskToRAM(const std::string &, const aiScene *, uint32_t);
 
-	void _vulkanUnloadFromVRAM();
+    void _vulkanLoadFromDiskToRAM(const std::string &, const aiScene *, uint32_t);
 
 
-	static std::function<void(IEMaterial &)> _unloadFromRAM;
+    static std::function<void(IEMaterial &)> _loadFromRAMToVRAM;
 
-	void unloadFromRAM();
+    void loadFromRAMToVRAM();
 
-	void _openglUnloadFromRAM();
+    void _openglLoadFromRAMToVRAM();
 
-	void _vulkanUnloadFromRAM();
+    void _vulkanLoadFromRAMToVRAM();
+
+
+    static std::function<void(IEMaterial &)> _unloadFromVRAM;
+
+    void unloadFromVRAM();
+
+    void _openglUnloadFromVRAM();
+
+    void _vulkanUnloadFromVRAM();
+
+
+    static std::function<void(IEMaterial &)> _unloadFromRAM;
+
+    void unloadFromRAM();
+
+    void _openglUnloadFromRAM();
+
+    void _vulkanUnloadFromRAM();
 
 private:
-	std::vector<std::pair<uint32_t *, aiTextureType>> supportedTextureTypes = {
-			{&diffuseTextureIndex, aiTextureType_DIFFUSE},
-			{&diffuseTextureIndex, aiTextureType_BASE_COLOR},
-	};
+    std::vector<std::pair<uint32_t *, aiTextureType>> supportedTextureTypes = {
+      {&diffuseTextureIndex, aiTextureType_DIFFUSE   },
+      {&diffuseTextureIndex, aiTextureType_BASE_COLOR},
+    };
 };
