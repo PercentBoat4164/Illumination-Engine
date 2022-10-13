@@ -104,7 +104,7 @@ public:
 
     static std::string translateVkResultCodes(VkResult t_result);
 
-    virtual ~RenderEngine();
+    ~RenderEngine() override;
 
     void destroy();
 };

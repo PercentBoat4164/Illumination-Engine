@@ -15,10 +15,11 @@ public:
 
     virtual ~Engine() = default;
 
-private:
+protected:
     Engine() : m_id(m_nextId++) {
     }
 
+private:
     static uint64_t m_nextId;
 };
 }  // namespace IE::Core
