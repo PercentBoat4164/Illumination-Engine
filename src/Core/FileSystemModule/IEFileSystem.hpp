@@ -30,6 +30,8 @@ public:
 
     explicit IEFileSystem(const IEDirectory &initialBaseDirectory);
 
+    ~IEFileSystem() = default;
+
     template<typename... Args>
     static std::string composePath(IEPathName format, const Args &...args);
 
