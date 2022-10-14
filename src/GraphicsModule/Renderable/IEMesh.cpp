@@ -1,6 +1,6 @@
 #include "IEMesh.hpp"
 
-#include "Buffer/IEBuffer.hpp"
+#include "Buffer/Buffer.hpp"
 #include "Core/LogModule/IELogger.hpp"
 #include "IERenderEngine.hpp"
 
@@ -26,8 +26,8 @@ void IEMesh::setAPI(const API &API) {
 
 void IEMesh::create(IERenderEngine *engineLink) {
     linkedRenderEngine = engineLink;
-    vertexBuffer       = std::make_shared<IEBuffer>();
-    indexBuffer        = std::make_shared<IEBuffer>();
+    vertexBuffer       = std::make_shared<Buffer>();
+    indexBuffer        = std::make_shared<Buffer>();
     descriptorSet      = std::make_shared<IEDescriptorSet>();
     pipeline           = std::make_shared<IEPipeline>();
     material           = std::make_shared<IEMaterial>();
@@ -63,7 +63,7 @@ void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScen
     }
 
     // Create vertex buffer.
-    IEBuffer::CreateInfo vertexBufferCreateInfo{
+    Buffer::CreateInfo vertexBufferCreateInfo{
       .size = sizeof(vertices[0]) * vertices.size(),
       .type = GL_ARRAY_BUFFER,
     };
@@ -88,7 +88,7 @@ void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScen
     }
 
     // Create index buffer
-    IEBuffer::CreateInfo indexBufferCreateInfo{
+    Buffer::CreateInfo indexBufferCreateInfo{
       .size = sizeof(indices[0]) * indices.size(),
       .type = GL_ELEMENT_ARRAY_BUFFER,
     };
@@ -122,7 +122,7 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
     }
 
     // Create vertex buffer.
-    IEBuffer::CreateInfo vertexBufferCreateInfo{
+    Buffer::CreateInfo vertexBufferCreateInfo{
       .size            = sizeof(vertices[0]) * vertices.size(),
       .usage           = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
       .allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU,
@@ -148,7 +148,7 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
     }
 
     // Create index buffer
-    IEBuffer::CreateInfo indexBufferCreateInfo{
+    Buffer::CreateInfo indexBufferCreateInfo{
       .size            = sizeof(indices[0]) * indices.size(),
       .usage           = VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
       .allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU,

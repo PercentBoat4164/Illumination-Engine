@@ -3,10 +3,6 @@
 #include <memory>
 
 namespace IE::Core {
-class Core;
-}  // namespace IE::Core
-
-namespace IE::Core {
 class Engine {
 public:
     virtual ~Engine() = default;

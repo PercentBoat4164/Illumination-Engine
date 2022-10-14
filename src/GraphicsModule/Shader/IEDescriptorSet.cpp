@@ -2,7 +2,7 @@
 #include "IEDescriptorSet.hpp"
 
 /* Include dependencies within this module. */
-#include "Buffer/IEBuffer.hpp"
+#include "Buffer/Buffer.hpp"
 #include "IERenderEngine.hpp"
 #include "Image/Image.hpp"
 #include "Image/TextureVulkan.hpp"
@@ -84,7 +84,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
     }
     std::vector<int> bindings{};
     bindings.reserve(createdWith.data.size());
-    std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> data{};
+    std::vector<std::optional<std::variant<IE::Graphics::Image *, Buffer *>>> data{};
     data.reserve(createdWith.data.size());
     for (size_t i = 0; i < createdWith.data.size(); ++i) {
         if (createdWith.data[i].has_value()) {
@@ -96,7 +96,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 }
 
 void IEDescriptorSet::update(
-  std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> newData,
+  std::vector<std::optional<std::variant<IE::Graphics::Image *, Buffer *>>> newData,
   std::vector<int>                                                            bindings
 ) {
     std::vector<VkDescriptorImageInfo> imageDescriptorInfos{};
@@ -154,20 +154,20 @@ void IEDescriptorSet::update(
                 writeDescriptorSet.pImageInfo = &imageDescriptorInfos[imageDescriptorInfos.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
                 VkDescriptorBufferInfo storageBufferDescriptorInfo{};
-                storageBufferDescriptorInfo.buffer = std::get<IEBuffer *>(newData[i].value())->buffer;
+                storageBufferDescriptorInfo.buffer = std::get<Buffer *>(newData[i].value())->buffer;
                 storageBufferDescriptorInfo.offset = 0;
                 storageBufferDescriptorInfo.range  = VK_WHOLE_SIZE;
                 if (storageBufferDescriptorInfo.buffer == VK_NULL_HANDLE)
-                    throw std::runtime_error("no IEBuffer given or given IEBuffer has not been created!");
+                    throw std::runtime_error("no Buffer given or given Buffer has not been created!");
                 bufferDescriptorInfos.push_back(storageBufferDescriptorInfo);
                 writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
             } else if (writeDescriptorSet.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
                 VkDescriptorBufferInfo uniformBufferDescriptorInfo{};
-                uniformBufferDescriptorInfo.buffer = std::get<IEBuffer *>(newData[i].value())->buffer;
+                uniformBufferDescriptorInfo.buffer = std::get<Buffer *>(newData[i].value())->buffer;
                 uniformBufferDescriptorInfo.offset = 0;
                 uniformBufferDescriptorInfo.range  = VK_WHOLE_SIZE;
                 if (uniformBufferDescriptorInfo.buffer == VK_NULL_HANDLE)
-                    throw std::runtime_error("no IEBuffer given or given IEBuffer has not been created!");
+                    throw std::runtime_error("no Buffer given or given Buffer has not been created!");
                 bufferDescriptorInfos.push_back(uniformBufferDescriptorInfo);
                 writeDescriptorSet.pBufferInfo = &bufferDescriptorInfos[bufferDescriptorInfos.size() - 1];
             } else {

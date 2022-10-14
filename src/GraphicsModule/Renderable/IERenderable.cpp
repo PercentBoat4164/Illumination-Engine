@@ -50,7 +50,7 @@ void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &
     linkedRenderEngine = engineLink;
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
-    IEBuffer::CreateInfo modelBufferCreateInfo{
+    Buffer::CreateInfo modelBufferCreateInfo{
       .size = sizeof(IEUniformBufferObject),
       .type = GL_ARRAY_BUFFER,
     };
@@ -61,14 +61,14 @@ void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &
     linkedRenderEngine = engineLink;
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
-    IEBuffer::CreateInfo modelBufferCreateInfo{
+    Buffer::CreateInfo modelBufferCreateInfo{
       .size            = sizeof(IEUniformBufferObject),
       .usage           = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
       .allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
     modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
 
     // Prepare a command buffer for use by this object during creation
-    commandBufferIndex = linkedRenderEngine->graphicsCommandPool->commandBuffers.size();
+    commandBufferIndex = linkedRenderEngine->graphicsCommandPool->m_commandBuffers.size();
     linkedRenderEngine->graphicsCommandPool->index(commandBufferIndex);
 }
 

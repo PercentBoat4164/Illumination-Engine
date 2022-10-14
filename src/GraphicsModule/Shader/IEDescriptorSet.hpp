@@ -5,7 +5,7 @@
 namespace IE::Graphics {
 class Image;
 }  // namespace IE::Graphics
-class IEBuffer;
+class Buffer;
 
 class IERenderEngine;
 
@@ -30,7 +30,7 @@ public:
         // Required
         std::vector<VkDescriptorPoolSize>                                           poolSizes{};
         std::vector<VkShaderStageFlagBits>                                          shaderStages{};
-        std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> data{};
+        std::vector<std::optional<std::variant<IE::Graphics::Image *, Buffer *>>> data{};
 
         // Optional
         uint32_t maxIndex{1};
@@ -49,7 +49,7 @@ public:
     void create(IERenderEngine *renderEngineLink, CreateInfo *createInfo);
 
     void update(
-      std::vector<std::optional<std::variant<IE::Graphics::Image *, IEBuffer *>>> newData,
+      std::vector<std::optional<std::variant<IE::Graphics::Image *, Buffer *>>> newData,
       std::vector<int>                                                            bindings = {}
     );
 

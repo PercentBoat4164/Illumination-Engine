@@ -11,7 +11,10 @@
 namespace IE::Core {
 struct Core {
 public:
-    IE::Core::Logger                                  logger;
+    IE::Core::Logger logger{
+      ILLUMINATION_ENGINE_CORE_LOGGER_NAME,
+      ILLUMINATION_ENGINE_CORE_LOG_FILENAME,
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_TO_FILE | IE::Core::Logger::ILLUMINATION_ENGINE_LOG_TO_STDOUT};
     std::mutex                                        enginesMutex;
     std::unordered_map<std::string, IE::Core::Engine> engines;
     ThreadPool                                        threadPool;
@@ -24,5 +27,5 @@ public:
 
 private:
     Core();
-};
+} __attribute__((aligned(128)));
 }  // namespace IE::Core

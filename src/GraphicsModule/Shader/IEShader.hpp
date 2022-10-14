@@ -58,6 +58,4 @@ public:
     void compile(const std::string &, const std::string &);
 
     void create(IERenderEngine *, IEFile *);
-
-    static void setAPI(const API &);
 };

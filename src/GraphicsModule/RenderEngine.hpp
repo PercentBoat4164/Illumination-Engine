@@ -13,6 +13,7 @@
 #include "GL/glew.h"
 
 #define GLFW_IMPLEMENTATION
+#include "CommandBuffer/CommandPool.hpp"
 #include "GLFW/glfw3.h"
 #include "VkBootstrap.h"
 
@@ -43,22 +44,22 @@ private:
     IE::Graphics::API     m_api;
     vkb::Instance         m_instance;
     vkb::Swapchain        m_swapchain;
-    vkb::Device           m_device;
     VkSurfaceKHR          m_surface{};
     VmaAllocator          m_allocator{};
     IE::Core::Logger      m_graphicsAPICallbackLog{
       ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME,
       ILLUMINATION_ENGINE_GRAPHICS_LOGGER_FILENAME};
-    GLFWwindow                          *m_window{};
-    std::array<size_t, 2>                m_defaultResolution{800, 600};
-    std::array<size_t, 2>                m_currentResolution = m_defaultResolution;
-    std::array<size_t, 2>                m_defaultPosition{10, 10};
-    bool                                 m_useVsync{false};
-    std::vector<VkImageView>             m_swapchainImageViews;
-    std::vector<IE::Graphics::Semaphore> m_imageAvailableSemaphores{};
-    std::vector<IE::Graphics::Semaphore> m_renderFinishedSemaphores{};
-    std::vector<IE::Graphics::Fence>     m_inFlightFences{};
-    std::vector<IE::Graphics::Fence>     m_imagesInFlight{};
+    GLFWwindow                                             *m_window{};
+    std::array<size_t, 2>                                   m_defaultResolution{800, 600};
+    std::array<size_t, 2>                                   m_currentResolution = m_defaultResolution;
+    std::array<size_t, 2>                                   m_defaultPosition{10, 10};
+    bool                                                    m_useVsync{false};
+    std::vector<VkImageView>                                m_swapchainImageViews;
+    std::vector<IE::Graphics::Semaphore>                    m_imageAvailableSemaphores{};
+    std::vector<IE::Graphics::Semaphore>                    m_renderFinishedSemaphores{};
+    std::vector<IE::Graphics::Fence>                        m_inFlightFences{};
+    std::vector<IE::Graphics::Fence>                        m_imagesInFlight{};
+    std::vector<std::shared_ptr<IE::Graphics::CommandPool>> m_commandPools{};
 
     static VkBool32 APIDebugMessenger(
       VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
@@ -79,9 +80,13 @@ private:
 
     vkb::Swapchain createSwapchain();
 
+    std::vector<std::shared_ptr<IE::Graphics::CommandPool>> createCommandPool();
+
     static void framebufferResizeCallback(GLFWwindow *pWindow, int x, int y);
 
 public:
+    vkb::Device m_device;
+
     explicit RenderEngine() = default;
 
     GLFWwindow *getWindow();
@@ -90,14 +95,6 @@ public:
 
     IE::Core::Logger getLogger();
 
-    VkDevice getDevice() const {
-        return m_device.device;
-    }
-
-    VkPhysicalDevice getPhysicalDevice() const {
-        return m_device.physical_device;
-    }
-
     IE::Graphics::API getAPI();
 
     static std::shared_ptr<RenderEngine> create();
@@ -105,7 +102,5 @@ public:
     static std::string translateVkResultCodes(VkResult t_result);
 
     ~RenderEngine() override;
-
-    void destroy();
 };
 }  // namespace IE::Graphics

@@ -7,7 +7,7 @@ class IECamera;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "Buffer/IEBuffer.hpp"
+#include "Buffer/Buffer.hpp"
 #include "Image/Texture.hpp"
 #include "Renderable/IEMaterial.hpp"
 #include "Renderable/IEVertex.hpp"
@@ -40,7 +40,7 @@ class IERenderable : public IEAspect {
 public:
     std::string           modelName{};
     std::vector<IEMesh>   meshes{};
-    IEBuffer              modelBuffer{};
+    Buffer                modelBuffer{};
     IERenderEngine       *linkedRenderEngine{};
     IEUniformBufferObject uniformBufferObject{};
     std::vector<IEShader> shaders{};

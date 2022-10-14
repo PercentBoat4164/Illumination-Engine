@@ -44,8 +44,6 @@ public:
 
     ~IEPipeline();
 
-    static void setAPI(const API &API);
-
 private:
     static std::function<void(IEPipeline &, IERenderEngine *, IEPipeline::CreateInfo *)> _create;
 

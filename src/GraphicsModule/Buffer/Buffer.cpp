@@ -1,59 +1,59 @@
 /* Include this file's header. */
-#include "IEBuffer.hpp"
+#include "Buffer.hpp"
 
 /* Include dependencies within this module. */
 #include "IERenderEngine.hpp"
 
-void IEBuffer::setAPI(const API &API) {
+void Buffer::setAPI(const API &API) {
     if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-        _uploadToRAM         = &IEBuffer::_openglUploadToRAM;
-        _uploadToVRAM        = &IEBuffer::_openglUploadToVRAM;
-        _uploadToVRAM_vector = &IEBuffer::_openglUploadToVRAM_vector;
-        _uploadToVRAM_void   = &IEBuffer::_openglUploadToVRAM_void;
-        _update_vector       = &IEBuffer::_openglUpdate_vector;
-        _update_void         = &IEBuffer::_openglUpdate_void;
-        _unloadFromVRAM      = &IEBuffer::_openglUnloadFromVRAM;
-        _destroy             = &IEBuffer::_openglDestroy;
+        _uploadToRAM         = &Buffer::_openglUploadToRAM;
+        _uploadToVRAM        = &Buffer::_openglUploadToVRAM;
+        _uploadToVRAM_vector = &Buffer::_openglUploadToVRAM_vector;
+        _uploadToVRAM_void   = &Buffer::_openglUploadToVRAM_void;
+        _update_vector       = &Buffer::_openglUpdate_vector;
+        _update_void         = &Buffer::_openglUpdate_void;
+        _unloadFromVRAM      = &Buffer::_openglUnloadFromVRAM;
+        _destroy             = &Buffer::_openglDestroy;
     } else if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-        _uploadToRAM         = &IEBuffer::_vulkanUploadToRAM;
-        _uploadToVRAM        = &IEBuffer::_vulkanUploadToVRAM;
-        _uploadToVRAM_vector = &IEBuffer::_vulkanUploadToVRAM_vector;
-        _uploadToVRAM_void   = &IEBuffer::_vulkanUploadToVRAM_void;
-        _update_vector       = &IEBuffer::_vulkanUpdate_vector;
-        _update_void         = &IEBuffer::_vulkanUpdate_void;
-        _unloadFromVRAM      = &IEBuffer::_vulkanUnloadFromVRAM;
-        _destroy             = &IEBuffer::_vulkanDestroy;
+        _uploadToRAM         = &Buffer::_vulkanUploadToRAM;
+        _uploadToVRAM        = &Buffer::_vulkanUploadToVRAM;
+        _uploadToVRAM_vector = &Buffer::_vulkanUploadToVRAM_vector;
+        _uploadToVRAM_void   = &Buffer::_vulkanUploadToVRAM_void;
+        _update_vector       = &Buffer::_vulkanUpdate_vector;
+        _update_void         = &Buffer::_vulkanUpdate_void;
+        _unloadFromVRAM      = &Buffer::_vulkanUnloadFromVRAM;
+        _destroy             = &Buffer::_vulkanDestroy;
     }
 }
 
-void IEBuffer::uploadToRAM(void *pData, size_t dataSize) {
+void Buffer::uploadToRAM(void *pData, size_t dataSize) {
     data = std::vector<char>{(char *) pData, (char *) ((uint64_t) pData + dataSize)};
     if (!data.empty()) status = static_cast<IEBufferStatus>(IE_BUFFER_STATUS_DATA_IN_RAM | status);
 }
 
-void IEBuffer::uploadToRAM(const std::vector<char> &dataVector) {
+void Buffer::uploadToRAM(const std::vector<char> &dataVector) {
     data   = dataVector;
     status = static_cast<IEBufferStatus>(IE_BUFFER_STATUS_DATA_IN_RAM | status);
 }
 
-std::function<void(IEBuffer &)> IEBuffer::_uploadToRAM;
+std::function<void(Buffer &)> Buffer::_uploadToRAM;
 
-void IEBuffer::uploadToRAM() {
+void Buffer::uploadToRAM() {
     _uploadToRAM(*this);
 }
 
-void IEBuffer::_openglUploadToRAM() {
+void Buffer::_openglUploadToRAM() {
     /**@todo Load from VRAM to RAM somehow.*/
 }
 
-void IEBuffer::_vulkanUploadToRAM() {
+void Buffer::_vulkanUploadToRAM() {
     void *internalBufferData;
     vmaMapMemory(linkedRenderEngine->allocator, allocation, &internalBufferData);
     memcpy(data.data(), internalBufferData, size);
     vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 }
 
-void IEBuffer::toImage(const std::shared_ptr<IE::Graphics::detail::ImageVulkan> &image) {
+void Buffer::toImage(const std::shared_ptr<IE::Graphics::detail::ImageVulkan> &image) {
     VkBufferImageCopy region{};
     region.imageSubresource.aspectMask = image->m_aspect & (VK_IMAGE_ASPECT_COLOR_BIT | VK_IMAGE_ASPECT_DEPTH_BIT);
     region.imageSubresource.layerCount = 1;
@@ -73,15 +73,15 @@ void IEBuffer::toImage(const std::shared_ptr<IE::Graphics::detail::ImageVulkan> 
     }
 }
 
-IEBuffer::~IEBuffer() {
+Buffer::~IEBuffer() {
     destroy();
 }
 
-IEBuffer::IEBuffer(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo) {
+Buffer::Buffer(IERenderEngine *engineLink, Buffer::CreateInfo *createInfo) {
     create(engineLink, createInfo);
 }
 
-IEBuffer::IEBuffer(
+Buffer::Buffer(
   IERenderEngine    *engineLink,
   size_t             bufferSize,
   VkBufferUsageFlags usageFlags,
@@ -91,7 +91,7 @@ IEBuffer::IEBuffer(
     create(engineLink, bufferSize, usageFlags, memoryUsage, bufferType);
 }
 
-void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo) {
+void Buffer::create(IERenderEngine *engineLink, Buffer::CreateInfo *createInfo) {
     if (status == IE_BUFFER_STATUS_NONE) {
         linkedRenderEngine = engineLink;
         size               = createInfo->size;
@@ -102,7 +102,7 @@ void IEBuffer::create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createIn
     status = IE_BUFFER_STATUS_UNLOADED;
 }
 
-void IEBuffer::create(
+void Buffer::create(
   IERenderEngine    *engineLink,
   size_t             bufferSize,
   VkBufferUsageFlags usageFlags,
@@ -119,13 +119,13 @@ void IEBuffer::create(
     status = IE_BUFFER_STATUS_UNLOADED;
 }
 
-std::function<void(IEBuffer &)> IEBuffer::_uploadToVRAM = nullptr;
+std::function<void(Buffer &)> Buffer::_uploadToVRAM = nullptr;
 
-void IEBuffer::uploadToVRAM() {
+void Buffer::uploadToVRAM() {
     _uploadToVRAM(*this);
 }
 
-void IEBuffer::_openglUploadToVRAM() {
+void Buffer::_openglUploadToVRAM() {
     if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
         linkedRenderEngine->settings->logger.log(
           "Attempt to load buffer with no contents in RAM to VRAM.",
@@ -141,7 +141,7 @@ void IEBuffer::_openglUploadToVRAM() {
     }
 }
 
-void IEBuffer::_vulkanUploadToVRAM() {
+void Buffer::_vulkanUploadToVRAM() {
     if ((status & IE_BUFFER_STATUS_DATA_IN_RAM) == 0) {
         linkedRenderEngine->settings->logger.log(
           "Attempt to load buffer with no contents in RAM to VRAM.",
@@ -192,13 +192,13 @@ void IEBuffer::_vulkanUploadToVRAM() {
     vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 }
 
-std::function<void(IEBuffer &, const std::vector<char> &)> IEBuffer::_uploadToVRAM_vector = nullptr;
+std::function<void(Buffer &, const std::vector<char> &)> Buffer::_uploadToVRAM_vector = nullptr;
 
-void IEBuffer::uploadToVRAM(const std::vector<char> &data) {
+void Buffer::uploadToVRAM(const std::vector<char> &data) {
     _uploadToVRAM_vector(*this, data);
 }
 
-void IEBuffer::_openglUploadToVRAM_vector(const std::vector<char> &data) {
+void Buffer::_openglUploadToVRAM_vector(const std::vector<char> &data) {
     if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM
         glGenBuffers(1, &id);                         // Put it in VRAM
         size   = data.size();
@@ -211,7 +211,7 @@ void IEBuffer::_openglUploadToVRAM_vector(const std::vector<char> &data) {
     glBindBuffer(type, 0);
 }
 
-void IEBuffer::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
+void Buffer::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
     if ((status & IE_BUFFER_STATUS_DATA_IN_VRAM) == 0) {
         // Create the VkBuffer because it does not yet exist.
         VmaAllocationCreateInfo allocationCreateInfo{
@@ -257,13 +257,13 @@ void IEBuffer::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
     vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 }
 
-std::function<void(IEBuffer &, void *, size_t)> IEBuffer::_uploadToVRAM_void = nullptr;
+std::function<void(Buffer &, void *, size_t)> Buffer::_uploadToVRAM_void = nullptr;
 
-void IEBuffer::uploadToVRAM(void *data, size_t size) {
+void Buffer::uploadToVRAM(void *data, size_t size) {
     _uploadToVRAM_void(*this, data, size);
 }
 
-void IEBuffer::_openglUploadToVRAM_void(void *data, size_t size) {
+void Buffer::_openglUploadToVRAM_void(void *data, size_t size) {
     if (!(status & IE_BUFFER_STATUS_DATA_IN_VRAM)) {  // Not in VRAM?
         glGenBuffers(1, &id);                         // Put it in VRAM
         this->size = size;
@@ -276,7 +276,7 @@ void IEBuffer::_openglUploadToVRAM_void(void *data, size_t size) {
     glBindBuffer(type, 0);
 }
 
-void IEBuffer::_vulkanUploadToVRAM_void(void *data, size_t size) {
+void Buffer::_vulkanUploadToVRAM_void(void *data, size_t size) {
     if ((status & IE_BUFFER_STATUS_DATA_IN_VRAM) == 0) {
         // Create the VkBuffer because it does not yet exist.
         VmaAllocationCreateInfo allocationCreateInfo{
@@ -324,13 +324,13 @@ void IEBuffer::_vulkanUploadToVRAM_void(void *data, size_t size) {
     vmaUnmapMemory(linkedRenderEngine->allocator, allocation);
 }
 
-std::function<void(IEBuffer &, const std::vector<char> &)> IEBuffer::_update_vector = nullptr;
+std::function<void(Buffer &, const std::vector<char> &)> Buffer::_update_vector = nullptr;
 
-void IEBuffer::update(const std::vector<char> &data) {
+void Buffer::update(const std::vector<char> &data) {
     _update_vector(*this, data);
 }
 
-void IEBuffer::_openglUpdate_vector(const std::vector<char> &data) {
+void Buffer::_openglUpdate_vector(const std::vector<char> &data) {
     if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
         glBindBuffer(type, id);
         glBufferData(type, (GLsizeiptr) data.size() * (GLsizeiptr) sizeof(data[0]), data.data(), GL_STATIC_DRAW);
@@ -340,7 +340,7 @@ void IEBuffer::_openglUpdate_vector(const std::vector<char> &data) {
         this->data = data;
 }
 
-void IEBuffer::_vulkanUpdate_vector(const std::vector<char> &data) {
+void Buffer::_vulkanUpdate_vector(const std::vector<char> &data) {
     if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
         // Upload data in RAM to VRAM
         void *internalBufferData;
@@ -352,13 +352,13 @@ void IEBuffer::_vulkanUpdate_vector(const std::vector<char> &data) {
         this->data = data;
 }
 
-std::function<void(IEBuffer &, void *, size_t)> IEBuffer::_update_void = nullptr;
+std::function<void(Buffer &, void *, size_t)> Buffer::_update_void = nullptr;
 
-void IEBuffer::update(void *data, size_t size) {
+void Buffer::update(void *data, size_t size) {
     _update_void(*this, data, size);
 }
 
-void IEBuffer::_openglUpdate_void(void *data, size_t size) {
+void Buffer::_openglUpdate_void(void *data, size_t size) {
     if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
         glBindBuffer(type, id);
         glBufferData(type, (GLsizeiptr) size, data, GL_STATIC_DRAW);
@@ -368,7 +368,7 @@ void IEBuffer::_openglUpdate_void(void *data, size_t size) {
         this->data = std::vector<char>{(char *) data, (char *) ((size_t) data + size)};
 }
 
-void IEBuffer::_vulkanUpdate_void(void *data, size_t size) {
+void Buffer::_vulkanUpdate_void(void *data, size_t size) {
     if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
         // Upload data in RAM to VRAM
         void *internalBufferData;
@@ -380,31 +380,31 @@ void IEBuffer::_vulkanUpdate_void(void *data, size_t size) {
         this->data = std::vector<char>{(char *) data, (char *) ((size_t) data + size)};
 }
 
-std::function<void(IEBuffer &)> IEBuffer::_unloadFromVRAM = nullptr;
+std::function<void(Buffer &)> Buffer::_unloadFromVRAM = nullptr;
 
-void IEBuffer::unloadFromVRAM() {
+void Buffer::unloadFromVRAM() {
     _unloadFromVRAM(*this);
 }
 
-void IEBuffer::_openglUnloadFromVRAM() {
+void Buffer::_openglUnloadFromVRAM() {
     if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
         glDeleteBuffers(1, &id);
         status = static_cast<IEBufferStatus>(status & ~IE_BUFFER_STATUS_DATA_IN_VRAM);  // Not in VRAM
     }
 }
 
-void IEBuffer::_vulkanUnloadFromVRAM() {
+void Buffer::_vulkanUnloadFromVRAM() {
     vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation);
     status = static_cast<IEBufferStatus>(status & ~IE_BUFFER_STATUS_DATA_IN_VRAM);
 }
 
-std::function<void(IEBuffer &)> IEBuffer::_destroy = nullptr;
+std::function<void(Buffer &)> Buffer::_destroy = nullptr;
 
-void IEBuffer::destroy() {
+void Buffer::destroy() {
     _destroy(*this);
 }
 
-void IEBuffer::_openglDestroy() {
+void Buffer::_openglDestroy() {
     if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
         glDeleteBuffers(1, &id);
         status =
@@ -418,7 +418,7 @@ void IEBuffer::_openglDestroy() {
     }
 }
 
-void IEBuffer::_vulkanDestroy() {
+void Buffer::_vulkanDestroy() {
     if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
         vmaDestroyBuffer(linkedRenderEngine->allocator, buffer, allocation);
         status =
@@ -432,4 +432,4 @@ void IEBuffer::_vulkanDestroy() {
     }
 }
 
-IEBuffer::IEBuffer() = default;
+Buffer::Buffer() = default;

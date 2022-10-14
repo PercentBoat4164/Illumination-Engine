@@ -27,7 +27,7 @@ Checks: '
   altera-kernel-name-restriction,
   altera-single-work-item-barrier,
   altera-struct-pack-align,
-  altera-unroll-loops,
+  -altera-unroll-loops,
   
   android-cloexec-accept,
   android-cloexec-accept4,
@@ -181,7 +181,7 @@ Checks: '
   -fuchsia-default-arguments-calls,
   -fuchsia-default-arguments-declarations,
   -fuchsia-multiple-inheritance,
-  fuchsia-overloaded-operator,
+  -fuchsia-overloaded-operator,
   fuchsia-statically-constructed-objects,
   fuchsia-trailing-return,
   fuchsia-virtual-inheritance,

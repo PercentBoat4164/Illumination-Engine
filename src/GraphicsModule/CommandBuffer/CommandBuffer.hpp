@@ -4,12 +4,7 @@ class IECommandPool;
 
 class IERenderEngine;
 
-#include "Buffer/IEBuffer.hpp"
-#include "CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.hpp"
-#include "CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.hpp"
-#include "CommandBuffer/DependencyStructs/IEDependencyInfo.hpp"
-#include "CommandBuffer/DependencyStructs/IEImageMemoryBarrier.hpp"
-#include "CommandBuffer/DependencyStructs/IERenderPassBeginInfo.hpp"
+#include "Buffer/Buffer.hpp"
 #include "GraphicsModule/Shader/IEPipeline.hpp"
 #include "Image/Image.hpp"
 
@@ -19,25 +14,31 @@ class IERenderEngine;
 #include <vector>
 #include <vulkan/vulkan.h>
 
-typedef enum IECommandBufferStatus {
-    IE_COMMAND_BUFFER_STATE_NONE       = 0x0,
-    IE_COMMAND_BUFFER_STATE_INITIAL    = 0x1,
-    IE_COMMAND_BUFFER_STATE_RECORDING  = 0x2,
-    IE_COMMAND_BUFFER_STATE_EXECUTABLE = 0x3,
-    IE_COMMAND_BUFFER_STATE_PENDING    = 0x4,
-    IE_COMMAND_BUFFER_STATE_INVALID    = 0x5
-} IECommandBufferStatus;
+namespace IE::Graphics {
+class CommandPool;
 
-class IECommandBuffer {
+class CommandBuffer {
+    using IECommandBufferStatus = enum IECommandBufferStatus {
+        IE_COMMAND_BUFFER_STATE_NONE       = 0x0,
+        IE_COMMAND_BUFFER_STATE_INITIAL    = 0x1,
+        IE_COMMAND_BUFFER_STATE_RECORDING  = 0x2,
+        IE_COMMAND_BUFFER_STATE_EXECUTABLE = 0x3,
+        IE_COMMAND_BUFFER_STATE_PENDING    = 0x4,
+        IE_COMMAND_BUFFER_STATE_INVALID    = 0x5
+    };
+
 public:
-    VkCommandBuffer                commandBuffer{};
-    std::shared_ptr<IECommandPool> commandPool{};
-    IERenderEngine                *linkedRenderEngine{};
-    IECommandBufferStatus          status{};
-    bool                           oneTimeSubmission{false};
-    std::thread                    executionThread{};
+    VkCommandBuffer                            commandBuffer{};
+    std::shared_ptr<IE::Graphics::CommandPool> commandPool{};
+    IE::Graphics::RenderEngine                *linkedRenderEngine{};
+    IECommandBufferStatus                      status{};
+    bool                                       oneTimeSubmission{false};
+    std::thread                                executionThread{};
 
-    IECommandBuffer(IERenderEngine *linkedRenderEngine, const std::shared_ptr<IECommandPool> &parentCommandPool);
+    CommandBuffer(
+      IE::Graphics::RenderEngine                *linkedRenderEngine,
+      std::shared_ptr<IE::Graphics::CommandPool> parentCommandPool
+    );
 
     void wait();
 
@@ -64,35 +65,29 @@ public:
     void finish(bool synchronize = true);
 
     void recordPipelineBarrier(
-      VkPipelineStageFlags                      srcStageMask,
-      VkPipelineStageFlags                      dstStageMask,
-      VkDependencyFlags                         dependencyFlags,
-      const std::vector<VkMemoryBarrier>       &memoryBarriers,
-      const std::vector<IEBufferMemoryBarrier> &bufferMemoryBarriers,
-      const std::vector<IEImageMemoryBarrier>  &imageMemoryBarriers
-
+      VkPipelineStageFlags                srcStageMask,
+      VkPipelineStageFlags                dstStageMask,
+      VkDependencyFlags                   dependencyFlags,
+      const std::vector<VkMemoryBarrier> &memoryBarriers
     );
-    void recordPipelineBarrier(const IEDependencyInfo *dependencyInfo);
 
     void recordCopyBufferToImage(
-      const std::shared_ptr<IEBuffer>            &buffer,
-      const std::shared_ptr<IE::Graphics::Image> &image,
-      std::vector<VkBufferImageCopy>              regions
+      const std::shared_ptr<Buffer>                          &buffer,
+      const std::shared_ptr<IE::Graphics::detail::ImageVulkan> &image,
+      std::vector<VkBufferImageCopy>                            regions
     );
-
-    void recordCopyBufferToImage(IECopyBufferToImageInfo *copyInfo);
 
     void recordBindVertexBuffers(
       uint32_t                               firstBinding,
       uint32_t                               bindingCount,
-      std::vector<std::shared_ptr<IEBuffer>> buffers,
+      std::vector<std::shared_ptr<Buffer>> buffers,
       VkDeviceSize                          *pOffsets
     );
 
     void recordBindVertexBuffers(
       uint32_t                                      firstBinding,
       uint32_t                                      bindingCount,
-      const std::vector<std::shared_ptr<IEBuffer>> &buffers,
+      const std::vector<std::shared_ptr<Buffer>> &buffers,
       VkDeviceSize                                 *pOffsets,
       VkDeviceSize                                 *pSizes,
       VkDeviceSize                                 *pStrides
@@ -116,9 +111,7 @@ public:
       uint32_t firstInstance
     );
 
-    void recordBindIndexBuffer(const std::shared_ptr<IEBuffer> &buffer, uint32_t offset, VkIndexType indexType);
-
-    void recordBeginRenderPass(IERenderPassBeginInfo *pRenderPassBegin, VkSubpassContents contents);
+    void recordBindIndexBuffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, VkIndexType indexType);
 
     void recordSetViewport(uint32_t firstViewPort, uint32_t viewPortCount, const VkViewport *pViewPorts);
 
@@ -128,9 +121,10 @@ public:
 
     void destroy();
 
-    ~IECommandBuffer();
+    ~CommandBuffer();
 
-    IECommandBuffer(const IECommandBuffer &source) = delete;
+    CommandBuffer(const CommandBuffer &source) = delete;
 
-    IECommandBuffer(IECommandBuffer &&source) noexcept {};
+    CommandBuffer(CommandBuffer &&source) = delete;
 };
+}  // namespace IE::Graphics

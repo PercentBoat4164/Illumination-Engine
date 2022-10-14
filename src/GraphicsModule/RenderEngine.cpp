@@ -383,3 +383,11 @@ void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, 
 IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
     return m_graphicsAPICallbackLog;
 }
+
+VkDevice IE::Graphics::RenderEngine::getDevice() const {
+    return m_device.device;
+}
+
+VkPhysicalDevice IE::Graphics::RenderEngine::getPhysicalDevice() const {
+    return m_device.physical_device;
+}

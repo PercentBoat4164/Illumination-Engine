@@ -124,7 +124,7 @@ void IE::Input::Keyboard::clearQueue() {
 
 void IE::Input::Keyboard::keyCallback(GLFWwindow *window, int key, int scancode, int action, int modifiers) {
     // keyboard connected to the window
-    auto keyboard = ((IE::Input::InputEngine *) glfwGetWindowUserPointer(window))->m_keyboard;
+    auto *keyboard = reinterpret_cast<IE::Input::InputEngine *>(glfwGetWindowUserPointer(window))->m_keyboard;
     if (action == GLFW_REPEAT) {
         keyboard->queue.emplace_back(key, action);
         return;

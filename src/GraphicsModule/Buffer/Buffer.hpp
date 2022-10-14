@@ -20,8 +20,9 @@ class IERenderEngine;
 #include <functional>
 #include <memory>
 #include <vector>
+#include <vk_mem_alloc.h>
 
-class IEBuffer : public std::enable_shared_from_this<IEBuffer> {
+class Buffer : public std::enable_shared_from_this<Buffer> {
 public:
     struct CreateInfo {
         size_t             size{};
@@ -52,18 +53,18 @@ public:
     GLenum                             type{};
 
 private:
-    static std::function<void(IEBuffer &)> _uploadToRAM;
+    static std::function<void(Buffer &)> _uploadToRAM;
 
-    static std::function<void(IEBuffer &)>                            _uploadToVRAM;
-    static std::function<void(IEBuffer &, const std::vector<char> &)> _uploadToVRAM_vector;
-    static std::function<void(IEBuffer &, void *, size_t)>            _uploadToVRAM_void;
+    static std::function<void(Buffer &)>                            _uploadToVRAM;
+    static std::function<void(Buffer &, const std::vector<char> &)> _uploadToVRAM_vector;
+    static std::function<void(Buffer &, void *, size_t)>            _uploadToVRAM_void;
 
-    static std::function<void(IEBuffer &, const std::vector<char> &)> _update_vector;
-    static std::function<void(IEBuffer &, void *, size_t)>            _update_void;
+    static std::function<void(Buffer &, const std::vector<char> &)> _update_vector;
+    static std::function<void(Buffer &, void *, size_t)>            _update_void;
 
-    static std::function<void(IEBuffer &)> _unloadFromVRAM;
+    static std::function<void(Buffer &)> _unloadFromVRAM;
 
-    static std::function<void(IEBuffer &)> _destroy;
+    static std::function<void(Buffer &)> _destroy;
 
 protected:
     virtual void _openglUploadToRAM();
@@ -103,11 +104,13 @@ protected:
     virtual void _vulkanDestroy();
 
 public:
-    IEBuffer();
+    virtual ~Buffer() = default;
 
-    IEBuffer(IERenderEngine *, IEBuffer::CreateInfo *);
+    Buffer();
 
-    IEBuffer(
+    Buffer(IERenderEngine *, Buffer::CreateInfo *);
+
+    Buffer(
       IERenderEngine    *engineLink,
       size_t             bufferSize,
       VkBufferUsageFlags usageFlags,
@@ -116,10 +119,7 @@ public:
     );
 
 
-    static void setAPI(const API &API);
-
-
-    void create(IERenderEngine *engineLink, IEBuffer::CreateInfo *createInfo);
+    void create(IERenderEngine *engineLink, Buffer::CreateInfo *createInfo);
 
     void create(
       IERenderEngine    *engineLink,
