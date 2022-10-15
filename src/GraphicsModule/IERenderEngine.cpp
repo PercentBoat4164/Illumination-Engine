@@ -11,16 +11,17 @@
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <include/GL/glew.h>
 
 #define VMA_IMPLEMENTATION
 
-#include <include/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 
-#include <stb_image.h>
+#include <../contrib/stb/stb_image.h>
 
 /* Include system dependencies. */
 #include <filesystem>
@@ -51,9 +52,10 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
     if (!instanceBuilder) {
         settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
+
           "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message()
-        );
+        ,
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
     }
     deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_instance(instance); });
     instance = instanceBuilder.value();
@@ -72,9 +74,10 @@ GLFWwindow *IERenderEngine::createWindow() const {
         const char *description;
         int         code = glfwGetError(&description);
         settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+
           "Failed to create window! Error: " + std::to_string(code) + " " + description
-        );
+        ,
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
     }
     return pWindow;
 }
@@ -96,9 +99,10 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
         );  // Load image from disk
         if (pixels == nullptr) {
             settings->logger.log(
-              ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+
               "Failed to load icon " + file.path().generic_string() + ". Is this file an image?"
-            );
+            ,
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
         }
         icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
     }
@@ -108,7 +112,10 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
     if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS)
-        settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create window surface!");
+        settings->logger.log(
+          "Failed to create window surface!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
     deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_surface(instance.instance, surface); });
     return surface;
 }
@@ -141,8 +148,8 @@ vkb::Device IERenderEngine::setUpDevice(
     if (!logicalDevice) {
         // Failed? Report the error.
         settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
-          "Failed to create Vulkan device! Error: " + logicalDevice.error().message()
+          "Failed to create Vulkan device! Error: " + logicalDevice.error().message(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     }
 
@@ -180,9 +187,10 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
     if (!thisSwapchain) {
         // Failure! Log it then continue without deleting the old swapchain.
         settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
+
           "Failed to create swapchain! Error: " + thisSwapchain.error().message()
-        );
+        ,
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
     } else {
         // Success! Delete the old swapchain and images and replace them with the new ones.
         destroySwapchain();
@@ -335,7 +343,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
      * abstraction.*/
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     window = createWindow();
-    setWindowIcons("res/icons");
+    setWindowIcons("res/logos");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
@@ -403,8 +411,10 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 
     graphicsCommandPool->index(0)->execute();
     camera.create(this);
-    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, device.physical_device.properties.deviceName);
-    settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
+    settings->logger.log( device.physical_device.properties.deviceName,
+    IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
+    );
+    settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
 
 void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
@@ -524,9 +534,10 @@ bool IERenderEngine::_vulkanUpdate() {
     currentFrame = (currentFrame + 1) % (int) swapchain.image_count;
     if (frameTime > 1.0 / 30.0) {
         settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
+
           "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime * 1000) + "ms to compute."
-        );
+        ,
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
     }
     auto currentTime = (float) glfwGetTime();
     frameTime        = currentTime - previousTime;
@@ -717,7 +728,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
     if (glfwInit() != GLFW_TRUE)
-        settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to initialize GLFW!");
+        settings.logger.log("Failed to initialize GLFW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
     glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -730,7 +741,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
     window = createWindow();
 
-    setWindowIcons("res/icons");
+    setWindowIcons("res/logos");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwGetWindowPos(window, &(*settings.currentPosition)[0], &(*settings.currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
@@ -745,7 +756,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
     // Initialize glew
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
-        settings.logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to initialize GLEW!");
+        settings.logger.log("Failed to initialize GLEW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
 
     // Get API Version
     autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);
@@ -759,10 +770,15 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
     camera.create(this);
     this->settings->logger.log(
-      ILLUMINATION_ENGINE_LOG_LEVEL_INFO,
+
       reinterpret_cast<const char *>(glGetString(GL_RENDERER))
+    ,
+    IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );
-    this->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_INFO, API.name + " v" + API.version.name);
+    this->settings->logger.log(
+      API.name + " v" + API.version.name,
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
+    );
 }
 
 void APIENTRY IERenderEngine::

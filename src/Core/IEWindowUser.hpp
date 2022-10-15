@@ -10,6 +10,6 @@ class IERenderEngine;
  */
 class IEWindowUser {
 public:
-	std::weak_ptr<IERenderEngine> renderEngine;
-	void *IEKeyboard;
+    std::weak_ptr<IERenderEngine> renderEngine;
+    void                         *IEKeyboard;
 };
