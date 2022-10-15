@@ -13,7 +13,6 @@
 #define GLEW_IMPLEMENTATION
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <include/GL/glew.h>
 
 #define VMA_IMPLEMENTATION
 
@@ -53,9 +52,9 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     if (!instanceBuilder) {
         settings->logger.log(
 
-          "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message()
-        ,
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+          "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
     }
     deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_instance(instance); });
     instance = instanceBuilder.value();
@@ -75,9 +74,9 @@ GLFWwindow *IERenderEngine::createWindow() const {
         int         code = glfwGetError(&description);
         settings->logger.log(
 
-          "Failed to create window! Error: " + std::to_string(code) + " " + description
-        ,
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
+          "Failed to create window! Error: " + std::to_string(code) + " " + description,
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
     }
     return pWindow;
 }
@@ -100,9 +99,9 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
         if (pixels == nullptr) {
             settings->logger.log(
 
-              "Failed to load icon " + file.path().generic_string() + ". Is this file an image?"
-            ,
-              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
+              "Failed to load icon " + file.path().generic_string() + ". Is this file an image?",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+            );
         }
         icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
     }
@@ -188,9 +187,9 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
         // Failure! Log it then continue without deleting the old swapchain.
         settings->logger.log(
 
-          "Failed to create swapchain! Error: " + thisSwapchain.error().message()
-        ,
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+          "Failed to create swapchain! Error: " + thisSwapchain.error().message(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
     } else {
         // Success! Delete the old swapchain and images and replace them with the new ones.
         destroySwapchain();
@@ -411,8 +410,9 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
 
     graphicsCommandPool->index(0)->execute();
     camera.create(this);
-    settings->logger.log( device.physical_device.properties.deviceName,
-    IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
+    settings->logger.log(
+      device.physical_device.properties.deviceName,
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );
     settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
@@ -535,9 +535,9 @@ bool IERenderEngine::_vulkanUpdate() {
     if (frameTime > 1.0 / 30.0) {
         settings->logger.log(
 
-          "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime * 1000) + "ms to compute."
-        ,
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
+          "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime * 1000) + "ms to compute.",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
     }
     auto currentTime = (float) glfwGetTime();
     frameTime        = currentTime - previousTime;
@@ -771,9 +771,8 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
     camera.create(this);
     this->settings->logger.log(
 
-      reinterpret_cast<const char *>(glGetString(GL_RENDERER))
-    ,
-    IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
+      reinterpret_cast<const char *>(glGetString(GL_RENDERER)),
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );
     this->settings->logger.log(
       API.name + " v" + API.version.name,
