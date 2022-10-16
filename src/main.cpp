@@ -8,6 +8,8 @@
 
 int main() {
     IESettings                      settings     = IESettings();
+    IE::Core::FileSystem            fileSystem   = IE::Core::FileSystem("res/");
+
     // RenderEngine must be allocated on the heap.
     std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(settings);
 
@@ -70,26 +72,31 @@ int main() {
         glfwSetWindowShouldClose(renderEngine->window, 1);
     });
 
+    fileSystem.addFile("assets/AncientStatue/models/ancientStatue.fbx");
+    fileSystem.addFile("assets/AncientStatue/models/ancientStatue.obj");
+    fileSystem.addFile("assets/AncientStatue/models/ancientStatue.glb");
+    fileSystem.addFile("assets/DeepslateFloor/models/DeepslateFloor.fbx");
+
     IEWindowUser windowUser{std::shared_ptr<IERenderEngine>(renderEngine), &keyboard};
     glfwSetWindowUserPointer(renderEngine->window, &windowUser);
 
     std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
-    fbx->filename                = "res/assets/AncientStatue/models/ancientStatue.fbx";
+    fbx->filename                = "assets/AncientStatue/models/ancientStatue.fbx";
     fbx->addAspect(new IERenderable{});
     fbx->position = {2, 1, 0};
     renderEngine->addAsset(fbx);
     std::shared_ptr<IEAsset> obj = std::make_shared<IEAsset>();
-    obj->filename                = "res/assets/AncientStatue/models/ancientStatue.obj";
+    obj->filename                = "assets/AncientStatue/models/ancientStatue.obj";
     obj->addAspect(new IERenderable{});
     obj->position = {0, 1, 0};
     renderEngine->addAsset(obj);
     std::shared_ptr<IEAsset> glb = std::make_shared<IEAsset>();
-    glb->filename                = "res/assets/AncientStatue/models/ancientStatue.glb";
+    glb->filename                = "assets/AncientStatue/models/ancientStatue.glb";
     glb->addAspect(new IERenderable{});
     glb->position = {-2, 1, 0};
     renderEngine->addAsset(glb);
     std::shared_ptr<IEAsset> floor = std::make_shared<IEAsset>();
-    floor->filename                = "res/assets/DeepslateFloor/models/DeepslateFloor.fbx";
+    floor->filename                = "assets/DeepslateFloor/models/DeepslateFloor.fbx";
     floor->addAspect(new IERenderable{});
     renderEngine->addAsset(floor);
     floor->position = {0, 0, -1};
