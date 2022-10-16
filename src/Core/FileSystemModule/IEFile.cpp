@@ -66,7 +66,6 @@ void IEFile::overwrite(const std::vector<char> &data, std::streamsize startPosit
     if (startPosition == -1)             // If no starting position
         startPosition = fileIO.tellg();  // Start here
 
-
     // Go to starting position
     fileIO.seekg(startPosition);
 
