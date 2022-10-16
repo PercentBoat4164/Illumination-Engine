@@ -46,7 +46,8 @@ private:
 
     /**
      * @brief Changes the window icon to all of the images found in [path] with a
-     * name that contains last part of [path].
+     * name that contains last part of
+     * [path].
      * @param path string of path to icons folder plus the identifier.
      */
     void setWindowIcons(const std::filesystem::path &path) const;
@@ -120,7 +121,8 @@ public:
     struct ExtensionAndFeatureInfo {
         // Extension Features
         // NOTE: Ray tracing features are on the bottom of the pNext stack so that a
-        // pointer to higher up on the stack can grab only the structures supported
+        // pointer to higher up on the
+        // stack can grab only the structures supported
         // by RenderDoc.
         VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures{
           VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT};
@@ -220,7 +222,7 @@ public:
     vkb::Device                                    device{};
     vkb::Swapchain                                 swapchain{};
     vkb::Instance                                  instance{};
-    vkb::Result<vkb::SystemInfo>                   systemInfo{vkb::SystemInfo::get_system_info()};
+    vkb::detail::Result<vkb::SystemInfo>           systemInfo{vkb::SystemInfo::get_system_info()};
     VkSurfaceKHR                                   surface{};
     VmaAllocator                                   allocator{};
     VkQueue                                        graphicsQueue{};
@@ -261,11 +263,13 @@ private:
     bool                               framebufferResized{false};
     float                              previousTime{};
 
+
     static std::function<bool(IERenderEngine &)> _update;
 
     bool _openGLUpdate();
 
     bool _vulkanUpdate();
+
 
     static std::function<void(IERenderEngine &)> _destroy;
 
@@ -274,6 +278,7 @@ private:
     void _vulkanDestroy();
 
     void destroy();
+
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height);
 

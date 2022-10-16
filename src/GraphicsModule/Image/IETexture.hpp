@@ -8,8 +8,8 @@ class IEBuffer;
 #include "IEImage.hpp"
 
 // External dependencies
+#include <../contrib/stb/stb_image.h>
 #include <assimp/material.h>
-#include <stb_image.h>
 #include <vulkan/vulkan.h>
 
 // System dependencies

@@ -20,13 +20,12 @@ void IEFramebuffer::create(IERenderEngine *engineLink, IEFramebuffer::CreateInfo
     framebuffers.resize(linkedRenderEngine->swapchainImageViews.size());
 
     for (const Attachment &attachment : createInfo->attachments) {
-        if (std::find(disallowedLayouts.begin(), disallowedLayouts.end(), attachment.forceLayout) ==
-            disallowedLayouts.end()) {
+        if (std::find(disallowedLayouts.begin(), disallowedLayouts.end(), attachment.forceLayout) == disallowedLayouts.end()) {
             attachments.push_back(attachment.image);
         } else {
             linkedRenderEngine->settings->logger.log(
-              ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-              "Attempt to attach to framebuffer with invalid layout!" + std::to_string(attachment.forceLayout)
+              "Attempt to attach to framebuffer with invalid layout!" + std::to_string(attachment.forceLayout),
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
         }
     }

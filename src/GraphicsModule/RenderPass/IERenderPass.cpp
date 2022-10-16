@@ -90,8 +90,9 @@ void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *
       .pDependencies   = &subpassDependency};
     if (vkCreateRenderPass(linkedRenderEngine->device.device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
-          "Failed to create render pass!"
+
+          "Failed to create render pass!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     }
     deletionQueue.emplace_back([&] { vkDestroyRenderPass(linkedRenderEngine->device.device, renderPass, nullptr); }

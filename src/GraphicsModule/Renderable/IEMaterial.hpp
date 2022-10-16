@@ -4,8 +4,8 @@
 #include "assimp/scene.h"
 #include "assimp/texture.h"
 #include "Image/IETexture.hpp"
-#include "stb_image.h"
 
+#include <../contrib/stb/stb_image.h>
 #include <iostream>
 #include <string>
 #include <unordered_map>
