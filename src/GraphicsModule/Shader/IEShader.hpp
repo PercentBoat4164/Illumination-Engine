@@ -17,7 +17,8 @@ class IERenderEngine;
 #include <vulkan/vulkan.h>
 
 // System dependencies
-#include "Core/FileSystemModule/IEFile.hpp"
+#include "Core/FileSystemModule/File.hpp"
+#include "IEFile.hpp"
 
 #include <functional>
 #include <string>
@@ -33,11 +34,11 @@ public:
     std::vector<std::function<void()>> deletionQueue;
     VkShaderModule                     module;
     IERenderEngine                    *linkedRenderEngine;
-    IEFile                            *file;
+    IE::Core::File                    *file;
     GLuint                             shaderID;
 
 private:
-    static std::function<void(IEShader &, IERenderEngine *, IEFile *)>       _create;
+    static std::function<void(IEShader &, IERenderEngine *, IE::Core::File *)>       _create;
     static std::function<void(IEShader &, const std::string &, std::string)> _compile;
 
 protected:
@@ -46,9 +47,9 @@ protected:
     void _vulkanCompile(const std::string &, std::string);
 
 
-    void _openglCreate(IERenderEngine *, IEFile *);
+    void _openglCreate(IERenderEngine *, IE::Core::File *);
 
-    void _vulkanCreate(IERenderEngine *, IEFile *);
+    void _vulkanCreate(IERenderEngine *, IE::Core::File *);
 
 public:
     void destroy();
@@ -57,7 +58,7 @@ public:
 
     void compile(const std::string &, const std::string &);
 
-    void create(IERenderEngine *, IEFile *);
+    void create(IERenderEngine *, IE::Core::File *);
 
     static void setAPI(const IEAPI &);
 };

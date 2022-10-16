@@ -1,8 +1,8 @@
-#include "IEFile.hpp"
+#include "File.hpp"
 
 #include <iostream>
 
-IEFile::IEFile(const std::filesystem::path &filePath) {
+IE::Core::File::File(const std::filesystem::path &filePath) {
     path = filePath;
     name = filePath.filename().string();
     open(std::fstream::in | std::fstream::binary);
@@ -12,14 +12,14 @@ IEFile::IEFile(const std::filesystem::path &filePath) {
     close();
 }
 
-IEFile::IEFile(const IEFile &file) {
+IE::Core::File::File(const IE::Core::File &file) {
     name      = file.name;
     path      = file.path;
     size      = file.size;
     extension = file.extension;
 }
 
-IEFile &IEFile::operator=(const IEFile &file) {
+IE::Core::File &IE::Core::File::operator=(const IE::Core::File &file) {
     if (this == &file) return *this;
     name      = file.name;
     path      = file.path;
@@ -28,7 +28,7 @@ IEFile &IEFile::operator=(const IEFile &file) {
     return *this;
 }
 
-std::vector<char> IEFile::read() {
+std::vector<char> IE::Core::File::read() {
     std::vector<char> data(size);
     open(std::fstream::in | std::fstream::binary);
     getSize();
@@ -38,7 +38,7 @@ std::vector<char> IEFile::read() {
     return data;
 }
 
-std::vector<char> IEFile::read(std::streamsize numBytes, std::streamsize startPosition) {
+std::vector<char> IE::Core::File::read(std::streamsize numBytes, std::streamsize startPosition) {
     std::vector<char> data(size);
     open();
     fileIO.seekg(startPosition);
@@ -47,7 +47,7 @@ std::vector<char> IEFile::read(std::streamsize numBytes, std::streamsize startPo
     return data;
 }
 
-void IEFile::write(const std::vector<char> &data) {
+void IE::Core::File::write(const std::vector<char> &data) {
     std::cout << "writing to file\n" << path.generic_string() << "\n";
     open();
     if (fileIO.is_open()) {
@@ -61,7 +61,7 @@ void IEFile::write(const std::vector<char> &data) {
     }
 }
 
-void IEFile::overwrite(const std::vector<char> &data, std::streamsize startPosition) {
+void IE::Core::File::overwrite(const std::vector<char> &data, std::streamsize startPosition) {
     open();
     if (startPosition == -1)             // If no starting position
         startPosition = fileIO.tellg();  // Start here
@@ -79,18 +79,18 @@ void IEFile::overwrite(const std::vector<char> &data, std::streamsize startPosit
     close();
 }
 
-std::streamsize IEFile::getSize() {
+std::streamsize IE::Core::File::getSize() {
     fileIO.seekg(0, std::fstream::end);
     return size = fileIO.tellg();
 }
 
-void IEFile::open(std::ios::openmode mode) {
+void IE::Core::File::open(std::ios::openmode mode) {
     if (!fileIO.is_open()) {
         fileIO.open(path, mode);
         size = fileIO.tellg();
     }
 }
 
-void IEFile::close() {
+void IE::Core::File::close() {
     if (fileIO.is_open()) fileIO.close();
 }

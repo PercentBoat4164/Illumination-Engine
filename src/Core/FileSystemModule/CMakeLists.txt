@@ -1,10 +1,10 @@
 set(IEFileSystemModuleSourceFiles  # Gather sources
-        IEFile.cpp
-        IEFile.hpp
-        IEFileSystem.cpp
-        IEFileSystem.hpp
-        IEImporter.cpp
-        IEImporter.hpp
+        File.cpp
+        File.hpp
+        FileSystem.cpp
+        FileSystem.hpp
+        Importer.cpp
+        Importer.hpp
         )
 
 # Create and define properties for the library
