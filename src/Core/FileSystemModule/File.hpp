@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 
-class IEFile {
+namespace IE::Core {
+class File {
 public:
     std::string           name;
     std::filesystem::path path;
@@ -14,12 +15,12 @@ public:
     std::string           extension;
 
     // Constructor
-    explicit IEFile(const std::filesystem::path &filePath);
+    explicit File(const std::filesystem::path &filePath);
 
     // Copy constructor and = overload must be defined explicitly because fstream has no defaults for them
-    IEFile(const IEFile &file);
+    File(const File &file);
 
-    IEFile &operator=(const IEFile &file);
+    File &operator=(const File &file);
 
     // Read the entire file
     std::vector<char> read();
@@ -42,3 +43,4 @@ private:
     // Close the file
     void close();
 };
+}  // namespace IE::Core

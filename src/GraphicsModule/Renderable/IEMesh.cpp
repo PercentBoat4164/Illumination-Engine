@@ -1,7 +1,9 @@
 #include "IEMesh.hpp"
 
 #include "Buffer/IEBuffer.hpp"
+#include "Core/FileSystemModule/File.hpp"
 #include "Core/LogModule/IELogger.hpp"
+#include "IEFile.hpp"
 #include "IERenderEngine.hpp"
 
 IEMesh::IEMesh(IERenderEngine *engineLink) {
@@ -184,9 +186,9 @@ void IEMesh::_openglLoadFromRAMToVRAM() {
 
     shaders.resize(2);
     shaders[0] = std::make_shared<IEShader>();
-    shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/OpenGL/vertexShader.vert"});
+    shaders[0]->create(linkedRenderEngine, new IE::Core::File{"shaders/OpenGL/vertexShader.vert"});
     shaders[1] = std::make_shared<IEShader>();
-    shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/OpenGL/fragmentShader.frag"});
+    shaders[1]->create(linkedRenderEngine, new IE::Core::File{"shaders/OpenGL/fragmentShader.frag"});
 
     pipeline->create(
       linkedRenderEngine,
@@ -218,9 +220,9 @@ void IEMesh::_vulkanLoadFromRAMToVRAM() {
     // Set up shaders
     shaders.resize(2);
     shaders[0] = std::make_shared<IEShader>();
-    shaders[0]->create(linkedRenderEngine, new IEFile{"shaders/Vulkan/vertexShader.vert.spv"});
+    shaders[0]->create(linkedRenderEngine, new IE::Core::File{"shaders/Vulkan/vertexShader.vert.spv"});
     shaders[1] = std::make_shared<IEShader>();
-    shaders[1]->create(linkedRenderEngine, new IEFile{"shaders/Vulkan/fragmentShader.frag.spv"});
+    shaders[1]->create(linkedRenderEngine, new IE::Core::File{"shaders/Vulkan/fragmentShader.frag.spv"});
 
     // Set up pipeline
     pipeline->create(

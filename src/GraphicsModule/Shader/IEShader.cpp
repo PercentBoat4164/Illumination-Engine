@@ -6,7 +6,7 @@
 
 
 /* Include dependencies from Core. */
-#include "Core/FileSystemModule/IEFile.hpp"
+#include "Core/FileSystemModule/File.hpp"
 
 void IEShader::setAPI(const IEAPI &API) {
     if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
@@ -23,13 +23,13 @@ void IEShader::destroy() {
     deletionQueue.clear();
 }
 
-std::function<void(IEShader &, IERenderEngine *, IEFile *)> IEShader::_create = nullptr;
+std::function<void(IEShader &, IERenderEngine *, IE::Core::File *)> IEShader::_create = nullptr;
 
-void IEShader::create(IERenderEngine *engineLink, IEFile *shaderFile) {
+void IEShader::create(IERenderEngine *engineLink, IE::Core::File *shaderFile) {
     _create(*this, engineLink, shaderFile);
 }
 
-void IEShader::_openglCreate(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
+void IEShader::_openglCreate(IERenderEngine *renderEngineLink, IE::Core::File *shaderFile) {
     file               = shaderFile;
     linkedRenderEngine = renderEngineLink;
     GLenum shaderType  = GL_VERTEX_SHADER;
@@ -38,13 +38,13 @@ void IEShader::_openglCreate(IERenderEngine *renderEngineLink, IEFile *shaderFil
     compile(file->path.string(), file->path.string());
 }
 
-void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
+void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IE::Core::File *shaderFile) {
     file               = shaderFile;
     linkedRenderEngine = renderEngineLink;
     std::string fileContents;
     if (file->extension == ".spv") {
         compile(file->path.string(), file->path.string() + ".spv");
-        file = new IEFile{file->path.string() + ".spv"};
+        file = new IE::Core::File{file->path.string() + ".spv"};
     }
     fileContents = file->read();
     VkShaderModuleCreateInfo shaderModuleCreateInfo{
