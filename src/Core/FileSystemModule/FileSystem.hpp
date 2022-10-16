@@ -1,27 +1,28 @@
 #pragma once
 
-#include "IEFile.hpp"
-#include "IEImporter.hpp"
+#include "File.hpp"
+#include "Importer.hpp"
 
-#include <vector>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
-class IEFileSystem {
+namespace IE::Core {
+class FileSystem {
 public:
     std::filesystem::path path;
-    IEImporter importer{};
+    Importer              importer{};
 
-    explicit IEFileSystem(const std::filesystem::path& fileSystemPath);
+    explicit FileSystem(const std::filesystem::path& fileSystemPath);
 
-    // Create a new IEFile with the given relative path
+    // Create a new File with the given relative path
     void addFile(const std::string& filePath);
 
-    IEFile& getFile(const std::string& filePath);
+    File & getFile(const std::string& filePath);
 
     void createFolder(const std::string& folderPath) const;
 
-    // Export data to an IEFile
+    // Export data to an File
     void exportData(const std::string& filePath, const std::vector<char> &data);
 
     // Delete a file
@@ -34,7 +35,7 @@ public:
     void deleteUsedDirectory(const std::string& filePath);
 
     template<class T>
-    void importFile(T* data, IEFile &file, unsigned int flags = 0) {
+    void importFile(T* data, File &file, unsigned int flags = 0) {
         importer.import(data, file, flags);
     }
 
@@ -44,5 +45,6 @@ public:
     };
 
 private:
-    std::unordered_map<std::string, IEFile> files;
+    std::unordered_map<std::string, File> files;
 };
+}  // namespace IE::Core
