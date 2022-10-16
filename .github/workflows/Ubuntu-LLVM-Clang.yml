@@ -1,10 +1,6 @@
 name: Ubuntu-LLVM-Clang
 
-on:
-  push:
-    branches: [ master , graphics_dev]
-  pull_request:
-    branches: [ master , graphics_dev]
+on: [push, pull_request]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
