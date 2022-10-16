@@ -13,14 +13,14 @@
 
 // External dependencies
 #define GLEW_IMPLEMENTATION
-#include <GL/glew.h>  // GL/glew.h must be included before GLFW/glfw3.h
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
+#include <include/GL/glew.h>
 
 
 // System dependencies
 #include <array>
 #include <string>
+
+#include <GLFW/glfw3.h>
 
 class IESettings {
 public:
@@ -39,7 +39,7 @@ public:
         currentPosition    = fullscreen ? &fullscreenPosition : &windowedPosition;
     }
 
-    IE::Core::Logger    logger{"Graphics Logger"};
+    IE::Core::Logger            logger{"Graphics Logger"};
     bool                rayTracing{false};
     std::string         applicationName{"Illumination Engine"};
     IEVersion           applicationVersion{0, 0, 1};

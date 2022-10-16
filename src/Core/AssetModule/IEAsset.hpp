@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/FileSystemModule/File.hpp"
+
 #include <string>
 #include <vector>
 
