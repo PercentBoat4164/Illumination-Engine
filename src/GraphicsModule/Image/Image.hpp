@@ -1,9 +1,6 @@
 #pragma once
 
-class RenderEngine;
-
 #include "Core/MultiDimensionalVector.hpp"
-#include "RenderEngine.hpp"
 
 #include <../contrib/stb/stb_image.h>
 #include <cstdint>
@@ -13,6 +10,8 @@ class RenderEngine;
 
 ///@todo Add static create functions for all constructors.
 namespace IE::Graphics {
+class RenderEngine;
+
 class Image {
 public:
     enum Location {

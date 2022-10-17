@@ -30,7 +30,7 @@ void IE::Graphics::Semaphore::blocking_wait() {
     bool locked{semaphoreMutex->try_lock()};
     linkedRenderEngine->getLogger().log("Waiting for Semaphore");
     status = IE_SEMAPHORE_STATUS_WAITING;
-    vkWaitSemaphores(linkedRenderEngine->getDevice(), &waitInfo, std::numeric_limits<uint64_t>::max());
+    vkWaitSemaphores(linkedRenderEngine->m_device, &waitInfo, std::numeric_limits<uint64_t>::max());
     status = IE_SEMAPHORE_STATUS_VALID;
     if (locked) semaphoreMutex->unlock();
 }
@@ -38,7 +38,7 @@ void IE::Graphics::Semaphore::blocking_wait() {
 IE::Graphics::Semaphore::~Semaphore() {
     std::unique_lock<std::mutex> lock(*semaphoreMutex);
     status = IE_SEMAPHORE_STATUS_INVALID;
-    vkDestroySemaphore(linkedRenderEngine->getDevice(), semaphore, nullptr);
+    vkDestroySemaphore(linkedRenderEngine->m_device, semaphore, nullptr);
 }
 
 IE::Graphics::Semaphore::Semaphore(const IE::Graphics::Semaphore &t_other) {
@@ -59,7 +59,7 @@ void IE::Graphics::Semaphore::create(IE::Graphics::RenderEngine *t_engineLink) {
       .pNext = nullptr,
       .flags = 0,
     };
-    VkResult result{vkCreateSemaphore(linkedRenderEngine->getDevice(), &createInfo, nullptr, &semaphore)};
+    VkResult result{vkCreateSemaphore(linkedRenderEngine->m_device, &createInfo, nullptr, &semaphore)};
     if (result != VK_SUCCESS)
         linkedRenderEngine->getLogger().log(
           "Failed to create Fence with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result),

@@ -16,7 +16,7 @@ public:
     TextureVulkan() noexcept;
 
     template<typename... Args>
-    explicit TextureVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions);
+    explicit TextureVulkan(const std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... t_dimensions);
 
     TextureVulkan &operator=(TextureVulkan &&t_other) noexcept;
 

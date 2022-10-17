@@ -69,7 +69,7 @@ IE::Graphics::detail::ImageVulkan::operator=(IE::Graphics::detail::ImageVulkan &
 
 template<typename... Args>
 IE::Graphics::detail::ImageVulkan::ImageVulkan(
-  const std::weak_ptr<IERenderEngine> &t_engineLink,
+  const std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink,
   Args... t_dimensions
 ) :
         Image(t_engineLink, t_dimensions...),
@@ -491,7 +491,7 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
                            .r = VK_COMPONENT_SWIZZLE_B,
                            .g = VK_COMPONENT_SWIZZLE_G,
                            .b = VK_COMPONENT_SWIZZLE_B,
-                           .a = VK_COMPONENT_SWIZZLE_A},
+                           .a = VK_COMPONENT_SWIZZLE_A                                                                            },
       .subresourceRange =
         VkImageSubresourceRange{
                            // View entire image
@@ -502,7 +502,8 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
                            .layerCount     = static_cast<uint32_t>(m_data.getDimensionality() > 3 ? m_data.getDimensions()[3] : 1)},
     };
 
-    result = vkCreateImageView(m_linkedRenderEngine.lock()->getDevice(), &imageViewCreateInfo, nullptr, &m_view);
+    result =
+      vkCreateImageView(m_linkedRenderEngine.lock()->m_device.device, &imageViewCreateInfo, nullptr, &m_view);
     if (!result) {
         IE::Core::Core::getInst().logger.log(
           "failed to create image view with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result) +
@@ -522,7 +523,7 @@ IE::Graphics::detail::ImageVulkan::~ImageVulkan() {
 
 void IE::Graphics::detail::ImageVulkan::_destroyImage() {
     std::unique_lock<std::mutex> lock(*m_mutex);
-    vkDestroyImageView(m_linkedRenderEngine.lock()->getDevice(), m_view, nullptr);
+    vkDestroyImageView(m_linkedRenderEngine.lock()->m_device.device, m_view, nullptr);
     vmaDestroyImage(m_linkedRenderEngine.lock()->getAllocator(), m_id, m_allocation);
 }
 

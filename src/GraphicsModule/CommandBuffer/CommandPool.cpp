@@ -30,17 +30,13 @@ void IE::Graphics::CommandPool::create(
 void IE::Graphics::CommandPool::prepareCommandBuffers(uint32_t commandBufferCount) {
     m_commandBuffers.reserve(commandBufferCount);
     for (uint32_t startIndex = m_commandBuffers.size(); startIndex < commandBufferCount; ++startIndex)
-        m_commandBuffers.push_back(
-          std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine, shared_from_this())
-        );
+        m_commandBuffers.push_back(std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine, this));
 }
 
 std::shared_ptr<IE::Graphics::CommandBuffer> IE::Graphics::CommandPool::index(uint32_t index) {
     if (index <= m_commandBuffers.size()) {
         if (index == m_commandBuffers.size())
-            m_commandBuffers.push_back(
-              std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine, shared_from_this())
-            );
+            m_commandBuffers.push_back(std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine, this));
         return m_commandBuffers[index];
     }
     m_linkedRenderEngine->getLogger().log(

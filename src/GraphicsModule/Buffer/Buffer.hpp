@@ -1,7 +1,6 @@
 #pragma once
 
 /* Predefine classes used with pointers or as return values for functions. */
-class IERenderEngine;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies

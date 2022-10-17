@@ -1,5 +1,6 @@
 #include "Subpass.hpp"
 
+#include <algorithm>
 #include <iostream>
 
 template<typename T>

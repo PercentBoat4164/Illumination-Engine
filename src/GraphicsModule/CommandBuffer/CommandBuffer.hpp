@@ -18,7 +18,7 @@ namespace IE::Graphics {
 class CommandPool;
 
 class CommandBuffer {
-    using IECommandBufferStatus = enum IECommandBufferStatus {
+    using CommandBufferState = enum CommandBufferState {
         IE_COMMAND_BUFFER_STATE_NONE       = 0x0,
         IE_COMMAND_BUFFER_STATE_INITIAL    = 0x1,
         IE_COMMAND_BUFFER_STATE_RECORDING  = 0x2,
@@ -29,15 +29,14 @@ class CommandBuffer {
 
 public:
     VkCommandBuffer                            commandBuffer{};
-    std::shared_ptr<IE::Graphics::CommandPool> commandPool{};
+    IE::Graphics::CommandPool                 *commandPool{};
     IE::Graphics::RenderEngine                *linkedRenderEngine{};
-    IECommandBufferStatus                      status{};
+    CommandBufferState                         state{};
     bool                                       oneTimeSubmission{false};
-    std::thread                                executionThread{};
 
     CommandBuffer(
       IE::Graphics::RenderEngine                *linkedRenderEngine,
-      std::shared_ptr<IE::Graphics::CommandPool> parentCommandPool
+      IE::Graphics::CommandPool *parentCommandPool
     );
 
     void wait();

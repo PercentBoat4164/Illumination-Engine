@@ -4,11 +4,6 @@ add_subdirectory(DefaultShaders)
 set(IEGraphicsModuleSourceFiles  # Gather sources
         #        Buffer/Buffer.cpp
         CommandBuffer/CommandBuffer.cpp
-        CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.cpp
-        CommandBuffer/DependencyStructs/IECopyBufferToImageInfo.cpp
-        CommandBuffer/DependencyStructs/IEDependencyInfo.cpp
-        CommandBuffer/DependencyStructs/IEImageMemoryBarrier.cpp
-        CommandBuffer/DependencyStructs/IERenderPassBeginInfo.cpp
         CommandBuffer/CommandPool.cpp
         #        Camera/IECamera.cpp
         #        Renderable/IEMaterial.cpp

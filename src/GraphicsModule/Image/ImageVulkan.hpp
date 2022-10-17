@@ -1,10 +1,9 @@
 #pragma once
 
-class IERenderEngine;
-
 #include "Image.hpp"
 
 #include <functional>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 namespace IE::Graphics::detail {
@@ -29,7 +28,7 @@ public:
     ImageVulkan();
 
     template<typename... Args>
-    explicit ImageVulkan(const std::weak_ptr<IERenderEngine> &t_engineLink, Args... t_dimensions);
+    explicit ImageVulkan(const std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... t_dimensions);
 
     ImageVulkan &operator=(ImageVulkan &&t_other) noexcept;
 
@@ -41,7 +40,7 @@ public:
 
     void transitionLayout(VkImageLayout);
 
-    void setLocation(Location) override;
+    void setLocation(IE::Graphics::Image::Location) override;
 
     void setData(const IE::Core::MultiDimensionalVector<unsigned char> &) override;
 

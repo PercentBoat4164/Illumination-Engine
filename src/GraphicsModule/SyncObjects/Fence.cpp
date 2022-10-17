@@ -11,7 +11,7 @@ IE::Graphics::Fence::Fence(IE::Graphics::RenderEngine *t_engineLink, bool t_sign
 IE::Graphics::Fence::~Fence() {
     std::unique_lock<std::mutex> lock(*fenceMutex);
     status = IE_FENCE_STATUS_INVALID;
-    vkDestroyFence(linkedRenderEngine->getDevice(), fence, nullptr);
+    vkDestroyFence(linkedRenderEngine->m_device.device, fence, nullptr);
 }
 
 IE::Graphics::Fence::Fence(const IE::Graphics::Fence &t_other) {
@@ -33,7 +33,7 @@ void IE::Graphics::Fence::create(IE::Graphics::RenderEngine *t_engineLink, bool 
       .flags = t_signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0u,
     };
     std::unique_lock<std::mutex> lock(*fenceMutex);
-    VkResult result{vkCreateFence(linkedRenderEngine->getDevice(), &createInfo, nullptr, &fence)};
+    VkResult result{vkCreateFence(linkedRenderEngine->m_device.device, &createInfo, nullptr, &fence)};
     if (result != VK_SUCCESS)
         linkedRenderEngine->getLogger().log(
           "Failed to create Fence with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result),

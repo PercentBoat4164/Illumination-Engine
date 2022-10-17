@@ -163,7 +163,7 @@ void Buffer::_vulkanUploadToVRAM() {
         if ((usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U)
             allocationCreateInfo.requiredFlags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
 
-        // Create buffer and update status
+        // Create buffer and update state
         vmaCreateBuffer(
           linkedRenderEngine->allocator,
           &bufferCreateInfo,
@@ -227,7 +227,7 @@ void Buffer::_vulkanUploadToVRAM_vector(const std::vector<char> &data) {
         if ((usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U)
             allocationCreateInfo.requiredFlags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
 
-        // Create buffer and update status
+        // Create buffer and update state
         vmaCreateBuffer(
           linkedRenderEngine->allocator,
           &bufferCreateInfo,
@@ -292,7 +292,7 @@ void Buffer::_vulkanUploadToVRAM_void(void *data, size_t size) {
         if ((usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0U)
             allocationCreateInfo.requiredFlags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
 
-        // Create buffer and update status
+        // Create buffer and update state
         vmaCreateBuffer(
           linkedRenderEngine->allocator,
           &bufferCreateInfo,

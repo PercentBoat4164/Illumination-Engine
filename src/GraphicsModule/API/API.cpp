@@ -24,7 +24,7 @@ IE::Graphics::Version IE::Graphics::API::getHighestSupportedVersion(IE::Graphics
     Version temporaryVersion;
     if (name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
         VkPhysicalDeviceProperties properties;
-        vkGetPhysicalDeviceProperties(linkedRenderEngine->getPhysicalDevice(), &properties);
+        vkGetPhysicalDeviceProperties(linkedRenderEngine->m_device.physical_device, &properties);
         temporaryVersion = Version(properties.apiVersion);
     }
     if (name == IE_RENDER_ENGINE_API_NAME_OPENGL) {

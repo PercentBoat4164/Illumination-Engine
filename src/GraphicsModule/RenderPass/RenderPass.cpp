@@ -167,7 +167,12 @@ std::vector<std::weak_ptr<IE::Graphics::Attachment>> IE::Graphics::RenderPass::b
       .dependencyCount = static_cast<uint32_t>(allDependencies.size()),
       .pDependencies   = allDependencies.data()};
 
-    vkCreateRenderPass(m_linkedRenderEngine.lock()->getDevice(), &renderPassCreateInfo, nullptr, &m_renderPass);
+    vkCreateRenderPass(
+      m_linkedRenderEngine.lock()->m_device.device,
+      &renderPassCreateInfo,
+      nullptr,
+      &m_renderPass
+    );
 
     return attachments;
 }
