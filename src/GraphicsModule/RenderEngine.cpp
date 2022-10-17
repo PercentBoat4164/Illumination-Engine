@@ -244,22 +244,18 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
         // Ensure that the vectors have the correct size
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_imageAvailableSemaphores.resize(m_swapchain.image_count);
-#pragma unroll 1
             for (auto &semaphore : m_imageAvailableSemaphores) semaphore.create(this);
         });
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_renderFinishedSemaphores.resize(m_swapchain.image_count);
-#pragma unroll 1
             for (auto &semaphore : m_renderFinishedSemaphores) semaphore.create(this);
         });
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_inFlightFences.resize(m_swapchain.image_count);
-#pragma unroll 1
             for (auto &fence : m_inFlightFences) fence.create(this);
         });
         IE::Core::Core::getInst().threadPool.submit([&] {
             m_imagesInFlight.resize(m_swapchain.image_count);
-#pragma unroll 1
             for (auto &fence : m_imagesInFlight) fence.create(this);
         });
 
@@ -358,7 +354,6 @@ IE::Graphics::RenderEngine::~RenderEngine() {
         m_imagesInFlight.clear();
     })};
     auto swapchainImageDestruction{IE::Core::Core::getInst().threadPool.submit([&] {
-#pragma unroll 1
         for (VkImageView swapchainImageView : m_swapchainImageViews)
             vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
     })};
