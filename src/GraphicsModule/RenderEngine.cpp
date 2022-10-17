@@ -227,43 +227,57 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
             swapchainBuilder.set_old_swapchain(m_swapchain);
         vkb::detail::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
         if (!thisSwapchain) {
-            // Failure! Log it then continue without deleting the old swapchain.
             m_graphicsAPICallbackLog.log(
               "Failed to create swapchain! Error: " + thisSwapchain.error().message(),
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
+        } else {
+            m_graphicsAPICallbackLog.log("Created Swapchain");
+            vkb::destroy_swapchain(m_swapchain);
+            m_swapchain           = thisSwapchain.value();
+            m_swapchainImageViews = m_swapchain.get_image_views().value();
         }
-
-        m_graphicsAPICallbackLog.log("Created Swapchain");
-
-        // Success! Delete the old swapchain and images and replace them with the new ones.
-        vkb::destroy_swapchain(m_swapchain);
-        m_swapchain           = thisSwapchain.value();
-        m_swapchainImageViews = m_swapchain.get_image_views().value();
-
-        // Ensure that the vectors have the correct size
-        IE::Core::Core::getInst().threadPool.submit([&] {
-            m_imageAvailableSemaphores.resize(m_swapchain.image_count);
-            for (auto &semaphore : m_imageAvailableSemaphores) semaphore.create(this);
-        });
-        IE::Core::Core::getInst().threadPool.submit([&] {
-            m_renderFinishedSemaphores.resize(m_swapchain.image_count);
-            for (auto &semaphore : m_renderFinishedSemaphores) semaphore.create(this);
-        });
-        IE::Core::Core::getInst().threadPool.submit([&] {
-            m_inFlightFences.resize(m_swapchain.image_count);
-            for (auto &fence : m_inFlightFences) fence.create(this);
-        });
-        IE::Core::Core::getInst().threadPool.submit([&] {
-            m_imagesInFlight.resize(m_swapchain.image_count);
-            for (auto &fence : m_imagesInFlight) fence.create(this);
-        });
 
         return m_swapchain;
     }
     return {};
 }
 
+void IE::Graphics::RenderEngine::createSyncObjects() {
+    m_imageAvailableSemaphores.resize(m_swapchain.image_count);
+    for (int i = 0; i < m_swapchain.image_count; ++i)
+        m_imageAvailableSemaphores[i] = std::make_shared<IE::Graphics::Semaphore>(this);
+    m_renderFinishedSemaphores.resize(m_swapchain.image_count);
+    for (int i = 0; i < m_swapchain.image_count; ++i)
+        m_renderFinishedSemaphores[i] = std::make_shared<IE::Graphics::Semaphore>(this);
+    m_inFlightFences.resize(m_swapchain.image_count);
+    for (int i = 0; i < m_swapchain.image_count; ++i)
+        m_inFlightFences[i] = std::make_shared<IE::Graphics::Fence>(this);
+    m_imagesInFlight.resize(m_swapchain.image_count);
+    for (int i = 0; i < m_swapchain.image_count; ++i)
+        m_imagesInFlight[i] = std::make_shared<IE::Graphics::Fence>(this);
+}
+
+std::unordered_map<std::thread::id, std::shared_ptr<IE::Graphics::CommandPool>>
+IE::Graphics::RenderEngine::createCommandPools(std::thread::id mainThreadID) {
+    // Each thread is given a command pool to record buffers to.
+    m_commandPools[mainThreadID] = std::make_shared<IE::Graphics::CommandPool>();
+    m_commandPools[mainThreadID]
+      ->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
+    for (int i = IE::Core::Core::getInst().threadPool.getThreads().size(); i > 0; --i) {
+        m_commandPools[IE::Core::Core::getInst().threadPool.getThreads()[i].get_id()] =
+          std::make_shared<IE::Graphics::CommandPool>();
+        m_commandPools[IE::Core::Core::getInst().threadPool.getThreads()[i].get_id()]
+          ->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
+    }
+    return m_commandPools;
+}
+
+/**
+ * @brief This MUST be called from the main thread. It MUST NOT be called from a threadpool thread. Furthermore, NO
+ * method within the entire render engine may be called from outside the threadpool threads or the main thread.
+ * @return
+ */
 std::shared_ptr<IE::Graphics::RenderEngine> IE::Graphics::RenderEngine::create() {
     auto              engine{std::make_shared<IE::Graphics::RenderEngine>()};
     std::future<void> window{IE::Core::Core::getInst().threadPool.submit([&] { engine->createWindow(); })};
@@ -277,12 +291,27 @@ std::shared_ptr<IE::Graphics::RenderEngine> IE::Graphics::RenderEngine::create()
         device.wait();
         engine->createSwapchain();
     })};
+    std::future<void> syncObjects{IE::Core::Core::getInst().threadPool.submit([&] {
+        swapchain.wait();
+        engine->createSyncObjects();
+    })};
     std::future<void> allocator{IE::Core::Core::getInst().threadPool.submit([&] {
         device.wait();
         engine->createAllocator();
     })};
     swapchain.wait();
+    engine->createCommandPools(std::this_thread::get_id());
     allocator.wait();
+    syncObjects.wait();
+
+    //    engine->createWindow();
+    //    engine->createInstance();
+    //    engine->createSurface();
+    //    engine->createDevice();
+    //    engine->createSwapchain();
+    //    engine->createSyncObjects();
+    //    engine->createAllocator();
+    //    engine->createCommandPools(std::this_thread::get_id());
     return engine;
 }
 
@@ -345,11 +374,9 @@ std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result
 }
 
 IE::Graphics::RenderEngine::~RenderEngine() {
-    auto semaphoreDestruction{IE::Core::Core::getInst().threadPool.submit([&] {
+    auto syncObject{IE::Core::Core::getInst().threadPool.submit([&] {
         m_imageAvailableSemaphores.clear();
         m_renderFinishedSemaphores.clear();
-    })};
-    auto fenceDestruction{IE::Core::Core::getInst().threadPool.submit([&] {
         m_inFlightFences.clear();
         m_imagesInFlight.clear();
     })};
@@ -357,12 +384,13 @@ IE::Graphics::RenderEngine::~RenderEngine() {
         for (VkImageView swapchainImageView : m_swapchainImageViews)
             vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
     })};
+    auto commandPoolDestruction{IE::Core::Core::getInst().threadPool.submit([&] { m_commandPools.clear(); })};
     if (m_allocator != nullptr) vmaDestroyAllocator(m_allocator);
     if (m_swapchain != nullptr) vkb::destroy_swapchain(m_swapchain);
     if ((m_instance != nullptr) && (m_surface != nullptr)) vkb::destroy_surface(m_instance, m_surface);
-    semaphoreDestruction.wait();
-    fenceDestruction.wait();
+    syncObject.wait();
     swapchainImageDestruction.wait();
+    commandPoolDestruction.wait();
     if (m_device != nullptr) vkb::destroy_device(m_device);
     if (m_instance != nullptr) vkb::destroy_instance(m_instance);
 }

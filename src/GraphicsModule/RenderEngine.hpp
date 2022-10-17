@@ -49,17 +49,17 @@ private:
     IE::Core::Logger      m_graphicsAPICallbackLog{
       ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME,
       ILLUMINATION_ENGINE_GRAPHICS_LOGGER_FILENAME};
-    GLFWwindow                                             *m_window{};
-    std::array<size_t, 2>                                   m_defaultResolution{800, 600};
-    std::array<size_t, 2>                                   m_currentResolution = m_defaultResolution;
-    std::array<size_t, 2>                                   m_defaultPosition{10, 10};
-    bool                                                    m_useVsync{false};
-    std::vector<VkImageView>                                m_swapchainImageViews;
-    std::vector<IE::Graphics::Semaphore>                    m_imageAvailableSemaphores{};
-    std::vector<IE::Graphics::Semaphore>                    m_renderFinishedSemaphores{};
-    std::vector<IE::Graphics::Fence>                        m_inFlightFences{};
-    std::vector<IE::Graphics::Fence>                        m_imagesInFlight{};
-    std::vector<std::shared_ptr<IE::Graphics::CommandPool>> m_commandPools{};
+    GLFWwindow                                           *m_window{};
+    std::array<size_t, 2>                                 m_defaultResolution{800, 600};
+    std::array<size_t, 2>                                 m_currentResolution = m_defaultResolution;
+    std::array<size_t, 2>                                 m_defaultPosition{10, 10};
+    bool                                                  m_useVsync{false};
+    std::vector<VkImageView>                              m_swapchainImageViews;
+    std::vector<std::shared_ptr<IE::Graphics::Semaphore>> m_imageAvailableSemaphores{};
+    std::vector<std::shared_ptr<IE::Graphics::Semaphore>> m_renderFinishedSemaphores{};
+    std::vector<std::shared_ptr<IE::Graphics::Fence>>     m_inFlightFences{};
+    std::vector<std::shared_ptr<IE::Graphics::Fence>>     m_imagesInFlight{};
+    std::unordered_map<std::thread::id, std::shared_ptr<IE::Graphics::CommandPool>> m_commandPools{};
 
     static VkBool32 APIDebugMessenger(
       VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
@@ -80,7 +80,8 @@ private:
 
     vkb::Swapchain createSwapchain();
 
-    std::vector<std::shared_ptr<IE::Graphics::CommandPool>> createCommandPool();
+    std::unordered_map<std::thread::id, std::shared_ptr<IE::Graphics::CommandPool>>
+    createCommandPools(std::thread::id mainThreadID);
 
     static void framebufferResizeCallback(GLFWwindow *pWindow, int x, int y);
 
@@ -102,5 +103,6 @@ public:
     static std::string translateVkResultCodes(VkResult t_result);
 
     ~RenderEngine() override;
+    void createSyncObjects();
 };
 }  // namespace IE::Graphics

@@ -18,13 +18,6 @@ class IERenderEngine;
 namespace IE::Graphics {
 class CommandPool {
 public:
-    struct CreateInfo {
-    public:
-        VkCommandPoolCreateFlagBits flags{static_cast<VkCommandPoolCreateFlagBits>(
-          VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
-        )};
-        vkb::QueueType              commandQueue;
-    } __attribute__((aligned(8))) createdWith{};
 
     VkCommandPool                               m_commandPool{};
     std::vector<std::shared_ptr<CommandBuffer>> m_commandBuffers{};
@@ -42,7 +35,11 @@ public:
 
     CommandPool &operator=(CommandPool &&) = default;
 
-    void create(IE::Graphics::RenderEngine *engineLink, CreateInfo *createInfo);
+    void create(
+      IE::Graphics::RenderEngine *t_engineLink,
+      VkCommandPoolCreateFlags t_flags,
+      vkb::QueueType              t_commandQueue
+    );
 
     ~CommandPool();
 

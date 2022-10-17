@@ -9,22 +9,24 @@
 #include "Core/LogModule/IELogger.hpp"
 
 void IE::Graphics::CommandPool::create(
-  IE::Graphics::RenderEngine            *engineLink,
-  IE::Graphics::CommandPool::CreateInfo *createInfo
+  IE::Graphics::RenderEngine *t_engineLink,
+  VkCommandPoolCreateFlags    t_flags,
+  vkb::QueueType              t_commandQueue
 ) {
-    m_linkedRenderEngine = engineLink;
-    createdWith          = *createInfo;
-    m_queue              = m_linkedRenderEngine->m_device.get_queue(createdWith.commandQueue).value();
+    m_linkedRenderEngine = t_engineLink;
+    m_queue              = m_linkedRenderEngine->m_device.get_queue(t_commandQueue).value();
     VkCommandPoolCreateInfo commandPoolCreateInfo{
       .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-      .flags            = static_cast<VkCommandPoolCreateFlags>(createInfo->flags),
-      .queueFamilyIndex = m_linkedRenderEngine->m_device.get_queue_index(createInfo->commandQueue).value()};
-    if (vkCreateCommandPool(m_linkedRenderEngine->m_device.device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
+      .flags            = t_flags,
+      .queueFamilyIndex = m_linkedRenderEngine->m_device.get_queue_index(t_commandQueue).value()};
+    VkResult result{
+      vkCreateCommandPool(m_linkedRenderEngine->m_device.device, &commandPoolCreateInfo, nullptr, &m_commandPool)};
+    if (result != VK_SUCCESS)
         m_linkedRenderEngine->getLogger().log(
           "Failed to create command pool!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG
         );
-    }
+    else m_linkedRenderEngine->getLogger().log("Created CommandPool");
 }
 
 void IE::Graphics::CommandPool::prepareCommandBuffers(uint32_t commandBufferCount) {
@@ -50,4 +52,5 @@ IE::Graphics::CommandPool::~CommandPool() {
     for (const std::shared_ptr<IE::Graphics::CommandBuffer> &commandBuffer : m_commandBuffers)
         commandBuffer->destroy();
     m_commandBuffers.clear();
+    vkDestroyCommandPool(m_linkedRenderEngine->m_device.device, m_commandPool, nullptr);
 }

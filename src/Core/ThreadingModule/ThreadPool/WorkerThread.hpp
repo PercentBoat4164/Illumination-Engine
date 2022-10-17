@@ -14,8 +14,6 @@ public:
     void operator()();
 
 private:
-    static uint32_t m_nextId;
-    uint32_t        m_id;
     ThreadPool     *m_threadPool;
 };
 }  // namespace IE::Core::detail

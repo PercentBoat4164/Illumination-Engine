@@ -457,3 +457,6 @@ void IE::Graphics::CommandBuffer::recordPipelineBarrier(
   const std::vector<VkMemoryBarrier> &memoryBarriers
 ) {
 }
+
+IE::Graphics::CommandBuffer::~CommandBuffer() {
+}
