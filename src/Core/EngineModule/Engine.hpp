@@ -7,41 +7,27 @@
 
 namespace IE::Core {
 class Engine {
-private:
-    static uint64_t m_nextId;
+    using AspectType = IEAspect;
 
 protected:
     std::unordered_map<std::string, std::shared_ptr<IEAspect>> m_aspects;
-    uint64_t                                                   m_id;
-
-    Engine() : m_id(m_nextId++) {
-    }
 
 public:
-    virtual ~Engine() = default;
+    Engine() = default;
 
     Engine(const IE::Core::Engine &t_other) = default;
 
     Engine(IE::Core::Engine &&t_other) = default;
 
-    Engine &operator=(const IE::Core::Engine &t_other) {
-        if (this == &t_other) {
-            m_aspects = t_other.m_aspects;
-            m_id      = t_other.m_id;
-        }
-        return *this;
-    }
+    Engine &operator=(const IE::Core::Engine &t_other);
 
-    Engine &operator=(IE::Core::Engine &&t_other) noexcept {
-        if (this == &t_other) {
-            m_aspects = t_other.m_aspects;
-            m_id      = t_other.m_id;
-        }
-        return *this;
-    }
+    Engine &operator=(IE::Core::Engine &&t_other) noexcept;
 
-    virtual std::weak_ptr<IEAspect> createAspect(std::weak_ptr<IEAsset> asset, const std::string &filename) = 0;
+    virtual ~Engine() = default;
 
-    std::weak_ptr<IEAspect> findAspect(const std::string &filename);
+
+    virtual IEAspect *createAspect(std::weak_ptr<IEAsset> asset, const std::string &filename) = 0;
+
+    virtual IEAspect *getAspect(const std::string &t_id);
 };
 }  // namespace IE::Core
