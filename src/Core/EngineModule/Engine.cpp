@@ -1,7 +1,22 @@
 #include "Engine.hpp"
 
-std::weak_ptr<IEAspect> IE::Core::Engine::findAspect(const std::string &filename) {
-    return m_aspects.at(filename);
+#include "Core/Core.hpp"
+
+#include <utility>
+
+IEAspect *IE::Core::Engine::getAspect(const std::string &t_id) {
+    auto aspect = m_aspects.find(t_id);
+    if (aspect != m_aspects.end()) return aspect->second.get();
+    IE::Core::Core::getLogger()->log("Aspect '" + t_id + "' does not exist!");
+    return nullptr;
 }
 
-uint64_t IE::Core::Engine::m_nextId{0};
+IE::Core::Engine &IE::Core::Engine::operator=(const IE::Core::Engine &t_other) {
+    if (this == &t_other) m_aspects = t_other.m_aspects;
+    return *this;
+}
+
+IE::Core::Engine &IE::Core::Engine::operator=(IE::Core::Engine &&t_other) noexcept {
+    if (this == &t_other) m_aspects = std::exchange(t_other.m_aspects, {});
+    return *this;
+}

@@ -15,7 +15,7 @@
 class GLFWwindow;
 
 namespace IE::Core {
-class Core {
+class Core final {
 public:
     static IE::Core::Core &getInst();
 
@@ -56,6 +56,9 @@ public:
 
     static IE::Core::Window *getWindow(GLFWwindow *t_window);
 
+    static Logger       *getLogger();
+    static IEFileSystem *getFileSystem();
+    static ThreadPool   *getThreadPool();
 
 private:
     static IE::Core::Logger                                    m_logger;
@@ -67,8 +70,5 @@ private:
     static IEFileSystem                                        m_filesystem;
 
     Core() = default;
-    static Logger       *getLogger();
-    static IEFileSystem *getFileSystem();
-    static ThreadPool   *getThreadPool();
 } __attribute__((aligned(128)));
 }  // namespace IE::Core

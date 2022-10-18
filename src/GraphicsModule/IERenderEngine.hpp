@@ -32,6 +32,9 @@ struct GLFWmonitor;
 #include <vector>
 
 class IERenderEngine : public IE::Core::Engine {
+public:
+    using AspectType = IERenderable;
+
 private:
     /**
      * @brief Private helper function that creates a Vulkan instance.
@@ -301,5 +304,7 @@ public:
     );
 
     static void setAPI(const IEAPI &API);
-    std::weak_ptr<IEAspect> createAspect(std::weak_ptr<IEAsset> asset, const std::string &filename) override;
+
+    AspectType *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
+    AspectType *getAspect(const std::string &t_id) override;
 };

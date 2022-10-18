@@ -73,7 +73,6 @@ GLFWwindow *IERenderEngine::createWindow() const {
         const char *description;
         int         code = glfwGetError(&description);
         settings->logger.log(
-
           "Failed to create window! Error: " + std::to_string(code) + " " + description,
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -838,6 +837,13 @@ std::function<void(IERenderEngine &)> IERenderEngine::_destroy =
       return;
   }};
 
-std::weak_ptr<IEAspect> IERenderEngine::createAspect(std::weak_ptr<IEAsset> asset, const std::string &filename) {
-    return {};
+IERenderEngine::AspectType *IERenderEngine::getAspect(const std::string &t_id) {
+    return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
+}
+
+IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
+    AspectType *aspect = getAspect(t_id);
+    if (!aspect) aspect = new AspectType();
+    t_asset.lock()->addAspect(aspect);
+    return aspect;
 }

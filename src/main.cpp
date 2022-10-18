@@ -8,8 +8,7 @@ int main() {
     IERenderEngine *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
 
     IE::Input::InputEngine               inputEngine{renderEngine->window};
-    std::shared_ptr<IE::Input::Keyboard> keyboard =
-      std::dynamic_pointer_cast<IE::Input::Keyboard>(inputEngine.findAspect("keyboard").lock());
+    IE::Input::Keyboard *keyboard = inputEngine.getAspect("keyboard");
     keyboard->editActions(
       GLFW_KEY_W,
       [&](GLFWwindow *) {

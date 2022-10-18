@@ -9,7 +9,7 @@ set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
 
 # Possibly add https://github.com/libvips/libvips as the image importer of choice. (high speed, high compatibility, highly maintained, but does not use CMake)
 
-# package_DATA =     NAME        MODULE_NAME  EXPORT_LIB  BUILD_DIR      INCLUDE_DIR DOWNLOAD_ARGS
+# package_DATA =     NAME        MODULE_NAME  EXPORT_LIB BUILD_DIR      INCLUDE_DIR DOWNLOAD_ARGS
 set(assimp_DATA      assimp      assimp       EXT_AssImp ""             "/include"  GIT_REPOSITORY https://github.com/assimp/assimp                                               GIT_PROGRESS ON GIT_TAG v5.2.5)
 set(glm_DATA         glm         glm          EXT_GLM    ""             ""          GIT_REPOSITORY https://github.com/g-truc/glm                                                  GIT_PROGRESS ON GIT_TAG master)
 set(glew_DATA        glew        glew         EXT_OpenGL "/build/cmake" "/include"  URL            https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
@@ -135,7 +135,7 @@ foreach (LIST ${DATA})
 	list(GET ${LIST} 0 NAME)
 	if (${LEN} MATCHES 3)
 		# If the package has no download arguments, then it must be in local storage
-		find_package(${NAME} REQUIRED QUIET)
+		find_package(${NAME} QUIET)
 		if (PKG_CONFIG_FOUND AND NOT ${NAME}_FOUND)
 			list(GET ${LIST} 1 PACKAGE)
 			pkg_search_module(${NAME} ${PACKAGE} QUIET)

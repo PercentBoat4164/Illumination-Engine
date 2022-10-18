@@ -1,16 +1,21 @@
 #pragma once
 
 #include "Core/EngineModule/Engine.hpp"
+#include "Keyboard.hpp"
 
 class GLFWwindow;
 
 namespace IE::Input {
-class Keyboard;
-
 class InputEngine : public IE::Core::Engine {
 public:
+    using AspectType = Keyboard;
+
+    GLFWwindow *m_window;
+
     InputEngine(GLFWwindow *t_window);
-private:
-    std::weak_ptr<IEAspect> createAspect(std::weak_ptr<IEAsset> asset, const std::string &filename) override;
+
+    AspectType *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
+
+    AspectType *getAspect(const std::string &t_id) override;
 };
 }  // namespace IE::Input
