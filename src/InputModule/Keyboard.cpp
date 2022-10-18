@@ -130,7 +130,7 @@ void IE::Input::Keyboard::clearQueue() {
 
 void IE::Input::Keyboard::keyCallback(GLFWwindow *window, int key, int scancode, int action, int modifiers) {
     auto keyboard = std::dynamic_pointer_cast<IE::Input::Keyboard>(
-      static_cast<IE::Input::InputEngine *>(IE::Core::Core::getInst().m_windows.at(window).inputEngine)
+      static_cast<IE::Input::InputEngine *>(IE::Core::Core::getWindow(window)->inputEngine)
         ->findAspect("keyboard")
         .lock()
     );  // keyboard connected to the window

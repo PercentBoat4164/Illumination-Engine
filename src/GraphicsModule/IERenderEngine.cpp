@@ -78,7 +78,8 @@ GLFWwindow *IERenderEngine::createWindow() const {
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
-    IE::Core::Core::getInst().m_windows[pWindow].graphicsEngine = const_cast<IERenderEngine *>(this);
+    IE::Core::Core::registerWindow(pWindow);
+    IE::Core::Core::getWindow(pWindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
     return pWindow;
 }
 
@@ -628,14 +629,12 @@ IERenderEngine::~IERenderEngine() {
 }
 
 void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
-    auto *renderEngine =
-      static_cast<IERenderEngine *>(IE::Core::Core::getInst().m_windows.at(pWindow).graphicsEngine);
+    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
     *renderEngine->settings->currentPosition = {x, y};
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-    auto *renderEngine =
-      static_cast<IERenderEngine *>(IE::Core::Core::getInst().m_windows.at(pWindow).graphicsEngine);
+    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
     *renderEngine->settings->currentResolution = {width, height};
     renderEngine->framebufferResized           = true;
 }

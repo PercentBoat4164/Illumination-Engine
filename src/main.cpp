@@ -1,13 +1,11 @@
-#include "Core/FileSystemModule/IEFileSystem.hpp"
-#include "Core/ThreadingModule/ThreadPool.hpp"
-#include "GraphicsModule/IERenderEngine.hpp"
+#include "Core/Core.hpp"
+#include "IERenderEngine.hpp"
 #include "InputModule/InputEngine.hpp"
 #include "InputModule/Keyboard.hpp"
 
 int main() {
-    IESettings                      settings = IESettings();
-    std::shared_ptr<IERenderEngine> renderEngine =
-      std::make_shared<IERenderEngine>(&settings);  // RenderEngine must be allocated on the heap.
+    IESettings                      settings     = IESettings();
+    IERenderEngine *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
 
     IE::Input::InputEngine               inputEngine{renderEngine->window};
     std::shared_ptr<IE::Input::Keyboard> keyboard =
@@ -95,7 +93,8 @@ int main() {
 
     IE::Core::ThreadPool threadPool{};
 
-    renderEngine->settings->logger.log( "Beginning main loop.",
+    renderEngine->settings->logger.log(
+      "Beginning main loop.",
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );
 

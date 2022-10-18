@@ -9,6 +9,6 @@ IE::Input::InputEngine::createAspect(std::weak_ptr<IEAsset> asset, const std::st
 }
 
 IE::Input::InputEngine::InputEngine(GLFWwindow *t_window) {
-    IE::Core::Core::getInst().m_windows.at(t_window).inputEngine = const_cast<IE::Input::InputEngine *>(this);
-    m_aspects["keyboard"]                                        = std::make_shared<IE::Input::Keyboard>(t_window);
+    IE::Core::Core::getWindow(t_window)->inputEngine = const_cast<IE::Input::InputEngine *>(this);
+    m_aspects["keyboard"]                            = std::make_shared<IE::Input::Keyboard>(t_window);
 }

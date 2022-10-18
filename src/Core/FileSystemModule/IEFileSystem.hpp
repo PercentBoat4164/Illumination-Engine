@@ -1,3 +1,5 @@
+#pragma once
+
 #include "IEDirectory.hpp"
 #include "IEFile.hpp"
 
