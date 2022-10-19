@@ -4,7 +4,7 @@
 #include "Core/EngineModule/Window.hpp"
 #include "Core/FileSystemModule/IEFileSystem.hpp"
 #include "Core/LogModule/IELogger.hpp"
-#include "Core/ThreadingModule/ThreadPool.hpp"
+#include "Core/ThreadingModule/ThreadPool/ThreadPool.hpp"
 
 #include <mutex>
 #include <unordered_map>
@@ -29,7 +29,7 @@ public:
               "Engine '" + id + "' already exists!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
-        m_engines[id] = new T(args...);
+        m_engines[id] = T().create(args...);
         return static_cast<T *>(m_engines[id]);
     }
 
@@ -56,9 +56,9 @@ public:
 
     static IE::Core::Window *getWindow(GLFWwindow *t_window);
 
-    static Logger       *getLogger();
-    static IEFileSystem *getFileSystem();
-    static ThreadPool   *getThreadPool();
+    static IE::Core::Logger     *getLogger();
+    static IEFileSystem         *getFileSystem();
+    static IE::Core::ThreadPool *getThreadPool();
 
 private:
     static IE::Core::Logger                                    m_logger;
@@ -66,7 +66,7 @@ private:
     static std::unordered_map<std::string, IE::Core::Engine *> m_engines;
     static std::mutex                                          m_windowsMutex;
     static std::unordered_map<GLFWwindow *, IE::Core::Window>  m_windows;
-    static ThreadPool                                          m_threadPool;
+    static IE::Core::ThreadPool                                m_threadPool;
     static IEFileSystem                                        m_filesystem;
 
     Core() = default;

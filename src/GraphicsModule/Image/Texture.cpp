@@ -70,7 +70,7 @@ std::unique_ptr<IE::Graphics::Texture> IE::Graphics::Texture::create(
           new IE::Graphics::detail::TextureVulkan(t_engineLink, t_dimensions...)
         )};
     }
-    IE::Core::Core::getInst().logger.log(
+    IE::Core::Core::getInst().getLogger()->log(
       "failed to create image because render engine is using neither Vulkan or OpenGL.",
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
     );

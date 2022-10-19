@@ -24,7 +24,7 @@ bool IE::Graphics::detail::TextureVulkan::_createSampler() {
     VkResult result{
       vkCreateSampler(m_linkedRenderEngine.lock()->m_device.device, &samplerCreateInfo, nullptr, &m_sampler)};
     if (result != VK_SUCCESS) {
-        IE::Core::Core::getInst().logger.log(
+        IE::Core::Core::getInst().getLogger()->log(
           "failed to create image sampler with error: " +
             IE::Graphics::RenderEngine::translateVkResultCodes(result) +
             ". Use Vulkan's validation layers for more"

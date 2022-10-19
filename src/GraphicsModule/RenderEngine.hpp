@@ -33,6 +33,9 @@
 
 namespace IE::Graphics {
 class RenderEngine : public IE::Core::Engine {
+public:
+    using AspectType = IEAspect;
+
 private:
     std::string m_applicationName{ILLUMINATION_ENGINE_NAME};
     Version     m_applicationVersion{
@@ -100,13 +103,15 @@ public:
     CommandPool *tryGetCommandPool();
 
     CommandPool *getCommandPool();
+    IEAspect    *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
 
     IE::Graphics::API getAPI();
 
-    static std::shared_ptr<RenderEngine> create();
+    Engine *create() override;
 
     static std::string translateVkResultCodes(VkResult t_result);
 
     ~RenderEngine() override;
+    AspectType *getAspect(const std::string &t_id);
 };
 }  // namespace IE::Graphics

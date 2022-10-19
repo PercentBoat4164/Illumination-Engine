@@ -26,7 +26,9 @@ public:
     virtual ~Engine() = default;
 
 
-    virtual IEAspect *createAspect(std::weak_ptr<IEAsset> asset, const std::string &filename) = 0;
+    virtual Engine *create() = 0;
+
+    virtual IEAspect *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) = 0;
 
     virtual IEAspect *getAspect(const std::string &t_id);
 };
