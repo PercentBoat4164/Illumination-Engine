@@ -1,3 +1,5 @@
+#pragma once
+
 #include "IEDirectory.hpp"
 #include "IEFile.hpp"
 
@@ -29,6 +31,8 @@ public:
     explicit IEFileSystem(const std::string &initialAssetDirectory);
 
     explicit IEFileSystem(const IEDirectory &initialBaseDirectory);
+
+    ~IEFileSystem() = default;
 
     template<typename... Args>
     static std::string composePath(IEPathName format, const Args &...args);
