@@ -18,7 +18,6 @@ class IERenderEngine;
 namespace IE::Graphics {
 class CommandPool {
 public:
-
     VkCommandPool                               m_commandPool{};
     std::vector<std::shared_ptr<CommandBuffer>> m_commandBuffers{};
     IE::Graphics::RenderEngine                 *m_linkedRenderEngine{};
@@ -43,8 +42,11 @@ public:
 
     ~CommandPool();
 
+    bool tryLock();
+
     void prepareCommandBuffers(uint32_t commandBufferCount);
 
     std::shared_ptr<CommandBuffer> index(uint32_t index);
+    void                           unlock();
 };
 }  // namespace IE::Graphics

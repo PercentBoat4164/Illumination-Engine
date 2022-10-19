@@ -54,3 +54,11 @@ IE::Graphics::CommandPool::~CommandPool() {
     m_commandBuffers.clear();
     vkDestroyCommandPool(m_linkedRenderEngine->m_device.device, m_commandPool, nullptr);
 }
+
+bool IE::Graphics::CommandPool::tryLock() {
+    return m_commandPoolMutex->try_lock();
+}
+
+void IE::Graphics::CommandPool::unlock() {
+    m_commandPoolMutex->unlock();
+}

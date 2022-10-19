@@ -258,26 +258,15 @@ void IE::Graphics::RenderEngine::createSyncObjects() {
         m_imagesInFlight[i] = std::make_shared<IE::Graphics::Fence>(this);
 }
 
-std::unordered_map<std::thread::id, std::shared_ptr<IE::Graphics::CommandPool>>
-IE::Graphics::RenderEngine::createCommandPools(std::thread::id mainThreadID) {
+void IE::Graphics::RenderEngine::createCommandPools() {
     // Each thread is given a command pool to record buffers to.
-    m_commandPools[mainThreadID] = std::make_shared<IE::Graphics::CommandPool>();
-    m_commandPools[mainThreadID]
-      ->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
-    for (int i = IE::Core::Core::getInst().threadPool.getThreads().size(); i > 0; --i) {
-        m_commandPools[IE::Core::Core::getInst().threadPool.getThreads()[i].get_id()] =
-          std::make_shared<IE::Graphics::CommandPool>();
-        m_commandPools[IE::Core::Core::getInst().threadPool.getThreads()[i].get_id()]
-          ->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
+    m_commandPools.resize(IE::Core::Core::getInst().threadPool.getThreads().size() + 1);
+    for (int i = IE::Core::Core::getInst().threadPool.getThreads().size(); i >= 0; --i) {
+        m_commandPools[i] = std::make_shared<IE::Graphics::CommandPool>();
+        m_commandPools[i]->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
     }
-    return m_commandPools;
 }
 
-/**
- * @brief This MUST be called from the main thread. It MUST NOT be called from a threadpool thread. Furthermore, NO
- * method within the entire render engine may be called from outside the threadpool threads or the main thread.
- * @return
- */
 std::shared_ptr<IE::Graphics::RenderEngine> IE::Graphics::RenderEngine::create() {
     auto              engine{std::make_shared<IE::Graphics::RenderEngine>()};
     std::future<void> window{IE::Core::Core::getInst().threadPool.submit([&] { engine->createWindow(); })};
@@ -300,7 +289,7 @@ std::shared_ptr<IE::Graphics::RenderEngine> IE::Graphics::RenderEngine::create()
         engine->createAllocator();
     })};
     swapchain.wait();
-    engine->createCommandPools(std::this_thread::get_id());
+    engine->createCommandPools();
     allocator.wait();
     syncObjects.wait();
 
@@ -405,4 +394,20 @@ void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, 
 
 IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
     return m_graphicsAPICallbackLog;
+}
+
+IE::Graphics::CommandPool *IE::Graphics::RenderEngine::tryGetCommandPool() {
+    for (auto commandPool : m_commandPools)
+        if (commandPool->tryLock()) {
+            commandPool->unlock();
+            return commandPool.get();
+        }
+    return nullptr;
+}
+
+IE::Graphics::CommandPool *IE::Graphics::RenderEngine::getCommandPool() {
+    while (true) {
+        IE::Graphics::CommandPool *commandPool{tryGetCommandPool()};
+        if (commandPool) return commandPool;
+    }
 }
