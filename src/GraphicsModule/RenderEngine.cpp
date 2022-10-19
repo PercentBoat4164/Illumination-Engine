@@ -1,6 +1,8 @@
 #include "RenderEngine.hpp"
 
 #include "Core/AssetModule/IEAsset.hpp"
+#include "RenderPass/RenderPass.hpp"
+#include "RenderPass/RenderPassSeries.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <../contrib/stb/stb_image.h>
@@ -269,6 +271,11 @@ void IE::Graphics::RenderEngine::createCommandPools() {
     }
 }
 
+void IE::Graphics::RenderEngine::createRenderPasses() {
+    IE::Graphics::RenderPassSeries series(this);
+    series.addRenderPass(IE::Graphics::RenderPass::Presets::IE_GRAPHICS_RENDER_PASS_PRESET_COLOR).build();
+}
+
 IE::Core::Engine *IE::Graphics::RenderEngine::create() {
     auto              engine{new IE::Graphics::RenderEngine()};
     std::future<void> window{IE::Core::Core::getInst().getThreadPool()->submit([&] { engine->createWindow(); })};
@@ -293,6 +300,7 @@ IE::Core::Engine *IE::Graphics::RenderEngine::create() {
     swapchain.wait();
     engine->createCommandPools();
     allocator.wait();
+    engine->createRenderPasses();
     syncObjects.wait();
     return static_cast<IE::Core::Engine *>(engine);
 }

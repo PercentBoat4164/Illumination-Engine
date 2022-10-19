@@ -81,7 +81,7 @@ IE::Graphics::Image &IE::Graphics::Image::operator=(const IE::Graphics::Image &t
     std::unique_lock<std::mutex> lock(*m_mutex);
     std::unique_lock<std::mutex> otherLock(*t_other.m_mutex);
     if (&t_other != this) {
-        if (m_linkedRenderEngine.lock() != t_other.m_linkedRenderEngine.lock()) {
+        if (m_linkedRenderEngine != t_other.m_linkedRenderEngine) {
             IE::Core::MultiDimensionalVector<unsigned char> *temp{
               new IE::Core::MultiDimensionalVector<unsigned char>()};
             otherLock.release();
@@ -103,7 +103,7 @@ IE::Graphics::Image &IE::Graphics::Image::operator=(IE::Graphics::Image &&t_othe
     std::unique_lock<std::mutex> lock(*m_mutex);
     std::unique_lock<std::mutex> otherLock(*t_other.m_mutex);
     if (&t_other != this) {
-        if (m_linkedRenderEngine.lock() != t_other.m_linkedRenderEngine.lock()) {
+        if (m_linkedRenderEngine != t_other.m_linkedRenderEngine) {
             IE::Core::MultiDimensionalVector<unsigned char> *temp{
               new IE::Core::MultiDimensionalVector<unsigned char>()};
             otherLock.release();
@@ -122,16 +122,15 @@ IE::Graphics::Image &IE::Graphics::Image::operator=(IE::Graphics::Image &&t_othe
 }
 
 template<typename... Args>
-std::unique_ptr<IE::Graphics::Image>
-IE::Graphics::Image::create(std::weak_ptr<IE::Graphics::RenderEngine> t_engineLink, Args... t_dimensions) {
-    if (t_engineLink.lock()->getAPI().name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-        return std::unique_ptr<IE::Graphics::Image>{
-          static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageVulkan(t_engineLink, t_dimensions...)
-          )};
-    } else if (t_engineLink.lock()->getAPI().name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-        return std::unique_ptr<IE::Graphics::Image>{
-          static_cast<IE::Graphics::Image *>(new IE::Graphics::detail::ImageOpenGL(t_engineLink, t_dimensions...)
-          )};
+IE::Graphics::Image *IE::Graphics::Image::create(IE::Graphics::RenderEngine *t_engineLink, Args... t_dimensions) {
+    if (t_engineLink->getAPI().name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+        return static_cast<IE::Graphics::Image *>(
+          new IE::Graphics::detail::ImageVulkan(t_engineLink, t_dimensions...)
+        );
+    } else if (t_engineLink->getAPI().name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+        return static_cast<IE::Graphics::Image *>(
+          new IE::Graphics::detail::ImageOpenGL(t_engineLink, t_dimensions...)
+        );
     }
     IE::Core::Core::getInst().getLogger()->log(
       "failed to create image because render engine is using neither Vulkan or OpenGL.",
@@ -146,12 +145,12 @@ unsigned char IE::Graphics::Image::operator[](Args... t_args) {
 }
 
 template<typename... Args>
-IE::Graphics::Image::Image(std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... t_dimensions) :
+IE::Graphics::Image::Image(IE::Graphics::RenderEngine *t_engineLink, Args... t_dimensions) :
         m_components{4},
         m_location{IE_IMAGE_LOCATION_SYSTEM},
         m_dimensions(),
         m_data{IE::Core::MultiDimensionalVector<unsigned char>(t_dimensions...)},
-        m_linkedRenderEngine{std::move(t_engineLink)},
+        m_linkedRenderEngine{t_engineLink},
         m_mutex() {
 }
 

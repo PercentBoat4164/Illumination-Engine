@@ -104,12 +104,6 @@ uint8_t IE::Graphics::detail::ImageVulkan::getBytesInFormat() const {
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
             return 0x0;
-        default:
-            IE::Core::Core::getInst().getLogger()->log(
-              "Attempt to get number of bytes in pixel of unknown format",
-              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
-            );
-            return 0x0;
         case VK_FORMAT_R8_UNORM:
         case VK_FORMAT_R8_SNORM:
         case VK_FORMAT_R8_USCALED:
@@ -356,6 +350,12 @@ uint8_t IE::Graphics::detail::ImageVulkan::getBytesInFormat() const {
         case VK_FORMAT_R64G64B64A64_UINT:
         case VK_FORMAT_R64G64B64A64_SINT:
         case VK_FORMAT_R64G64B64A64_SFLOAT: return 0x32;
+        default:
+            IE::Core::Core::getInst().getLogger()->log(
+              "Attempt to get number of bytes in pixel of unknown format",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+            );
+            return 0x0;
     }
 }
 
@@ -463,7 +463,7 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
 
     // Create image and perform error checking
     VkResult result{vmaCreateImage(
-      m_linkedRenderEngine.lock()->getAllocator(),
+      m_linkedRenderEngine->getAllocator(),
       &imageCreateInfo,
       &allocationCreateInfo,
       &m_id,
@@ -494,16 +494,14 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
                            .a = VK_COMPONENT_SWIZZLE_A                                                                            },
       .subresourceRange =
         VkImageSubresourceRange{
-                           // View entire image
-          .aspectMask     = m_aspect,
+                           .aspectMask     = m_aspect,
                            .baseMipLevel   = 0,
                            .levelCount     = m_mipLevel,
                            .baseArrayLayer = 0,
                            .layerCount     = static_cast<uint32_t>(m_data.getDimensionality() > 3 ? m_data.getDimensions()[3] : 1)},
     };
 
-    result =
-      vkCreateImageView(m_linkedRenderEngine.lock()->m_device.device, &imageViewCreateInfo, nullptr, &m_view);
+    result = vkCreateImageView(m_linkedRenderEngine->m_device.device, &imageViewCreateInfo, nullptr, &m_view);
     if (!result) {
         IE::Core::Core::getInst().getLogger()->log(
           "failed to create image view with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result) +
@@ -523,17 +521,17 @@ IE::Graphics::detail::ImageVulkan::~ImageVulkan() {
 
 void IE::Graphics::detail::ImageVulkan::_destroyImage() {
     std::unique_lock<std::mutex> lock(*m_mutex);
-    vkDestroyImageView(m_linkedRenderEngine.lock()->m_device.device, m_view, nullptr);
-    vmaDestroyImage(m_linkedRenderEngine.lock()->getAllocator(), m_id, m_allocation);
+    vkDestroyImageView(m_linkedRenderEngine->m_device.device, m_view, nullptr);
+    vmaDestroyImage(m_linkedRenderEngine->getAllocator(), m_id, m_allocation);
 }
 
 void IE::Graphics::detail::ImageVulkan::_getImageData(IE::Core::MultiDimensionalVector<unsigned char> *t_pData
 ) const {
     std::unique_lock<std::mutex> lock(*m_mutex);
     void                        *data{m_allocationInfo.pMappedData};
-    if (data == nullptr) vmaMapMemory(m_linkedRenderEngine.lock()->getAllocator(), m_allocation, &data);
+    if (data == nullptr) vmaMapMemory(m_linkedRenderEngine->getAllocator(), m_allocation, &data);
     t_pData->assign((unsigned char *) data, (size_t) m_allocationInfo.size);
-    vmaUnmapMemory(m_linkedRenderEngine.lock()->getAllocator(), m_allocation);
+    vmaUnmapMemory(m_linkedRenderEngine->getAllocator(), m_allocation);
     lock.release();
 }
 
@@ -548,9 +546,9 @@ void IE::Graphics::detail::ImageVulkan::_setImageData(const IE::Core::MultiDimen
         );
     }
     void *data{m_allocationInfo.pMappedData};
-    if (data == nullptr) vmaMapMemory(m_linkedRenderEngine.lock()->getAllocator(), m_allocation, &data);
+    if (data == nullptr) vmaMapMemory(m_linkedRenderEngine->getAllocator(), m_allocation, &data);
     memcpy(data, t_data.data(), t_data.size());
-    vmaUnmapMemory(m_linkedRenderEngine.lock()->getAllocator(), m_allocation);
+    vmaUnmapMemory(m_linkedRenderEngine->getAllocator(), m_allocation);
 }
 
 void (IE::Graphics::detail::ImageVulkan::*const IE::Graphics::detail::ImageVulkan::destroyImage

@@ -28,7 +28,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         RenderPass/Subpass.cpp
         SyncObjects/Semaphore.cpp
         SyncObjects/Fence.cpp
-        )
+        Settings.cpp Settings.hpp RenderPass/RenderPassSeries.cpp RenderPass/RenderPassSeries.hpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

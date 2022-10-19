@@ -16,8 +16,8 @@ public:
 
     template<typename... Args>
     explicit AttachmentVulkan(
-      const std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink,
-      IE::Graphics::Attachment::Preset                 t_preset = IE_ATTACHMENT_PRESET_COLOR_OUTPUT,
+      IE::Graphics::RenderEngine *t_engineLink,
+      IE::Graphics::Attachment::Preset  t_preset = IE_ATTACHMENT_PRESET_COLOR_OUTPUT,
       Args... t_args
     );
 };

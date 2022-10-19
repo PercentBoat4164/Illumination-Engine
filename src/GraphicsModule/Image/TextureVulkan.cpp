@@ -22,7 +22,7 @@ bool IE::Graphics::detail::TextureVulkan::_createSampler() {
                .unnormalizedCoordinates = VK_FALSE};
 
     VkResult result{
-      vkCreateSampler(m_linkedRenderEngine.lock()->m_device.device, &samplerCreateInfo, nullptr, &m_sampler)};
+      vkCreateSampler(m_linkedRenderEngine->m_device.device, &samplerCreateInfo, nullptr, &m_sampler)};
     if (result != VK_SUCCESS) {
         IE::Core::Core::getInst().getLogger()->log(
           "failed to create image sampler with error: " +
@@ -62,7 +62,7 @@ bool IE::Graphics::detail::TextureVulkan::_createImage(
 }
 
 void IE::Graphics::detail::TextureVulkan::_destroyImage() {
-    vkDestroySampler(m_linkedRenderEngine.lock()->m_device.device, m_sampler, nullptr);
+    vkDestroySampler(m_linkedRenderEngine->m_device.device, m_sampler, nullptr);
     ImageVulkan::_destroyImage();
 }
 

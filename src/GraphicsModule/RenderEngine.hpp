@@ -2,10 +2,14 @@
 
 #include "API/API.hpp"
 #include "API/Version.hpp"
+#include "CommandBuffer/CommandPool.hpp"
 #include "Core/Core.hpp"
 #include "Core/LogModule/IELogger.hpp"
+#include "Settings.hpp"
 #include "SyncObjects/Fence.hpp"
 #include "SyncObjects/Semaphore.hpp"
+#include "RenderPass/RenderPass.hpp"
+
 
 #include <vulkan/vulkan.h>
 
@@ -13,8 +17,8 @@
 #include "GL/glew.h"
 
 #define GLFW_IMPLEMENTATION
-#include "CommandBuffer/CommandPool.hpp"
 #include "GLFW/glfw3.h"
+#include "RenderPass/RenderPassSeries.hpp"
 #include "VkBootstrap.h"
 
 #include <memory>
@@ -42,14 +46,15 @@ private:
       ILLUMINATION_ENGINE_VERSION_MAJOR,
       ILLUMINATION_ENGINE_VERSION_MINOR,
       ILLUMINATION_ENGINE_VERSION_PATCH};
-    IE::Graphics::Version m_minimumVulkanVersion{1, 0, 0};
-    IE::Graphics::Version m_desiredVulkanVersion{1, 3, 0};
-    IE::Graphics::API     m_api;
-    vkb::Instance         m_instance;
-    vkb::Swapchain        m_swapchain;
-    VkSurfaceKHR          m_surface{};
-    VmaAllocator          m_allocator{};
-    IE::Core::Logger      m_graphicsAPICallbackLog{
+    IE::Graphics::Version  m_minimumVulkanVersion{1, 0, 0};
+    IE::Graphics::Version  m_desiredVulkanVersion{1, 3, 0};
+    IE::Graphics::API      m_api;
+    IE::Graphics::Settings m_settings;
+    vkb::Instance          m_instance;
+    vkb::Swapchain         m_swapchain;
+    VkSurfaceKHR           m_surface{};
+    VmaAllocator           m_allocator{};
+    IE::Core::Logger       m_graphicsAPICallbackLog{
       ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME,
       ILLUMINATION_ENGINE_GRAPHICS_LOGGER_FILENAME};
     GLFWwindow                                             *m_window{};
@@ -63,6 +68,8 @@ private:
     std::vector<std::shared_ptr<IE::Graphics::Fence>>       m_inFlightFences{};
     std::vector<std::shared_ptr<IE::Graphics::Fence>>       m_imagesInFlight{};
     std::vector<std::shared_ptr<IE::Graphics::CommandPool>> m_commandPools{};
+    IE::Graphics::RenderPassSeries m_renderPassSeries{this};
+
 
     static VkBool32 APIDebugMessenger(
       VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
@@ -100,18 +107,21 @@ public:
 
     IE::Core::Logger getLogger();
 
-    CommandPool *tryGetCommandPool();
+    IE::Graphics::CommandPool *tryGetCommandPool();
 
-    CommandPool *getCommandPool();
-    IEAspect    *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
+    IE::Graphics::CommandPool *getCommandPool();
+    IEAspect                  *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
 
     IE::Graphics::API getAPI();
 
-    Engine *create() override;
+    IE::Core::Engine *create() override;
 
     static std::string translateVkResultCodes(VkResult t_result);
 
     ~RenderEngine() override;
-    AspectType *getAspect(const std::string &t_id);
+
+    AspectType *getAspect(const std::string &t_id) override;
+
+    void createRenderPasses();
 };
 }  // namespace IE::Graphics
