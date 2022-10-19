@@ -50,6 +50,7 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakAfterJavaFieldAnnotations: true
 BreakBeforeBinaryOperators: None
+# BreakBeforeConceptDeclarations: Always  # Not available in clang-format 14
 BreakBeforeBraces: Attach
 BreakBeforeInheritanceComma: false
 BreakInheritanceList: AfterColon
@@ -183,4 +184,3 @@ UseCRLF:         false
 UseTab:          Never
 WhitespaceSensitiveMacros: []
 ...
-
