@@ -9,6 +9,7 @@ struct VkVertexInputAttributeDescription;
 // External dependencies
 
 #define GLM_FORCE_RADIANS
+
 #include <glm/glm.hpp>
 
 #define GLEW_IMPLEMENTATION

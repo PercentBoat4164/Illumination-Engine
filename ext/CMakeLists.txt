@@ -15,7 +15,7 @@ set(glm_DATA         glm         glm          EXT_GLM    ""             ""      
 set(glew_DATA        glew        glew         EXT_OpenGL "/build/cmake" "/include"  URL            https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
 set(glfw_DATA        glfw        glfw3        EXT_GLFW   ""             "/include"  GIT_REPOSITORY https://github.com/glfw/glfw                                                   GIT_PROGRESS ON GIT_TAG 3.3.8)
 set(spdlog_DATA      spdlog      spdlog       EXT_SpdLog ""             "/include"  GIT_REPOSITORY https://github.com/gabime/spdlog                                               GIT_PROGRESS ON GIT_TAG v1.x)
-set(VkBootstrap_DATA VkBootstrap vk-bootstrap EXT_Vulkan ""             "/src"      GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                                 GIT_PROGRESS ON GIT_TAG v0.5)
+set(VkBootstrap_DATA VkBootstrap vk-bootstrap EXT_Vulkan ""             "/src"      GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                                 GIT_PROGRESS ON GIT_TAG v0.6)
 set(vma_DATA         vma         vma          EXT_Vulkan ""             "/include"  GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator              GIT_PROGRESS ON GIT_TAG v3.0.1)
 set(Vulkan_DATA      Vulkan      Vulkan       EXT_Vulkan)
 set(OpenGL_DATA      OpenGL      OpenGL       EXT_OpenGL)
@@ -187,7 +187,6 @@ foreach (LIST ${DATA})
 endforeach ()
 
 # Unlock the Download Guard
-file(LOCK ${IE_DOWNLOAD_GUARD_FILE} RELEASE)
 file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
 
 # add_subdirectory( calls should go after the Download Guard
@@ -203,7 +202,6 @@ foreach (LIST ${DATA})
 		list(GET ${LIST} 4 INCLUDE_DIR)
 		add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src/${CMAKE_DIR})
 		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src${INCLUDE_DIR})
-		message("${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src${INCLUDE_DIR}")
 	endif ()
 	list(GET ${LIST} 1 PKG_NAME)
 	if (TARGET ${PKG_NAME})

@@ -24,6 +24,7 @@ class IERenderEngine;
 #include <vector>
 
 #define GLEW_IMPLEMENTATION
+
 #include <GL/glew.h>
 
 class IEShader {
