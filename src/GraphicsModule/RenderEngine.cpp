@@ -23,7 +23,6 @@ VkBool32 IE::Graphics::RenderEngine::APIDebugMessenger(
 }
 
 GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
-    m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
     // Initialize GLFW
     if (glfwInit() != GLFW_TRUE) {
         const char *description{};
@@ -276,11 +275,13 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
 }
 
 IE::Core::Engine *IE::Graphics::RenderEngine::create() {
-    auto             *engine{new IE::Graphics::RenderEngine()};
+    auto *engine{new IE::Graphics::RenderEngine()};
+    engine->m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
     std::future<void> window{IE::Core::Core::getThreadPool()->submit([&] { engine->createWindow(); })};
+    std::future<void> instance{IE::Core::Core::getThreadPool()->submit([&] { engine->createInstance(); })};
     std::future<void> device{IE::Core::Core::getThreadPool()->submit([&] {
-        engine->createInstance();
         window.wait();
+        instance.wait();
         engine->createSurface();
         engine->createDevice();
     })};

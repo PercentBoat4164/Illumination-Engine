@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.11 FATAL_ERROR)  # 3.11 is required for FetchContent
 project(IlluminationEngine VERSION 0.0.0)
 
+# Illumination Engine Options
+set(IE_USE_THREAD_SANITIZE OFF)  # Only use when necessary! Can cause huge slowdowns and memory cost.
+set(IE_PREFER_LOCAL_LIBS ON)
+
 set(CMAKE_CXX_STANDARD 23)
 
 set(BUILD_SHARED_LIBS OFF)
@@ -24,15 +28,18 @@ add_custom_command(
 		DEPENDS ${IE_BASE_DIR}/res
 		COMMENT "Copying resource files...")
 
-set(IE_PREFER_LOCAL_LIBS ON)
-
 add_subdirectory(ext)  # Generate external dependencies from source
 add_subdirectory(src)  # Generate Illumination Engine from source
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_compile_options("-g")  # Compile with debug information
+    add_compile_options(-g)  # Compile with debug information
 else ()
-    add_compile_options("-O3")  # Compile with level 3 optimizations
+    add_compile_options(-O3)  # Compile with level 3 optimizations
 endif ()
 
-add_link_options("-fuse-ld=lld")  # Use LLVM's lld linker for speed
+if (IE_USE_THREAD_SANITIZE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	message(STATUS "Using the LLVM ThreadSanitizer. This may result in huge memory consumption and very slow code.")
+	add_compile_options(-fsanitize=thread)
+endif ()
+
+add_link_options(-fuse-ld=lld)  # Use LLVM's lld linker for speed
