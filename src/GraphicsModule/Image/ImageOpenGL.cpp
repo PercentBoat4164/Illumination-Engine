@@ -42,23 +42,22 @@ void IE::Graphics::detail::ImageOpenGL::setLocation(IE::Graphics::Image::Locatio
     std::unique_lock<std::mutex> lock(*m_mutex);
     if (!m_data.empty() || m_id != 0 && t_location != m_location) {  // If data already exists somewhere and the
                                                                      // new location is not the same as the old
-        if (m_location & IE_IMAGE_LOCATION_SYSTEM && t_location & IE_IMAGE_LOCATION_VIDEO) {  // system -> video
+        if (((m_location & IE_IMAGE_LOCATION_SYSTEM) != 0) && ((t_location & IE_IMAGE_LOCATION_VIDEO) != 0)) {  // system -> video
             // Create image with specified intrinsics
             lock.release();
             _createImage(m_data);
             lock.lock();
-        } else if (m_location & IE_IMAGE_LOCATION_VIDEO && t_location & IE_IMAGE_LOCATION_SYSTEM) {  // video ->
-                                                                                                     // system
+        } else if (((m_location & IE_IMAGE_LOCATION_VIDEO) != 0) && ((t_location & IE_IMAGE_LOCATION_SYSTEM) != 0)) {  // video -> system
             // Copy data to system
             lock.release();
-            _getImageData(&m_data);
+            _getImageData();
             lock.lock();
         }
-        if (m_location & IE_IMAGE_LOCATION_SYSTEM && ~t_location & IE_IMAGE_LOCATION_SYSTEM) {  // system -> none
+        if (((m_location & IE_IMAGE_LOCATION_SYSTEM) != 0) && ((~t_location & IE_IMAGE_LOCATION_SYSTEM) != 0)) {  // system -> none
             // Clear image from system
             m_data.clear();
         }
-        if (m_location & IE_IMAGE_LOCATION_VIDEO && ~t_location & IE_IMAGE_LOCATION_VIDEO) {  // video -> none
+        if (((m_location & IE_IMAGE_LOCATION_VIDEO) != 0) && ((~t_location & IE_IMAGE_LOCATION_VIDEO) != 0)) {  // video -> none
             // Destroy video memory copy of image
             lock.release();
             _destroyImage();
@@ -91,12 +90,11 @@ void IE::Graphics::detail::ImageOpenGL::_destroyImage() {
     m_dimensions = {0};
 }
 
-void IE::Graphics::detail::ImageOpenGL::_getImageData(IE::Core::MultiDimensionalVector<unsigned char> *t_pData
-) const {
+IE::Core::MultiDimensionalVector<unsigned char> IE::Graphics::detail::ImageOpenGL::_getImageData() const {
     std::unique_lock<std::mutex> lock(*m_mutex);
-    t_pData->resize(m_dimensions);
+    IE::Core::MultiDimensionalVector<unsigned char>data(m_dimensions);
     glBindTexture(m_type, m_id);
-    glGetTexImage(m_type, 0, m_format, GL_UNSIGNED_BYTE, t_pData->data());
+    glGetTexImage(m_type, 0, m_format, GL_UNSIGNED_BYTE, data.data());
     glBindTexture(m_type, 0);
 }
 

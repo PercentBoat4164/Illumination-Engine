@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Image/Attachment.hpp"
-
 #include <string>
 #include <unordered_map>
 #include <vector>

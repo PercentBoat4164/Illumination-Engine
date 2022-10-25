@@ -169,10 +169,10 @@ void IEMaterial::unloadFromRAM() {
 
 void IEMaterial::_openglUnloadFromRAM() {
     for (std::pair<uint32_t *, aiTextureType> textureType : supportedTextureTypes)
-        linkedRenderEngine->textures[*textureType.first]->data.clear();
+        linkedRenderEngine->textures[*textureType.first]->m_data.clear();
 }
 
 void IEMaterial::_vulkanUnloadFromRAM() {
     for (std::pair<uint32_t *, aiTextureType> textureType : supportedTextureTypes)
-        linkedRenderEngine->textures[*textureType.first]->data.clear();
+        linkedRenderEngine->textures[*textureType.first]->m_data.clear();
 }

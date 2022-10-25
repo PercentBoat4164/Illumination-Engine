@@ -4,9 +4,7 @@ class IECommandPool;
 
 class IERenderEngine;
 
-#include "Buffer/Buffer.hpp"
 #include "GraphicsModule/Shader/IEPipeline.hpp"
-#include "Image/Image.hpp"
 
 #include <mutex>
 #include <thread>
@@ -16,6 +14,11 @@ class IERenderEngine;
 
 namespace IE::Graphics {
 class CommandPool;
+class Buffer;
+
+namespace detail {
+class ImageVulkan;
+}  // namespace detail
 
 class CommandBuffer {
     using CommandBufferState = enum CommandBufferState {
@@ -56,9 +59,9 @@ public:
     void reset(bool synchronize = true);
 
     void execute(
-      VkSemaphore input  = (VkSemaphore) (void *) nullptr,
-      VkSemaphore output = (VkSemaphore) (void *) nullptr,
-      VkFence     fence  = (VkFence) (void *) nullptr
+      VkSemaphore input  = reinterpret_cast<VkSemaphore>(static_cast<void *>(nullptr)),
+      VkSemaphore output = reinterpret_cast<VkSemaphore>(static_cast<void *>(nullptr)),
+      VkFence     fence  = reinterpret_cast<VkFence>(static_cast<void *>(nullptr))
     );
 
     void finish(bool synchronize = true);
@@ -71,25 +74,25 @@ public:
     );
 
     void recordCopyBufferToImage(
-      const std::shared_ptr<Buffer>                          &buffer,
+      const std::shared_ptr<Buffer>                            &buffer,
       const std::shared_ptr<IE::Graphics::detail::ImageVulkan> &image,
       std::vector<VkBufferImageCopy>                            regions
     );
 
     void recordBindVertexBuffers(
-      uint32_t                               firstBinding,
-      uint32_t                               bindingCount,
+      uint32_t                             firstBinding,
+      uint32_t                             bindingCount,
       std::vector<std::shared_ptr<Buffer>> buffers,
-      VkDeviceSize                          *pOffsets
+      VkDeviceSize                        *pOffsets
     );
 
     void recordBindVertexBuffers(
-      uint32_t                                      firstBinding,
-      uint32_t                                      bindingCount,
+      uint32_t                                    firstBinding,
+      uint32_t                                    bindingCount,
       const std::vector<std::shared_ptr<Buffer>> &buffers,
-      VkDeviceSize                                 *pOffsets,
-      VkDeviceSize                                 *pSizes,
-      VkDeviceSize                                 *pStrides
+      VkDeviceSize                               *pOffsets,
+      VkDeviceSize                               *pSizes,
+      VkDeviceSize                               *pStrides
     );
 
     void recordBindPipeline(VkPipelineBindPoint pipelineBindPoint, const std::shared_ptr<IEPipeline> &pipeline);
@@ -119,8 +122,6 @@ public:
     void recordEndRenderPass();
 
     void destroy();
-
-    ~CommandBuffer();
 
     CommandBuffer(const CommandBuffer &source) = delete;
 

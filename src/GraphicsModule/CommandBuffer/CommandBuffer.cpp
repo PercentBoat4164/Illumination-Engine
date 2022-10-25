@@ -1,5 +1,6 @@
 #include "CommandBuffer.hpp"
 
+#include "Buffer/Buffer.hpp"
 #include "CommandPool.hpp"
 #include "Core/LogModule/IELogger.hpp"
 #include "Image/ImageVulkan.hpp"
@@ -228,7 +229,7 @@ void IE::Graphics::CommandBuffer::recordCopyBufferToImage(
     }
     vkCmdCopyBufferToImage(
       commandBuffer,
-      buffer->buffer,
+      VK_NULL_HANDLE,
       image->m_id,
       image->m_layout,
       regions.size(),
@@ -245,7 +246,7 @@ void IE::Graphics::CommandBuffer::recordBindVertexBuffers(
 ) {
     std::vector<VkBuffer> pVkBuffers{};
     pVkBuffers.resize(buffers.size());
-    for (size_t i = 0; i < buffers.size(); ++i) pVkBuffers[i] = buffers[i]->buffer;
+    for (size_t i = 0; i < buffers.size(); ++i) pVkBuffers[i] = VK_NULL_HANDLE;
     commandPool->m_commandPoolMutex->lock();
     if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
@@ -271,7 +272,7 @@ void IE::Graphics::CommandBuffer::recordBindVertexBuffers(
 ) {
     std::vector<VkBuffer> pVkBuffers{};
     pVkBuffers.resize(buffers.size());
-    for (size_t i = 0; i < buffers.size(); ++i) pVkBuffers[i] = buffers[i]->buffer;
+    for (size_t i = 0; i < buffers.size(); ++i) pVkBuffers[i] = VK_NULL_HANDLE;
     commandPool->m_commandPoolMutex->lock();
     if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
@@ -310,7 +311,7 @@ void IE::Graphics::CommandBuffer::recordBindIndexBuffer(
             );
         }
     }
-    vkCmdBindIndexBuffer(commandBuffer, buffer->buffer, offset, indexType);
+    vkCmdBindIndexBuffer(commandBuffer, VK_NULL_HANDLE, offset, indexType);
     commandPool->m_commandPoolMutex->unlock();
 }
 
@@ -456,7 +457,4 @@ void IE::Graphics::CommandBuffer::recordPipelineBarrier(
   VkDependencyFlags                   dependencyFlags,
   const std::vector<VkMemoryBarrier> &memoryBarriers
 ) {
-}
-
-IE::Graphics::CommandBuffer::~CommandBuffer() {
 }

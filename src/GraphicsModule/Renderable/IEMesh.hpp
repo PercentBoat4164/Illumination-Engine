@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Buffer/Buffer.hpp"
+#include "Buffer/OLDBuffer.hpp"
 #include "GraphicsModule/Shader/IEDescriptorSet.hpp"
 #include "GraphicsModule/Shader/IEPipeline.hpp"
 #include "IEMaterial.hpp"
@@ -73,10 +73,10 @@ public:
     std::shared_ptr<IEPipeline>            pipeline{};
     std::vector<IEVertex>                  vertices{};
     std::vector<uint32_t>                  indices{};
-    std::shared_ptr<Buffer>              vertexBuffer{};
+    std::shared_ptr<OLDBuffer>              vertexBuffer{};
     uint32_t                               triangleCount{};
     std::vector<std::shared_ptr<IEShader>> shaders{};  // Should be moved to material
-    std::shared_ptr<Buffer>              indexBuffer{};
+    std::shared_ptr<OLDBuffer>              indexBuffer{};
     std::shared_ptr<IEMaterial>            material{};
     std::vector<std::function<void()>>     deletionQueue{};
     GLuint                                 vertexArray{};

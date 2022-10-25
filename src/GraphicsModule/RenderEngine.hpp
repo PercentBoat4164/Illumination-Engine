@@ -5,20 +5,15 @@
 #include "CommandBuffer/CommandPool.hpp"
 #include "Core/Core.hpp"
 #include "Core/LogModule/IELogger.hpp"
+#include "RenderPass/RenderPassSeries.hpp"
 #include "Settings.hpp"
 #include "SyncObjects/Fence.hpp"
 #include "SyncObjects/Semaphore.hpp"
-#include "RenderPass/RenderPass.hpp"
 
-
-#include <vulkan/vulkan.h>
 
 #define GLEW_IMPLEMENTATION
 #include "GL/glew.h"
-
-#define GLFW_IMPLEMENTATION
 #include "GLFW/glfw3.h"
-#include "RenderPass/RenderPassSeries.hpp"
 #include "VkBootstrap.h"
 
 #include <memory>
@@ -68,7 +63,7 @@ private:
     std::vector<std::shared_ptr<IE::Graphics::Fence>>       m_inFlightFences{};
     std::vector<std::shared_ptr<IE::Graphics::Fence>>       m_imagesInFlight{};
     std::vector<std::shared_ptr<IE::Graphics::CommandPool>> m_commandPools{};
-    IE::Graphics::RenderPassSeries m_renderPassSeries{this};
+    IE::Graphics::RenderPassSeries                          m_renderPassSeries{this};
 
 
     static VkBool32 APIDebugMessenger(
@@ -117,6 +112,36 @@ public:
     IE::Core::Engine *create() override;
 
     static std::string translateVkResultCodes(VkResult t_result);
+
+    static std::string makeErrorMessage(
+      const std::string &t_error,
+      const std::string &t_function,
+      const std::string &t_file,
+      int                t_line,
+      const std::string &t_moreInfo = ""
+    );
+
+    template<typename T>
+    static std::function<std::string(T &)> makeErrorMessageReporter(
+      std::initializer_list<T>           t_errors,
+      std::initializer_list<std::string> t_errorNames,
+      const std::string                 &t_function,
+      const std::string                 &t_file,
+      int                                t_line,
+      const std::string                 &t_moreInfo = ""
+    ) {
+        return [&](T &t_error) {
+            for (size_t i = 0; i < t_errors.size(); ++i)
+                if (t_error == t_errors[i])
+                    return IE::Graphics::RenderEngine::makeErrorMessage(
+                      *(t_errorNames.begin() + i),
+                      t_function,
+                      t_file,
+                      t_line,
+                      t_moreInfo
+                    );
+        };
+    }
 
     ~RenderEngine() override;
 

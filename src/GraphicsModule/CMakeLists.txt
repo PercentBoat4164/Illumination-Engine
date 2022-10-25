@@ -2,7 +2,8 @@
 add_subdirectory(DefaultShaders)
 
 set(IEGraphicsModuleSourceFiles  # Gather sources
-        #        Buffer/Buffer.cpp
+        RenderEngine.cpp
+        Buffer/Buffer.cpp
         CommandBuffer/CommandBuffer.cpp
         CommandBuffer/CommandPool.cpp
         #        Camera/IECamera.cpp
@@ -14,21 +15,23 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         #        Shader/IEPipeline.cpp
         #        Shader/IEShader.cpp
         #        Shader/IEUniformBufferObject.cpp
-        RenderEngine.cpp
         API/API.cpp
         API/Version.cpp
-        Image/Image.cpp
-        Image/ImageOpenGL.cpp
-        Image/ImageVulkan.cpp
-        Image/Texture.cpp
-        Image/TextureOpenGL.cpp
-        Image/TextureVulkan.cpp
-        RenderPass/Framebuffer.cpp
-        RenderPass/RenderPass.cpp
-        RenderPass/Subpass.cpp
+#        Image/Image.cpp
+#        Image/ImageOpenGL.cpp
+#        Image/ImageVulkan.cpp
+#        Image/Texture.cpp
+#        Image/TextureOpenGL.cpp
+#        Image/TextureVulkan.cpp
         SyncObjects/Semaphore.cpp
         SyncObjects/Fence.cpp
-        Settings.cpp Settings.hpp RenderPass/RenderPassSeries.cpp RenderPass/RenderPassSeries.hpp)
+        Buffer/BufferVulkan.cpp
+        Buffer/Buffer.cpp
+        Buffer/BufferOpenGL.cpp
+        RenderPass/Framebuffer.cpp
+        RenderPass/RenderPass.cpp
+        RenderPass/RenderPassSeries.cpp
+        RenderPass/Subpass.cpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

@@ -1,6 +1,6 @@
 #include "IEMesh.hpp"
 
-#include "Buffer/Buffer.hpp"
+#include "Buffer/OLDBuffer.hpp"
 #include "Core/LogModule/IELogger.hpp"
 #include "IERenderEngine.hpp"
 
@@ -26,8 +26,8 @@ void IEMesh::setAPI(const API &API) {
 
 void IEMesh::create(IERenderEngine *engineLink) {
     linkedRenderEngine = engineLink;
-    vertexBuffer       = std::make_shared<Buffer>();
-    indexBuffer        = std::make_shared<Buffer>();
+    vertexBuffer       = std::make_shared<OLDBuffer>();
+    indexBuffer        = std::make_shared<OLDBuffer>();
     descriptorSet      = std::make_shared<IEDescriptorSet>();
     pipeline           = std::make_shared<IEPipeline>();
     material           = std::make_shared<IEMaterial>();
@@ -63,7 +63,7 @@ void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScen
     }
 
     // Create vertex buffer.
-    Buffer::CreateInfo vertexBufferCreateInfo{
+    OLDBuffer::CreateInfo vertexBufferCreateInfo{
       .size = sizeof(vertices[0]) * vertices.size(),
       .type = GL_ARRAY_BUFFER,
     };
@@ -88,7 +88,7 @@ void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScen
     }
 
     // Create index buffer
-    Buffer::CreateInfo indexBufferCreateInfo{
+    OLDBuffer::CreateInfo indexBufferCreateInfo{
       .size = sizeof(indices[0]) * indices.size(),
       .type = GL_ELEMENT_ARRAY_BUFFER,
     };
@@ -122,7 +122,7 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
     }
 
     // Create vertex buffer.
-    Buffer::CreateInfo vertexBufferCreateInfo{
+    OLDBuffer::CreateInfo vertexBufferCreateInfo{
       .size            = sizeof(vertices[0]) * vertices.size(),
       .usage           = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
       .allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU,
@@ -148,7 +148,7 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
     }
 
     // Create index buffer
-    Buffer::CreateInfo indexBufferCreateInfo{
+    OLDBuffer::CreateInfo indexBufferCreateInfo{
       .size            = sizeof(indices[0]) * indices.size(),
       .usage           = VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
       .allocationUsage = VMA_MEMORY_USAGE_CPU_TO_GPU,
@@ -200,12 +200,12 @@ void IEMesh::_openglLoadFromRAMToVRAM() {
     glGenVertexArrays(1, &vertexArray);
     glBindVertexArray(vertexArray);
 
-    glBindBuffer(vertexBuffer->type, vertexBuffer->id);
-    glBindBuffer(indexBuffer->type, indexBuffer->id);
+    glBindBuffer(vertexBuffer->m_type, vertexBuffer->m_id);
+    glBindBuffer(indexBuffer->m_type, indexBuffer->m_id);
 
     IEVertex::useVertexAttributesWithProgram(pipeline->programID);
 
-    glBindBuffer(vertexBuffer->type, 0);
+    glBindBuffer(vertexBuffer->m_type, 0);
 }
 
 void IEMesh::_vulkanLoadFromRAMToVRAM() {
@@ -253,11 +253,11 @@ void IEMesh::_openglUpdate(uint32_t commandBufferIndex) {
 
     // Set vertices
     glBindVertexArray(vertexArray);
-    glBindBuffer(indexBuffer->type, indexBuffer->id);
+    glBindBuffer(indexBuffer->m_type, indexBuffer->m_id);
 
     // Update texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, linkedRenderEngine->textures[material->diffuseTextureIndex]->id);
+    glBindTexture(GL_TEXTURE_2D, linkedRenderEngine->textures[material->diffuseTextureIndex]->m_id);
 
     // Set active texture for diffuseTexture in shader
     glUniform1i(
@@ -271,7 +271,7 @@ void IEMesh::_openglUpdate(uint32_t commandBufferIndex) {
     // Reset All
     glUseProgram(0);
     glBindVertexArray(0);
-    glBindBuffer(indexBuffer->type, 0);
+    glBindBuffer(indexBuffer->m_type, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 

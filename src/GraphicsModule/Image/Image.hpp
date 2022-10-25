@@ -14,7 +14,7 @@ class RenderEngine;
 
 class Image {
 public:
-    enum Location {
+    using Location = enum Location {
         IE_IMAGE_LOCATION_NULL   = 0x0,
         IE_IMAGE_LOCATION_NONE   = 0x1,
         IE_IMAGE_LOCATION_SYSTEM = 0x2,
@@ -25,8 +25,7 @@ public:
     Location            m_location;                          // The location(s) that the image is stored in.
     std::vector<size_t> m_dimensions;                        // The dimensions of the data stored in video memory.
     IE::Core::MultiDimensionalVector<unsigned char> m_data;  // The location that image data is stored on the CPU.
-    IE::Graphics::RenderEngine
-      *m_linkedRenderEngine;              // A pointer to the IE::RenderEngine that controls this pointer.
+    IE::Graphics::RenderEngine *m_linkedRenderEngine{};        // A pointer to the IE::RenderEngine that controls this pointer.
     std::shared_ptr<std::mutex> m_mutex;  // The mutex responsible for synchronizing this image.
 
     /** @brief A factory function that creates an IE::Graphics::Image from the render engine, and shape provided.
@@ -116,7 +115,7 @@ public:
 protected:
     virtual bool _createImage(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) = 0;
 
-    virtual void _getImageData(IE::Core::MultiDimensionalVector<unsigned char> *t_pData) const = 0;
+    [[nodiscard]] virtual IE::Core::MultiDimensionalVector<unsigned char> _getImageData() const = 0;
 
     virtual void _setImageData(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) = 0;
 

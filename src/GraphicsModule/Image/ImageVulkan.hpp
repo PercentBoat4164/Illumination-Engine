@@ -12,7 +12,7 @@ public:
     VkFormat              m_format;    // Pixel format of the image. Includes channel count, location, and depth.
     VkImageLayout         m_layout;    // How the image is to be laid out in memory.
     VkImageType           m_type;      // Defines the image's dimensionality.
-    VkImageViewType       m_viewType;  // Defines the usage of the image's dimensionality. (e.g. 3D, Cube, Array)
+    VkImageViewType       m_viewType;  // Defines the m_usage of the image's dimensionality. (e.g. 3D, Cube, Array)
     VkImageTiling         m_tiling;    // Boilerplate. Leave at VK_IMAGE_TILING_OPTIMAL.
     VkImageUsageFlags     m_usage;     // How the program will be using the image.
     VkImageCreateFlags    m_flags;     // A record of the flags used to create the image.
@@ -38,18 +38,18 @@ public:
 
     [[nodiscard]] uint8_t getBytesInFormat() const override;
 
-    void transitionLayout(VkImageLayout);
+    void transitionLayout(VkImageLayout t_layout);
 
-    void setLocation(IE::Graphics::Image::Location) override;
+    void setLocation(IE::Graphics::Image::Location t_location) override;
 
-    void setData(const IE::Core::MultiDimensionalVector<unsigned char> &) override;
+    void setData(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) override;
 
 protected:
     bool _createImage(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) override;
 
     void _setImageData(const Core::MultiDimensionalVector<unsigned char> &t_data) override;
 
-    void _getImageData(Core::MultiDimensionalVector<unsigned char> *pVector) const override;
+    IE::Core::MultiDimensionalVector<unsigned char> _getImageData() const override;
 
     void _destroyImage() override;
 

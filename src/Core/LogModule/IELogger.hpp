@@ -65,8 +65,8 @@ public:
  * @details This is used to create IE::Graphics::Image::Locations from the uint8_ts that are used to perform the
  * binary operators. Before converting the t_flags to an IE::Core::Logger::Flags, validity checks are
  *performed to ensure that the t_flags does not represent a physically impossible scenario.
- * @param t_flags The value that the new Location should take on.
- * @return A verified IE::Graphics::Image::Location.
+ * @param t_flags The value that the new Status should take on.
+ * @return A verified IE::Graphics::Image::Status.
  **/
 constexpr IE::Core::Logger::Flags Flags(uint8_t t_flags) {
     if (t_flags & IE::Core::Logger::Flags::ILLUMINATION_ENGINE_LOG_TO_NONE && (t_flags & ~IE::Core::Logger::Flags::ILLUMINATION_ENGINE_LOG_TO_NONE))

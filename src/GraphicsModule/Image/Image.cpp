@@ -7,21 +7,21 @@
 #include <utility>
 
 /**
- * @brief Basic private 'constructor' for the Location enum.
+ * @brief Basic private 'constructor' for the Status enum.
  * @details This is used to create IE::Graphics::Image::Locations from the uint8_ts that are used to perform the
- * binary operators. Before converting the t_location to an IE::Graphics::Image::Location, validity checks are
+ * binary operators. Before converting the t_location to an IE::Graphics::Image::Status, validity checks are
  *performed to ensure that the t_location does not represent a physically impossible scenario.
- * @param t_location The value that the new Location should take on.
- * @return A verified IE::Graphics::Image::Location.
+ * @param t_location The value that the new Status should take on.
+ * @return A verified IE::Graphics::Image::Status.
  **/
 constexpr IE::Graphics::Image::Location Location(uint8_t t_location) {
-    if (t_location & IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NONE && (t_location & ~IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NONE) > IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NULL)
+    if (((t_location & IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NONE) != 0) && (t_location & ~IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NONE) > IE::Graphics::Image::Location::IE_IMAGE_LOCATION_NULL)
         throw std::logic_error("IE_IMAGE_LOCATION_NONE mix error!");
     return static_cast<IE::Graphics::Image::Location>(t_location);
 }
 
 /**
- * @brief An implementation of the OR operator for the IE::Graphics::Image::Location enum.
+ * @brief An implementation of the OR operator for the IE::Graphics::Image::Status enum.
  * @param t_first Operand.
  * @param t_second Operand.
  * @return t_first | t_second.
@@ -32,7 +32,7 @@ operator|(IE::Graphics::Image::Location t_first, IE::Graphics::Image::Location t
 }
 
 /**
- * @brief An implementation of the AND operator for the IE::Graphics::Image::Location enum.
+ * @brief An implementation of the AND operator for the IE::Graphics::Image::Status enum.
  * @param t_first Operand.
  * @param t_second Operand.
  * @return t_first & t_second.
@@ -43,7 +43,7 @@ operator&(IE::Graphics::Image::Location t_first, IE::Graphics::Image::Location t
 }
 
 /**
- * @brief An implementation of the XOR operator for the IE::Graphics::Image::Location enum.
+ * @brief An implementation of the XOR operator for the IE::Graphics::Image::Status enum.
  * @param t_first Operand.
  * @param t_second Operand.
  * @return t_first ^ t_second.
@@ -54,7 +54,7 @@ operator^(IE::Graphics::Image::Location t_first, IE::Graphics::Image::Location t
 }
 
 /**
- * @brief An implementation of the NOT operator for the IE::Graphics::Image::Location enum.
+ * @brief An implementation of the NOT operator for the IE::Graphics::Image::Status enum.
  * @details This operator does not necessarily return a valid location. It may return a location that has both the
  * IE_IMAGE_LOCATION_NONE and IE_IMAGE_LOCATION_SYSTEM bits set for example
  * @param t_first Operand.
@@ -70,11 +70,7 @@ constexpr IE::Graphics::Image::Location operator~(IE::Graphics::Image::Location 
 
 IE::Graphics::Image::Image() noexcept :
         m_components{0},
-        m_location{IE_IMAGE_LOCATION_NULL},
-        m_dimensions(),
-        m_data(),
-        m_linkedRenderEngine(),
-        m_mutex() {
+        m_location{IE_IMAGE_LOCATION_NULL} {
 }
 
 IE::Graphics::Image &IE::Graphics::Image::operator=(const IE::Graphics::Image &t_other) {
@@ -85,7 +81,7 @@ IE::Graphics::Image &IE::Graphics::Image::operator=(const IE::Graphics::Image &t
             IE::Core::MultiDimensionalVector<unsigned char> *temp{
               new IE::Core::MultiDimensionalVector<unsigned char>()};
             otherLock.release();
-            t_other._getImageData(temp);
+            t_other._getImageData();
             otherLock.lock();
             lock.release();
             _createImage(*temp);
@@ -107,7 +103,7 @@ IE::Graphics::Image &IE::Graphics::Image::operator=(IE::Graphics::Image &&t_othe
             IE::Core::MultiDimensionalVector<unsigned char> *temp{
               new IE::Core::MultiDimensionalVector<unsigned char>()};
             otherLock.release();
-            t_other._getImageData(temp);
+            t_other._getImageData();
             otherLock.lock();
             lock.release();
             _createImage(*temp);

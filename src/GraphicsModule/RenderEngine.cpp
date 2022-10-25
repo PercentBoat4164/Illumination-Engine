@@ -1,8 +1,6 @@
 #include "RenderEngine.hpp"
 
 #include "Core/AssetModule/IEAsset.hpp"
-#include "RenderPass/RenderPass.hpp"
-#include "RenderPass/RenderPassSeries.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <../contrib/stb/stb_image.h>
@@ -264,36 +262,37 @@ void IE::Graphics::RenderEngine::createSyncObjects() {
 
 void IE::Graphics::RenderEngine::createCommandPools() {
     // Each thread is given a command pool to record buffers to.
-    m_commandPools.resize(IE::Core::Core::getInst().getThreadPool()->getThreads().size() + 1);
-    for (int i = IE::Core::Core::getInst().getThreadPool()->getThreads().size(); i >= 0; --i) {
-        m_commandPools[i] = std::make_shared<IE::Graphics::CommandPool>();
-        m_commandPools[i]->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
+    m_commandPools.resize(IE::Core::Core::getThreadPool()->getThreads().size() + 1);
+    for (size_t i = IE::Core::Core::getThreadPool()->getThreads().size() + 1; i > 0; --i) {
+        m_commandPools[i - 1] = std::make_shared<IE::Graphics::CommandPool>();
+        m_commandPools[i - 1]
+          ->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
     }
 }
 
 void IE::Graphics::RenderEngine::createRenderPasses() {
-    IE::Graphics::RenderPassSeries series(this);
-    series.addRenderPass(IE::Graphics::RenderPass::Presets::IE_GRAPHICS_RENDER_PASS_PRESET_COLOR).build();
+    m_renderPassSeries.addRenderPass(IE::Graphics::RenderPass::Presets::IE_GRAPHICS_RENDER_PASS_PRESET_COLOR)
+      .build();
 }
 
 IE::Core::Engine *IE::Graphics::RenderEngine::create() {
-    auto              engine{new IE::Graphics::RenderEngine()};
-    std::future<void> window{IE::Core::Core::getInst().getThreadPool()->submit([&] { engine->createWindow(); })};
-    std::future<void> device{IE::Core::Core::getInst().getThreadPool()->submit([&] {
+    auto             *engine{new IE::Graphics::RenderEngine()};
+    std::future<void> window{IE::Core::Core::getThreadPool()->submit([&] { engine->createWindow(); })};
+    std::future<void> device{IE::Core::Core::getThreadPool()->submit([&] {
         engine->createInstance();
         window.wait();
         engine->createSurface();
         engine->createDevice();
     })};
-    std::future<void> swapchain{IE::Core::Core::getInst().getThreadPool()->submit([&] {
+    std::future<void> swapchain{IE::Core::Core::getThreadPool()->submit([&] {
         device.wait();
         engine->createSwapchain();
     })};
-    std::future<void> syncObjects{IE::Core::Core::getInst().getThreadPool()->submit([&] {
+    std::future<void> syncObjects{IE::Core::Core::getThreadPool()->submit([&] {
         swapchain.wait();
         engine->createSyncObjects();
     })};
-    std::future<void> allocator{IE::Core::Core::getInst().getThreadPool()->submit([&] {
+    std::future<void> allocator{IE::Core::Core::getThreadPool()->submit([&] {
         device.wait();
         engine->createAllocator();
     })};
@@ -364,18 +363,17 @@ std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result
 }
 
 IE::Graphics::RenderEngine::~RenderEngine() {
-    auto syncObject{IE::Core::Core::getInst().getThreadPool()->submit([&] {
+    auto syncObject{IE::Core::Core::getThreadPool()->submit([&] {
         m_imageAvailableSemaphores.clear();
         m_renderFinishedSemaphores.clear();
         m_inFlightFences.clear();
         m_imagesInFlight.clear();
     })};
-    auto swapchainImageDestruction{IE::Core::Core::getInst().getThreadPool()->submit([&] {
+    auto swapchainImageDestruction{IE::Core::Core::getThreadPool()->submit([&] {
         for (VkImageView swapchainImageView : m_swapchainImageViews)
             vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
     })};
-    auto commandPoolDestruction{
-      IE::Core::Core::getInst().getThreadPool()->submit([&] { m_commandPools.clear(); })};
+    auto commandPoolDestruction{IE::Core::Core::getThreadPool()->submit([&] { m_commandPools.clear(); })};
     if (m_allocator != nullptr) vmaDestroyAllocator(m_allocator);
     if (m_swapchain != nullptr) vkb::destroy_swapchain(m_swapchain);
     if ((m_instance != nullptr) && (m_surface != nullptr)) vkb::destroy_surface(m_instance, m_surface);
@@ -399,7 +397,7 @@ IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
 }
 
 IE::Graphics::CommandPool *IE::Graphics::RenderEngine::tryGetCommandPool() {
-    for (auto commandPool : m_commandPools)
+    for (const auto &commandPool : m_commandPools)
         if (commandPool->tryLock()) {
             commandPool->unlock();
             return commandPool.get();
@@ -410,17 +408,30 @@ IE::Graphics::CommandPool *IE::Graphics::RenderEngine::tryGetCommandPool() {
 IE::Graphics::CommandPool *IE::Graphics::RenderEngine::getCommandPool() {
     while (true) {
         IE::Graphics::CommandPool *commandPool{tryGetCommandPool()};
-        if (commandPool) return commandPool;
+        if (commandPool != nullptr) return commandPool;
     }
 }
 
 IEAspect *IE::Graphics::RenderEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
     AspectType *aspect = getAspect(t_id);
-    if (!aspect) aspect = new AspectType();
+    if (aspect == nullptr) aspect = new AspectType();
     t_asset.lock()->addAspect(aspect);
     return aspect;
 }
 
 IE::Graphics::RenderEngine::AspectType *IE::Graphics::RenderEngine::getAspect(const std::string &t_id) {
     return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
+}
+
+std::string IE::Graphics::RenderEngine::makeErrorMessage(
+  const std::string &t_error,
+  const std::string &t_function,
+  const std::string &t_file,
+  int                t_line,
+  const std::string &t_moreInfo
+) {
+    std::string error{
+      "Got error: " + t_error + " in " + t_function + " of " + t_file + "@" + std::to_string(t_line) + "."};
+    if (!t_moreInfo.empty()) error += " For more information see: " + t_moreInfo + ".";
+    return error;
 }

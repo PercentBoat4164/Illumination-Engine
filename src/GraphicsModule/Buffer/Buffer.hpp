@@ -1,162 +1,39 @@
 #pragma once
 
-/* Predefine classes used with pointers or as return values for functions. */
+#include "Core/MultiDimensionalVector.hpp"
 
-/* Include classes used as attributes or function arguments. */
-// Internal dependencies
-#include "API/API.hpp"
-#include "Image/Image.hpp"
-#include "Image/ImageVulkan.hpp"
-
-// External dependencies
-#define GLEW_IMPLEMENTATION
-
-#include <GL/glew.h>
-#include <vulkan/vulkan.h>
-
-// System dependencies
-#include <cstdint>
-#include <functional>
+#include <cstddef>
 #include <memory>
-#include <vector>
-#include <vk_mem_alloc.h>
+#include <mutex>
 
-class Buffer : public std::enable_shared_from_this<Buffer> {
+namespace IE::Graphics {
+class RenderEngine;
+
+class Buffer {
 public:
-    struct CreateInfo {
-        size_t             size{};
-        VkBufferUsageFlags usage{};
-        VmaMemoryUsage     allocationUsage{};
-
-        GLenum type{};
+    using Status = enum Status {
+        IE_BUFFER_STATUS_UNINITIALIZED = 0x0,
+        IE_BUFFER_STATUS_CREATED       = 0x1,
     };
 
-    using IEBufferStatus = enum IEBufferStatus {
-        IE_BUFFER_STATUS_NONE         = 0x0,
-        IE_BUFFER_STATUS_UNLOADED     = 0x1,
-        IE_BUFFER_STATUS_QUEUED_RAM   = 0x2,
-        IE_BUFFER_STATUS_DATA_IN_RAM  = 0x4,
-        IE_BUFFER_STATUS_QUEUED_VRAM  = 0x8,
-        IE_BUFFER_STATUS_DATA_IN_VRAM = 0x10
+    using Type = enum Type {
+        IE_BUFFER_TYPE_NULL            = 0x0,
+        IE_BUFFER_TYPE_INDEX_BUFFER    = 0x1,
+        IE_BUFFER_TYPE_VERTEX_BUFFER   = 0x2,
+        IE_BUFFER_TYPE_UNIFORM_BUFFER  = 0x3,
+        IE_BUFFER_TYPE_STORAGE_BUFFER  = 0x4,
+        IE_BUFFER_TYPE_INSTANCE_BUFFER = 0x5
     };
 
-    std::vector<char>                  data{};
-    VkBuffer                           buffer{};
-    VkDeviceAddress                    deviceAddress{};
-    size_t                             size{};
-    VkBufferUsageFlags                 usage{};
-    VmaMemoryUsage                     allocationUsage{};
-    std::vector<std::function<void()>> deletionQueue{};
-    IEBufferStatus                     status{IE_BUFFER_STATUS_NONE};
-    GLuint                             id{};
-    GLenum                             type{};
+    Status                      m_status{IE_BUFFER_STATUS_UNINITIALIZED};
+    Type                        type{};
+    std::shared_ptr<std::mutex> m_mutex{};
+    IE::Graphics::RenderEngine *m_linkedRenderEngine{};
 
-private:
-    static std::function<void(Buffer &)> _uploadToRAM;
-
-    static std::function<void(Buffer &)>                            _uploadToVRAM;
-    static std::function<void(Buffer &, const std::vector<char> &)> _uploadToVRAM_vector;
-    static std::function<void(Buffer &, void *, size_t)>            _uploadToVRAM_void;
-
-    static std::function<void(Buffer &, const std::vector<char> &)> _update_vector;
-    static std::function<void(Buffer &, void *, size_t)>            _update_void;
-
-    static std::function<void(Buffer &)> _unloadFromVRAM;
-
-    static std::function<void(Buffer &)> _destroy;
-
-protected:
-    virtual void _openglUploadToRAM();
-
-    virtual void _vulkanUploadToRAM();
-
-
-    virtual void _openglUploadToVRAM();
-
-    virtual void _vulkanUploadToVRAM();
-
-    virtual void _openglUploadToVRAM_vector(const std::vector<char> &);
-
-    virtual void _vulkanUploadToVRAM_vector(const std::vector<char> &);
-
-    virtual void _openglUploadToVRAM_void(void *, size_t);
-
-    virtual void _vulkanUploadToVRAM_void(void *, size_t);
-
-
-    virtual void _openglUpdate_vector(const std::vector<char> &);
-
-    virtual void _vulkanUpdate_vector(const std::vector<char> &);
-
-    virtual void _openglUpdate_void(void *, size_t);
-
-    virtual void _vulkanUpdate_void(void *, size_t);
-
-
-    virtual void _openglUnloadFromVRAM();
-
-    virtual void _vulkanUnloadFromVRAM();
-
-
-    virtual void _openglDestroy();
-
-    virtual void _vulkanDestroy();
-
-public:
     virtual ~Buffer() = default;
 
-    Buffer();
-
-    Buffer(IERenderEngine *, Buffer::CreateInfo *);
-
-    Buffer(
-      IERenderEngine    *engineLink,
-      size_t             bufferSize,
-      VkBufferUsageFlags usageFlags,
-      VmaMemoryUsage     memoryUsage,
-      GLenum             bufferType
-    );
-
-
-    void create(IERenderEngine *engineLink, Buffer::CreateInfo *createInfo);
-
-    void create(
-      IERenderEngine    *engineLink,
-      size_t             bufferSize,
-      VkBufferUsageFlags usageFlags,
-      VmaMemoryUsage     memoryUsage,
-      GLenum             bufferType
-    );
-
-
-    void toImage(const std::shared_ptr<IE::Graphics::detail::ImageVulkan> &image);
-
-
-    void uploadToRAM();
-
-    void uploadToRAM(const std::vector<char> &);
-
-    void uploadToRAM(void *, size_t);
-
-
-    virtual void uploadToVRAM();
-
-    void uploadToVRAM(const std::vector<char> &);
-
-    void uploadToVRAM(void *, size_t);
-
-
-    void update(const std::vector<char> &);
-
-    void update(void *, size_t);
-
-
-    void unloadFromVRAM();
-
-
-    void destroy();
-
 protected:
-    IERenderEngine *linkedRenderEngine{};
-    VmaAllocation   allocation{};
+    virtual void _createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize) = 0;
+    virtual void _destroyBuffer()                                                              = 0;
 };
+}  // namespace IE::Graphics

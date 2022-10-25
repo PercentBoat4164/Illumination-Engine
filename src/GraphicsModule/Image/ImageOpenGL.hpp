@@ -18,6 +18,12 @@ public:
     template<typename... Args>
     explicit ImageOpenGL(const std::weak_ptr<IE::Graphics::RenderEngine> &t_engineLink, Args... t_dimensions);
 
+    ImageOpenGL(ImageOpenGL &&t_other) = default;
+
+    ImageOpenGL(const ImageOpenGL &t_other) : Image(t_other) {
+      _createImage(t_other._getImageData());
+    };
+
     ImageOpenGL &operator=(ImageOpenGL &&t_other) noexcept;
 
     ImageOpenGL &operator=(const ImageOpenGL &t_other);
@@ -33,7 +39,7 @@ protected:
 
     void _destroyImage() final;
 
-    void _getImageData(IE::Core::MultiDimensionalVector<unsigned char> *pVector) const override;
+    [[nodiscard]] IE::Core::MultiDimensionalVector<unsigned char> _getImageData() const override;
 
     void _setImageData(const IE::Core::MultiDimensionalVector<unsigned char> &t_data) override;
 };

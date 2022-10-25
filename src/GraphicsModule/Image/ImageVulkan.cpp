@@ -377,7 +377,7 @@ void IE::Graphics::detail::ImageVulkan::setLocation(IE::Graphics::Image::Locatio
                                                                                                      // system
             // Copy data to system
             lock.release();
-            _getImageData(&m_data);
+            _getImageData();
             lock.lock();
         }
         if (m_location & IE_IMAGE_LOCATION_SYSTEM && ~t_location & IE_IMAGE_LOCATION_SYSTEM) {  // system -> none
@@ -501,9 +501,10 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(const IE::Core::MultiDimens
                            .layerCount     = static_cast<uint32_t>(m_data.getDimensionality() > 3 ? m_data.getDimensions()[3] : 1)},
     };
 
-    result = vkCreateImageView(m_linkedRenderEngine->m_device.device, &imageViewCreateInfo, nullptr, &m_view);
-    if (!result) {
-        IE::Core::Core::getInst().getLogger()->log(
+    result =
+      vkCreateImageView(m_linkedRenderEngine.lock()->m_device.device, &imageViewCreateInfo, nullptr, &m_view);
+    if (result == 0) {
+        IE::Core::Core::getInst().logger.log(
           "failed to create image view with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result) +
             ". Use Vulkan's validation layers for more information.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -521,16 +522,15 @@ IE::Graphics::detail::ImageVulkan::~ImageVulkan() {
 
 void IE::Graphics::detail::ImageVulkan::_destroyImage() {
     std::unique_lock<std::mutex> lock(*m_mutex);
-    vkDestroyImageView(m_linkedRenderEngine->m_device.device, m_view, nullptr);
-    vmaDestroyImage(m_linkedRenderEngine->getAllocator(), m_id, m_allocation);
+    vkDestroyImageView(m_linkedRenderEngine.lock()->m_device.device, m_view, nullptr);
+    vmaDestroyImage(m_linkedRenderEngine.lock()->getAllocator(), m_id, m_allocation);
 }
 
-void IE::Graphics::detail::ImageVulkan::_getImageData(IE::Core::MultiDimensionalVector<unsigned char> *t_pData
-) const {
+IE::Core::MultiDimensionalVector<unsigned char> IE::Graphics::detail::ImageVulkan::_getImageData() const {
     std::unique_lock<std::mutex> lock(*m_mutex);
     void                        *data{m_allocationInfo.pMappedData};
     if (data == nullptr) vmaMapMemory(m_linkedRenderEngine->getAllocator(), m_allocation, &data);
-    t_pData->assign((unsigned char *) data, (size_t) m_allocationInfo.size);
+    t_data->assign(reinterpret_cast<unsigned char *>(data), (size_t) m_allocationInfo.size);
     vmaUnmapMemory(m_linkedRenderEngine->getAllocator(), m_allocation);
     lock.release();
 }
