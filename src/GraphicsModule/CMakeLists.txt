@@ -17,12 +17,12 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         #        Shader/IEUniformBufferObject.cpp
         API/API.cpp
         API/Version.cpp
-#        Image/Image.cpp
-#        Image/ImageOpenGL.cpp
-#        Image/ImageVulkan.cpp
-#        Image/Texture.cpp
-#        Image/TextureOpenGL.cpp
-#        Image/TextureVulkan.cpp
+        #        Image/Image.cpp
+        #        Image/ImageOpenGL.cpp
+        #        Image/ImageVulkan.cpp
+        #        Image/Texture.cpp
+        #        Image/TextureOpenGL.cpp
+        #        Image/TextureVulkan.cpp
         SyncObjects/Semaphore.cpp
         SyncObjects/Fence.cpp
         Buffer/BufferVulkan.cpp

@@ -97,7 +97,7 @@ void IEDescriptorSet::create(IERenderEngine *renderEngineLink, IEDescriptorSet::
 
 void IEDescriptorSet::update(
   std::vector<std::optional<std::variant<IE::Graphics::Image *, OLDBuffer *>>> newData,
-  std::vector<int>                                                            bindings
+  std::vector<int>                                                             bindings
 ) {
     std::vector<VkDescriptorImageInfo> imageDescriptorInfos{};
     imageDescriptorInfos.reserve(createdWith.poolSizes.size());

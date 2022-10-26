@@ -39,7 +39,7 @@ class IERenderable : public IEAspect {
 public:
     std::string           modelName{};
     std::vector<IEMesh>   meshes{};
-    Buffer             modelBuffer{};
+    Buffer                modelBuffer{};
     IERenderEngine       *linkedRenderEngine{};
     IEUniformBufferObject uniformBufferObject{};
     std::vector<IEShader> shaders{};

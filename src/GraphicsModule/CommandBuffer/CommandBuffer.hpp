@@ -31,16 +31,13 @@ class CommandBuffer {
     };
 
 public:
-    VkCommandBuffer                            commandBuffer{};
-    IE::Graphics::CommandPool                 *commandPool{};
-    IE::Graphics::RenderEngine                *linkedRenderEngine{};
-    CommandBufferState                         state{};
-    bool                                       oneTimeSubmission{false};
+    VkCommandBuffer             commandBuffer{};
+    IE::Graphics::CommandPool  *commandPool{};
+    IE::Graphics::RenderEngine *linkedRenderEngine{};
+    CommandBufferState          state{};
+    bool                        oneTimeSubmission{false};
 
-    CommandBuffer(
-      IE::Graphics::RenderEngine                *linkedRenderEngine,
-      IE::Graphics::CommandPool *parentCommandPool
-    );
+    CommandBuffer(IE::Graphics::RenderEngine *linkedRenderEngine, IE::Graphics::CommandPool *parentCommandPool);
 
     void wait();
 
@@ -103,8 +100,8 @@ public:
       uint32_t                                             firstSet,
       const std::vector<std::shared_ptr<IEDescriptorSet>> &descriptorSets,
       std::vector<uint32_t>                                dynamicOffsets
-
     );
+
     void recordDrawIndexed(
       uint32_t indexCount,
       uint32_t instanceCount,

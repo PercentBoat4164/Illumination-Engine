@@ -14,6 +14,6 @@ public:
     void operator()();
 
 private:
-    ThreadPool     *m_threadPool;
+    ThreadPool *m_threadPool;
 };
 }  // namespace IE::Core::detail

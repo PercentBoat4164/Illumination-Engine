@@ -28,8 +28,8 @@ class IEDescriptorSet {
 public:
     struct CreateInfo {
         // Required
-        std::vector<VkDescriptorPoolSize>                                           poolSizes{};
-        std::vector<VkShaderStageFlagBits>                                          shaderStages{};
+        std::vector<VkDescriptorPoolSize>                                            poolSizes{};
+        std::vector<VkShaderStageFlagBits>                                           shaderStages{};
         std::vector<std::optional<std::variant<IE::Graphics::Image *, OLDBuffer *>>> data{};
 
         // Optional
@@ -50,7 +50,7 @@ public:
 
     void update(
       std::vector<std::optional<std::variant<IE::Graphics::Image *, OLDBuffer *>>> newData,
-      std::vector<int>                                                            bindings = {}
+      std::vector<int>                                                             bindings = {}
     );
 
     virtual ~IEDescriptorSet();

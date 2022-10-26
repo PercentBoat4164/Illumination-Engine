@@ -73,10 +73,10 @@ public:
     std::shared_ptr<IEPipeline>            pipeline{};
     std::vector<IEVertex>                  vertices{};
     std::vector<uint32_t>                  indices{};
-    std::shared_ptr<OLDBuffer>              vertexBuffer{};
+    std::shared_ptr<OLDBuffer>             vertexBuffer{};
     uint32_t                               triangleCount{};
     std::vector<std::shared_ptr<IEShader>> shaders{};  // Should be moved to material
-    std::shared_ptr<OLDBuffer>              indexBuffer{};
+    std::shared_ptr<OLDBuffer>             indexBuffer{};
     std::shared_ptr<IEMaterial>            material{};
     std::vector<std::function<void()>>     deletionQueue{};
     GLuint                                 vertexArray{};

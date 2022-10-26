@@ -91,8 +91,8 @@ void IE::Graphics::detail::ImageOpenGL::_destroyImage() {
 }
 
 IE::Core::MultiDimensionalVector<unsigned char> IE::Graphics::detail::ImageOpenGL::_getImageData() const {
-    std::unique_lock<std::mutex> lock(*m_mutex);
-    IE::Core::MultiDimensionalVector<unsigned char>data(m_dimensions);
+    std::unique_lock<std::mutex>                    lock(*m_mutex);
+    IE::Core::MultiDimensionalVector<unsigned char> data(m_dimensions);
     glBindTexture(m_type, m_id);
     glGetTexImage(m_type, 0, m_format, GL_UNSIGNED_BYTE, data.data());
     glBindTexture(m_type, 0);

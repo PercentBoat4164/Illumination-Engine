@@ -21,7 +21,7 @@ public:
     ImageOpenGL(ImageOpenGL &&t_other) = default;
 
     ImageOpenGL(const ImageOpenGL &t_other) : Image(t_other) {
-      _createImage(t_other._getImageData());
+        _createImage(t_other._getImageData());
     };
 
     ImageOpenGL &operator=(ImageOpenGL &&t_other) noexcept;

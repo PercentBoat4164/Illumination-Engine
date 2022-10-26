@@ -36,7 +36,7 @@ public:
 
     void create(
       IE::Graphics::RenderEngine *t_engineLink,
-      VkCommandPoolCreateFlags t_flags,
+      VkCommandPoolCreateFlags    t_flags,
       vkb::QueueType              t_commandQueue
     );
 

@@ -68,9 +68,7 @@ constexpr IE::Graphics::Image::Location operator~(IE::Graphics::Image::Location 
 // ===================== Implementation of IE::Graphics::Image =====================
 //
 
-IE::Graphics::Image::Image() noexcept :
-        m_components{0},
-        m_location{IE_IMAGE_LOCATION_NULL} {
+IE::Graphics::Image::Image() noexcept : m_components{0}, m_location{IE_IMAGE_LOCATION_NULL} {
 }
 
 IE::Graphics::Image &IE::Graphics::Image::operator=(const IE::Graphics::Image &t_other) {
