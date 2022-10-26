@@ -21,7 +21,7 @@ class ImageVulkan;
 }  // namespace detail
 
 class CommandBuffer {
-    using CommandBufferState = enum CommandBufferState {
+    enum Status {
         IE_COMMAND_BUFFER_STATE_NONE       = 0x0,
         IE_COMMAND_BUFFER_STATE_INITIAL    = 0x1,
         IE_COMMAND_BUFFER_STATE_RECORDING  = 0x2,
@@ -30,12 +30,24 @@ class CommandBuffer {
         IE_COMMAND_BUFFER_STATE_INVALID    = 0x5
     };
 
+    enum AllocationFlagBits {
+        IE_COMMAND_BUFFER_ALLOCATE_SECONDARY = 0x1,
+    };
+
+    using AllocationFlags = uint64_t;
+
+    enum RecordFlagBits {
+        IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT = 0x1
+    };
+
+    using RecordFlags = uint64_t;
+
 public:
     VkCommandBuffer             commandBuffer{};
     IE::Graphics::CommandPool  *commandPool{};
     IE::Graphics::RenderEngine *linkedRenderEngine{};
-    CommandBufferState          state{};
-    bool                        oneTimeSubmission{false};
+    Status                      status{};
+    RecordFlags                 recordFlags{};
 
     CommandBuffer(IE::Graphics::RenderEngine *linkedRenderEngine, IE::Graphics::CommandPool *parentCommandPool);
 
@@ -44,12 +56,12 @@ public:
     /**
      * @brief Allocate this command buffer as a primary command buffer.
      */
-    void allocate(bool synchronize = true);
+    void allocate(AllocationFlags t_flags = 0);
 
     /**
      * @brief Prepare this command buffer for recording.
      */
-    void record(bool synchronize = true, bool oneTimeSubmit = false);
+    void record(RecordFlags t_flags = 0);
 
     void free(bool synchronize = true);
 

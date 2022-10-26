@@ -8,26 +8,27 @@
 #include "Shader/IEDescriptorSet.hpp"
 #include "Shader/IEPipeline.hpp"
 
-#include <thread>
-#include <utility>
 
-void IE::Graphics::CommandBuffer::allocate(bool synchronize) {
+void IE::Graphics::CommandBuffer::allocate(AllocationFlags t_flags) {
     // Prepare
     VkCommandBufferAllocateInfo allocateInfo{
       .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .pNext              = nullptr,
       .commandPool        = commandPool->m_commandPool,
-      .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .level              = (t_flags & IE_COMMAND_BUFFER_ALLOCATE_SECONDARY) != 0U ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_PRIMARY,
       .commandBufferCount = 1};
 
     // Lock command pool
-    if (synchronize) commandPool->m_commandPoolMutex->lock();
+    commandPool->m_commandPoolMutex->lock();
 
-    // Handle any needed state changes
-    if (state == IE_COMMAND_BUFFER_STATE_INITIAL) {
+    // Handle any needed status changes
+    if (status == IE_COMMAND_BUFFER_STATE_INITIAL) {
         linkedRenderEngine->getLogger().log(
           "Attempt to allocate command buffers that are already allocated.",
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
+        commandPool->m_commandPoolMutex->unlock();
+        return;
     }
 
     // Allocate the command buffer
@@ -38,52 +39,45 @@ void IE::Graphics::CommandBuffer::allocate(bool synchronize) {
             IE::Graphics::RenderEngine::translateVkResultCodes(result),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-        free(false);
-    } else {  // Change state if no errors
-        state = IE_COMMAND_BUFFER_STATE_INITIAL;
-    }
+    } else status = IE_COMMAND_BUFFER_STATE_INITIAL;
 
     // Unlock command pool
-    if (synchronize)  // Unlock this command pool if synchronizing
-        commandPool->m_commandPoolMutex->unlock();
+    commandPool->m_commandPoolMutex->unlock();
 }
 
-void IE::Graphics::CommandBuffer::record(bool synchronize, bool oneTimeSubmit) {
-    // Prepare
-    oneTimeSubmission = oneTimeSubmit;
+void IE::Graphics::CommandBuffer::record(RecordFlags t_flags) {
+    commandPool->m_commandPoolMutex->lock();
+
+    recordFlags = t_flags;
     VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       .flags = static_cast<VkCommandBufferUsageFlags>(
-        oneTimeSubmission ? VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : 0
+        (recordFlags & IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT) != 0U ? VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : 0
       ),
     };
 
-    if (synchronize)  // Lock this command pool if synchronizing
-        commandPool->m_commandPoolMutex->lock();
-
-    // Handle any needed state changes
-    if (state == IE_COMMAND_BUFFER_STATE_RECORDING) {
-        if (synchronize) commandPool->m_commandPoolMutex->unlock();
+    // Handle any needed status changes
+    if (status == IE_COMMAND_BUFFER_STATE_RECORDING) {
+        linkedRenderEngine->getLogger().log("Attempted to record a command buffer that was already in the recording state.", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
+        commandPool->m_commandPoolMutex->unlock();
         return;
     }
-    if (state == IE_COMMAND_BUFFER_STATE_NONE) allocate(false);
-    if (state >= IE_COMMAND_BUFFER_STATE_EXECUTABLE) reset(synchronize);
+    if (status == IE_COMMAND_BUFFER_STATE_NONE) linkedRenderEngine->getLogger().log("Attempted to record an unallocated command buffer!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+    if (status >= IE_COMMAND_BUFFER_STATE_EXECUTABLE) linkedRenderEngine->getLogger().log("Attempted to record to a command buffer that has already finished its execution phase. Call 'reset' on this command buffer before calling 'record'.", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
 
     // Begin recording
     VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-    // Update state
-    state = IE_COMMAND_BUFFER_STATE_RECORDING;
+    // Update status
+    status = IE_COMMAND_BUFFER_STATE_RECORDING;
 
-    if (synchronize)  // Unlock this command pool if synchronizing
-        commandPool->m_commandPoolMutex->unlock();
-    if (result != VK_SUCCESS) {
+    commandPool->m_commandPoolMutex->unlock();
+    if (result != VK_SUCCESS)
         linkedRenderEngine->getLogger().log(
           "Failure to properly begin command buffer recording! Error: " +
             IE::Graphics::RenderEngine::translateVkResultCodes(result),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
-    }
 }
 
 void IE::Graphics::CommandBuffer::free(bool synchronize) {
@@ -91,7 +85,7 @@ void IE::Graphics::CommandBuffer::free(bool synchronize) {
     if (synchronize)  // Lock this command pool if synchronizing
         commandPool->m_commandPoolMutex->lock();
     vkFreeCommandBuffers(linkedRenderEngine->m_device.device, commandPool->m_commandPool, 1, &commandBuffer);
-    state = IE_COMMAND_BUFFER_STATE_NONE;
+    status = IE_COMMAND_BUFFER_STATE_NONE;
     if (synchronize)  // Unlock this command pool if synchronizing
         commandPool->m_commandPoolMutex->unlock();
 }
@@ -100,17 +94,17 @@ IE::Graphics::CommandBuffer::CommandBuffer(
   IE::Graphics::RenderEngine *engineLink,
   IE::Graphics::CommandPool  *parentCommandPool
 ) :
-        commandPool(std::move(parentCommandPool)),
+        commandPool(parentCommandPool),
         linkedRenderEngine(engineLink),
-        state(IE_COMMAND_BUFFER_STATE_NONE) {
+        status(IE_COMMAND_BUFFER_STATE_NONE) {
 }
 
 void IE::Graphics::CommandBuffer::reset(bool synchronize) {
     if (synchronize)  // If synchronizing, lock this command pool
         commandPool->m_commandPoolMutex->lock();
 
-    // Handle any needed state changes
-    if (state == IE_COMMAND_BUFFER_STATE_INVALID) {
+    // Handle any needed status changes
+    if (status == IE_COMMAND_BUFFER_STATE_INVALID) {
         linkedRenderEngine->getLogger().log(
           "Attempt to reset a command buffer that is invalid!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -120,8 +114,8 @@ void IE::Graphics::CommandBuffer::reset(bool synchronize) {
     // Reset
     vkResetCommandBuffer(commandBuffer, 0);
 
-    // Update new state
-    state = IE_COMMAND_BUFFER_STATE_INITIAL;
+    // Update new status
+    status = IE_COMMAND_BUFFER_STATE_INITIAL;
 
     if (synchronize)  // If synchronizing, unlock this command pool
         commandPool->m_commandPoolMutex->unlock();
@@ -131,8 +125,8 @@ void IE::Graphics::CommandBuffer::finish(bool synchronize) {
     if (synchronize)  // If synchronizing, lock this command pool
         commandPool->m_commandPoolMutex->lock();
 
-    // Handle any needed state changes
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    // Handle any needed status changes
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         linkedRenderEngine->getLogger().log(
           "Attempt to finish a command buffer that was not recording.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -142,8 +136,8 @@ void IE::Graphics::CommandBuffer::finish(bool synchronize) {
     // End
     vkEndCommandBuffer(commandBuffer);
 
-    // Update state
-    state = IE_COMMAND_BUFFER_STATE_EXECUTABLE;
+    // Update status
+    status = IE_COMMAND_BUFFER_STATE_EXECUTABLE;
 
     if (synchronize)  // If synchronizing, unlock this command pool
         commandPool->m_commandPoolMutex->unlock();
@@ -153,19 +147,22 @@ void IE::Graphics::CommandBuffer::execute(VkSemaphore input, VkSemaphore output,
     wait();
     commandPool->m_commandPoolMutex->lock();
     //    executionThread = std::thread{[&] {
-    if (state == IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status == IE_COMMAND_BUFFER_STATE_RECORDING) {
         finish(false);
-    } else if (state != IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
+    } else if (status != IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
         linkedRenderEngine->getLogger().log(
           "Attempt to execute a command buffer that is not recording or executable!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     }
+
+    VkPipelineStageFlags dstStageMask{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
     VkSubmitInfo submitInfo{
       .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
       .waitSemaphoreCount   = static_cast<uint32_t>(input != nullptr),
       .pWaitSemaphores      = &input,
-      .pWaitDstStageMask    = new VkPipelineStageFlags{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
+      .pWaitDstStageMask    = &dstStageMask,
       .commandBufferCount   = 1,
       .pCommandBuffers      = &commandBuffer,
       .signalSemaphoreCount = static_cast<uint32_t>(output != nullptr),
@@ -182,7 +179,7 @@ void IE::Graphics::CommandBuffer::execute(VkSemaphore input, VkSemaphore output,
 
 
     // Lock command buffer
-    state = IE_COMMAND_BUFFER_STATE_PENDING;
+    status = IE_COMMAND_BUFFER_STATE_PENDING;
 
     // Submit
     VkResult result = vkQueueSubmit(commandPool->m_queue, 1, &submitInfo, fence);
@@ -196,15 +193,10 @@ void IE::Graphics::CommandBuffer::execute(VkSemaphore input, VkSemaphore output,
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     }
-    state = oneTimeSubmission ? IE_COMMAND_BUFFER_STATE_INVALID : IE_COMMAND_BUFFER_STATE_EXECUTABLE;
-
-
-    // Delete to avoid a memory leak
-    delete submitInfo.pWaitDstStageMask;
+    status = (recordFlags & IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT) != 0U ? IE_COMMAND_BUFFER_STATE_INVALID : IE_COMMAND_BUFFER_STATE_EXECUTABLE;
 
     if (fenceWasNullptr)  // destroy the fence if it was created in this function
         vkDestroyFence(linkedRenderEngine->m_device.device, fence, nullptr);
-    oneTimeSubmission = false;
 
     // All tasks are done. Command buffer can be unlocked.
     commandPool->m_commandPoolMutex->unlock();
@@ -218,9 +210,9 @@ void IE::Graphics::CommandBuffer::recordCopyBufferToImage(
 
 ) {
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
               "Attempt to record a buffer to image copy on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -248,9 +240,9 @@ void IE::Graphics::CommandBuffer::recordBindVertexBuffers(
     pVkBuffers.resize(buffers.size());
     for (size_t i = 0; i < buffers.size(); ++i) pVkBuffers[i] = VK_NULL_HANDLE;
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
 
               "Attempt to record a vertex buffer bind on a command buffer that is not recording!",
@@ -274,9 +266,9 @@ void IE::Graphics::CommandBuffer::recordBindVertexBuffers(
     pVkBuffers.resize(buffers.size());
     for (size_t i = 0; i < buffers.size(); ++i) pVkBuffers[i] = VK_NULL_HANDLE;
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
               "Attempt to record a vertex buffer bind on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -302,9 +294,9 @@ void IE::Graphics::CommandBuffer::recordBindIndexBuffer(
 
 ) {
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
               "Attempt to record an index buffer bind on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -320,9 +312,9 @@ void IE::Graphics::CommandBuffer::recordBindPipeline(
   const std::shared_ptr<IEPipeline> &pipeline
 ) {
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
               "Attempt to record a pipeline bind on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -344,9 +336,9 @@ void IE::Graphics::CommandBuffer::recordBindDescriptorSets(
     pDescriptorSets.resize(descriptorSets.size());
     for (size_t i = 0; i < descriptorSets.size(); ++i) pDescriptorSets[i] = descriptorSets[i]->descriptorSet;
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
 
               "Attempt to record a descriptor set bind on a command buffer that is not recording!",
@@ -375,9 +367,9 @@ void IE::Graphics::CommandBuffer::recordDrawIndexed(
   uint32_t firstInstance
 ) {
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
               "Attempt to record an indexed draw on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -395,9 +387,9 @@ void IE::Graphics::CommandBuffer::recordSetViewport(
 
 ) {
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
               "Attempt to record a viewport set on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -414,9 +406,9 @@ void IE::Graphics::CommandBuffer::recordSetScissor(
   const VkRect2D *pScissors
 ) {
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
               "Attempt to record a scissor set on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
@@ -429,9 +421,9 @@ void IE::Graphics::CommandBuffer::recordSetScissor(
 
 void IE::Graphics::CommandBuffer::recordEndRenderPass() {
     commandPool->m_commandPoolMutex->lock();
-    if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+    if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
-        if (state != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
             linkedRenderEngine->getLogger().log(
               "Attempt to record a render pass ending on a command buffer that is not recording!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
