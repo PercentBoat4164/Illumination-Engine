@@ -2,7 +2,7 @@
 
 #include "RenderEngine.hpp"
 
-void IE::Graphics::detail::BufferVulkan::_createBuffer(
+bool IE::Graphics::detail::BufferVulkan::_createBuffer(
   Type     t_type,
   uint64_t t_flags,
   void    *t_data,
@@ -35,18 +35,21 @@ void IE::Graphics::detail::BufferVulkan::_createBuffer(
       &m_allocation,
       &m_allocationInfo
     )};
-    if (result == VK_SUCCESS) {
-        void **ppData{};
-        vmaMapMemory(m_linkedRenderEngine->getAllocator(), m_allocation, ppData);
-        memcpy(ppData, t_data, t_dataSize);
-        vmaUnmapMemory(m_linkedRenderEngine->getAllocator(), m_allocation);
-        m_linkedRenderEngine->getLogger().log("Created buffer");
+    if (result != VK_SUCCESS) {
+        m_linkedRenderEngine->getLogger().log(
+          "Failed to create buffer with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result)
+        );
+        return false;
     }
-    m_linkedRenderEngine->getLogger().log(
-      "Failed to create buffer with error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result)
-    );
+    void **ppData{};
+    vmaMapMemory(m_linkedRenderEngine->getAllocator(), m_allocation, ppData);
+    memcpy(ppData, t_data, t_dataSize);
+    vmaUnmapMemory(m_linkedRenderEngine->getAllocator(), m_allocation);
+    m_linkedRenderEngine->getLogger().log("Created buffer");
+    return true;
 }
 
-void IE::Graphics::detail::BufferVulkan::_destroyBuffer() {
+bool IE::Graphics::detail::BufferVulkan::_destroyBuffer() {
     vmaDestroyBuffer(m_linkedRenderEngine->getAllocator(), m_id, m_allocation);
+    return true;
 }

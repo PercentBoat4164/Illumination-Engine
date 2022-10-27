@@ -14,8 +14,8 @@ public:
     VmaAllocation      m_allocation{};
 
 protected:
-    void _createBuffer(Type type, uint64_t flags, void *data, size_t dataSize) override;
+    bool _createBuffer(Type type, uint64_t flags, void *data, size_t dataSize) override;
 
-    void _destroyBuffer() override;
+    bool _destroyBuffer() override;
 };
 }  // namespace IE::Graphics::detail

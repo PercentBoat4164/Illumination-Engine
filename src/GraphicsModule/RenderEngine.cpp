@@ -1,6 +1,7 @@
 #include "RenderEngine.hpp"
 
 #include "Core/AssetModule/IEAsset.hpp"
+#include "Image/Image.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <../contrib/stb/stb_image.h>
@@ -270,8 +271,37 @@ void IE::Graphics::RenderEngine::createCommandPools() {
 }
 
 void IE::Graphics::RenderEngine::createRenderPasses() {
-    m_renderPassSeries.addRenderPass(IE::Graphics::RenderPass::Presets::IE_GRAPHICS_RENDER_PASS_PRESET_COLOR)
-      .build();
+    // Specify all used attachments.
+    m_renderPassSeries.specifyAttachments({
+      {"shadow", IE::Graphics::Image::Preset::IE_IMAGE_PRESET_CUSTOM           },
+      {"color",  IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_COLOR},
+      {"depth",  IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH}
+    });
+
+    // Specify all subpasses and their attachment usages.
+    Subpass shadowSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
+    shadowSubpass.addOrModifyAttachment("shadow", Subpass::IE_ATTACHMENT_USAGE_GENERATE);
+
+    Subpass colorSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
+    colorSubpass.addOrModifyAttachment("color", Subpass::IE_ATTACHMENT_USAGE_GENERATE)
+      .addOrModifyAttachment("depth", Subpass::IE_ATTACHMENT_USAGE_TEMPORARY)
+      .addOrModifyAttachment("shadow", Subpass::IE_ATTACHMENT_USAGE_CONSUME);
+
+    Subpass postProcessingSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
+    postProcessingSubpass.addOrModifyAttachment("color", Subpass::IE_ATTACHMENT_USAGE_MODIFY);
+
+    // Accumulate the subpasses into render passes.
+    RenderPass shadowRenderPass{RenderPass::IE_RENDER_PASS_PRESET_CUSTOM};
+    shadowRenderPass.addSubpass(shadowSubpass);
+
+    RenderPass finalImageRenderPass{RenderPass::IE_RENDER_PASS_PRESET_CUSTOM};
+    finalImageRenderPass.addSubpass(colorSubpass).addSubpass(postProcessingSubpass);
+
+    // Accumulate the render passes into render pass series.
+    m_renderPassSeries.addRenderPass(shadowRenderPass).addRenderPass(finalImageRenderPass);
+
+    // Build the render pass series.
+    m_renderPassSeries.build();
 }
 
 IE::Core::Engine *IE::Graphics::RenderEngine::create() {

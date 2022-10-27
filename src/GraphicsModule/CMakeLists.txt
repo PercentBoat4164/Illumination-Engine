@@ -31,7 +31,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
         RenderPass/Framebuffer.cpp
         RenderPass/RenderPass.cpp
         RenderPass/RenderPassSeries.cpp
-        RenderPass/Subpass.cpp)
+        RenderPass/Subpass.cpp Image/ImageVulkan.cpp Image/ImageVulkan.hpp)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

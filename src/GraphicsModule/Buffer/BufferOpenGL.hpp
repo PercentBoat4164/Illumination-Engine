@@ -10,8 +10,8 @@ public:
     GLuint m_id{};
 
 protected:
-    void _createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize) override;
-    void _destroyBuffer() override;
+    bool _createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize) override;
+    bool _destroyBuffer() override;
 
     static GLenum getBufferSlot(Type t_type);
 

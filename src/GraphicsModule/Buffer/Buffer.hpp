@@ -11,12 +11,12 @@ class RenderEngine;
 
 class Buffer {
 public:
-    using Status = enum Status {
+    enum Status {
         IE_BUFFER_STATUS_UNINITIALIZED = 0x0,
         IE_BUFFER_STATUS_CREATED       = 0x1,
     };
 
-    using Type = enum Type {
+    enum Type {
         IE_BUFFER_TYPE_NULL            = 0x0,
         IE_BUFFER_TYPE_INDEX_BUFFER    = 0x1,
         IE_BUFFER_TYPE_VERTEX_BUFFER   = 0x2,
@@ -33,7 +33,9 @@ public:
     virtual ~Buffer() = default;
 
 protected:
-    virtual void _createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize) = 0;
-    virtual void _destroyBuffer()                                                              = 0;
+    virtual void createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize);
+    virtual bool _createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize) = 0;
+    virtual void destroyBuffer();
+    virtual bool _destroyBuffer()                                                              = 0;
 };
 }  // namespace IE::Graphics

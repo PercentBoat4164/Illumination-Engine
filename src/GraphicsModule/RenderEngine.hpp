@@ -132,7 +132,7 @@ public:
     ) {
         return [&](T &t_error) {
             for (size_t i = 0; i < t_errors.size(); ++i)
-                if (t_error == t_errors[i])
+                if (t_error == *(t_errors.begin() + i))
                     return IE::Graphics::RenderEngine::makeErrorMessage(
                       *(t_errorNames.begin() + i),
                       t_function,
@@ -140,6 +140,13 @@ public:
                       t_line,
                       t_moreInfo
                     );
+            return IE::Graphics::RenderEngine::makeErrorMessage(
+              "UNSPECIFIED_ERROR",
+              t_function,
+              t_file,
+              t_line,
+              t_moreInfo
+            );
         };
     }
 

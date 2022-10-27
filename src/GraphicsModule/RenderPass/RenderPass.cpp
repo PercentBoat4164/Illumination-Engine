@@ -1,4 +1,10 @@
 #include "RenderPass.hpp"
 
-IE::Graphics::RenderPass::RenderPass(IE::Graphics::RenderEngine *t_engineLink, Presets t_preset) {
+#include "RenderPassSeries.hpp"
+
+IE::Graphics::RenderPass::RenderPass(Preset t_preset) : m_preset(t_preset) {
+}
+
+auto IE::Graphics::RenderPass::build() -> decltype(*this) {
+    return *this;
 }

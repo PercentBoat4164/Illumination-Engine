@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Image/Image.hpp"
 #include "RenderPass.hpp"
 
 #include <vector>
@@ -9,16 +10,19 @@ class RenderPassSeries {
 public:
     explicit RenderPassSeries(IE::Graphics::RenderEngine *t_engineLink);
 
-    auto addRenderPass(IE::Graphics::RenderPass::Presets t_preset) -> decltype(*this) {
-        m_renderPasses.emplace_back(m_linkedRenderEngine, t_preset);
+    auto specifyAttachments(const std::vector<std::pair<std::string, Image::Preset>> &t_attachments)
+      -> decltype(*this) {
+        m_attachmentPool.resize(m_attachmentPool.size() + t_attachments.size());
+        for (const auto &attachment : t_attachments) m_attachmentPool.push_back(attachment);
         return *this;
     }
 
-    void build() {
-    }
+    auto build() -> decltype(*this);
 
-private:
-    std::vector<IE::Graphics::RenderPass> m_renderPasses;
-    IE::Graphics::RenderEngine           *m_linkedRenderEngine;
+    std::vector<std::pair<std::string, Image::Preset>> m_attachmentPool;
+    std::vector<IE::Graphics::RenderPass>              m_renderPasses;
+    IE::Graphics::RenderEngine                        *m_linkedRenderEngine;
+
+    auto                                               addRenderPass(RenderPass &t_pass) -> decltype(*this);
 };
 }  // namespace IE::Graphics
