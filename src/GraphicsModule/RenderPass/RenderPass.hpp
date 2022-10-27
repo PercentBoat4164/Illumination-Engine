@@ -19,20 +19,18 @@ public:
 
     enum Preset {
         IE_RENDER_PASS_PRESET_CUSTOM = 0x0,
-        IE_RENDER_PASS_PRESET_SHADOW = 0x1,
-        IE_RENDER_PASS_PRESET_COLOR = 0x2,
     };
 
-    Status                      m_status{};
-    Preset                      m_preset;
-    IE::Graphics::RenderEngine *m_linkedRenderEngine{};
-    VkRenderPass                m_renderPass{};
-    IE::Graphics::Framebuffer   m_framebuffer;
+    Status                             m_status{};
+    Preset                             m_preset;
+    IE::Graphics::RenderEngine        *m_linkedRenderEngine{};
+    VkRenderPass                       m_renderPass{};
+    IE::Graphics::Framebuffer          m_framebuffer;
     std::vector<IE::Graphics::Subpass> m_subpasses;
 
     explicit RenderPass(Preset t_preset);
 
-    auto addSubpass(IE::Graphics::Subpass &t_subpass) {
+    auto addSubpass(IE::Graphics::Subpass &t_subpass) -> decltype(*this) {
         m_subpasses.push_back(t_subpass);
         return *this;
     }

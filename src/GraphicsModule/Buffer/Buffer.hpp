@@ -36,6 +36,6 @@ protected:
     virtual void createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize);
     virtual bool _createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize) = 0;
     virtual void destroyBuffer();
-    virtual bool _destroyBuffer()                                                              = 0;
+    virtual bool _destroyBuffer() = 0;
 };
 }  // namespace IE::Graphics

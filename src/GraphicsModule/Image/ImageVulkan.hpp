@@ -7,7 +7,11 @@
 namespace IE::Graphics::detail {
 class ImageVulkan : public IE::Graphics::Image {
 public:
-    VkImage m_id{};
+    virtual ~ImageVulkan() = default;
+
+    VkImage       m_id{};
     VkImageLayout m_layout{};
+
+    static VkImageLayout layoutFromPreset(Preset t_type);
 };
 }  // namespace IE::Graphics::detail

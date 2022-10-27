@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Image/Image.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -8,15 +9,31 @@
 namespace IE::Graphics {
 class Subpass {
 public:
-    enum AttachmentUsages {
-        IE_ATTACHMENT_USAGE_IGNORE       = 0x0,
-        IE_ATTACHMENT_USAGE_CONSUME      = 0x1,
-        IE_ATTACHMENT_USAGE_MODIFY       = 0x2,
-        IE_ATTACHMENT_USAGE_GENERATE     = 0x3,
-        IE_ATTACHMENT_USAGE_TEMPORARY = 0x4,
+    enum AttachmentConsumptions {
+        IE_ATTACHMENT_CONSUMPTION_IGNORE    = 0x0,
+        IE_ATTACHMENT_CONSUMPTION_CONSUME   = 0x1,
+        IE_ATTACHMENT_CONSUMPTION_MODIFY    = 0x2,
+        IE_ATTACHMENT_CONSUMPTION_GENERATE  = 0x3,
+        IE_ATTACHMENT_CONSUMPTION_TEMPORARY = 0x4,
     };
 
-    using AttachmentUsage = uint64_t;
+    using AttachmentConsumption = uint8_t;
+
+    enum AttachmentUsages {
+        IE_ATTACHMENT_USAGE_PRESERVE = 0x0,
+        IE_ATTACHMENT_USAGE_INPUT    = 0x1,
+        IE_ATTACHMENT_USAGE_COLOR    = 0x2,
+        IE_ATTACHMENT_USAGE_RESOLVE  = 0x3,
+        IE_ATTACHMENT_USAGE_DEPTH    = 0x4,
+    };
+
+    using AttachmentUsage = uint8_t;
+
+    struct AttachmentDescription {
+        AttachmentConsumption       m_consumption;
+        AttachmentUsage             m_usage;
+        IE::Graphics::Image::Preset m_type;
+    } __attribute__((aligned(8)));
 
     enum Preset {
         IE_SUBPASS_PRESET_CUSTOM = 0x0,
@@ -24,10 +41,21 @@ public:
 
     explicit Subpass(Preset t_preset);
 
-    Preset                                           m_preset;
-    std::unordered_map<std::string, AttachmentUsage> m_attachments{};
+    Preset                                                     m_preset;
+    std::vector<std::pair<std::string, AttachmentDescription>> m_attachments{};
+    VkSubpassDescription                                       m_description{};
 
-    auto addOrModifyAttachment(const std::string &t_attachmentName, AttachmentUsage t_influence)
-      -> decltype(*this);
+    std::vector<VkAttachmentReference> input;
+    std::vector<VkAttachmentReference> color;
+    std::vector<VkAttachmentReference> resolve;
+    std::vector<VkAttachmentReference> depth;
+    std::vector<uint32_t>              preserve;
+
+    auto addOrModifyAttachment(
+      const std::string                           &t_attachmentName,
+      IE::Graphics::Subpass::AttachmentConsumption t_consumption,
+      IE::Graphics::Subpass::AttachmentUsage       t_usage,
+      Image::Preset                                t_type
+    ) -> decltype(*this);
 };
 }  // namespace IE::Graphics

@@ -8,14 +8,14 @@
 #include "Shader/IEDescriptorSet.hpp"
 #include "Shader/IEPipeline.hpp"
 
-
 void IE::Graphics::CommandBuffer::allocate(AllocationFlags t_flags) {
     // Prepare
     VkCommandBufferAllocateInfo allocateInfo{
-      .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-      .pNext              = nullptr,
-      .commandPool        = commandPool->m_commandPool,
-      .level              = (t_flags & IE_COMMAND_BUFFER_ALLOCATE_SECONDARY) != 0U ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .sType       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .pNext       = nullptr,
+      .commandPool = commandPool->m_commandPool,
+      .level       = (t_flags & IE_COMMAND_BUFFER_ALLOCATE_SECONDARY) != 0U ? VK_COMMAND_BUFFER_LEVEL_SECONDARY :
+                                                                              VK_COMMAND_BUFFER_LEVEL_PRIMARY,
       .commandBufferCount = 1};
 
     // Lock command pool
@@ -52,18 +52,32 @@ void IE::Graphics::CommandBuffer::record(RecordFlags t_flags) {
     VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       .flags = static_cast<VkCommandBufferUsageFlags>(
-        (recordFlags & IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT) != 0U ? VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : 0
+        (recordFlags & IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT) != 0U ?
+          VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT :
+          0
       ),
     };
 
     // Handle any needed status changes
     if (status == IE_COMMAND_BUFFER_STATE_RECORDING) {
-        linkedRenderEngine->getLogger().log("Attempted to record a command buffer that was already in the recording state.", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
+        linkedRenderEngine->getLogger().log(
+          "Attempted to record a command buffer that was already in the recording state.",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
         commandPool->m_commandPoolMutex->unlock();
         return;
     }
-    if (status == IE_COMMAND_BUFFER_STATE_NONE) linkedRenderEngine->getLogger().log("Attempted to record an unallocated command buffer!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
-    if (status >= IE_COMMAND_BUFFER_STATE_EXECUTABLE) linkedRenderEngine->getLogger().log("Attempted to record to a command buffer that has already finished its execution phase. Call 'reset' on this command buffer before calling 'record'.", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+    if (status == IE_COMMAND_BUFFER_STATE_NONE)
+        linkedRenderEngine->getLogger().log(
+          "Attempted to record an unallocated command buffer!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
+    if (status >= IE_COMMAND_BUFFER_STATE_EXECUTABLE)
+        linkedRenderEngine->getLogger().log(
+          "Attempted to record to a command buffer that has already finished its execution phase. Call 'reset' on "
+          "this command buffer before calling 'record'.",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
 
     // Begin recording
     VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
@@ -193,7 +207,8 @@ void IE::Graphics::CommandBuffer::execute(VkSemaphore input, VkSemaphore output,
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     }
-    status = (recordFlags & IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT) != 0U ? IE_COMMAND_BUFFER_STATE_INVALID : IE_COMMAND_BUFFER_STATE_EXECUTABLE;
+    status = (recordFlags & IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT) != 0U ? IE_COMMAND_BUFFER_STATE_INVALID :
+                                                                              IE_COMMAND_BUFFER_STATE_EXECUTABLE;
 
     if (fenceWasNullptr)  // destroy the fence if it was created in this function
         vkDestroyFence(linkedRenderEngine->m_device.device, fence, nullptr);

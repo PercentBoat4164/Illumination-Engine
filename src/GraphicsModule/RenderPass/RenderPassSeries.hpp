@@ -23,6 +23,6 @@ public:
     std::vector<IE::Graphics::RenderPass>              m_renderPasses;
     IE::Graphics::RenderEngine                        *m_linkedRenderEngine;
 
-    auto                                               addRenderPass(RenderPass &t_pass) -> decltype(*this);
+    auto addRenderPass(RenderPass &t_pass) -> decltype(*this);
 };
 }  // namespace IE::Graphics

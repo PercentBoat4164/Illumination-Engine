@@ -22,9 +22,11 @@ public:
     };
 
     enum Preset {
-        IE_IMAGE_PRESET_CUSTOM            = 0x0,
-        IE_IMAGE_PRESET_FRAMEBUFFER_COLOR = 0x1,
-        IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH = 0x2
+        IE_IMAGE_PRESET_CUSTOM              = 0x0,
+        IE_IMAGE_PRESET_FRAMEBUFFER_COLOR   = 0x1,
+        IE_IMAGE_PRESET_FRAMEBUFFER_RESOLVE = 0x2,
+        IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH   = 0x3,
+        IE_IMAGE_PRESET_SHADOW_MAP          = 0x4
     };
 
     Status                      m_status{IE_IMAGE_STATUS_UNINITIALIZED};

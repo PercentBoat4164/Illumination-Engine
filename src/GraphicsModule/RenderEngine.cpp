@@ -273,22 +273,56 @@ void IE::Graphics::RenderEngine::createCommandPools() {
 void IE::Graphics::RenderEngine::createRenderPasses() {
     // Specify all used attachments.
     m_renderPassSeries.specifyAttachments({
-      {"shadow", IE::Graphics::Image::Preset::IE_IMAGE_PRESET_CUSTOM           },
-      {"color",  IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_COLOR},
-      {"depth",  IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH}
+      {"shadow",  IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH  },
+      {"color",   IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_COLOR  },
+      {"resolve", IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_RESOLVE},
+      {"depth",   IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH  }
     });
 
     // Specify all subpasses and their attachment usages.
     Subpass shadowSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
-    shadowSubpass.addOrModifyAttachment("shadow", Subpass::IE_ATTACHMENT_USAGE_GENERATE);
+    shadowSubpass.addOrModifyAttachment(
+      "shadow",
+      Subpass::IE_ATTACHMENT_CONSUMPTION_GENERATE,
+      Subpass::IE_ATTACHMENT_USAGE_DEPTH,
+      Image::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH
+    );
 
     Subpass colorSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
-    colorSubpass.addOrModifyAttachment("color", Subpass::IE_ATTACHMENT_USAGE_GENERATE)
-      .addOrModifyAttachment("depth", Subpass::IE_ATTACHMENT_USAGE_TEMPORARY)
-      .addOrModifyAttachment("shadow", Subpass::IE_ATTACHMENT_USAGE_CONSUME);
+    colorSubpass
+      .addOrModifyAttachment(
+        "color",
+        Subpass::IE_ATTACHMENT_CONSUMPTION_GENERATE,
+        Subpass::IE_ATTACHMENT_USAGE_COLOR,
+        Image::IE_IMAGE_PRESET_FRAMEBUFFER_COLOR
+      )
+      .addOrModifyAttachment(
+        "depth",
+        Subpass::IE_ATTACHMENT_CONSUMPTION_TEMPORARY,
+        Subpass::IE_ATTACHMENT_USAGE_DEPTH,
+        Image::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH
+      )
+      .addOrModifyAttachment(
+        "shadow",
+        Subpass::IE_ATTACHMENT_CONSUMPTION_CONSUME,
+        Subpass::IE_ATTACHMENT_USAGE_INPUT,
+        Image::IE_IMAGE_PRESET_SHADOW_MAP
+      );
 
     Subpass postProcessingSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
-    postProcessingSubpass.addOrModifyAttachment("color", Subpass::IE_ATTACHMENT_USAGE_MODIFY);
+    postProcessingSubpass
+      .addOrModifyAttachment(
+        "color",
+        Subpass::IE_ATTACHMENT_CONSUMPTION_MODIFY,
+        Subpass::IE_ATTACHMENT_USAGE_COLOR,
+        Image::IE_IMAGE_PRESET_FRAMEBUFFER_COLOR
+      )
+      .addOrModifyAttachment(
+        "resolve",
+        Subpass::IE_ATTACHMENT_CONSUMPTION_GENERATE,
+        Subpass::IE_ATTACHMENT_USAGE_RESOLVE,
+        Image::IE_IMAGE_PRESET_FRAMEBUFFER_RESOLVE
+      );
 
     // Accumulate the subpasses into render passes.
     RenderPass shadowRenderPass{RenderPass::IE_RENDER_PASS_PRESET_CUSTOM};
