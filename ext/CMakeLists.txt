@@ -209,7 +209,7 @@ endif ()
 
 # FetchContent loop is guarded by the Download Guard
 # Do all the downloads here. They will only run in a single CMake instance at a time no matter how many are running.
-foreach (LIST ${GITHUB} ${URL})
+foreach (LIST ${GITHUB})
 	list(GET ${LIST} ${GITHUB_NAME} NAME)
 	if (${IE_PREFER_LOCAL_LIBS})
 		list(GET ${LIST} ${GITHUB_MODULE} MODULE)
@@ -224,7 +224,17 @@ foreach (LIST ${GITHUB} ${URL})
 endforeach ()
 
 foreach(LIST ${URL})
-
+	list(GET ${LIST} ${URL_NAME} NAME)
+	if (${IE_PREFER_LOCAL_LIBS})
+		list(GET ${LIST} ${URL_MODULE} MODULE)
+		list(GET ${LIST} ${URL_MIN_VERSION} MIN_VERSION)
+		list(GET ${LIST} ${URL_MAX_VERSION} MAX_VERSION)
+		FindLocalLib(${NAME} ${MODULE} ${MIN_VERSION} ${MAX_VERSION})
+	endif ()
+	if (NOT ${NAME}_FOUND)
+		list(SUBLIST ${LIST} ${URL_DOWNLOAD_ARGS} ARGS)
+		FetchRemoteLib(${NAME} "${ARGS}")
+	endif ()
 endforeach()
 
 # Unlock the Download Guard
@@ -234,7 +244,10 @@ file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
 foreach (LIST ${LOCAL})
 	# If the package has no download arguments, then it must be in local storage
 	list(GET ${LIST} ${LOCAL_NAME} NAME)
-	FindLocalLib(${NAME} ${MODULE} 0 100000.0)
+	list(GET ${LIST} ${LOCAL_MODULE} MODULE)
+	list(GET ${LIST} ${LOCAL_MIN_VERSION} MIN_VERSION)
+	list(GET ${LIST} ${LOCAL_MAX_VERSION} MAX_VERSION)
+	FindLocalLib(${NAME} ${MODULE} ${MIN_VERSION} ${MAX_VERSION})
 endforeach()
 
 # add_subdirectory( calls should go after the Download Guard
@@ -242,16 +255,23 @@ foreach (LIST ${GITHUB} ${URL} ${LOCAL})
 	list(GET ${LIST} ${GITHUB_NAME} NAME)
 	list(GET ${LIST} ${GITHUB_EXPORT_LIB} EXPORT_LIB)
 	list(GET ${LIST} ${GITHUB_MODULE} PKG_NAME)
+
+	# If the export lib has not already been made, create it with the empty main.cpp file.
+	# All exported libs have the IE_BASE_DIR.
 	if (NOT TARGET ${EXPORT_LIB})
 		add_library(${EXPORT_LIB} main.cpp)
 		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_BASE_DIR})
 	endif ()
+
+	# Is a remote dependency
 	if (NOT ${NAME}_FOUND)
 		list(GET ${LIST} ${GITHUB_BUILD_DIR} CMAKE_DIR)
 		list(GET ${LIST} ${GITHUB_INCLUDE_DIR} INCLUDE_DIR)
 		add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src${CMAKE_DIR})
 		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src${INCLUDE_DIR})
 	endif ()
+
+	# Export requested targets to requested export lib.
 	if (TARGET ${PKG_NAME})
 		target_link_libraries(${EXPORT_LIB} PUBLIC ${PKG_NAME})
 	else ()
