@@ -154,7 +154,8 @@ set(VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT)
 function (FindLocalLib NAME MODULE MIN_VERSION MAX_VERSION)
 	# Reject packages that don't work with this versioning system.
 	if (${MIN_VERSION} STREQUAL "NULL" AND ${MAX_VERSION} STREQUAL "NULL")
-		return ()
+		message(STATUS "Skipping local dependency searching for ${NAME}.")
+		return()
 	endif ()
 
 	# Use basic built-in CMake package finding.
