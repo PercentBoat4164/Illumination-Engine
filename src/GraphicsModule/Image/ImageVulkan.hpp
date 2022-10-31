@@ -12,6 +12,8 @@ public:
     VkImage       m_id{};
     VkImageLayout m_layout{};
 
-    static VkImageLayout layoutFromPreset(Preset t_type);
+    static VkImageLayout layoutFromPreset(Preset t_preset);
+
+    static VkFormat formatFromPreset(Preset t_preset);
 };
 }  // namespace IE::Graphics::detail

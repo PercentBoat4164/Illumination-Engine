@@ -9,12 +9,26 @@
 namespace IE::Graphics {
 class Subpass {
 public:
+    enum AttachmentConsumptionBits {
+        IE_ATTACHMENT_CONSUMPTION_BITS_IGNORE  = 0x0,
+        IE_ATTACHMENT_CONSUMPTION_BITS_INPUT   = 0x1,
+        IE_ATTACHMENT_CONSUMPTION_BITS_CREATE  = 0x2,
+        IE_ATTACHMENT_CONSUMPTION_BITS_OUTPUT  = 0x4,
+        IE_ATTACHMENT_CONSUMPTION_BITS_DISCARD = 0x8,
+    };
+
+    using AttachmentConsumptionBit = uint8_t;
+
     enum AttachmentConsumptions {
-        IE_ATTACHMENT_CONSUMPTION_IGNORE    = 0x0,
-        IE_ATTACHMENT_CONSUMPTION_CONSUME   = 0x1,
-        IE_ATTACHMENT_CONSUMPTION_MODIFY    = 0x2,
-        IE_ATTACHMENT_CONSUMPTION_GENERATE  = 0x3,
-        IE_ATTACHMENT_CONSUMPTION_TEMPORARY = 0x4,
+        IE_ATTACHMENT_CONSUMPTION_IGNORE = IE_ATTACHMENT_CONSUMPTION_BITS_IGNORE,
+        IE_ATTACHMENT_CONSUMPTION_CONSUME =
+          IE_ATTACHMENT_CONSUMPTION_BITS_INPUT | IE_ATTACHMENT_CONSUMPTION_BITS_DISCARD,
+        IE_ATTACHMENT_CONSUMPTION_MODIFY =
+          IE_ATTACHMENT_CONSUMPTION_BITS_INPUT | IE_ATTACHMENT_CONSUMPTION_BITS_OUTPUT,
+        IE_ATTACHMENT_CONSUMPTION_GENERATE =
+          IE_ATTACHMENT_CONSUMPTION_BITS_CREATE | IE_ATTACHMENT_CONSUMPTION_BITS_OUTPUT,
+        IE_ATTACHMENT_CONSUMPTION_TEMPORARY =
+          IE_ATTACHMENT_CONSUMPTION_BITS_CREATE | IE_ATTACHMENT_CONSUMPTION_BITS_DISCARD,
     };
 
     using AttachmentConsumption = uint8_t;
@@ -43,7 +57,6 @@ public:
 
     Preset                                                     m_preset;
     std::vector<std::pair<std::string, AttachmentDescription>> m_attachments{};
-    VkSubpassDescription                                       m_description{};
 
     std::vector<VkAttachmentReference> input;
     std::vector<VkAttachmentReference> color;

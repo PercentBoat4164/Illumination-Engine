@@ -271,14 +271,6 @@ void IE::Graphics::RenderEngine::createCommandPools() {
 }
 
 void IE::Graphics::RenderEngine::createRenderPasses() {
-    // Specify all used attachments.
-    m_renderPassSeries.specifyAttachments({
-      {"shadow",  IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH  },
-      {"color",   IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_COLOR  },
-      {"resolve", IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_RESOLVE},
-      {"depth",   IE::Graphics::Image::Preset::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH  }
-    });
-
     // Specify all subpasses and their attachment usages.
     Subpass shadowSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
     shadowSubpass.addOrModifyAttachment(
