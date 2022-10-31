@@ -12,7 +12,7 @@ set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
 # package_DATA =     NAME        MODULE_NAME  MIN_VERSION MAX_VERSION EXPORT_LIB BUILD_DIR INCLUDE_DIR DOWNLOAD_ARGS
 # GitHub hosted dependencies
 set(assimp_DATA      assimp      assimp       5.2.5       5.2.5       EXT_AssImp ""        "/include"  GIT_REPOSITORY https://github.com/assimp/assimp                                  GIT_PROGRESS ON GIT_TAG v5.2.5)
-set(glm_DATA         glm         glm          0.0         9999.99.999 EXT_GLM    ""        ""          GIT_REPOSITORY https://github.com/g-truc/glm                                     GIT_PROGRESS ON GIT_TAG master)
+set(glm_DATA         glm         glm          "NULL"      "NULL"      EXT_GLM    ""        ""          GIT_REPOSITORY https://github.com/g-truc/glm                                     GIT_PROGRESS ON GIT_TAG master)
 set(glfw_DATA        glfw        glfw3        3.3.6       3.3.8       EXT_GLFW   ""        "/include"  GIT_REPOSITORY https://github.com/glfw/glfw                                      GIT_PROGRESS ON GIT_TAG 3.3.8)
 set(spdlog_DATA      spdlog      spdlog       1.10.0      1.10.0      EXT_SpdLog ""        "/include"  GIT_REPOSITORY https://github.com/gabime/spdlog                                  GIT_PROGRESS ON GIT_TAG v1.x)
 set(VkBootstrap_DATA VkBootstrap vk-bootstrap 0.6         0.6         EXT_Vulkan ""        "/src"      GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                    GIT_PROGRESS ON GIT_TAG v0.6)
@@ -152,6 +152,11 @@ set(VMA_DEBUG_GLOBAL_MUTEX)
 set(VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT)
 
 function (FindLocalLib NAME MODULE MIN_VERSION MAX_VERSION)
+	# Reject packages that don't work with this versioning system.
+	if (${MIN_VERSION} STREQUAL "NULL" AND ${MAX_VERSION} STREQUAL "NULL")
+		return ()
+	endif ()
+
 	# Use basic built-in CMake package finding.
 	find_package(${NAME} ${MIN_VERSION}...${MAX_VERSION} QUIET)
 
