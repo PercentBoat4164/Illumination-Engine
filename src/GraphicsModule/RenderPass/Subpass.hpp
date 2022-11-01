@@ -53,16 +53,16 @@ public:
         IE_SUBPASS_PRESET_CUSTOM = 0x0,
     };
 
-    explicit Subpass(Preset t_preset);
+    explicit Subpass(Preset t_preset, VkPipelineStageFlags t_stage = 0x0);
 
     Preset                                                     m_preset;
     std::vector<std::pair<std::string, AttachmentDescription>> m_attachments{};
-
-    std::vector<VkAttachmentReference> input;
-    std::vector<VkAttachmentReference> color;
-    std::vector<VkAttachmentReference> resolve;
-    std::vector<VkAttachmentReference> depth;
-    std::vector<uint32_t>              preserve;
+    VkPipelineStageFlags                                       m_stage{};
+    std::vector<VkAttachmentReference>                         m_input;
+    std::vector<VkAttachmentReference>                         m_color;
+    std::vector<VkAttachmentReference>                         m_resolve;
+    std::vector<VkAttachmentReference>                         m_depth;
+    std::vector<uint32_t>                                      m_preserve;
 
     auto addOrModifyAttachment(
       const std::string                           &t_attachmentName,
@@ -70,5 +70,7 @@ public:
       IE::Graphics::Subpass::AttachmentUsage       t_usage,
       Image::Preset                                t_type
     ) -> decltype(*this);
+
+    static VkPipelineStageFlags stageFromPreset(Preset t_preset);
 };
 }  // namespace IE::Graphics

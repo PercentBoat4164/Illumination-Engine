@@ -22,5 +22,12 @@ auto IE::Graphics::Subpass::addOrModifyAttachment(
     return *this;
 }
 
-IE::Graphics::Subpass::Subpass(IE::Graphics::Subpass::Preset t_preset) : m_preset(t_preset) {
+IE::Graphics::Subpass::Subpass(IE::Graphics::Subpass::Preset t_preset, VkPipelineStageFlags t_stage) :
+        m_preset(t_preset),
+        m_stage(t_preset == IE_SUBPASS_PRESET_CUSTOM ? t_stage : stageFromPreset(t_preset)) {
+}
+
+/**@todo Implement this function.*/
+VkPipelineStageFlags IE::Graphics::Subpass::stageFromPreset(IE::Graphics::Subpass::Preset t_preset) {
+    return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 }

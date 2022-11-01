@@ -15,5 +15,9 @@ public:
     static VkImageLayout layoutFromPreset(Preset t_preset);
 
     static VkFormat formatFromPreset(Preset t_preset);
+
+    static VkPipelineStageFlags pipelineStageFromPreset(Preset t_preset);
+
+    static VkAccessFlags accessFlagsFromPreset(Preset t_preset);
 };
 }  // namespace IE::Graphics::detail
