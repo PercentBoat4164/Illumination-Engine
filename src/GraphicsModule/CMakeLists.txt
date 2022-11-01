@@ -45,6 +45,3 @@ target_link_libraries(IEGraphicsModule PUBLIC IECore)
 target_link_libraries(IEGraphicsModule PUBLIC EXT_AssImp EXT_GLM EXT_GLFW EXT_OpenGL EXT_Vulkan)
 
 add_dependencies(IEGraphicsModule IEGMShaders CopyResources)  # Add shader pre-compilation as a dependency
-
-add_executable(IEGMmain main.cpp)
-target_link_libraries(IEGMmain PUBLIC IEGraphicsModule)

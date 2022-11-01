@@ -8,6 +8,9 @@
 
 namespace IE::Graphics {
 class Subpass {
+private:
+    static const VkPipelineStageFlags m_stages[];
+
 public:
     enum AttachmentConsumptionBits {
         IE_ATTACHMENT_CONSUMPTION_BITS_IGNORE  = 0x0,

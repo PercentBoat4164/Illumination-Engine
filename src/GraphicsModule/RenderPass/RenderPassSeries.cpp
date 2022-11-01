@@ -132,24 +132,26 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                                                    VK_ATTACHMENT_STORE_OP_DONT_CARE :
                                                    VK_ATTACHMENT_STORE_OP_DONT_CARE};
 
-                VkImageLayout finalLayout{
-                  nextAttachmentUsage != nullptr ?
-                    IE::Graphics::detail::ImageVulkan::layoutFromPreset(nextAttachmentUsage->second.m_type) :
-                    attachment.second.m_usage == Subpass::IE_ATTACHMENT_USAGE_RESOLVE ?
-                    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR :
-                    VK_IMAGE_LAYOUT_UNDEFINED};
-
                 // Create description.
                 attachmentDescriptions[i].push_back(
-                  {.flags          = 0x0,
-                   .format         = IE::Graphics::detail::ImageVulkan::formatFromPreset(attachment.second.m_type),
-                   .samples        = VK_SAMPLE_COUNT_1_BIT,  ///@todo Add MSAA.
+                  {.flags  = 0x0,
+                   .format = IE::Graphics::detail::ImageVulkan::formatFromPreset(
+                     attachment.second.m_type,
+                     m_linkedRenderEngine
+                   ),
+                   .samples        = VK_SAMPLE_COUNT_1_BIT,
                    .loadOp         = loadOp,
                    .storeOp        = storeOp,
                    .stencilLoadOp  = loadOp,
                    .stencilStoreOp = storeOp,
-                   .initialLayout  = IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_type),
-                   .finalLayout    = finalLayout}
+                   .initialLayout  = previousAttachmentUsage != nullptr ?
+                      IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_type) :
+                      VK_IMAGE_LAYOUT_UNDEFINED,
+                   .finalLayout    = nextAttachmentUsage != nullptr ?
+                        IE::Graphics::detail::ImageVulkan::layoutFromPreset(nextAttachmentUsage->second.m_type) :
+                        attachment.second.m_usage == Subpass::IE_ATTACHMENT_USAGE_RESOLVE ?
+                        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR :
+                        VK_IMAGE_LAYOUT_UNDEFINED}
                 );
             }
         }
@@ -173,8 +175,8 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                   (attachment.second.m_consumption & Subpass::IE_ATTACHMENT_CONSUMPTION_BITS_INPUT) != 0};
                 // Find the next subpass in this render pass that uses this attachment.
                 for (size_t k{j + 1}; k < m_renderPasses[i].m_subpasses.size(); ++k) {
-                    std::pair<std::string, Subpass::AttachmentDescription> *otherAttachment{};
-                    bool                                                    thisAttachmentUsedNextHere{};
+                    std::pair<std::string, Subpass::AttachmentDescription> otherAttachment{};
+                    bool                                                   thisAttachmentUsedNextHere{};
                     for (auto &thisAttachment : m_renderPasses[i].m_subpasses[k].m_attachments) {
                         bool thisAttachmentWrites{
                           (thisAttachment.second.m_consumption & Subpass::IE_ATTACHMENT_CONSUMPTION_BITS_INPUT) !=
@@ -182,13 +184,13 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                         // Record dependency information if this attachment mandates a subpass dependency.
                         if (attachment.first == thisAttachment.first && (attachmentWrites || thisAttachmentWrites)) {
                             thisAttachmentUsedNextHere = true;
-                            otherAttachment            = &thisAttachment;
+                            otherAttachment            = thisAttachment;
                             break;
                         }
                     }
                     if (thisAttachmentUsedNextHere)
                         thisSubpassDependencies.push_back({
-                          {attachment.second, otherAttachment->second},
+                          {attachment.second, otherAttachment.second},
                           k
                         });
                 }
@@ -196,12 +198,15 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
             dependencies.push_back({thisSubpassDependencies, j});
         }
 
+        /**@todo Generate VK_SUBPASS_EXTERNAL dependencies.*/
         // Generate dependencies.
         for (auto &subpassDeps : dependencies) {
             for (auto &dependency : subpassDeps.first) {
+                bool alreadyAdded{};
                 // If the dependency already exists, modify it.
                 for (auto &dep : subpassDependencies[subpassDeps.second]) {
                     if (dep.srcSubpass == subpassDeps.second && dep.dstSubpass == dependency.second) {
+                        alreadyAdded = true;
                         dep.srcStageMask |= m_renderPasses[i].m_subpasses[subpassDeps.second].m_stage;
                         dep.dstStageMask |= m_renderPasses[i].m_subpasses[dependency.second].m_stage;
                         dep.srcAccessMask |=
@@ -211,16 +216,17 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                     }
                 }
                 // otherwise, add it.
-                subpassDependencies[subpassDeps.second].push_back({
-                  .srcSubpass   = subpassDeps.second,
-                  .dstSubpass   = dependency.second,
-                  .srcStageMask = m_renderPasses[i].m_subpasses[subpassDeps.second].m_stage,
-                  .dstStageMask = m_renderPasses[i].m_subpasses[dependency.second].m_stage,
-                  .srcAccessMask =
-                    IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(dependency.first.first.m_type),
-                  .dstAccessMask =
-                    IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(dependency.first.second.m_type),
-                });
+                if (!alreadyAdded)
+                    subpassDependencies[subpassDeps.second].push_back({
+                      .srcSubpass   = subpassDeps.second,
+                      .dstSubpass   = dependency.second,
+                      .srcStageMask = m_renderPasses[i].m_subpasses[subpassDeps.second].m_stage,
+                      .dstStageMask = m_renderPasses[i].m_subpasses[dependency.second].m_stage,
+                      .srcAccessMask =
+                        IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(dependency.first.first.m_type),
+                      .dstAccessMask =
+                        IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(dependency.first.second.m_type),
+                    });
             }
         }
     }
@@ -238,12 +244,18 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
         renderPassCreateInfo.pSubpasses      = subpassDescriptions[i].data();
         renderPassCreateInfo.dependencyCount = subpassDependencies[i].size();
         renderPassCreateInfo.pDependencies   = subpassDependencies[i].data();
-        vkCreateRenderPass(
+        VkResult result{vkCreateRenderPass(
           m_linkedRenderEngine->m_device.device,
           &renderPassCreateInfo,
           nullptr,
           &m_renderPasses[i].m_renderPass
-        );
+        )};
+        if (result != VK_SUCCESS)
+            m_linkedRenderEngine->getLogger().log(
+              "Failed to create Render Pass with error: " + RenderEngine::translateVkResultCodes(result),
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+            );
+        else m_linkedRenderEngine->getLogger().log("Created Render Pass");
     }
 
     return *this;

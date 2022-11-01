@@ -2,6 +2,8 @@
 
 #include "Image/Image.hpp"
 
+const VkPipelineStageFlags IE::Graphics::Subpass::m_stages[]{VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT};
+
 auto IE::Graphics::Subpass::addOrModifyAttachment(
   const std::string                           &t_attachmentName,
   IE::Graphics::Subpass::AttachmentConsumption t_consumption,
@@ -27,7 +29,6 @@ IE::Graphics::Subpass::Subpass(IE::Graphics::Subpass::Preset t_preset, VkPipelin
         m_stage(t_preset == IE_SUBPASS_PRESET_CUSTOM ? t_stage : stageFromPreset(t_preset)) {
 }
 
-/**@todo Implement this function.*/
 VkPipelineStageFlags IE::Graphics::Subpass::stageFromPreset(IE::Graphics::Subpass::Preset t_preset) {
-    return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    return m_stages[t_preset];
 }

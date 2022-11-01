@@ -154,6 +154,8 @@ public:
 
     AspectType *getAspect(const std::string &t_id) override;
 
-    void createRenderPasses();
+    void     createRenderPasses();
+    VkFormat getColorFormat();
+    Settings getSettings();
 };
 }  // namespace IE::Graphics

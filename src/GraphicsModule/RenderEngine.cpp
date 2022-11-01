@@ -373,6 +373,14 @@ VmaAllocator IE::Graphics::RenderEngine::getAllocator() {
     return m_allocator;
 }
 
+VkFormat IE::Graphics::RenderEngine::getColorFormat() {
+    return m_swapchain.image_format;
+}
+
+IE::Graphics::Settings IE::Graphics::RenderEngine::getSettings() {
+    return m_settings;
+}
+
 std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result) {
     switch (t_result) {
         case VK_SUCCESS: return "VK_SUCCESS";
