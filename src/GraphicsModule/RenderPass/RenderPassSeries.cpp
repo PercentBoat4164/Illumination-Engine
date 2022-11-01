@@ -226,6 +226,25 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
     }
 
     // Build render passes.
+    VkRenderPassCreateInfo renderPassCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0x0,
+    };
+    for (size_t i{0}; i < m_renderPasses.size(); ++i) {
+        renderPassCreateInfo.attachmentCount = attachmentDescriptions[i].size();
+        renderPassCreateInfo.pAttachments    = attachmentDescriptions[i].data();
+        renderPassCreateInfo.subpassCount    = subpassDescriptions[i].size();
+        renderPassCreateInfo.pSubpasses      = subpassDescriptions[i].data();
+        renderPassCreateInfo.dependencyCount = subpassDependencies[i].size();
+        renderPassCreateInfo.pDependencies   = subpassDependencies[i].data();
+        vkCreateRenderPass(
+          m_linkedRenderEngine->m_device.device,
+          &renderPassCreateInfo,
+          nullptr,
+          &m_renderPasses[i].m_renderPass
+        );
+    }
 
     return *this;
 }
