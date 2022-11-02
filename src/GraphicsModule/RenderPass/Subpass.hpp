@@ -33,12 +33,6 @@ public:
 
     using AttachmentConsumption = uint8_t;
 
-    enum AttachmentUsages {
-        IE_ATTACHMENT_USAGE_WRITE_ONLY = 0x0,
-    };
-
-    using AttachmentUsage = uint8_t;
-
     struct AttachmentDescription {
         AttachmentConsumption       m_consumption;
         IE::Graphics::Image::Preset m_preset;

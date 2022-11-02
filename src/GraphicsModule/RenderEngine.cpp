@@ -277,13 +277,11 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
       .addOrModifyAttachment(
         "color",
         Subpass::IE_ATTACHMENT_CONSUMPTION_GENERATE,
-        Subpass::IE_ATTACHMENT_USAGE_COLOR,
         Image::IE_IMAGE_PRESET_FRAMEBUFFER_COLOR
       )
       .addOrModifyAttachment(
         "depth",
         Subpass::IE_ATTACHMENT_CONSUMPTION_TEMPORARY,
-        Subpass::IE_ATTACHMENT_USAGE_DEPTH,
         Image::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH
       );
 
