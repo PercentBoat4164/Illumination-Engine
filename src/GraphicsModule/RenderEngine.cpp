@@ -272,14 +272,6 @@ void IE::Graphics::RenderEngine::createCommandPools() {
 
 void IE::Graphics::RenderEngine::createRenderPasses() {
     // Specify all subpasses and their attachment usages.
-    Subpass shadowSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
-    shadowSubpass.addOrModifyAttachment(
-      "shadow",
-      Subpass::IE_ATTACHMENT_CONSUMPTION_GENERATE,
-      Subpass::IE_ATTACHMENT_USAGE_DEPTH,
-      Image::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH
-    );
-
     Subpass colorSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
     colorSubpass
       .addOrModifyAttachment(
@@ -293,38 +285,13 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
         Subpass::IE_ATTACHMENT_CONSUMPTION_TEMPORARY,
         Subpass::IE_ATTACHMENT_USAGE_DEPTH,
         Image::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH
-      )
-      .addOrModifyAttachment(
-        "shadow",
-        Subpass::IE_ATTACHMENT_CONSUMPTION_CONSUME,
-        Subpass::IE_ATTACHMENT_USAGE_INPUT,
-        Image::IE_IMAGE_PRESET_SHADOW_MAP
       );
-
-    Subpass postProcessingSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
-    postProcessingSubpass
-      .addOrModifyAttachment(
-        "color",
-        Subpass::IE_ATTACHMENT_CONSUMPTION_MODIFY,
-        Subpass::IE_ATTACHMENT_USAGE_COLOR,
-        Image::IE_IMAGE_PRESET_FRAMEBUFFER_COLOR
-      )
-      .addOrModifyAttachment(
-        "resolve",
-        Subpass::IE_ATTACHMENT_CONSUMPTION_GENERATE,
-        Subpass::IE_ATTACHMENT_USAGE_RESOLVE,
-        Image::IE_IMAGE_PRESET_FRAMEBUFFER_RESOLVE
-      );
-
-    // Accumulate the subpasses into render passes.
-    RenderPass shadowRenderPass{RenderPass::IE_RENDER_PASS_PRESET_CUSTOM};
-    shadowRenderPass.addSubpass(shadowSubpass);
 
     RenderPass finalImageRenderPass{RenderPass::IE_RENDER_PASS_PRESET_CUSTOM};
-    finalImageRenderPass.addSubpass(colorSubpass).addSubpass(postProcessingSubpass);
+    finalImageRenderPass.addSubpass(colorSubpass);
 
     // Accumulate the render passes into render pass series.
-    m_renderPassSeries.addRenderPass(shadowRenderPass).addRenderPass(finalImageRenderPass);
+    m_renderPassSeries.addRenderPass(finalImageRenderPass);
 
     // Build the render pass series.
     m_renderPassSeries.build();

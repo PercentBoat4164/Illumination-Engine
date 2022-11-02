@@ -8,9 +8,6 @@
 
 namespace IE::Graphics {
 class Subpass {
-private:
-    static const VkPipelineStageFlags m_stages[];
-
 public:
     enum AttachmentConsumptionBits {
         IE_ATTACHMENT_CONSUMPTION_BITS_IGNORE  = 0x0,
@@ -37,30 +34,24 @@ public:
     using AttachmentConsumption = uint8_t;
 
     enum AttachmentUsages {
-        IE_ATTACHMENT_USAGE_PRESERVE = 0x0,
-        IE_ATTACHMENT_USAGE_INPUT    = 0x1,
-        IE_ATTACHMENT_USAGE_COLOR    = 0x2,
-        IE_ATTACHMENT_USAGE_RESOLVE  = 0x3,
-        IE_ATTACHMENT_USAGE_DEPTH    = 0x4,
+        IE_ATTACHMENT_USAGE_WRITE_ONLY = 0x0,
     };
 
     using AttachmentUsage = uint8_t;
 
     struct AttachmentDescription {
         AttachmentConsumption       m_consumption;
-        AttachmentUsage             m_usage;
-        IE::Graphics::Image::Preset m_type;
+        IE::Graphics::Image::Preset m_preset;
     } __attribute__((aligned(8)));
 
     enum Preset {
         IE_SUBPASS_PRESET_CUSTOM = 0x0,
     };
 
-    explicit Subpass(Preset t_preset, VkPipelineStageFlags t_stage = 0x0);
+    explicit Subpass(Preset t_preset);
 
     Preset                                                     m_preset;
     std::vector<std::pair<std::string, AttachmentDescription>> m_attachments{};
-    VkPipelineStageFlags                                       m_stage{};
     std::vector<VkAttachmentReference>                         m_input;
     std::vector<VkAttachmentReference>                         m_color;
     std::vector<VkAttachmentReference>                         m_resolve;
@@ -70,7 +61,6 @@ public:
     auto addOrModifyAttachment(
       const std::string                           &t_attachmentName,
       IE::Graphics::Subpass::AttachmentConsumption t_consumption,
-      IE::Graphics::Subpass::AttachmentUsage       t_usage,
       Image::Preset                                t_type
     ) -> decltype(*this);
 

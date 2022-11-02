@@ -12,16 +12,10 @@ class RenderPassSeries;
 
 class RenderPass {
 public:
-    enum Status {
-        IE_RENDER_PASS_STATUS_UNINITIALIZED = 0x0,
-        IE_RENDER_PASS_STATUS_BUILT         = 0x1,
-    };
-
     enum Preset {
         IE_RENDER_PASS_PRESET_CUSTOM = 0x0,
     };
 
-    Status                             m_status{};
     Preset                             m_preset;
     IE::Graphics::RenderEngine        *m_linkedRenderEngine{};
     VkRenderPass                       m_renderPass{};
@@ -34,7 +28,5 @@ public:
         m_subpasses.push_back(t_subpass);
         return *this;
     }
-
-    auto build() -> decltype(*this);
 };
 }  // namespace IE::Graphics

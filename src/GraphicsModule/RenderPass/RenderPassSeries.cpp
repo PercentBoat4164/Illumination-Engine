@@ -22,15 +22,10 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                       [&](std::pair<std::string, Image::Preset> &t) { return t.first == attachment.first; }
                     )
                   )),
-                  .layout     = IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_type)};
-                switch (attachment.second.m_usage) {
-                    case Subpass::IE_ATTACHMENT_USAGE_PRESERVE:
-                        subpass.m_preserve.push_back(reference.attachment);
-                        break;
-                    case Subpass::IE_ATTACHMENT_USAGE_INPUT: subpass.m_input.push_back(reference); break;
-                    case Subpass::IE_ATTACHMENT_USAGE_COLOR: subpass.m_color.push_back(reference); break;
-                    case Subpass::IE_ATTACHMENT_USAGE_RESOLVE: subpass.m_resolve.push_back(reference); break;
-                    case Subpass::IE_ATTACHMENT_USAGE_DEPTH: subpass.m_depth.push_back(reference); break;
+                  .layout     = IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_preset)};
+                switch (IE::Graphics::detail::ImageVulkan::intentFromPreset(attachment.second.m_preset)) {
+                    case Image::IE_IMAGE_INTENT_COLOR: subpass.m_color.push_back(reference); break;
+                    case Image::IE_IMAGE_INTENT_DEPTH: subpass.m_depth.push_back(reference); break;
                 }
             }
 
@@ -71,7 +66,7 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                 for (size_t k{i == 0 ? i : i - 1}; k > 0; --k) {
                     for (int l{static_cast<int>(m_renderPasses[k].m_subpasses.size())}; l > 0; --l) {
                         for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
-                            if (thisAttachment.second.m_usage != Subpass::IE_ATTACHMENT_USAGE_PRESERVE && thisAttachment.first == attachment.first) {
+                            if (thisAttachment.first == attachment.first) {
                                 previousAttachmentUsage = &thisAttachment;
                                 break;
                             }
@@ -83,7 +78,7 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                     for (size_t k{m_renderPasses.size() - 1}; k > i; --k) {
                         for (int l{static_cast<int>(m_renderPasses[k].m_subpasses.size() - 1)}; l > 0; --l) {
                             for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
-                                if (thisAttachment.second.m_usage != Subpass::IE_ATTACHMENT_USAGE_PRESERVE && thisAttachment.first == attachment.first) {
+                                if (thisAttachment.first == attachment.first) {
                                     previousAttachmentUsage = &thisAttachment;
                                     break;
                                 }
@@ -97,7 +92,7 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                 for (size_t k{i + 1}; k < m_renderPasses.size(); ++k) {
                     for (size_t l{0}; l < m_renderPasses[k].m_subpasses.size(); ++l) {
                         for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
-                            if (thisAttachment.second.m_usage != Subpass::IE_ATTACHMENT_USAGE_PRESERVE && thisAttachment.first == attachment.first) {
+                            if (thisAttachment.first == attachment.first) {
                                 nextAttachmentUsage = &thisAttachment;
                                 break;
                             }
@@ -109,7 +104,7 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                     for (size_t k{0}; k < i; ++k) {
                         for (size_t l{0}; l < m_renderPasses[k].m_subpasses.size(); ++l) {
                             for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
-                                if (thisAttachment.second.m_usage != Subpass::IE_ATTACHMENT_USAGE_PRESERVE && thisAttachment.first == attachment.first) {
+                                if (thisAttachment.first == attachment.first) {
                                     nextAttachmentUsage = &thisAttachment;
                                     break;
                                 }
@@ -136,7 +131,7 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                 attachmentDescriptions[i].push_back(
                   {.flags  = 0x0,
                    .format = IE::Graphics::detail::ImageVulkan::formatFromPreset(
-                     attachment.second.m_type,
+                     attachment.second.m_preset,
                      m_linkedRenderEngine
                    ),
                    .samples        = VK_SAMPLE_COUNT_1_BIT,
@@ -145,13 +140,11 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
                    .stencilLoadOp  = loadOp,
                    .stencilStoreOp = storeOp,
                    .initialLayout  = previousAttachmentUsage != nullptr ?
-                      IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_type) :
+                      IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_preset) :
                       VK_IMAGE_LAYOUT_UNDEFINED,
                    .finalLayout    = nextAttachmentUsage != nullptr ?
-                        IE::Graphics::detail::ImageVulkan::layoutFromPreset(nextAttachmentUsage->second.m_type) :
-                        attachment.second.m_usage == Subpass::IE_ATTACHMENT_USAGE_RESOLVE ?
-                        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR :
-                        VK_IMAGE_LAYOUT_UNDEFINED}
+                        IE::Graphics::detail::ImageVulkan::layoutFromPreset(nextAttachmentUsage->second.m_preset) :
+                        IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_preset)}
                 );
             }
         }
@@ -160,73 +153,65 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
     // Generate subpass dependencies.
     std::vector<std::vector<VkSubpassDependency>> subpassDependencies(m_renderPasses.size());
     for (size_t i{0}; i < m_renderPasses.size(); ++i) {
-        std::vector<std::pair<
-          std::vector<
-            std::pair<std::pair<Subpass::AttachmentDescription, Subpass::AttachmentDescription>, uint32_t>>,
-          uint32_t>>
-          dependencies(m_renderPasses[i].m_subpasses.size());
-        // Generate a vector of dependency information.
         for (size_t j{0}; j < m_renderPasses[i].m_subpasses.size(); ++j) {
-            std::vector<
-              std::pair<std::pair<Subpass::AttachmentDescription, Subpass::AttachmentDescription>, uint32_t>>
-              thisSubpassDependencies{};
             for (auto &attachment : m_renderPasses[i].m_subpasses[j].m_attachments) {
-                bool attachmentWrites{
-                  (attachment.second.m_consumption & Subpass::IE_ATTACHMENT_CONSUMPTION_BITS_INPUT) != 0};
-                // Find the next subpass in this render pass that uses this attachment.
-                for (size_t k{j + 1}; k < m_renderPasses[i].m_subpasses.size(); ++k) {
-                    std::pair<std::string, Subpass::AttachmentDescription> otherAttachment{};
-                    bool                                                   thisAttachmentUsedNextHere{};
-                    for (auto &thisAttachment : m_renderPasses[i].m_subpasses[k].m_attachments) {
-                        bool thisAttachmentWrites{
-                          (thisAttachment.second.m_consumption & Subpass::IE_ATTACHMENT_CONSUMPTION_BITS_INPUT) !=
-                          0};
-                        // Record dependency information if this attachment mandates a subpass dependency.
-                        if (attachment.first == thisAttachment.first && (attachmentWrites || thisAttachmentWrites)) {
-                            thisAttachmentUsedNextHere = true;
-                            otherAttachment            = thisAttachment;
-                            break;
+                // Find the next usage of each attachment.
+                size_t k{i};
+                size_t l{j + 1};
+                for (; k < m_renderPasses.size(); ++k) {
+                    for (; l < m_renderPasses[k].m_subpasses.size(); ++l) {
+                        for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
+                            if (thisAttachment.first == attachment.first) {
+                                // Record dependency as external if the dependent subpass is not in this render
+                                // pass.
+                                l = k == i ? l : VK_SUBPASS_EXTERNAL;
+                                // Record the dependency.
+                                bool                 dependencyAlreadyExists{};
+                                VkPipelineStageFlags srcStage{
+                                  IE::Graphics::detail::ImageVulkan::stageFromPreset(attachment.second.m_preset)};
+                                VkPipelineStageFlags dstStage{
+                                  IE::Graphics::detail::ImageVulkan::stageFromPreset(thisAttachment.second.m_preset
+                                  )};
+                                for (auto &dependency : subpassDependencies[i]) {
+                                    if (dependency.srcSubpass == j && dependency.dstSubpass == k && ((dependency.dstStageMask & dstStage) != 0U)) {
+                                        dependency.srcAccessMask |=
+                                          IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(
+                                            attachment.second.m_preset
+                                          );
+                                        dependency.dstAccessMask |=
+                                          IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(
+                                            thisAttachment.second.m_preset
+                                          );
+                                        dependency.srcStageMask |= srcStage;
+                                        dependency.dstStageMask |= dstStage;
+                                        dependencyAlreadyExists = true;
+                                        break;
+                                    }
+                                }
+                                if (!dependencyAlreadyExists) {
+                                    subpassDependencies[i].push_back(
+                                      {.srcSubpass    = static_cast<uint32_t>(j),
+                                       .dstSubpass    = static_cast<uint32_t>(l),
+                                       .srcStageMask  = srcStage,
+                                       .dstStageMask  = l == VK_SUBPASS_EXTERNAL ? srcStage : dstStage,
+                                       .srcAccessMask = IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(
+                                         attachment.second.m_preset
+                                       ),
+                                       .dstAccessMask = IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(
+                                         thisAttachment.second.m_preset
+                                       )}
+                                    );
+                                }
+                                // The only purpose of this goto is to escape this nested loop.
+                                // The logic for this is that the attachment's dependency has already been found,
+                                //      so we can skip checking the rest of the subpasses.
+                                goto EXIT_FIND_SUBPASS_DEPENDENCY_LOOP;
+                            }
                         }
                     }
-                    if (thisAttachmentUsedNextHere)
-                        thisSubpassDependencies.push_back({
-                          {attachment.second, otherAttachment.second},
-                          k
-                        });
+                    l = 0;
                 }
-            }
-            dependencies.push_back({thisSubpassDependencies, j});
-        }
-
-        /**@todo Generate VK_SUBPASS_EXTERNAL dependencies.*/
-        // Generate dependencies.
-        for (auto &subpassDeps : dependencies) {
-            for (auto &dependency : subpassDeps.first) {
-                bool alreadyAdded{};
-                // If the dependency already exists, modify it.
-                for (auto &dep : subpassDependencies[subpassDeps.second]) {
-                    if (dep.srcSubpass == subpassDeps.second && dep.dstSubpass == dependency.second) {
-                        alreadyAdded = true;
-                        dep.srcStageMask |= m_renderPasses[i].m_subpasses[subpassDeps.second].m_stage;
-                        dep.dstStageMask |= m_renderPasses[i].m_subpasses[dependency.second].m_stage;
-                        dep.srcAccessMask |=
-                          IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(dependency.first.first.m_type);
-                        dep.dstAccessMask |=
-                          IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(dependency.first.second.m_type);
-                    }
-                }
-                // otherwise, add it.
-                if (!alreadyAdded)
-                    subpassDependencies[subpassDeps.second].push_back({
-                      .srcSubpass   = subpassDeps.second,
-                      .dstSubpass   = dependency.second,
-                      .srcStageMask = m_renderPasses[i].m_subpasses[subpassDeps.second].m_stage,
-                      .dstStageMask = m_renderPasses[i].m_subpasses[dependency.second].m_stage,
-                      .srcAccessMask =
-                        IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(dependency.first.first.m_type),
-                      .dstAccessMask =
-                        IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(dependency.first.second.m_type),
-                    });
+EXIT_FIND_SUBPASS_DEPENDENCY_LOOP:;
             }
         }
     }
@@ -273,7 +258,8 @@ auto IE::Graphics::RenderPassSeries::addRenderPass(IE::Graphics::RenderPass &t_p
                     break;
                 }
             }
-            if (!found) m_attachmentPool.push_back({requestedAttachment.first, requestedAttachment.second.m_type});
+            if (!found)
+                m_attachmentPool.push_back({requestedAttachment.first, requestedAttachment.second.m_preset});
         }
     }
     return *this;
