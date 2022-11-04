@@ -30,7 +30,7 @@ set(GITHUB_REQUESTED_VERSION -1)
 
 # dep_DATA =  NAME MODULE_NAME MIN_VERSION MAX_VERSION EXPORT_LIB BUILD_DIR      INCLUDE_DIR DOWNLOAD_ARGS
 # URL fetch dependencies
-set(glew_DATA glew glew        2.2.0       2.2.0       EXT_OpenGL "/build/cmake" "/include"  "URL;https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz")
+set(glew_DATA glew glew        2.2.0       2.2.0       EXT_OpenGL "/build/cmake" "/include"  "URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz")
 set(URL glew_DATA)
 set(URL_NAME 0)
 set(URL_MODULE 1)
@@ -198,7 +198,7 @@ function (FetchRemoteLib NAME DOWNLOAD_ARGS)
 	list(GET ARGS -1 VERSION)
 
 	# This will always be needed to build the package even if it is already downloaded.
-	FetchContent_Declare(${NAME} ${DOWNLOAD_ARGS})
+	FetchContent_Declare(${NAME} ${ARGS})
 
 	# Check old version information
 	file(APPEND ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version)
@@ -248,8 +248,8 @@ foreach(LIST ${URL})
 		FindLocalLib(${NAME} ${MODULE} ${MIN_VERSION} ${MAX_VERSION})
 	endif ()
 	if (NOT ${NAME}_FOUND)
-		list(SUBLIST ${LIST} ${URL_DOWNLOAD_ARGS} ARGS)
-		FetchRemoteLib(${NAME} "${ARGS}")
+		list(GET ${LIST} ${URL_DOWNLOAD_ARGS} ARGS)
+		FetchRemoteLib(${NAME} ${ARGS})
 	endif ()
 endforeach()
 
