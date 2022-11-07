@@ -11,7 +11,7 @@
 #define GLEW_IMPLEMENTATION
 #include <GL/glew.h>
 
-struct IEUniformBufferObject {
+struct UniformBufferObject {
 public:
     alignas(16) glm::mat4 projectionViewModelMatrix{};
     alignas(16) glm::mat4 modelMatrix{};

@@ -2,11 +2,12 @@
 
 #include "Buffer/Buffer.hpp"
 #include "CommandPool.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "Image/ImageVulkan.hpp"
 #include "RenderEngine.hpp"
-#include "Shader/IEDescriptorSet.hpp"
-#include "Shader/IEPipeline.hpp"
+
+// #include "Shader/DescriptorSet.hpp"
+// #include "Shader/IEPipeline.hpp"
 
 void IE::Graphics::CommandBuffer::allocate(AllocationFlags t_flags) {
     // Prepare
@@ -336,7 +337,7 @@ void IE::Graphics::CommandBuffer::recordBindPipeline(
             );
         }
     }
-    vkCmdBindPipeline(commandBuffer, pipelineBindPoint, pipeline->pipeline);
+    //    vkCmdBindPipeline(commandBuffer, pipelineBindPoint, pipeline->pipeline);
     commandPool->m_commandPoolMutex->unlock();
 }
 
@@ -349,7 +350,7 @@ void IE::Graphics::CommandBuffer::recordBindDescriptorSets(
 ) {
     std::vector<VkDescriptorSet> pDescriptorSets{};
     pDescriptorSets.resize(descriptorSets.size());
-    for (size_t i = 0; i < descriptorSets.size(); ++i) pDescriptorSets[i] = descriptorSets[i]->descriptorSet;
+    //    for (size_t i = 0; i < descriptorSets.size(); ++i) pDescriptorSets[i] = descriptorSets[i]->descriptorSet;
     commandPool->m_commandPoolMutex->lock();
     if (status != IE_COMMAND_BUFFER_STATE_RECORDING) {
         record(false);
@@ -361,16 +362,16 @@ void IE::Graphics::CommandBuffer::recordBindDescriptorSets(
             );
         }
     }
-    vkCmdBindDescriptorSets(
-      commandBuffer,
-      pipelineBindPoint,
-      pipeline->pipelineLayout,
-      firstSet,
-      descriptorSets.size(),
-      pDescriptorSets.data(),
-      dynamicOffsets.size(),
-      dynamicOffsets.data()
-    );
+    //    vkCmdBindDescriptorSets(
+    //      commandBuffer,
+    //      pipelineBindPoint,
+    //      pipeline->pipelineLayout,
+    //      firstSet,
+    //      descriptorSets.size(),
+    //      pDescriptorSets.data(),
+    //      dynamicOffsets.size(),
+    //      dynamicOffsets.data()
+    //    );
     commandPool->m_commandPoolMutex->unlock();
 }
 

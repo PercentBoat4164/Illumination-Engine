@@ -1,51 +1,51 @@
 /* Include this file's header. */
-#include "IEVertex.hpp"
+#include "Vertex.hpp"
 
 /* Include external dependencies. */
 #include <string>
 #include <vulkan/vulkan.h>
 
-VkVertexInputBindingDescription IEVertex::getBindingDescription() {
-    return {.binding = 0, .stride = sizeof(IEVertex), .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
+VkVertexInputBindingDescription Vertex::getBindingDescription() {
+    return {.binding = 0, .stride = sizeof(Vertex), .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
 }
 
-std::array<VkVertexInputAttributeDescription, 6> IEVertex::getAttributeDescriptions() {
+std::array<VkVertexInputAttributeDescription, 6> Vertex::getAttributeDescriptions() {
     return {
       {{
          .location = 0,
          .binding  = 0,
          .format   = VK_FORMAT_R32G32B32_SFLOAT,
-         .offset   = offsetof(IEVertex, position),
+         .offset   = offsetof(Vertex, position),
        }, {
          .location = 1,
          .binding  = 0,
          .format   = VK_FORMAT_R32G32B32_SFLOAT,
-         .offset   = offsetof(IEVertex, color),
+         .offset   = offsetof(Vertex, color),
        }, {
          .location = 2,
          .binding  = 0,
          .format   = VK_FORMAT_R32G32_SFLOAT,
-         .offset   = offsetof(IEVertex, textureCoordinates),
+         .offset   = offsetof(Vertex, textureCoordinates),
        }, {
          .location = 3,
          .binding  = 0,
          .format   = VK_FORMAT_R32G32B32_SFLOAT,
-         .offset   = offsetof(IEVertex, normal),
+         .offset   = offsetof(Vertex, normal),
        }, {
          .location = 4,
          .binding  = 0,
          .format   = VK_FORMAT_R32G32B32_SFLOAT,
-         .offset   = offsetof(IEVertex, tangent),
+         .offset   = offsetof(Vertex, tangent),
        }, {
          .location = 5,
          .binding  = 0,
          .format   = VK_FORMAT_R32G32B32_SFLOAT,
-         .offset   = offsetof(IEVertex, biTangent),
+         .offset   = offsetof(Vertex, biTangent),
        }}
     };
 }
 
-void IEVertex::useVertexAttributesWithProgram(GLint program) {
+void Vertex::useVertexAttributesWithProgram(GLint program) {
     int attributeLocation = glGetAttribLocation(program, "vertexPosition");
     if (attributeLocation >= 0) {
         glEnableVertexAttribArray(attributeLocation);
@@ -54,8 +54,8 @@ void IEVertex::useVertexAttributesWithProgram(GLint program) {
           3,
           GL_FLOAT,
           GL_FALSE,
-          sizeof(IEVertex),
-          (void *) offsetof(IEVertex, position)
+          sizeof(Vertex),
+          (void *) offsetof(Vertex, position)
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexColor");
@@ -66,8 +66,8 @@ void IEVertex::useVertexAttributesWithProgram(GLint program) {
           4,
           GL_FLOAT,
           GL_FALSE,
-          sizeof(IEVertex),
-          (void *) offsetof(IEVertex, color)
+          sizeof(Vertex),
+          (void *) offsetof(Vertex, color)
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexTextureCoordinates");
@@ -78,8 +78,8 @@ void IEVertex::useVertexAttributesWithProgram(GLint program) {
           2,
           GL_FLOAT,
           GL_FALSE,
-          sizeof(IEVertex),
-          (void *) offsetof(IEVertex, textureCoordinates)
+          sizeof(Vertex),
+          (void *) offsetof(Vertex, textureCoordinates)
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexNormal");
@@ -90,8 +90,8 @@ void IEVertex::useVertexAttributesWithProgram(GLint program) {
           3,
           GL_FLOAT,
           GL_FALSE,
-          sizeof(IEVertex),
-          (void *) offsetof(IEVertex, normal)
+          sizeof(Vertex),
+          (void *) offsetof(Vertex, normal)
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexTangent");
@@ -102,8 +102,8 @@ void IEVertex::useVertexAttributesWithProgram(GLint program) {
           3,
           GL_FLOAT,
           GL_FALSE,
-          sizeof(IEVertex),
-          (void *) offsetof(IEVertex, tangent)
+          sizeof(Vertex),
+          (void *) offsetof(Vertex, tangent)
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexBiTangent");
@@ -114,13 +114,13 @@ void IEVertex::useVertexAttributesWithProgram(GLint program) {
           3,
           GL_FLOAT,
           GL_FALSE,
-          sizeof(IEVertex),
-          (void *) offsetof(IEVertex, biTangent)
+          sizeof(Vertex),
+          (void *) offsetof(Vertex, biTangent)
         );
     }
 }
 
-bool IEVertex::operator==(IEVertex &other) const {
+bool Vertex::operator==(Vertex &other) const {
     return position == other.position && color == other.color && textureCoordinates == other.textureCoordinates &&
       normal == other.normal && tangent == other.tangent && biTangent == other.biTangent;
 }

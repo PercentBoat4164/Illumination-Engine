@@ -1,7 +1,7 @@
 /* Include this file's header. */
-#include "IEUniformBufferObject.hpp"
+#include "UniformBufferObject.hpp"
 
-void IEUniformBufferObject::openglUploadUniform(GLint program) {
+void UniformBufferObject::openglUploadUniform(GLint program) {
     glUseProgram(program);
     glUniformMatrix4fv(
       glGetUniformLocation(program, "projectionViewModelMatrix"),

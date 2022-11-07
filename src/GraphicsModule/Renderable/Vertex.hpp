@@ -19,7 +19,7 @@ struct VkVertexInputAttributeDescription;
 #include <array>
 #include <string>
 
-struct IEVertex {
+struct Vertex {
     glm::vec3 position{};
     glm::vec4 color{};
     glm::vec2 textureCoordinates{};
@@ -33,5 +33,5 @@ struct IEVertex {
 
     static void useVertexAttributesWithProgram(GLint program);
 
-    bool operator==(IEVertex &other) const;
+    bool operator==(Vertex &other) const;
 };

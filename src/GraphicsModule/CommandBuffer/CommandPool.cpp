@@ -6,7 +6,7 @@
 
 /* Include dependencies from Core. */
 #include "CommandBuffer.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 
 void IE::Graphics::CommandPool::create(
   IE::Graphics::RenderEngine *t_engineLink,

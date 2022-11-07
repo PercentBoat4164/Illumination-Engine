@@ -4,17 +4,18 @@ class IECommandPool;
 
 class IERenderEngine;
 
-#include "GraphicsModule/Shader/IEPipeline.hpp"
-
+#include <memory>
 #include <mutex>
 #include <thread>
-#include <variant>
 #include <vector>
 #include <vulkan/vulkan.h>
 
 namespace IE::Graphics {
 class CommandPool;
 class Buffer;
+class IEPipeline;
+class IEDescriptorSet;
+class RenderEngine;
 
 namespace detail {
 class ImageVulkan;

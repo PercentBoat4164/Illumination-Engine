@@ -1,8 +1,5 @@
-#include "Buffer/IEBuffer.hpp"
 #include "Core/AssetModule/IEAspect.hpp"
 #include "glm/glm.hpp"
-#include "Shader/IEUniformBufferObject.hpp"
-
 class IERenderable;
 
 namespace IE::Graphics {
@@ -11,5 +8,5 @@ public:
     glm::mat4                     modelMatrix{};
     std::shared_ptr<IERenderable> renderable{};
     std::weak_ptr<IEAsset>        asset{};
-};
+} __attribute__((aligned(128)));
 }  // namespace IE::Graphics

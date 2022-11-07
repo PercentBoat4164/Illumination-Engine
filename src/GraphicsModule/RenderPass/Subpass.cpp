@@ -1,6 +1,7 @@
 #include "Subpass.hpp"
 
 #include "Image/Image.hpp"
+#include "RenderPass.hpp"
 
 auto IE::Graphics::Subpass::addOrModifyAttachment(
   const std::string                           &t_attachmentName,
@@ -21,5 +22,12 @@ auto IE::Graphics::Subpass::addOrModifyAttachment(
     return *this;
 }
 
-IE::Graphics::Subpass::Subpass(IE::Graphics::Subpass::Preset t_preset) : m_preset(t_preset) {
+IE::Graphics::Subpass::Subpass(IE::Graphics::Subpass::Preset t_preset, const IE::Graphics::Shader &t_shader) :
+        m_preset(t_preset),
+        shader(t_shader) {
+}
+
+void IE::Graphics::Subpass::setOwningRenderPass(IE::Graphics::RenderPass *t_renderPass) {
+    m_owningRenderPass   = t_renderPass;
+    m_linkedRenderEngine = t_renderPass->m_linkedRenderEngine;
 }

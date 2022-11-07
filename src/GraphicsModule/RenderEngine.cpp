@@ -272,7 +272,7 @@ void IE::Graphics::RenderEngine::createCommandPools() {
 
 void IE::Graphics::RenderEngine::createRenderPasses() {
     // Specify all subpasses and their attachment usages.
-    Subpass colorSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM};
+    Subpass colorSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM, Shader("Shaders/Vulkan/fragmentShader.frag")};
     colorSubpass
       .addOrModifyAttachment(
         "color",

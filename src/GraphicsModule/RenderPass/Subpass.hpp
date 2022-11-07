@@ -1,5 +1,9 @@
 #pragma once
 
+#include "DescriptorSet.hpp"
+#include "Pipeline.hpp"
+#include "Shader.hpp"
+
 #include <Image/Image.hpp>
 #include <string>
 #include <unordered_map>
@@ -7,6 +11,8 @@
 #include <vulkan/vulkan_core.h>
 
 namespace IE::Graphics {
+class RenderPass;
+
 class Subpass {
 public:
     enum AttachmentConsumptionBits {
@@ -42,9 +48,14 @@ public:
         IE_SUBPASS_PRESET_CUSTOM = 0x0,
     };
 
-    explicit Subpass(Preset t_preset);
+    explicit Subpass(Preset t_preset, const Shader &t_shader);
 
     Preset                                                     m_preset;
+    RenderEngine                                              *m_linkedRenderEngine;
+    RenderPass                                                *m_owningRenderPass;
+    Pipeline                                                   pipeline;
+    Shader                                                     shader;
+    DescriptorSet                                              descriptorSet;
     std::vector<std::pair<std::string, AttachmentDescription>> m_attachments{};
     std::vector<VkAttachmentReference>                         m_input;
     std::vector<VkAttachmentReference>                         m_color;
@@ -58,6 +69,9 @@ public:
       Image::Preset                                t_type
     ) -> decltype(*this);
 
-    static VkPipelineStageFlags stageFromPreset(Preset t_preset);
+    void build() {
+    }
+
+    void setOwningRenderPass(IE::Graphics::RenderPass *t_renderPass);
 };
 }  // namespace IE::Graphics

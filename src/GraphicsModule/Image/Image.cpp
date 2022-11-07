@@ -1,6 +1,6 @@
 #include "Image.hpp"
 
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "RenderEngine.hpp"
 
 void IE::Graphics::Image::createImage(

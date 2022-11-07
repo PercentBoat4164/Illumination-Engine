@@ -3,7 +3,7 @@
 #include "Core/EngineModule/Engine.hpp"
 #include "Core/EngineModule/Window.hpp"
 #include "Core/FileSystemModule/IEFileSystem.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "Core/ThreadingModule/ThreadPool/ThreadPool.hpp"
 
 #include <mutex>

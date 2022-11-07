@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11 FATAL_ERROR)  # 3.11 is required for FetchContent
+cmake_minimum_required(VERSION 3.24 FATAL_ERROR)  # 3.24 is required for Vulkan::shaderc_combined
 project(IlluminationEngine VERSION 0.0.0)
 
 # Illumination Engine Options

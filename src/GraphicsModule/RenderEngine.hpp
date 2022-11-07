@@ -4,7 +4,7 @@
 #include "API/Version.hpp"
 #include "CommandBuffer/CommandPool.hpp"
 #include "Core/Core.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "RenderPass/RenderPassSeries.hpp"
 #include "Settings.hpp"
 #include "SyncObjects/Fence.hpp"

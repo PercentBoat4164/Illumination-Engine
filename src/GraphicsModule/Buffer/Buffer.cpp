@@ -1,6 +1,6 @@
 #include "Buffer.hpp"
 
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "RenderEngine.hpp"
 
 void IE::Graphics::Buffer::createBuffer(
