@@ -24,7 +24,8 @@ auto IE::Graphics::Subpass::addOrModifyAttachment(
 
 IE::Graphics::Subpass::Subpass(IE::Graphics::Subpass::Preset t_preset, const IE::Graphics::Shader &t_shader) :
         m_preset(t_preset),
-        shader(t_shader) {
+        shader(t_shader),
+        pipeline(this) {
 }
 
 void IE::Graphics::Subpass::setOwningRenderPass(IE::Graphics::RenderPass *t_renderPass) {

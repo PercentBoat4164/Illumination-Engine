@@ -2,14 +2,13 @@
 #include "Vertex.hpp"
 
 /* Include external dependencies. */
-#include <string>
 #include <vulkan/vulkan.h>
 
-VkVertexInputBindingDescription Vertex::getBindingDescription() {
+VkVertexInputBindingDescription IE::Graphics::Vertex::getBindingDescription() {
     return {.binding = 0, .stride = sizeof(Vertex), .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
 }
 
-std::array<VkVertexInputAttributeDescription, 6> Vertex::getAttributeDescriptions() {
+std::vector<VkVertexInputAttributeDescription> IE::Graphics::Vertex::getAttributeDescriptions() {
     return {
       {{
          .location = 0,
@@ -45,7 +44,11 @@ std::array<VkVertexInputAttributeDescription, 6> Vertex::getAttributeDescription
     };
 }
 
-void Vertex::useVertexAttributesWithProgram(GLint program) {
+// This clang-tidy diagnostic is being ignored because it should not apply to this function.
+#pragma clang diagnostic push
+#pragma ide diagnostic   ignored "performance-no-int-to-ptr"
+
+void IE::Graphics::Vertex::useVertexAttributesWithProgram(GLint program) {
     int attributeLocation = glGetAttribLocation(program, "vertexPosition");
     if (attributeLocation >= 0) {
         glEnableVertexAttribArray(attributeLocation);
@@ -55,7 +58,7 @@ void Vertex::useVertexAttributesWithProgram(GLint program) {
           GL_FLOAT,
           GL_FALSE,
           sizeof(Vertex),
-          (void *) offsetof(Vertex, position)
+          reinterpret_cast<void *>(offsetof(Vertex, position))
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexColor");
@@ -67,7 +70,7 @@ void Vertex::useVertexAttributesWithProgram(GLint program) {
           GL_FLOAT,
           GL_FALSE,
           sizeof(Vertex),
-          (void *) offsetof(Vertex, color)
+          reinterpret_cast<void *>(offsetof(Vertex, color))
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexTextureCoordinates");
@@ -79,7 +82,7 @@ void Vertex::useVertexAttributesWithProgram(GLint program) {
           GL_FLOAT,
           GL_FALSE,
           sizeof(Vertex),
-          (void *) offsetof(Vertex, textureCoordinates)
+          reinterpret_cast<void *>(offsetof(Vertex, textureCoordinates))
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexNormal");
@@ -91,7 +94,7 @@ void Vertex::useVertexAttributesWithProgram(GLint program) {
           GL_FLOAT,
           GL_FALSE,
           sizeof(Vertex),
-          (void *) offsetof(Vertex, normal)
+          reinterpret_cast<void *>(offsetof(Vertex, normal))
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexTangent");
@@ -103,7 +106,7 @@ void Vertex::useVertexAttributesWithProgram(GLint program) {
           GL_FLOAT,
           GL_FALSE,
           sizeof(Vertex),
-          (void *) offsetof(Vertex, tangent)
+          reinterpret_cast<void *>(offsetof(Vertex, tangent))
         );
     }
     attributeLocation = glGetAttribLocation(program, "vertexBiTangent");
@@ -115,12 +118,14 @@ void Vertex::useVertexAttributesWithProgram(GLint program) {
           GL_FLOAT,
           GL_FALSE,
           sizeof(Vertex),
-          (void *) offsetof(Vertex, biTangent)
+          reinterpret_cast<void *>(offsetof(Vertex, biTangent))
         );
     }
 }
 
-bool Vertex::operator==(Vertex &other) const {
+#pragma clang diagnostic pop
+
+bool IE::Graphics::Vertex::operator==(Vertex &other) const {
     return position == other.position && color == other.color && textureCoordinates == other.textureCoordinates &&
       normal == other.normal && tangent == other.tangent && biTangent == other.biTangent;
 }

@@ -16,9 +16,9 @@ struct VkVertexInputAttributeDescription;
 #include <GL/glew.h>
 
 // System dependencies
-#include <array>
-#include <string>
+#include <vector>
 
+namespace IE::Graphics {
 struct Vertex {
     glm::vec3 position{};
     glm::vec4 color{};
@@ -29,9 +29,10 @@ struct Vertex {
 
     static VkVertexInputBindingDescription getBindingDescription();
 
-    static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
+    static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
 
     static void useVertexAttributesWithProgram(GLint program);
 
     bool operator==(Vertex &other) const;
-};
+} __attribute__((aligned(128)));
+}  // namespace IE::Graphics

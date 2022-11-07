@@ -10,7 +10,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 		#        Renderable/Material.cpp
 		#        Renderable/IEMesh.cpp
 		#        Renderable/IERenderable.cpp
-		#        Renderable/Vertex.cpp
+		Renderable/Vertex.cpp
 		RenderPass/DescriptorSet.cpp
 		RenderPass/Pipeline.cpp
 		RenderPass/Shader.cpp

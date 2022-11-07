@@ -3,15 +3,16 @@
 #include <vulkan/vulkan_core.h>
 
 namespace IE::Graphics {
-class Pipeline {
-    VkPipeline m_pipeline;
+class Subpass;
 
-    void build() {
-        VkGraphicsPipelineCreateInfo pipelineCreateInfo{
-          .sType   = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-          .pNext   = nullptr,
-          .flags   = 0x0,
-          .subpass = 0x0};
-    }
+class Pipeline {
+    VkPipeline             m_pipeline{};
+    VkPipelineCache        m_cache{VK_NULL_HANDLE};
+    IE::Graphics::Subpass *m_subpass;
+
+    void build();
+
+public:
+    Pipeline(Subpass *t_subpass);
 };
 }  // namespace IE::Graphics
