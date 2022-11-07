@@ -278,10 +278,8 @@ foreach (LIST ${GITHUB})
 	list(GET ${LIST} ${GITHUB_EXPORT_LIB} EXPORT_LIB)
 
 	# If the export lib has not already been made, create it with the empty main.cpp file.
-	# All exported libs have the IE_BASE_DIR.
 	if (NOT TARGET ${EXPORT_LIB})
 		add_library(${EXPORT_LIB} main.cpp)
-		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_BASE_DIR})
 	endif ()
 
 	# Is a remote dependency
@@ -311,10 +309,8 @@ foreach (LIST ${URL})
 	list(GET ${LIST} ${URL_EXPORT_LIB} EXPORT_LIB)
 
 	# If the export lib has not already been made, create it with the empty main.cpp file.
-	# All exported libs have the IE_BASE_DIR.
 	if (NOT TARGET ${EXPORT_LIB})
 		add_library(${EXPORT_LIB} main.cpp)
-		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_BASE_DIR})
 	endif ()
 
 	# Is a remote dependency
@@ -350,10 +346,8 @@ foreach (LIST ${LOCAL})
 	set(ALL_COMPS "")
 
 	# If the export lib has not already been made, create it with the empty main.cpp file.
-	# All exported libs have the IE_BASE_DIR.
 	if (NOT TARGET ${EXPORT_LIB})
 		add_library(${EXPORT_LIB} main.cpp)
-		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_BASE_DIR})
 	endif ()
 
 	# Export requested targets to requested export lib.
@@ -377,3 +371,6 @@ foreach (LIST ${LOCAL})
 		endif ()
 	endif ()
 endforeach()
+
+add_library(INT_src main.cpp)
+target_include_directories(INT_src PUBLIC ${IE_BASE_DIR})
