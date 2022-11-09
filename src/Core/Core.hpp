@@ -22,7 +22,7 @@ public:
     template<typename T, typename... Args>
         requires std::derived_from<T, IE::Core::Engine>
 
-    static T *createEngine(std::string id, Args... args) {
+    static T *createEngine(const std::string &id, Args... args) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
         if (m_engines.find(id) != m_engines.end())
             m_logger.log(
@@ -36,7 +36,7 @@ public:
     template<typename T>
         requires std::derived_from<T, IE::Core::Engine>
 
-    static T *getEngine(std::string id) {
+    static T *getEngine(const std::string &id) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
         return static_cast<T *>(m_engines.at(id));
     }
@@ -48,7 +48,7 @@ public:
         std::unique_lock<std::mutex> lock(m_windowsMutex);
         if (m_windows.find(t_window) != m_windows.end())
             m_logger.log(
-              "Window '" + std::to_string((uint64_t) t_window) + "' already exists!",
+              "Window '" + std::to_string(reinterpret_cast<uint64_t>(t_window)) + "' already exists!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
         m_windows[t_window] = Window(args...);

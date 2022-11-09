@@ -17,7 +17,7 @@ public:
     };
 
     Preset                             m_preset;
-    IE::Graphics::RenderEngine        *m_linkedRenderEngine{};
+    IE::Graphics::RenderPassSeries    *m_renderPassSeries{};
     VkRenderPass                       m_renderPass{};
     IE::Graphics::Framebuffer          m_framebuffer;
     std::vector<IE::Graphics::Subpass> m_subpasses;
@@ -28,5 +28,12 @@ public:
         m_subpasses.push_back(t_subpass);
         return *this;
     }
+
+    void build(
+      RenderPassSeries                     *t_renderPassSeries,
+      std::vector<VkAttachmentDescription> &t_attachmentDescriptions,
+      std::vector<VkSubpassDescription>    &t_subpassDescriptions,
+      std::vector<VkSubpassDependency>     &t_subpassDependency
+    );
 };
 }  // namespace IE::Graphics

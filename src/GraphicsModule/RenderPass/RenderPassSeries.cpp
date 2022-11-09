@@ -7,56 +7,7 @@ IE::Graphics::RenderPassSeries::RenderPassSeries(IE::Graphics::RenderEngine *t_e
         m_linkedRenderEngine(t_engineLink) {
 }
 
-auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
-    std::vector<std::vector<VkSubpassDescription>> subpassDescriptions(m_renderPasses.size());
-    // Generate all the VkSubpassDescriptions
-    for (size_t i{0}; i < m_renderPasses.size(); ++i) {
-        for (auto &subpass : m_renderPasses[i].m_subpasses) {
-            for (const auto &attachment : subpass.m_attachments) {
-                VkAttachmentReference reference{
-                  .attachment = static_cast<uint32_t>(std::distance(
-                    m_attachmentPool.begin(),
-                    std::find_if(
-                      m_attachmentPool.begin(),
-                      m_attachmentPool.end(),
-                      [&](std::pair<std::string, Image::Preset> &t) { return t.first == attachment.first; }
-                    )
-                  )),
-                  .layout     = IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_preset)};
-                switch (IE::Graphics::detail::ImageVulkan::intentFromPreset(attachment.second.m_preset)) {
-                    case Image::IE_IMAGE_INTENT_COLOR: subpass.m_color.push_back(reference); break;
-                    case Image::IE_IMAGE_INTENT_DEPTH: subpass.m_depth.push_back(reference); break;
-                }
-            }
-
-            if (!subpass.m_resolve.empty() && subpass.m_resolve.size() != subpass.m_color.size())
-                m_linkedRenderEngine->getLogger().log(
-                  "If resolve attachments are specified, there must be the same number of resolve attachments as "
-                  "color attachments.",
-                  Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
-                );
-            if (subpass.m_depth.size() > 1)
-                m_linkedRenderEngine->getLogger().log(
-                  "There can only be one depth attachment in a subpass.",
-                  Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
-                );
-
-            subpassDescriptions[i].push_back(
-              {.flags                   = 0x0,
-               .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
-               .inputAttachmentCount    = static_cast<uint32_t>(subpass.m_input.size()),
-               .pInputAttachments       = subpass.m_input.data(),
-               .colorAttachmentCount    = static_cast<uint32_t>(subpass.m_color.size()),
-               .pColorAttachments       = subpass.m_color.data(),
-               .pResolveAttachments     = subpass.m_resolve.data(),
-               .pDepthStencilAttachment = subpass.m_depth.data(),
-               .preserveAttachmentCount = static_cast<uint32_t>(subpass.m_preserve.size()),
-               .pPreserveAttachments    = subpass.m_preserve.data()}
-            );
-        }
-    }
-
-    // Generate attachment descriptions.
+std::vector<std::vector<VkAttachmentDescription>> IE::Graphics::RenderPassSeries::buildAttachmentDescriptions() {
     std::vector<std::vector<VkAttachmentDescription>> attachmentDescriptions(m_renderPasses.size());
     for (size_t i{0}; i < m_renderPasses.size(); ++i) {
         for (size_t j{0}; j < m_renderPasses[i].m_subpasses.size(); ++j) {
@@ -149,8 +100,60 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
             }
         }
     }
+    return attachmentDescriptions;
+}
 
-    // Generate subpass dependencies.
+std::vector<std::vector<VkSubpassDescription>> IE::Graphics::RenderPassSeries::buildSubpassDescriptions() {
+    std::vector<std::vector<VkSubpassDescription>> subpassDescriptions(m_renderPasses.size());
+    for (size_t i{0}; i < m_renderPasses.size(); ++i) {
+        for (auto &subpass : m_renderPasses[i].m_subpasses) {
+            for (const auto &attachment : subpass.m_attachments) {
+                VkAttachmentReference reference{
+                  .attachment = static_cast<uint32_t>(std::distance(
+                    m_attachmentPool.begin(),
+                    std::find_if(
+                      m_attachmentPool.begin(),
+                      m_attachmentPool.end(),
+                      [&](std::pair<std::string, Image::Preset> &t) { return t.first == attachment.first; }
+                    )
+                  )),
+                  .layout     = IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_preset)};
+                switch (IE::Graphics::detail::ImageVulkan::intentFromPreset(attachment.second.m_preset)) {
+                    case Image::IE_IMAGE_INTENT_COLOR: subpass.m_color.push_back(reference); break;
+                    case Image::IE_IMAGE_INTENT_DEPTH: subpass.m_depth.push_back(reference); break;
+                }
+            }
+
+            if (!subpass.m_resolve.empty() && subpass.m_resolve.size() != subpass.m_color.size())
+                m_linkedRenderEngine->getLogger().log(
+                  "If resolve attachments are specified, there must be the same number of resolve attachments as "
+                  "color attachments.",
+                  Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+                );
+            if (subpass.m_depth.size() > 1)
+                m_linkedRenderEngine->getLogger().log(
+                  "There can only be one depth attachment in a subpass.",
+                  Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+                );
+
+            subpassDescriptions[i].push_back(
+              {.flags                   = 0x0,
+               .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
+               .inputAttachmentCount    = static_cast<uint32_t>(subpass.m_input.size()),
+               .pInputAttachments       = subpass.m_input.data(),
+               .colorAttachmentCount    = static_cast<uint32_t>(subpass.m_color.size()),
+               .pColorAttachments       = subpass.m_color.data(),
+               .pResolveAttachments     = subpass.m_resolve.data(),
+               .pDepthStencilAttachment = subpass.m_depth.data(),
+               .preserveAttachmentCount = static_cast<uint32_t>(subpass.m_preserve.size()),
+               .pPreserveAttachments    = subpass.m_preserve.data()}
+            );
+        }
+    }
+    return subpassDescriptions;
+}
+
+std::vector<std::vector<VkSubpassDependency>> IE::Graphics::RenderPassSeries::buildSubpassDependencies() {
     std::vector<std::vector<VkSubpassDependency>> subpassDependencies(m_renderPasses.size());
     for (size_t i{0}; i < m_renderPasses.size(); ++i) {
         for (size_t j{0}; j < m_renderPasses[i].m_subpasses.size(); ++j) {
@@ -215,40 +218,27 @@ EXIT_FIND_SUBPASS_DEPENDENCY_LOOP:;
             }
         }
     }
+    return subpassDependencies;
+}
+
+auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
+    // Generate all the VkSubpassDescriptions
+    std::vector<std::vector<VkSubpassDescription>> subpassDescriptions{buildSubpassDescriptions()};
+
+    // Generate attachment descriptions.
+    std::vector<std::vector<VkAttachmentDescription>> attachmentDescriptions{buildAttachmentDescriptions()};
+
+    // Generate subpass dependencies.
+    std::vector<std::vector<VkSubpassDependency>> subpassDependencies{buildSubpassDependencies()};
 
     // Build render passes.
-    VkRenderPassCreateInfo renderPassCreateInfo{
-      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-      .pNext = nullptr,
-      .flags = 0x0,
-    };
-    for (size_t i{0}; i < m_renderPasses.size(); ++i) {
-        renderPassCreateInfo.attachmentCount = attachmentDescriptions[i].size();
-        renderPassCreateInfo.pAttachments    = attachmentDescriptions[i].data();
-        renderPassCreateInfo.subpassCount    = subpassDescriptions[i].size();
-        renderPassCreateInfo.pSubpasses      = subpassDescriptions[i].data();
-        renderPassCreateInfo.dependencyCount = subpassDependencies[i].size();
-        renderPassCreateInfo.pDependencies   = subpassDependencies[i].data();
-        VkResult result{vkCreateRenderPass(
-          m_linkedRenderEngine->m_device.device,
-          &renderPassCreateInfo,
-          nullptr,
-          &m_renderPasses[i].m_renderPass
-        )};
-        if (result != VK_SUCCESS)
-            m_linkedRenderEngine->getLogger().log(
-              "Failed to create Render Pass with error: " + RenderEngine::translateVkResultCodes(result),
-              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
-            );
-        else m_linkedRenderEngine->getLogger().log("Created Render Pass");
-    }
-
+    for (size_t i{0}; i < m_renderPasses.size(); ++i)
+        m_renderPasses[i].build(this, attachmentDescriptions[i], subpassDescriptions[i], subpassDependencies[i]);
     return *this;
 }
 
 auto IE::Graphics::RenderPassSeries::addRenderPass(IE::Graphics::RenderPass &t_pass) -> decltype(*this) {
     m_renderPasses.push_back(t_pass);
-    m_renderPasses[m_renderPasses.size() - 1].m_linkedRenderEngine = m_linkedRenderEngine;
     for (const auto &subpass : t_pass.m_subpasses) {
         for (const auto &requestedAttachment : subpass.m_attachments) {
             bool found{false};

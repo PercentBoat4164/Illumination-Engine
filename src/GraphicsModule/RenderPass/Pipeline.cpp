@@ -2,10 +2,65 @@
 
 #include "Renderable/Vertex.hpp"
 #include "RenderEngine.hpp"
-#include "RenderPass.hpp"
 #include "Subpass.hpp"
 
-void IE::Graphics::Pipeline::build() {
+void IE::Graphics::Pipeline::build(IE::Graphics::Subpass *t_subpass, const std::vector<Shader> &t_shaders) {
+    m_subpass = t_subpass;
+
+    // Build pipeline layout
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+    std::vector<VkPushConstantRange>   pushConstantRanges;
+
+    VkPipelineLayoutCreateInfo layoutCreateInfo{
+      .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .pNext                  = nullptr,
+      .flags                  = 0x0,
+      .setLayoutCount         = static_cast<uint32_t>(descriptorSetLayouts.size()),
+      .pSetLayouts            = descriptorSetLayouts.data(),
+      .pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size()),
+      .pPushConstantRanges    = pushConstantRanges.data()};
+
+    VkResult layoutResult{vkCreatePipelineLayout(
+      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
+      &layoutCreateInfo,
+      nullptr,
+      &m_layout
+    )};
+    if (layoutResult != VK_SUCCESS)
+        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+          "Failed to create pipeline layout with error: " +
+            IE::Graphics::RenderEngine::translateVkResultCodes(layoutResult),
+          Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
+    else
+        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+          "Created Pipeline Layout"
+        );
+
+    // Build pipeline cache
+    VkPipelineCacheCreateInfo cacheCreateInfo{
+      .sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+      .pNext           = nullptr,
+      .flags           = 0x0,
+      .initialDataSize = 0x0,
+      .pInitialData    = nullptr,
+    };
+    VkResult cacheResult{vkCreatePipelineCache(
+      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
+      &cacheCreateInfo,
+      nullptr,
+      &m_cache
+    )};
+    if (cacheResult != VK_SUCCESS)
+        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+          "Failed to create pipeline cache with error: " +
+            IE::Graphics::RenderEngine::translateVkResultCodes(cacheResult),
+          Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
+    else
+        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Pipeline Cache"
+        );
+
     // Pipeline shader stage
     std::vector<VkSpecializationMapEntry> specializationMaps(0);
     std::vector<uint32_t>                 specializationData(0);
@@ -17,15 +72,20 @@ void IE::Graphics::Pipeline::build() {
       .pData         = specializationData.data(),
     };
 
-    VkPipelineShaderStageCreateInfo shaderStageCreateInfo{
-      .sType               = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-      .pNext               = nullptr,
-      .flags               = 0x0,
-      .stage               = m_subpass->shader.stage,
-      .module              = m_subpass->shader.module,
-      .pName               = "main",
-      .pSpecializationInfo = &specializationInfo,
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages(t_shaders.size());
+    VkPipelineShaderStageCreateInfo              shaderStageCreateInfo{
+                   .sType               = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+                   .pNext               = nullptr,
+                   .flags               = 0x0,
+                   .pName               = "main",
+                   .pSpecializationInfo = &specializationInfo,
     };
+    size_t i{0};
+    std::generate_n(shaderStages.begin(), shaderStages.size(), [&]() {
+        shaderStageCreateInfo.stage  = t_shaders[i].m_stage;
+        shaderStageCreateInfo.module = t_shaders[i++].m_module;
+        return shaderStageCreateInfo;
+    });
 
     // Pipeline vertex input state
     std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions{
@@ -180,8 +240,8 @@ void IE::Graphics::Pipeline::build() {
       .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
       .pNext               = nullptr,
       .flags               = 0x0,
-      .stageCount          = 0x0,
-      .pStages             = &shaderStageCreateInfo,
+      .stageCount          = static_cast<uint32_t>(shaderStages.size()),
+      .pStages             = shaderStages.data(),
       .pVertexInputState   = &vertexInputStateCreateInfo,
       .pInputAssemblyState = &inputAssemblyStateCreateInfo,
       .pTessellationState  = &tessellationStateCreateInfo,
@@ -191,14 +251,14 @@ void IE::Graphics::Pipeline::build() {
       .pDepthStencilState  = &depthStencilStateCreateInfo,
       .pColorBlendState    = &colorBlendStateCreateInfo,
       .pDynamicState       = &dynamicStateCreateInfo,
-      .layout              = VK_NULL_HANDLE,
-      .renderPass          = m_subpass->m_owningRenderPass->m_renderPass,
+      .layout              = m_layout,
+      .renderPass          = m_subpass->m_renderPass->m_renderPass,
       .subpass             = 0x0,
       .basePipelineHandle  = VK_NULL_HANDLE,
     };
 
     VkResult result{vkCreateGraphicsPipelines(
-      m_subpass->m_linkedRenderEngine->m_device.device,
+      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
       m_cache,
       1,
       &pipelineCreateInfo,
@@ -206,7 +266,7 @@ void IE::Graphics::Pipeline::build() {
       &m_pipeline
     )};
     if (result != VK_SUCCESS)
-        m_subpass->m_linkedRenderEngine->getLogger().log(
+        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
           "Failed to create graphics pipeline! Error: " +
           IE::Graphics::RenderEngine::makeErrorMessage(
             IE::Graphics::RenderEngine::translateVkResultCodes(result),
@@ -216,7 +276,7 @@ void IE::Graphics::Pipeline::build() {
             "https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkGraphicsPipelineCreateInfo.html"
           )
         );
-    else m_subpass->m_linkedRenderEngine->getLogger().log("Created Pipeline!");
+    else m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Pipeline!");
 }
 
 IE::Graphics::Pipeline::Pipeline(IE::Graphics::Subpass *t_subpass) : m_subpass(t_subpass) {

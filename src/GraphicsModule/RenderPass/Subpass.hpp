@@ -48,14 +48,13 @@ public:
         IE_SUBPASS_PRESET_CUSTOM = 0x0,
     };
 
-    explicit Subpass(Preset t_preset, const Shader &t_shader);
+    explicit Subpass(Preset t_preset, std::vector<Shader> &t_shader);
 
     Preset                                                     m_preset;
-    RenderEngine                                              *m_linkedRenderEngine;
-    RenderPass                                                *m_owningRenderPass;
-    Pipeline                                                   pipeline;
-    Shader                                                     shader;
-    DescriptorSet                                              descriptorSet;
+    RenderPass                                                *m_renderPass{};
+    Pipeline                                                   pipeline{this};
+    std::vector<Shader>                                       &shaders;
+    DescriptorSet                                              descriptorSet{this};
     std::vector<std::pair<std::string, AttachmentDescription>> m_attachments{};
     std::vector<VkAttachmentReference>                         m_input;
     std::vector<VkAttachmentReference>                         m_color;
@@ -69,9 +68,14 @@ public:
       Image::Preset                                t_type
     ) -> decltype(*this);
 
-    void build() {
+    void build(IE::Graphics::RenderPass *t_renderPass) {
+        m_renderPass = t_renderPass;
+        for (auto &shader : shaders) {
+            shader.build(this);
+            shader.compile();
+        }
+        // descriptorSet.build(shader);
+        pipeline.build(this, shaders);
     }
-
-    void setOwningRenderPass(IE::Graphics::RenderPass *t_renderPass);
 };
 }  // namespace IE::Graphics

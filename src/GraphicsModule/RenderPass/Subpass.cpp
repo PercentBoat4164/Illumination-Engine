@@ -3,6 +3,16 @@
 #include "Image/Image.hpp"
 #include "RenderPass.hpp"
 
+IE::Graphics::Subpass::Subpass(
+  IE::Graphics::Subpass::Preset      t_preset,
+  std::vector<IE::Graphics::Shader> &t_shaders
+) :
+        m_preset(t_preset),
+        shaders(t_shaders) {
+    for (auto &shader : shaders) shader.m_subpass = this;
+    pipeline.m_subpass = this;
+}
+
 auto IE::Graphics::Subpass::addOrModifyAttachment(
   const std::string                           &t_attachmentName,
   IE::Graphics::Subpass::AttachmentConsumption t_consumption,
@@ -20,15 +30,4 @@ auto IE::Graphics::Subpass::addOrModifyAttachment(
         });
     } else iterator->second = {t_consumption, t_type};
     return *this;
-}
-
-IE::Graphics::Subpass::Subpass(IE::Graphics::Subpass::Preset t_preset, const IE::Graphics::Shader &t_shader) :
-        m_preset(t_preset),
-        shader(t_shader),
-        pipeline(this) {
-}
-
-void IE::Graphics::Subpass::setOwningRenderPass(IE::Graphics::RenderPass *t_renderPass) {
-    m_owningRenderPass   = t_renderPass;
-    m_linkedRenderEngine = t_renderPass->m_linkedRenderEngine;
 }
