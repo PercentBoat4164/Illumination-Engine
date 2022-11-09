@@ -95,7 +95,7 @@ void IE::Graphics::Pipeline::build(IE::Graphics::Subpass *t_subpass, const std::
     };
 
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{
-      .sType                           = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+      .sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
       .pNext                           = nullptr,
       .flags                           = 0x0,
       .vertexBindingDescriptionCount   = static_cast<uint32_t>(vertexBindingDescriptions.size()),
@@ -236,6 +236,10 @@ void IE::Graphics::Pipeline::build(IE::Graphics::Subpass *t_subpass, const std::
     };
 
     // Pipeline assembly
+    uint32_t subpassNumber{0};
+    for (; subpassNumber < m_subpass->m_renderPass->m_subpasses.size(); ++subpassNumber)
+        if (&m_subpass->m_renderPass->m_subpasses[subpassNumber] == m_subpass) break;
+
     VkGraphicsPipelineCreateInfo pipelineCreateInfo{
       .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
       .pNext               = nullptr,
@@ -253,7 +257,7 @@ void IE::Graphics::Pipeline::build(IE::Graphics::Subpass *t_subpass, const std::
       .pDynamicState       = &dynamicStateCreateInfo,
       .layout              = m_layout,
       .renderPass          = m_subpass->m_renderPass->m_renderPass,
-      .subpass             = 0x0,
+      .subpass             = subpassNumber,
       .basePipelineHandle  = VK_NULL_HANDLE,
     };
 
@@ -268,13 +272,14 @@ void IE::Graphics::Pipeline::build(IE::Graphics::Subpass *t_subpass, const std::
     if (result != VK_SUCCESS)
         m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
           "Failed to create graphics pipeline! Error: " +
-          IE::Graphics::RenderEngine::makeErrorMessage(
-            IE::Graphics::RenderEngine::translateVkResultCodes(result),
-            "build",
-            __FILE__,
-            __LINE__,
-            "https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkGraphicsPipelineCreateInfo.html"
-          )
+            IE::Graphics::RenderEngine::makeErrorMessage(
+              IE::Graphics::RenderEngine::translateVkResultCodes(result),
+              "build",
+              __FILE__,
+              __LINE__,
+              "https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkGraphicsPipelineCreateInfo.html"
+            ),
+          Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     else m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Pipeline!");
 }

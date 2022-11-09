@@ -339,11 +339,18 @@ IE::Core::Engine *IE::Graphics::RenderEngine::create() {
         device.wait();
         engine->createAllocator();
     })};
-    swapchain.wait();
-    engine->createCommandPools();
+    std::future<void> renderPasses{IE::Core::Core::getThreadPool()->submit([&] {
+        device.wait();
+        engine->createRenderPasses();
+    })};
+    std::future<void> commandPools{IE::Core::Core::getThreadPool()->submit([&] {
+        swapchain.wait();
+        engine->createCommandPools();
+    })};
     allocator.wait();
-    engine->createRenderPasses();
     syncObjects.wait();
+    renderPasses.wait();
+    commandPools.wait();
     return static_cast<IE::Core::Engine *>(engine);
 }
 
@@ -482,7 +489,7 @@ std::string IE::Graphics::RenderEngine::makeErrorMessage(
   const std::string &t_moreInfo
 ) {
     std::string error{
-      "Got error: " + t_error + " in " + t_function + " of " + t_file + "@" + std::to_string(t_line) + "."};
+      "Got error: " + t_error + " in " + t_function + "() of " + t_file + "@" + std::to_string(t_line) + "."};
     if (!t_moreInfo.empty()) error += " For more information see: " + t_moreInfo + ".";
     return error;
 }

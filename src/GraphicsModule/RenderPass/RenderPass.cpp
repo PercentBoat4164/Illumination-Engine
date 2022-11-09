@@ -38,5 +38,5 @@ void IE::Graphics::RenderPass::build(
     else m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Render Pass");
 
     // Build all the subpasses controlled by this render pass.
-    for (auto subpass : m_subpasses) subpass.build(this);
+    for (auto &subpass : m_subpasses) subpass.build(this);
 }
