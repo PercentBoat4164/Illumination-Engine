@@ -42,10 +42,10 @@ set(URL_INCLUDE_DIR 6)
 set(URL_DOWNLOAD_ARGS 7)
 set(URL_URL -1)
 
-# dep_DATA =    NAME   MODULE_NAME    REQUIRED_COMPONENTS       OPTIONAL_COMPONENTS MIN_VERSION MAX_VERSION EXPORT_LIB
+# dep_DATA =    NAME   MODULE_NAME    REQUIRED_COMPONENTS            OPTIONAL_COMPONENTS MIN_VERSION MAX_VERSION EXPORT_LIB
 # Local dependencies
-set(Vulkan_DATA Vulkan Vulkan::Vulkan "shaderc_combined"        ""                  1.0.0       1.3.231     EXT_Vulkan)
-set(OpenGL_DATA OpenGL OpenGL         ""                        ""                  0.0         0.0         EXT_OpenGL)
+set(Vulkan_DATA Vulkan Vulkan::Vulkan "shaderc_combined SPIRV-Tools" ""                  1.0.0       1.3.231     EXT_Vulkan)
+set(OpenGL_DATA OpenGL OpenGL         ""                             ""                  0.0         0.0         EXT_OpenGL)
 set(LOCAL Vulkan_DATA OpenGL_DATA)
 set(LOCAL_NAME 0)
 set(LOCAL_MODULE 1)
