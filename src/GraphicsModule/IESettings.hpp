@@ -13,14 +13,13 @@
 
 // External dependencies
 #define GLEW_IMPLEMENTATION
-#include <include/GL/glew.h>
+#include <GL/glew.h>
 
 
 // System dependencies
 #include <array>
-#include <string>
-
 #include <GLFW/glfw3.h>
+#include <string>
 
 class IESettings {
 public:
@@ -32,14 +31,14 @@ public:
         windowedResolution   = {defaultResolution};
         currentResolution    = fullscreen ? &fullscreenResolution : &windowedResolution;
         defaultPosition      = {
-          (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
-          (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
+               (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
+               (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
         fullscreenPosition = {0, 0};
         windowedPosition   = {defaultPosition};
         currentPosition    = fullscreen ? &fullscreenPosition : &windowedPosition;
     }
 
-    IE::Core::Logger            logger{"Graphics Logger"};
+    IE::Core::Logger    logger{"Graphics Logger"};
     bool                rayTracing{false};
     std::string         applicationName{"Illumination Engine"};
     IEVersion           applicationVersion{0, 0, 1};
