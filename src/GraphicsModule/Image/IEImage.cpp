@@ -108,13 +108,14 @@ void IEImage::uploadToRAM(const std::vector<char> &data) {
     }
     if (data.size() > width * height * channels) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-          "Attempt to load in more data to RAM than can fit in image!"
+
+          "Attempt to load in more data to RAM than can fit in image!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
     if (status & IE_IMAGE_STATUS_QUEUED_RAM || status & IE_IMAGE_STATUS_IN_RAM) {
         if (data.size() > width * height * channels)
-            linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "");
+            linkedRenderEngine->settings->logger.log("", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
         this->data = data;
     }
 }
@@ -126,13 +127,14 @@ void IEImage::uploadToRAM(void *data, size_t size) {
     }
     if (size > width * height * channels) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-          "Attempt to load in more data to RAM than can fit in image!"
+
+          "Attempt to load in more data to RAM than can fit in image!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
     if (status & IE_IMAGE_STATUS_QUEUED_RAM || status & IE_IMAGE_STATUS_IN_RAM) {
         if (size > width * height * channels)
-            linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_WARN, "");
+            linkedRenderEngine->settings->logger.log("", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
         size_t i = 0;
         std::generate(this->data.begin(), this->data.end(), [&] { return *(char *) ((size_t) data + i++); });
     }
@@ -356,8 +358,8 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
     if (layout == newLayout) return;
     if (newLayout == VK_IMAGE_LAYOUT_UNDEFINED) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-          "Attempt to transition to an undefined layout (VK_IMAGE_LAYOUT_UNDEFINED)!"
+          "Attempt to transition to an undefined layout (VK_IMAGE_LAYOUT_UNDEFINED)!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
         return;
     }
@@ -412,8 +414,8 @@ void IEImage::transitionLayout(VkImageLayout newLayout) {
         destinationStage                 = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     } else {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-          "Attempt to transition with unknown parameters!"
+          "Attempt to transition with unknown parameters!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
         return;
     }
@@ -445,15 +447,18 @@ void IEImage::_vulkanCreateImage() {
 
     if (width * height == 0) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
           "Image width * height is zero! This may cause Vulkan to fail to create the image. This may have been "
-          "caused by uploading to VRAM before updating."
+          "caused by uploading to VRAM before updating.",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
 
     // Create image
     if (vmaCreateImage(linkedRenderEngine->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
-        linkedRenderEngine->settings->logger.log(ILLUMINATION_ENGINE_LOG_LEVEL_ERROR, "Failed to create image!");
+        linkedRenderEngine->settings->logger.log(
+          "Failed to create image!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
     }
 }
 
@@ -489,8 +494,9 @@ uint8_t IEImage::getBytesInFormat() const {
         case VK_FORMAT_MAX_ENUM:
         default:
             linkedRenderEngine->settings->logger.log(
-              ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
-              "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!"
+
+              "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
             return 0x0;
         case VK_FORMAT_R8_UNORM:

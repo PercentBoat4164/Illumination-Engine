@@ -1,7 +1,6 @@
 #pragma once
 
-#include "stb_image.h"
-
+#include <../contrib/stb/stb_image.h>
 #include <cassert>
 #include <cstdint>
 #include <mutex>

@@ -12,11 +12,11 @@ class IEBuffer;
 
 #define GLEW_IMPLEMENTATION
 
-#include <include/GL/glew.h>
+#include <GL/glew.h>
 
 // External dependencies
-#include <include/vk_mem_alloc.h>
-#include <stb_image.h>
+#include <../contrib/stb/stb_image.h>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 // System dependencies

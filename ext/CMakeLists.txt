@@ -1,80 +1,217 @@
-find_package(Vulkan REQUIRED)  # Check for Vulkan
-find_package(OpenGL REQUIRED)  # Check for OpenGL
+include(FetchContent)  # Requires CMake 3.11
+include(FindPkgConfig)
 
-include(FetchContent)  # Requires CMake 3.14
+set(IE_DEPS_DOWNLOAD_DIR   ${IE_BASE_DIR}/ext/deps)
+set(IE_DEPS_BUILD_DIR      ${CMAKE_BINARY_DIR}/deps)
+set(IE_DOWNLOAD_GUARD_FILE ${CMAKE_SOURCE_DIR}/__DOWNLOAD_GUARD__)
+
+set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
 
 # Possibly add https://github.com/libvips/libvips as the image importer of choice. (high speed, high compatibility, highly maintained, but does not use CMake)
 
-# Get AssImp
-# ASSIMP settings ignored on first buildset(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-message("Downloading AssImp master")
-FetchContent_Declare(assimp GIT_REPOSITORY https://github.com/assimp/assimp GIT_TAG master)
+# package_DATA =     NAME        MODULE_NAME  EXPORT_LIB  BUILD_DIR      INCLUDE_DIR DOWNLOAD_ARGS
+set(assimp_DATA      assimp      assimp       EXT_AssImp ""             "/include"  GIT_REPOSITORY https://github.com/assimp/assimp                                               GIT_PROGRESS ON GIT_TAG v5.2.5)
+set(glm_DATA         glm         glm          EXT_GLM    ""             ""          GIT_REPOSITORY https://github.com/g-truc/glm                                                  GIT_PROGRESS ON GIT_TAG master)
+set(glew_DATA        glew        glew         EXT_OpenGL "/build/cmake" "/include"  URL            https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
+set(glfw_DATA        glfw        glfw3        EXT_GLFW   ""             "/include"  GIT_REPOSITORY https://github.com/glfw/glfw                                                   GIT_PROGRESS ON GIT_TAG 3.3.8)
+set(spdlog_DATA      spdlog      spdlog       EXT_SpdLog ""             "/include"  GIT_REPOSITORY https://github.com/gabime/spdlog                                               GIT_PROGRESS ON GIT_TAG v1.x)
+set(VkBootstrap_DATA VkBootstrap vk-bootstrap EXT_Vulkan ""             "/src"      GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                                 GIT_PROGRESS ON GIT_TAG v0.6)
+set(vma_DATA         vma         vma          EXT_Vulkan ""             "/include"  GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator              GIT_PROGRESS ON GIT_TAG v3.0.1)
+set(Vulkan_DATA      Vulkan      Vulkan       EXT_Vulkan)
+set(OpenGL_DATA      OpenGL      OpenGL       EXT_OpenGL)
+set(DATA assimp_DATA glm_DATA glew_DATA glfw_DATA spdlog_DATA VkBootstrap_DATA vma_DATA Vulkan_DATA OpenGL_DATA)
 
-# Get GLM
-message("Downloading GLM master")
-FetchContent_Declare(glm GIT_REPOSITORY https://github.com/g-truc/glm GIT_TAG master)
 
-# Get spdlog
-message("Downloading spdlog v1.x")
-FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog GIT_TAG v1.x)
-
-set(Vulkan_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
-set(Vulkan_LIBRARIES ${Vulkan_LIBRARIES} PARENT_SCOPE)  # Move package variable up to parent scope
-set(Vulkan_INCLUDE_DIR ${Vulkan_INCLUDE_DIR} PARENT_SCOPE)  # Move package variable up to parent scope
-
-# Get GLFW
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-message("Downloading GLFW master")
-FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw GIT_TAG master)
-
-# Get GLEW
-if (BUILD_SHARED_LIBS)
-	set(glew-cmake_BUILD_SHARED ON CACHE BOOL "" FORCE)
-	set(glew-cmake_BUILD_STATIC OFF CACHE BOOL "" FORCE)
-else ()
-	set(glew-cmake_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-	set(glew-cmake_BUILD_STATIC ON CACHE BOOL "" FORCE)
+# All options for Dependencies should go here
+# AssImp Options
+set(ASSIMP_HUNTER_ENABLED OFF)
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+if (MACOS)
+	set(ASSIMP_BUILD_FRAMEWORK OFF)
 endif ()
-message("Downloading GLEW glew-2.2.0")
-FetchContent_Declare(glew URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
+set(ASSIMP_DOUBLE_PRECISION OFF)
+set(ASSIMP_OPT_BUILD_PACKAGES OFF)
+set(ASSIMP_ANDROID_JNIIOSYSTEM OFF)
+set(ASSIMP_NO_EXPORT ON)
+set(ASSIMP_BUILD_ZLIB ON)
+set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF)
+set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT ON)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
+set(ASSIMP_BUILD_SAMPLES OFF)
+set(ASSIMP_BUILD_TESTS OFF)
+set(ASSIMP_COVERALLS OFF)
+set(ASSIMP_INSTALL OFF)
+set(ASSIMP_WARNINGS_AS_ERRORS ON)
+set(ASSIMP_ASAN OFF)
+set(ASSIMP_UBSAN OFF)
+set(ASSIMP_BUILD_DOCS OFF)  # Obsolete
+set(ASSIMP_INJECT_DEBUG_POSTFIX OFF)
+set(ASSIMP_IGNORE_GIT_HASH ON)
+set(ASSIMP_INSTALL_PDB OFF)
+set(USE_STATIC_CRT OFF)
+set(ASSIMP_BUILD_DRACO OFF)  # Fails as of AssImp v5.2.5
+if (WINDOWS)
+	set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
+endif ()
 
-FetchContent_MakeAvailable(glfw glew)  # Generate all external dependencies which require OpenGL
+# GLM Options
+# Uncomment options that should be enabled.
+#add_compile_definitions(GLM_FORCE_MESSAGES)
+#add_compile_definitions(GLM_FORCE_COMPILER_UNKNOWN)
+#add_compile_definitions(GLM_FORCE_ARCH_UNKNOWN)
+#add_compile_definitions(GLM_FORCE_CXX_UNKNOWN)
+#add_compile_definitions(GLM_FORCE_CXX)
+#add_compile_definitions(GLM_FORCE_EXPLICIT_CTOR)
+#add_compile_definitions(GLM_FORCE_INLINE)
+#add_compile_definitions(GLM_FORCE_ALIGNED_GENTYPES)
+#add_compile_definitions(GLM_FORCE_DEFAULT_ALIGNED_GENTYPES)
+#add_compile_definitions(GLM_FORCE_INTRINSICS)
+#add_compile_definitions(GLM_FORCE_PRECISION_LOWP_FLOAT)
+#add_compile_definitions(GLM_FORCE_PRECISION_MEDIUMP_FLOAT)
+#add_compile_definitions(GLM_FORCE_PRECISION_HIGHP_FLOAT)
+#add_compile_definitions(GLM_FORCE_PRECISION_LOWP_DOUBLE)
+#add_compile_definitions(GLM_FORCE_PRECISION_MEDIUMP_DOUBLE)
+#add_compile_definitions(GLM_FORCE_PRECISION_HIGHP_DOUBLE)
+#add_compile_definitions(GLM_FORCE_PRECISION_LOWP_INT)
+#add_compile_definitions(GLM_FORCE_PRECISION_MEDIUMP_INT)
+#add_compile_definitions(GLM_FORCE_PRECISION_HIGHP_INT)
+#add_compile_definitions(GLM_FORCE_PRECISION_LOWP_UINT)
+#add_compile_definitions(GLM_FORCE_PRECISION_MEDIUMP_UINT)
+#add_compile_definitions(GLM_FORCE_PRECISION_HIGHP_UINT)
+#add_compile_definitions(GLM_FORCE_SINGLE_ONLY)
+#add_compile_definitions(GLM_FORCE_SWIZZLE)
+#add_compile_definitions(GLM_FORCE_XYZW_ONLY)
+#add_compile_definitions(GLM_FORCE_LEFT_HANDED)
+#add_compile_definitions(GLM_FORCE_DEPTH_ZERO_TO_ONE)
+#add_compile_definitions(GLM_FORCE_SIZE_T_LENGTH)
+#add_compile_definitions(GLM_FORCE_UNRESTRICTED_GENTYPE)
+#add_compile_definitions(GLM_FORCE_SILENT_WARNINGS)
+#add_compile_definitions(GLM_FORCE_QUAT_DATA_WXYZ)
 
-# Special commands for generating GLEW
-add_subdirectory(${glew_SOURCE_DIR}/build/cmake ${glew_BINARY_DIR})
 
-set(OpenGL_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
+# GLEW Options
+set(GLEW_VERBOSE OFF)
+set(GLEW_USE_STATIC_LIBS NOT ${BUILD_SHARED_LIBS})
 
-# Get vk-bootstrap
-message("Downloading vk-bootstrap from master")
-FetchContent_Declare(vk-bootstrap GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_TAG master)
+# GLFW Options
+set(GLFW_BUILD_DOCS OFF)
+set(GLFW_BUILD_TESTS OFF)
+set(GLFW_INSTALL OFF)
+set(GLFW_BUILD_EXAMPLES OFF)
+set(GLFW_VULKAN_STATIC OFF)
+if (WINDOWS)
+	set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF)
+	set(GLFW_USE_HYBRID_HPG OFF)
+endif ()
+if (LINUX)
+	set(GLFW_USE_WAYLAND OFF)
+endif ()
 
-# Get VMA from master because latest release was from 2017. Master is generally considered stable.
-message("Downloading VMA from master")
-FetchContent_Declare(vma GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG master)
+# SpdLog Options
 
-FetchContent_MakeAvailable(vk-bootstrap vma)  # Generate all external dependencies which require Vulkan
+# VkBootstrap Options
 
-set(Vulkan_FOUND ON PARENT_SCOPE)  # Move package variable up to parent scope
-set(Vulkan_LIBRARIES ${Vulkan_LIBRARIES} PARENT_SCOPE)  # Move package variable up to parent scope
-set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS} PARENT_SCOPE)  # Move package variable up to parent scope
+# VMA Options
+set(VMA_RECORDING_ENABLED)
+set(VMA_USE_STL_CONTAINERS)
+set(VMA_STATIC_VULKAN_FUNCTIONS)
+set(VMA_DYNAMIC_VULKAN_FUNCTIONS)
+set(VMA_DEBUG_ALWAYS_DEDICATED_MEMORY)
+set(VMA_DEBUG_INITIALIZE_ALLOCATIONS)
+set(VMA_DEBUG_GLOBAL_MUTEX)
+set(VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT)
 
-FetchContent_MakeAvailable(assimp glm spdlog)  # Build all libraries
-set_target_properties(assimp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+# Lock the Download Guard
+file(LOCK ${IE_DOWNLOAD_GUARD_FILE} RESULT_VARIABLE HAS_DOWNLOAD_GUARD_LOCK TIMEOUT 0)
+if (NOT ${HAS_DOWNLOAD_GUARD_LOCK} MATCHES 0)
+	# Wait until the Download Guard is unlocked
+	file(LOCK ${IE_DOWNLOAD_GUARD_FILE})
+endif ()
 
-# Setup all needed includes
-set(assimp_DIR ${assimp_SOURCE_DIR} PARENT_SCOPE)
-set(spdlog_DIR ${spdlog_SOURCE_DIR} PARENT_SCOPE)
-set(glfw_DIR ${glfw_SOURCE_DIR} PARENT_SCOPE)
-set(glew_DIR ${glew_SOURCE_DIR} PARENT_SCOPE)
-set(glm_DIR ${glm_SOURCE_DIR} PARENT_SCOPE)
-set(stb_image_DIR ${assimp_SOURCE_DIR}/contrib/stb PARENT_SCOPE)
-set(vk-bootstrap_DIR ${vk-bootstrap_SOURCE_DIR}/src PARENT_SCOPE)
-set(vma_DIR ${vma_SOURCE_DIR} PARENT_SCOPE)
-set(vulkan_DIR ${_vulkanheaders_SOURCE_DIR} PARENT_SCOPE)
+# FetchContent loop is guarded by the Download Guard
+# Do all the downloads here. They will only run in a single CMake instance at a time no matter how many are running.
+foreach (LIST ${DATA})
+	list(LENGTH ${LIST} LEN)
+	list(GET ${LIST} 0 NAME)
+	if (${LEN} MATCHES 3)
+		# If the package has no download arguments, then it must be in local storage
+		find_package(${NAME} REQUIRED QUIET)
+		if (PKG_CONFIG_FOUND AND NOT ${NAME}_FOUND)
+			list(GET ${LIST} 1 PACKAGE)
+			pkg_search_module(${NAME} ${PACKAGE} QUIET)
+		endif ()
+		if (${NAME}_FOUND)
+			if (${NAME}_VERSION)
+				message(STATUS "Using required local package ${NAME} v${${NAME}_VERSION}.")
+			else ()
+				message(STATUS "Using required local package ${NAME}.")
+			endif ()
+		else ()
+			message(ERROR "Failed to find required local package ${NAME}.")
+		endif ()
+	else ()
+		if (${IE_PREFER_LOCAL_LIBS})
+			# Get package from local storage
+			find_package(${NAME} QUIET)
+			if (${NAME}_FOUND)
+				message(STATUS "Using local ${NAME} version ${${NAME}_VERSION}.")
+			else ()
+				if (PKG_CONFIG_FOUND)
+					list(GET ${LIST} 1 PACKAGE)
+					pkg_search_module(${NAME} ${PACKAGE} QUIET)
+					if (${NAME}_FOUND)
+						message(STATUS "Using local ${NAME} version ${${NAME}_VERSION}.")
+					endif ()
+				endif ()
+			endif ()
+		endif ()
+		if (NOT ${NAME}_FOUND)
+			list(GET ${LIST} -1 VERSION)
+			message(STATUS "Using remote ${NAME} version ${VERSION}.")
+			list(SUBLIST ${LIST} 5 -1 ARGS)
+			FetchContent_Declare(${NAME} ${ARGS})
+
+			# Check old version information
+			file(APPEND ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version)
+			file(READ ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version OLD_VERSION)
+
+			# Download content if needed
+			if (NOT OLD_VERSION STREQUAL VERSION)
+				FetchContent_Populate(${NAME} SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_subbuild SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src BINARY_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_build ${ARGS})
+
+				# Update version information
+				file(WRITE ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version ${VERSION})
+			endif ()
+		endif ()
+	endif ()
+endforeach ()
+
+# Unlock the Download Guard
+file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
+
+# add_subdirectory( calls should go after the Download Guard
+foreach (LIST ${DATA})
+	list(GET ${LIST} 0 NAME)
+	list(GET ${LIST} 2 EXPORT_LIB)
+	if (NOT TARGET ${EXPORT_LIB})
+		add_library(${EXPORT_LIB} main.cpp)
+		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_BASE_DIR})
+	endif ()
+	if (NOT ${NAME}_FOUND)
+		list(GET ${LIST} 3 CMAKE_DIR)
+		list(GET ${LIST} 4 INCLUDE_DIR)
+		add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src/${CMAKE_DIR})
+		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src${INCLUDE_DIR})
+	endif ()
+	list(GET ${LIST} 1 PKG_NAME)
+	if (TARGET ${PKG_NAME})
+		target_link_libraries(${EXPORT_LIB} PUBLIC ${PKG_NAME})
+	else ()
+		if (TARGET ${NAME})
+			target_link_libraries(${EXPORT_LIB} PUBLIC ${NAME})
+		else ()
+			target_link_libraries(${EXPORT_LIB} PUBLIC ${${NAME}_LIBRARIES})
+			target_include_directories(${EXPORT_LIB} PUBLIC ${${NAME}_INCLUDE_DIRS})
+		endif ()
+	endif ()
+endforeach ()
