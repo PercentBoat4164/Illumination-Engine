@@ -2,7 +2,7 @@
 
 #include "Core/EngineModule/Engine.hpp"
 #include "Core/EngineModule/Window.hpp"
-#include "Core/FileSystemModule/IEFileSystem.hpp"
+#include "Core/FileSystemModule/FileSystem.hpp"
 #include "Core/LogModule/Logger.hpp"
 #include "Core/ThreadingModule/ThreadPool/ThreadPool.hpp"
 
@@ -17,7 +17,7 @@ class GLFWwindow;
 namespace IE::Core {
 class Core final {
 public:
-    static IE::Core::Core &getInst();
+    static IE::Core::Core &getInst(const std::filesystem::path &t_path = "");
 
     template<typename T, typename... Args>
         requires std::derived_from<T, IE::Core::Engine>
@@ -41,7 +41,7 @@ public:
         return static_cast<T *>(m_engines.at(id));
     }
 
-    static IE::Core::Engine *getEngine(std::string id);
+    static IE::Core::Engine *getEngine(std::string t_id);
 
     template<typename... Args>
     static void registerWindow(GLFWwindow *t_window, Args... args) {
@@ -57,7 +57,7 @@ public:
     static IE::Core::Window *getWindow(GLFWwindow *t_window);
 
     static IE::Core::Logger     *getLogger();
-    static IEFileSystem         *getFileSystem();
+    static IE::Core::FileSystem *getFileSystem();
     static IE::Core::ThreadPool *getThreadPool();
 
 private:
@@ -67,8 +67,12 @@ private:
     static std::mutex                                          m_windowsMutex;
     static std::unordered_map<GLFWwindow *, IE::Core::Window>  m_windows;
     static IE::Core::ThreadPool                                m_threadPool;
-    static IEFileSystem                                        m_filesystem;
+    static IE::Core::FileSystem                                m_filesystem;
 
     Core() = default;
+
+    Core(const std::filesystem::path &t_path) {
+        m_filesystem.setBaseDirectory(t_path);
+    }
 } __attribute__((aligned(128)));
 }  // namespace IE::Core

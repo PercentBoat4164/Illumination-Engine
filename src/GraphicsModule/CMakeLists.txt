@@ -2,37 +2,28 @@
 add_subdirectory(DefaultShaders)
 
 set(IEGraphicsModuleSourceFiles  # Gather sources
-		RenderEngine.cpp
-		Buffer/Buffer.cpp
-		CommandBuffer/CommandBuffer.cpp
-		CommandBuffer/CommandPool.cpp
-		#        Camera/IECamera.cpp
-		#        Renderable/Material.cpp
-		#        Renderable/IEMesh.cpp
-		#        Renderable/IERenderable.cpp
-		Renderable/Vertex.cpp
-		RenderPass/DescriptorSet.cpp
-		RenderPass/Pipeline.cpp
-		RenderPass/Shader.cpp
-		#        Shader/UniformBufferObject.cpp
 		API/API.cpp
 		API/Version.cpp
-		#        Image/Image.cpp
-		#        Image/ImageOpenGL.cpp
-		#        Image/ImageVulkan.cpp
-		#        Image/Texture.cpp
-		#        Image/TextureOpenGL.cpp
-		#        Image/TextureVulkan.cpp
-		SyncObjects/Semaphore.cpp
-		SyncObjects/Fence.cpp
-		Buffer/BufferVulkan.cpp
+		Buffer/Buffer.cpp
 		Buffer/Buffer.cpp
 		Buffer/BufferOpenGL.cpp
+		Buffer/BufferVulkan.cpp
+		CommandBuffer/CommandBuffer.cpp
+		CommandBuffer/CommandPool.cpp
+		Image/ImageVulkan.cpp
+		RenderEngine.cpp
+		RenderPass/DescriptorSet.cpp
 		RenderPass/Framebuffer.cpp
+		RenderPass/Pipeline.cpp
 		RenderPass/RenderPass.cpp
 		RenderPass/RenderPassSeries.cpp
+		RenderPass/Shader.cpp
 		RenderPass/Subpass.cpp
-		Image/ImageVulkan.cpp)
+		Renderable/Vertex.cpp
+		SyncObjects/Fence.cpp
+		SyncObjects/Semaphore.cpp
+		/usr/include/spirv-reflect/spirv_reflect.c
+		)
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

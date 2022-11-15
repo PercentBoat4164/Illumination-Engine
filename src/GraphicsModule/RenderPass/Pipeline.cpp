@@ -284,5 +284,4 @@ void IE::Graphics::Pipeline::build(IE::Graphics::Subpass *t_subpass, const std::
     else m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Pipeline!");
 }
 
-IE::Graphics::Pipeline::Pipeline(IE::Graphics::Subpass *t_subpass) : m_subpass(t_subpass) {
-}
+IE::Graphics::Pipeline::Pipeline() = default;

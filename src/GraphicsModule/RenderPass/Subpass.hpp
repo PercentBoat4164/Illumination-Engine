@@ -52,9 +52,9 @@ public:
 
     Preset                                                     m_preset;
     RenderPass                                                *m_renderPass{};
-    Pipeline                                                   pipeline{this};
+    Pipeline                                                   pipeline;
     std::vector<Shader>                                       &shaders;
-    DescriptorSet                                              descriptorSet{this};
+    DescriptorSet                                              descriptorSet;
     std::vector<std::pair<std::string, AttachmentDescription>> m_attachments{};
     std::vector<VkAttachmentReference>                         m_input;
     std::vector<VkAttachmentReference>                         m_color;
@@ -74,7 +74,7 @@ public:
             shader.build(this);
             shader.compile();
         }
-        // descriptorSet.build(shader);
+        descriptorSet.build(this, shaders);
         pipeline.build(this, shaders);
     }
 };

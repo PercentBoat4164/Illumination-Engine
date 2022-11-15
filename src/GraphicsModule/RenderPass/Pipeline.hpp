@@ -14,7 +14,7 @@ public:
     VkPipelineCache  m_cache{VK_NULL_HANDLE};
     Subpass         *m_subpass;
 
-    explicit Pipeline(Subpass *t_subpass);
+    Pipeline();
 
     void build(IE::Graphics::Subpass *t_subpass, const std::vector<IE::Graphics::Shader> &t_shaders);
 };

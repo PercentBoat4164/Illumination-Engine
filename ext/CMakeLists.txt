@@ -9,8 +9,8 @@ set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
 
 # Possibly add https://github.com/libvips/libvips as the image importer of choice. (high speed, high compatibility, highly maintained, but does not use CMake)
 
-# GitHub hosted dependencies
 # dep_DATA =         NAME        MODULE_NAME  MIN_VERSION MAX_VERSION EXPORT_LIB BUILD_DIR INCLUDE_DIR DOWNLOAD_ARGS
+# GitHub hosted dependencies
 set(assimp_DATA assimp assimp 5.2.5 5.2.5 EXT_AssImp "" "/include" "GIT_REPOSITORY https://github.com/assimp/assimp GIT_PROGRESS ON GIT_TAG v5.2.5")
 set(glm_DATA glm glm "NULL" "NULL" EXT_GLM "" "" "GIT_REPOSITORY https://github.com/g-truc/glm GIT_PROGRESS ON GIT_TAG master")
 set(glfw_DATA glfw glfw3 3.3.6 3.3.8 EXT_GLFW "" "/include" "GIT_REPOSITORY https://github.com/glfw/glfw GIT_PROGRESS ON GIT_TAG 3.3.8")
@@ -28,8 +28,8 @@ set(GITHUB_INCLUDE_DIR 6)
 set(GITHUB_DOWNLOAD_ARGS 7)
 set(GITHUB_REQUESTED_VERSION -1)
 
-# URL fetch dependencies
 # dep_DATA =  NAME MODULE_NAME MIN_VERSION MAX_VERSION EXPORT_LIB BUILD_DIR      INCLUDE_DIR DOWNLOAD_ARGS
+# URL fetch dependencies
 set(glew_DATA glew glew 2.2.0 2.2.0 EXT_OpenGL "/build/cmake" "/include" "URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz")
 set(URL glew_DATA)
 set(URL_NAME 0)
@@ -42,18 +42,17 @@ set(URL_INCLUDE_DIR 6)
 set(URL_DOWNLOAD_ARGS 7)
 set(URL_URL -1)
 
+# dep_DATA =    NAME   MODULE_NAME    REQUIRED_COMPONENTS            MIN_VERSION MAX_VERSION EXPORT_LIB
 # Local dependencies
-# dep_DATA =    NAME   MODULE_NAME    REQUIRED_COMPONENTS       OPTIONAL_COMPONENTS MIN_VERSION MAX_VERSION EXPORT_LIB
-set(Vulkan_DATA Vulkan Vulkan "shaderc_combined" "" 1.0.0 1.3.231 EXT_Vulkan)
-set(OpenGL_DATA OpenGL OpenGL "" "" 0.0 0.0 EXT_OpenGL)
+set(Vulkan_DATA Vulkan Vulkan::Vulkan "shaderc_combined SPIRV-Tools" 1.0.0 1.3.231 EXT_Vulkan)
+set(OpenGL_DATA OpenGL OpenGL "" 0.0 0.0 EXT_OpenGL)
 set(LOCAL Vulkan_DATA OpenGL_DATA)
 set(LOCAL_NAME 0)
 set(LOCAL_MODULE 1)
 set(LOCAL_REQUIRED_COMPONENTS 2)
-set(LOCAL_OPTIONAL_COMPONENTS 3)
-set(LOCAL_MIN_VERSION 4)
-set(LOCAL_MAX_VERSION 5)
-set(LOCAL_EXPORT_LIB 6)
+set(LOCAL_MIN_VERSION 3)
+set(LOCAL_MAX_VERSION 4)
+set(LOCAL_EXPORT_LIB 5)
 
 
 # All options for Dependencies should go here
@@ -155,7 +154,7 @@ set(VMA_DEBUG_INITIALIZE_ALLOCATIONS)
 set(VMA_DEBUG_GLOBAL_MUTEX)
 set(VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT)
 
-function(FindLocalLibComponents NAME MODULE MIN_VERSION MAX_VERSION REQ_COMP OPT_COMP)
+function(FindLocalLibComponents NAME MODULE MIN_VERSION MAX_VERSION REQUIRED_COMPONENTS)
 	# Reject packages that don't work with this versioning system.
 	if (${MIN_VERSION} STREQUAL "NULL" AND ${MAX_VERSION} STREQUAL "NULL")
 		message(STATUS "Skipping local dependency searching for ${NAME}.")
@@ -163,11 +162,12 @@ function(FindLocalLibComponents NAME MODULE MIN_VERSION MAX_VERSION REQ_COMP OPT
 	endif ()
 
 	# Use basic built-in CMake package finding.
-	find_package(${NAME} ${MIN_VERSION}...${MAX_VERSION} QUIET COMPONENTS ${REQ_COMP} OPTIONAL_COMPONENTS ${OPT_COMP})
+	string(REPLACE " " ";" REQUIRED_COMPONENTS "${REQUIRED_COMPONENTS}")
+	find_package(${NAME} ${MIN_VERSION}...${MAX_VERSION} QUIET COMPONENTS ${REQUIRED_COMPONENTS})
 
 	# If a valid version is not found and PKG_CONFIG is found use PKG_CONFIG too look for a valid version of the package.
 	if (NOT ${NAME}_FOUND AND PKG_CONFIG_FOUND)
-		pkg_search_module(${NAME} ${MODULE} ${MIN_VERSION}...${MAX_VERSION} QUIET ${REQ_COMP} OPTIONAL_COMPONENTS ${OPT_COMP})
+		pkg_search_module(${NAME} ${MODULE} ${MIN_VERSION}...${MAX_VERSION} QUIET COMPONENTS ${REQUIRED_COMPONENTS})
 	endif ()
 
 	# If a valid version is found message accordingly.
@@ -256,21 +256,6 @@ endforeach ()
 # Unlock the Download Guard
 file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
 
-# Parse local packages after downloading
-foreach (LIST ${LOCAL})
-	# If the package has no download arguments, then it must be in local storage
-	list(GET ${LIST} ${LOCAL_NAME} NAME)
-	list(GET ${LIST} ${LOCAL_MODULE} MODULE)
-	list(GET ${LIST} ${LOCAL_REQUIRED_COMPONENTS} REQUIRED_COMPONENTS)
-	list(GET ${LIST} ${LOCAL_OPTIONAL_COMPONENTS} OPTIONAL_COMPONENTS)
-	list(GET ${LIST} ${LOCAL_MIN_VERSION} MIN_VERSION)
-	list(GET ${LIST} ${LOCAL_MAX_VERSION} MAX_VERSION)
-	FindLocalLibComponents(${NAME} ${MODULE} ${MIN_VERSION} ${MAX_VERSION} "${REQUIRED_COMPONENTS}" "${OPTIONAL_COMPONENTS}")
-	if (NOT ${NAME}_FOUND)
-		message(STATUS "Failed to find any version of ${NAME}! Building the project will likely fail during linking.")
-	endif ()
-endforeach ()
-
 # add_subdirectory( calls should go after the Download Guard
 foreach (LIST ${GITHUB})
 	list(GET ${LIST} ${GITHUB_MODULE} PKG_NAME)
@@ -335,38 +320,45 @@ foreach (LIST ${URL})
 endforeach ()
 
 foreach (LIST ${LOCAL})
+	# If the package has no download arguments, then it must be in local storage
+	list(GET ${LIST} ${LOCAL_NAME} NAME)
+	list(GET ${LIST} ${LOCAL_MODULE} MODULE)
+	list(GET ${LIST} ${LOCAL_REQUIRED_COMPONENTS} REQUIRED_COMPONENTS)
+	list(GET ${LIST} ${LOCAL_MIN_VERSION} MIN_VERSION)
+	list(GET ${LIST} ${LOCAL_MAX_VERSION} MAX_VERSION)
+	FindLocalLibComponents(${NAME} ${MODULE} ${MIN_VERSION} ${MAX_VERSION} "${REQUIRED_COMPONENTS}")
+	if (NOT ${NAME}_FOUND)
+		message(STATUS "Failed to find any version of ${NAME}! Building the project will likely fail during linking.")
+	endif ()
+
+	# Add to build
 	list(GET ${LIST} ${LOCAL_EXPORT_LIB} EXPORT_LIB)
-	list(GET ${LIST} ${LOCAL_MODULE} PKG_NAME)
 
 	# Prepare components
-	list(GET ${LIST} ${LOCAL_REQUIRED_COMPONENTS} REQ_COMP)
-	list(GET ${LIST} ${LOCAL_OPTIONAL_COMPONENTS} OPT_COMP)
-	string(STRIP "${REQ_COMP} ${OPT_COMP}" COMPS)
-	string(REPLACE " " ";" COMPS "${COMPS}")
-	set(ALL_COMPS "")
+	string(STRIP "${REQUIRED_COMPONENTS}" COMPONENTS)
+	string(REPLACE " " ";" COMPONENTS "${COMPONENTS}")
+	set(COMPONENT_LIBRARIES "")
 
 	# If the export lib has not already been made, create it with the empty main.cpp file.
 	if (NOT TARGET ${EXPORT_LIB})
 		add_library(${EXPORT_LIB} main.cpp)
 	endif ()
 
+	# Build list of components
+	foreach (COMPONENT ${COMPONENTS})
+		string(PREPEND COMPONENT "${NAME}::")
+		list(APPEND COMPONENT_LIBRARIES "${COMPONENT}")
+	endforeach ()
+	message("${COMPONENT_LIBRARIES}")
+
 	# Export requested targets to requested export lib.
-	if (TARGET ${PKG_NAME})
-		foreach (COMP ${COMPS})
-			set(COMP "${PKG_NAME}::${COMP}")
-			list(APPEND ALL_COMPS "${COMP}")
-		endforeach ()
-		target_link_libraries(${EXPORT_LIB} PUBLIC ${PKG_NAME} ${ALL_COMPS})
+	if (TARGET ${MODULE})
+		target_link_libraries(${EXPORT_LIB} PUBLIC ${MODULE} ${COMPONENT_LIBRARIES})
 	else ()
-		list(GET ${LIST} ${LOCAL_NAME} NAME)
-		foreach (COMP ${COMPS})
-			set(COMP "${NAME}::${COMP}")
-			list(APPEND ALL_COMPS "${COMP}")
-		endforeach ()
 		if (TARGET ${NAME}::${NAME})
-			target_link_libraries(${EXPORT_LIB} PUBLIC ${NAME}::${NAME} ${ALL_COMPS})
+			target_link_libraries(${EXPORT_LIB} PUBLIC ${NAME} ${COMPONENT_LIBRARIES})
 		else ()
-			target_link_libraries(${EXPORT_LIB} PUBLIC ${${NAME}_LIBRARIES} ${ALL_COMPS})
+			target_link_libraries(${EXPORT_LIB} PUBLIC ${${NAME}_LIBRARIES} ${COMPONENT_LIBRARIES})
 			target_include_directories(${EXPORT_LIB} PUBLIC ${${NAME}_INCLUDE_DIRS})
 		endif ()
 	endif ()

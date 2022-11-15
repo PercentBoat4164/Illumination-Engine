@@ -11,10 +11,10 @@ std::unordered_map<std::string, IE::Core::Engine *> IE::Core::Core::m_engines{};
 std::mutex                                          IE::Core::Core::m_windowsMutex{};
 std::unordered_map<GLFWwindow *, IE::Core::Window>  IE::Core::Core::m_windows{};
 IE::Core::ThreadPool                                IE::Core::Core::m_threadPool{};
-IEFileSystem                                        IE::Core::Core::m_filesystem{"res"};
+IE::Core::FileSystem                                IE::Core::Core::m_filesystem{};
 
-IE::Core::Core &IE::Core::Core::getInst() {
-    static IE::Core::Core inst{};
+IE::Core::Core &IE::Core::Core::getInst(const std::filesystem::path &t_path) {
+    static IE::Core::Core inst{t_path};
     return inst;
 }
 
@@ -22,7 +22,7 @@ IE::Core::Logger *IE::Core::Core::getLogger() {
     return &m_logger;
 }
 
-IEFileSystem *IE::Core::Core::getFileSystem() {
+IE::Core::FileSystem *IE::Core::Core::getFileSystem() {
     return &m_filesystem;
 }
 
@@ -42,7 +42,7 @@ IE::Core::Window *IE::Core::Core::getWindow(GLFWwindow *t_window) {
     return nullptr;
 }
 
-IE::Core::Engine *IE::Core::Core::getEngine(std::string id) {
+IE::Core::Engine *IE::Core::Core::getEngine(std::string t_id) {
     std::unique_lock<std::mutex> lock(m_enginesMutex);
-    return m_engines.at(id);
+    return m_engines.at(t_id);
 }
