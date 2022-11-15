@@ -349,7 +349,6 @@ foreach (LIST ${LOCAL})
 		string(PREPEND COMPONENT "${NAME}::")
 		list(APPEND COMPONENT_LIBRARIES "${COMPONENT}")
 	endforeach ()
-	message("${COMPONENT_LIBRARIES}")
 
 	# Export requested targets to requested export lib.
 	if (TARGET ${MODULE})
