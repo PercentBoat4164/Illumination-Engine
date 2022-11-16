@@ -31,3 +31,13 @@ auto IE::Graphics::Subpass::addOrModifyAttachment(
     } else iterator->second = {t_consumption, t_type};
     return *this;
 }
+
+void IE::Graphics::Subpass::build(IE::Graphics::RenderPass *t_renderPass) {
+    m_renderPass = t_renderPass;
+    for (auto &shader : shaders) {
+        shader.build(this);
+        shader.compile();
+    }
+    descriptorSet.build(this, shaders);
+    pipeline.build(this, shaders);
+}

@@ -270,30 +270,16 @@ void IE::Graphics::RenderEngine::createCommandPools() {
     }
 }
 
-void IE::Graphics::RenderEngine::createRenderPasses() {
-    //    auto    shader       = Shader("");
-    //    auto    vertexShader = Shader("");
-    //    Subpass shadowPass{
-    //      Subpass::IE_SUBPASS_PRESET_SHADOW{shader, vertexShader}
-    //    };
-    //    Subpass colorSubpass{
-    //      Subpass::IE_SUBPASS_PRESET_COLOR,
-    //      {shader, vertexShader}
-    //    };
-    //    Subpass    PPP{Subpass::IE_SUBPASS_PRESET_POST_FX, {shader}};
-    //    RenderPass shadowRenderPass{RenderPass::IE_RENDER_PASS_PRESET_SHADOW};
-    //    shadowRenderPass.addSubpass(shadowPass);
-    //
-    //    RenderPass finalImageRenderPass{RenderPass::IE_RENDER_PASS_PRESET_FINAL};
-    //    finalImageRenderPass.addSubpass(colorSubpass).addSubpass(PPP);
-    //
-    //    m_renderPassSeries.addRenderPass(shadowRenderPass).addRenderPass(finalImageRenderPass);
+void IE::Graphics::RenderEngine::createDescriptorSets() {
+    m_engineDescriptor.build(this);
+}
 
+void IE::Graphics::RenderEngine::createRenderPasses() {
     //     Specify all subpasses and their attachment usages.
-    auto                vertexShader{Shader("shaders/Vulkan/fragmentShader.frag")};
-    auto                fragmentShader{Shader("shaders/Vulkan/vertexShader.vert")};
-    std::vector<Shader> colorShaders{vertexShader, fragmentShader};
-    Subpass             colorSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM, colorShaders};
+    std::vector<Shader> colorShaders{
+      Shader("shaders/Vulkan/fragmentShader.frag"),
+      Shader("shaders/Vulkan/vertexShader.vert")};
+    Subpass colorSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM, colorShaders};
     colorSubpass
       .addOrModifyAttachment(
         "color",

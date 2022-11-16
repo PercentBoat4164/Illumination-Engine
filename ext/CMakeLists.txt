@@ -365,3 +365,7 @@ endforeach ()
 
 add_library(INT_src main.cpp)
 target_include_directories(INT_src PUBLIC ${IE_BASE_DIR}/src)
+
+if (CLANG)
+	target_compile_options(vma PUBLIC "-Wnullability-completeness")
+endif ()

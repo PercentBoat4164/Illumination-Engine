@@ -12,7 +12,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 		CommandBuffer/CommandPool.cpp
 		Image/ImageVulkan.cpp
 		RenderEngine.cpp
-		RenderPass/DescriptorSet.cpp
+		DescriptorSet/DescriptorSet.cpp
 		RenderPass/Framebuffer.cpp
 		RenderPass/Pipeline.cpp
 		RenderPass/RenderPass.cpp

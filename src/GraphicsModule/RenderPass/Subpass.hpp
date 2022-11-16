@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DescriptorSet.hpp"
+#include "GraphicsModule/DescriptorSet/DescriptorSet.hpp"
 #include "Pipeline.hpp"
 #include "Shader.hpp"
 
@@ -50,11 +50,11 @@ public:
 
     explicit Subpass(Preset t_preset, std::vector<Shader> &t_shader);
 
-    Preset                                                     m_preset;
-    RenderPass                                                *m_renderPass{};
-    Pipeline                                                   pipeline;
-    std::vector<Shader>                                       &shaders;
-    DescriptorSet                                              descriptorSet;
+    Preset               m_preset;
+    RenderPass          *m_renderPass{};
+    Pipeline             pipeline;
+    std::vector<Shader> &shaders;
+    DescriptorSet        descriptorSet{DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_SUBPASS};
     std::vector<std::pair<std::string, AttachmentDescription>> m_attachments{};
     std::vector<VkAttachmentReference>                         m_input;
     std::vector<VkAttachmentReference>                         m_color;
@@ -68,14 +68,6 @@ public:
       Image::Preset                                t_type
     ) -> decltype(*this);
 
-    void build(IE::Graphics::RenderPass *t_renderPass) {
-        m_renderPass = t_renderPass;
-        for (auto &shader : shaders) {
-            shader.build(this);
-            shader.compile();
-        }
-        descriptorSet.build(this, shaders);
-        pipeline.build(this, shaders);
-    }
+    void build(IE::Graphics::RenderPass *t_renderPass);
 };
 }  // namespace IE::Graphics

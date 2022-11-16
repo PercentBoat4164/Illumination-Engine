@@ -64,6 +64,7 @@ private:
     std::vector<std::shared_ptr<IE::Graphics::Fence>>       m_imagesInFlight{};
     std::vector<std::shared_ptr<IE::Graphics::CommandPool>> m_commandPools{};
     IE::Graphics::RenderPassSeries                          m_renderPassSeries{this};
+    IE::Graphics::DescriptorSet m_engineDescriptor{IE::Graphics::DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_FRAME};
 
 
     static VkBool32 APIDebugMessenger(
@@ -157,5 +158,6 @@ public:
     void     createRenderPasses();
     VkFormat getColorFormat();
     Settings getSettings();
+    void     createDescriptorSets();
 };
 }  // namespace IE::Graphics

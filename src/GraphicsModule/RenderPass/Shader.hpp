@@ -15,16 +15,18 @@ class Subpass;
 
 class Shader {
 public:
-    IE::Core::File        *m_file;
-    std::vector<uint32_t>  m_code;
-    shaderc_shader_kind    m_kind;
-    VkShaderStageFlagBits  m_stage;
-    VkShaderModule         m_module{};
-    IE::Graphics::Subpass *m_subpass{};
+    IE::Core::File                            *m_file;
+    std::shared_ptr<spv_reflect::ShaderModule> reflectedData;
+    bool                                       reflected{false};
+    std::vector<uint32_t>                      m_code;
+    shaderc_shader_kind                        m_kind;
+    VkShaderStageFlagBits                      m_stage;
+    VkShaderModule                             m_module{};
+    IE::Graphics::Subpass                     *m_subpass{};
 
     void compile();
 
-    spv_reflect::ShaderModule reflect();
+    spv_reflect::ShaderModule &reflect();
 
     explicit Shader(const std::filesystem::path &t_filename);
 

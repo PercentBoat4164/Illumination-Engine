@@ -8,6 +8,11 @@ void IE::Graphics::Shader::compile() {
     shaderc::Compiler       compiler;
     shaderc::CompileOptions options;
 
+    options.AddMacroDefinition("PER_FRAME_DESCRIPTOR", "0");
+    options.AddMacroDefinition("PER_SUBPASS_DESCRIPTOR", "1");
+    options.AddMacroDefinition("PER_MATERIAL_DESCRIPTOR", "2");
+    options.AddMacroDefinition("PER_OBJECT_DESCRIPTOR", "3");
+
     options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
     auto                          contents(m_file->read());
@@ -27,8 +32,12 @@ void IE::Graphics::Shader::compile() {
           "Compiled Shader " + m_file->path.string()
         );
 
-    // Build module
+    // reflect
     m_code = {compilationResult.begin(), compilationResult.end()};
+    reflect();
+    m_stage = static_cast<VkShaderStageFlagBits>(reflectedData->GetShaderStage());
+
+    // Build module
     VkShaderModuleCreateInfo shaderModuleCreateInfo{
       .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
       .pNext    = nullptr,
@@ -53,58 +62,36 @@ void IE::Graphics::Shader::compile() {
 
 IE::Graphics::Shader::Shader(const std::filesystem::path &t_filename) :
         m_file(IE::Core::Core::getFileSystem()->getFile(t_filename)) {
-    // Get kind from filename
-    if (m_file->extension == ".vert") {
-        m_kind  = shaderc_vertex_shader;
-        m_stage = VK_SHADER_STAGE_VERTEX_BIT;
-    } else if (m_file->extension == ".tesc") {
-        m_kind  = shaderc_tess_control_shader;
-        m_stage = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-    } else if (m_file->extension == ".tese") {
-        m_kind  = shaderc_tess_evaluation_shader;
-        m_stage = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-    } else if (m_file->extension == ".geom") {
-        m_kind  = shaderc_geometry_shader;
-        m_stage = VK_SHADER_STAGE_GEOMETRY_BIT;
-    } else if (m_file->extension == ".frag") {
-        m_kind  = shaderc_fragment_shader;
-        m_stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    } else if (m_file->extension == ".comp") {
-        m_kind  = shaderc_compute_shader;
-        m_stage = VK_SHADER_STAGE_COMPUTE_BIT;
-    } else if (m_file->extension == ".mesh") {
-        m_kind  = shaderc_mesh_shader;
-        m_stage = VK_SHADER_STAGE_MESH_BIT_EXT;
-    } else if (m_file->extension == ".task") {
-        m_kind  = shaderc_task_shader;
-        m_stage = VK_SHADER_STAGE_TASK_BIT_EXT;
-    } else if (m_file->extension == ".rgen") {
-        m_kind  = shaderc_raygen_shader;
-        m_stage = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-    } else if (m_file->extension == ".ahit") {
-        m_kind  = shaderc_anyhit_shader;
-        m_stage = VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
-    } else if (m_file->extension == ".chit") {
-        m_kind  = shaderc_closesthit_shader;
-        m_stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-    } else if (m_file->extension == ".intr") {
-        m_kind  = shaderc_intersection_shader;
-        m_stage = VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
-    } else if (m_file->extension == ".call") {
-        m_kind  = shaderc_callable_shader;
-        m_stage = VK_SHADER_STAGE_CALLABLE_BIT_KHR;
-    } else if (m_file->extension == ".miss") {
-        m_kind  = shaderc_miss_shader;
-        m_stage = VK_SHADER_STAGE_MISS_BIT_KHR;
-    } else {
-        m_kind  = shaderc_glsl_infer_from_source;
-        m_stage = VK_SHADER_STAGE_ALL;
+    if (m_file == nullptr) {
+        IE::Core::Core::getLogger()->log(
+          "File: " + t_filename.string() + " does not exist!",
+          Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
     }
+    // Get kind from filename
+    if (m_file->extension == ".vert") m_kind = shaderc_vertex_shader;
+    else if (m_file->extension == ".tesc") m_kind = shaderc_tess_control_shader;
+    else if (m_file->extension == ".tese") m_kind = shaderc_tess_evaluation_shader;
+    else if (m_file->extension == ".geom") m_kind = shaderc_geometry_shader;
+    else if (m_file->extension == ".frag") m_kind = shaderc_fragment_shader;
+    else if (m_file->extension == ".comp") m_kind = shaderc_compute_shader;
+    else if (m_file->extension == ".mesh") m_kind = shaderc_mesh_shader;
+    else if (m_file->extension == ".task") m_kind = shaderc_task_shader;
+    else if (m_file->extension == ".rgen") m_kind = shaderc_raygen_shader;
+    else if (m_file->extension == ".ahit") m_kind = shaderc_anyhit_shader;
+    else if (m_file->extension == ".chit") m_kind = shaderc_closesthit_shader;
+    else if (m_file->extension == ".intr") m_kind = shaderc_intersection_shader;
+    else if (m_file->extension == ".call") m_kind = shaderc_callable_shader;
+    else if (m_file->extension == ".miss") m_kind = shaderc_miss_shader;
+    else m_kind = shaderc_glsl_infer_from_source;
 }
 
-spv_reflect::ShaderModule IE::Graphics::Shader::reflect() {
-    spv_reflect::ShaderModule shaderModule(m_code, SPV_REFLECT_MODULE_FLAG_NO_COPY);
-    return shaderModule;
+spv_reflect::ShaderModule &IE::Graphics::Shader::reflect() {
+    if (!reflected) {
+        reflected     = true;
+        reflectedData = std::make_shared<spv_reflect::ShaderModule>(m_code, SPV_REFLECT_MODULE_FLAG_NO_COPY);
+    }
+    return *reflectedData;
 }
 
 void IE::Graphics::Shader::build(IE::Graphics::Subpass *t_subpass) {
