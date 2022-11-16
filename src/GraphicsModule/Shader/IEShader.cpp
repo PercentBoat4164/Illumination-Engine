@@ -81,10 +81,11 @@ void IEShader::compile(const std::string &input, const std::string &output) {
 
 void IEShader::_openglCompile(const std::string &input, std::string) {
     // Compile shader
-    GLint         result = GL_FALSE;
-    int           infoLogLength;
-    std::string   contents{file->read()};
-    const GLchar *shader = contents.data();
+    GLint             result = GL_FALSE;
+    int               infoLogLength;
+    std::vector<char> code = file->read();
+    std::string       contents{code.begin(), code.end()};
+    const GLchar     *shader = contents.data();
     glShaderSource(shaderID, 1, &shader, nullptr);
     glCompileShader(shaderID);
     glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
