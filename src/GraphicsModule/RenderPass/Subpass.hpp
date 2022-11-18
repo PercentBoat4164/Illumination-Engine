@@ -48,13 +48,13 @@ public:
         IE_SUBPASS_PRESET_CUSTOM = 0x0,
     };
 
-    explicit Subpass(Preset t_preset, std::vector<Shader> &t_shader);
+    explicit Subpass(Preset t_preset, std::vector<std::shared_ptr<Shader>> &t_shader);
 
-    Preset               m_preset;
-    RenderPass          *m_renderPass{};
-    Pipeline             pipeline;
-    std::vector<Shader> &shaders;
-    DescriptorSet        descriptorSet{DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_SUBPASS};
+    Preset                               m_preset;
+    RenderPass                          *m_renderPass{};
+    Pipeline                             pipeline;
+    std::vector<std::shared_ptr<Shader>> shaders;
+    DescriptorSet                        descriptorSet{DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_SUBPASS};
     std::vector<std::pair<std::string, AttachmentDescription>> m_attachments{};
     std::vector<VkAttachmentReference>                         m_input;
     std::vector<VkAttachmentReference>                         m_color;

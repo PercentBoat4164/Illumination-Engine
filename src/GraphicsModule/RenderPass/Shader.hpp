@@ -2,7 +2,7 @@
 
 #include <filesystem>
 #include <shaderc/shaderc.hpp>
-#include <spirv-reflect/spirv_reflect.h>
+#include <spirv_cross/spirv_reflect.hpp>
 #include <vulkan/vulkan.hpp>
 
 namespace IE::Core {
@@ -15,21 +15,34 @@ class Subpass;
 
 class Shader {
 public:
-    IE::Core::File                            *m_file;
-    std::shared_ptr<spv_reflect::ShaderModule> reflectedData;
-    bool                                       reflected{false};
-    std::vector<uint32_t>                      m_code;
-    shaderc_shader_kind                        m_kind;
-    VkShaderStageFlagBits                      m_stage;
-    VkShaderModule                             m_module{};
-    IE::Graphics::Subpass                     *m_subpass{};
+    struct ReflectionInfo {
+        std::string      name;
+        uint32_t         binding;
+        uint32_t         set;
+        VkDescriptorType type;
+    };
+
+    IE::Core::File                                  *m_file;
+    std::shared_ptr<spirv_cross::CompilerReflection> reflection;
+    spirv_cross::ShaderResources                     reflectedData;
+    std::vector<ReflectionInfo>                      reflectedInfo;
+    bool                                             reflected{false};
+    std::vector<uint32_t>                            m_code;
+    shaderc_shader_kind                              m_kind;
+    VkShaderStageFlagBits                            m_stage;
+    VkShaderModule                                   m_module{};
+    IE::Graphics::Subpass                           *m_subpass{};
 
     void compile();
 
-    spv_reflect::ShaderModule &reflect();
+    spirv_cross::ShaderResources &reflect();
 
     explicit Shader(const std::filesystem::path &t_filename);
 
+    std::vector<ReflectionInfo> getReflectionInfo();
+
     void build(Subpass *t_subpass);
+
+    static VkShaderStageFlagBits stageFromExecutionModel(spv::ExecutionModel model);
 };
 }  // namespace IE::Graphics

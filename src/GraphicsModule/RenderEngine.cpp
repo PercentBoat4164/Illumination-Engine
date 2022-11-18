@@ -276,9 +276,9 @@ void IE::Graphics::RenderEngine::createDescriptorSets() {
 
 void IE::Graphics::RenderEngine::createRenderPasses() {
     //     Specify all subpasses and their attachment usages.
-    std::vector<Shader> colorShaders{
-      Shader("shaders/Vulkan/fragmentShader.frag"),
-      Shader("shaders/Vulkan/vertexShader.vert")};
+    std::vector<std::shared_ptr<Shader>> colorShaders{
+      std::make_shared<Shader>("shaders/Vulkan/fragmentShader.frag"),
+      std::make_shared<Shader>("shaders/Vulkan/vertexShader.vert")};
     Subpass colorSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM, colorShaders};
     colorSubpass
       .addOrModifyAttachment(
@@ -333,10 +333,15 @@ IE::Core::Engine *IE::Graphics::RenderEngine::create() {
         swapchain.wait();
         engine->createCommandPools();
     })};
+    std::future<void> descriptorSet{IE::Core::Core::getThreadPool()->submit([&] {
+        device.wait();
+        engine->createDescriptorSets();
+    })};
     allocator.wait();
     syncObjects.wait();
     renderPasses.wait();
     commandPools.wait();
+    descriptorSet.wait();
     return static_cast<IE::Core::Engine *>(engine);
 }
 
@@ -475,7 +480,7 @@ std::string IE::Graphics::RenderEngine::makeErrorMessage(
   const std::string &t_moreInfo
 ) {
     std::string error{
-      "Got error: " + t_error + " in " + t_function + "() of " + t_file + "@" + std::to_string(t_line) + "."};
+      "Got error: " + t_error + " in " + t_function + "() of " + t_file + ":" + std::to_string(t_line) + "."};
     if (!t_moreInfo.empty()) error += " For more information see: " + t_moreInfo + ".";
     return error;
 }

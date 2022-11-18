@@ -4,12 +4,12 @@
 #include "RenderPass.hpp"
 
 IE::Graphics::Subpass::Subpass(
-  IE::Graphics::Subpass::Preset      t_preset,
-  std::vector<IE::Graphics::Shader> &t_shaders
+  IE::Graphics::Subpass::Preset                       t_preset,
+  std::vector<std::shared_ptr<IE::Graphics::Shader>> &t_shaders
 ) :
         m_preset(t_preset),
         shaders(t_shaders) {
-    for (auto &shader : shaders) shader.m_subpass = this;
+    for (auto &shader : shaders) shader->m_subpass = this;
     pipeline.m_subpass = this;
 }
 
@@ -35,8 +35,8 @@ auto IE::Graphics::Subpass::addOrModifyAttachment(
 void IE::Graphics::Subpass::build(IE::Graphics::RenderPass *t_renderPass) {
     m_renderPass = t_renderPass;
     for (auto &shader : shaders) {
-        shader.build(this);
-        shader.compile();
+        shader->build(this);
+        shader->compile();
     }
     descriptorSet.build(this, shaders);
     pipeline.build(this, shaders);

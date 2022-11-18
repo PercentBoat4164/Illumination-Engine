@@ -22,7 +22,6 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 		Renderable/Vertex.cpp
 		SyncObjects/Fence.cpp
 		SyncObjects/Semaphore.cpp
-		${CMAKE_SOURCE_DIR}/ext/deps/SPIRV-Reflect_src/spirv_reflect.c
 		)
 
 # Create and define properties for the library

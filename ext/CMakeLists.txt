@@ -17,7 +17,8 @@ set(glfw_DATA glfw glfw3 3.3.6 3.3.8 EXT_GLFW "" "/include" "GIT_REPOSITORY http
 set(spdlog_DATA spdlog spdlog 1.10.0 1.10.0 EXT_SpdLog "" "/include" "GIT_REPOSITORY https://github.com/gabime/spdlog GIT_PROGRESS ON GIT_TAG v1.x")
 set(VkBootstrap_DATA VkBootstrap vk-bootstrap 0.6 0.6 EXT_Vulkan "" "/src" "GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap GIT_PROGRESS ON GIT_TAG v0.6")
 set(vma_DATA vma vma 3.0.1 3.0.1 EXT_Vulkan "" "/include" "GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_PROGRESS ON GIT_TAG v3.0.1")
-set(GITHUB assimp_DATA glm_DATA glfw_DATA spdlog_DATA VkBootstrap_DATA vma_DATA)
+set(spirv_cross_DATA spirv-cross-c-shared spirv-cross-c-shared "NULL" "NULL" EXT_Vulkan "" "" "GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Cross GIT_PROGRESS ON GIT_TAG master")
+set(GITHUB assimp_DATA glm_DATA glfw_DATA spdlog_DATA VkBootstrap_DATA vma_DATA spirv_cross_DATA)
 set(GITHUB_NAME 0)
 set(GITHUB_MODULE 1)
 set(GITHUB_MIN_VERSION 2)
@@ -362,6 +363,8 @@ foreach (LIST ${LOCAL})
 		endif ()
 	endif ()
 endforeach ()
+
+target_link_libraries(EXT_Vulkan PUBLIC spirv-cross-reflect spirv-cross-cpp)
 
 add_library(INT_src main.cpp)
 target_include_directories(INT_src PUBLIC ${IE_BASE_DIR}/src)

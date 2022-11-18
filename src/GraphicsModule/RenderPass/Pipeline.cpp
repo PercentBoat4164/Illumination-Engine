@@ -4,12 +4,22 @@
 #include "RenderEngine.hpp"
 #include "Subpass.hpp"
 
-void IE::Graphics::Pipeline::build(IE::Graphics::Subpass *t_subpass, const std::vector<Shader> &t_shaders) {
+void IE::Graphics::Pipeline::build(
+  IE::Graphics::Subpass                      *t_subpass,
+  const std::vector<std::shared_ptr<Shader>> &t_shaders
+) {
     m_subpass = t_subpass;
 
     // Build pipeline layout
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
     std::vector<VkPushConstantRange>   pushConstantRanges;
+
+    for (size_t i{}; i < 4; ++i)
+        descriptorSetLayouts.push_back(IE::Graphics::DescriptorSet::getLayout(
+          m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine,
+          i,
+          t_shaders
+        ));
 
     VkPipelineLayoutCreateInfo layoutCreateInfo{
       .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -82,8 +92,8 @@ void IE::Graphics::Pipeline::build(IE::Graphics::Subpass *t_subpass, const std::
     };
     size_t i{0};
     std::generate_n(shaderStages.begin(), shaderStages.size(), [&]() {
-        shaderStageCreateInfo.stage  = t_shaders[i].m_stage;
-        shaderStageCreateInfo.module = t_shaders[i++].m_module;
+        shaderStageCreateInfo.stage  = t_shaders[i]->m_stage;
+        shaderStageCreateInfo.module = t_shaders[i++]->m_module;
         return shaderStageCreateInfo;
     });
 
