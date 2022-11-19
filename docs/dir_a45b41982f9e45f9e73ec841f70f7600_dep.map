@@ -1,7 +1,8 @@
 <map id="Illumination&#45;Engine/src/Core" name="Illumination&#45;Engine/src/Core">
-<area shape="rect" id="node2" href="dir_4a46cdf4329ad63e479fbd878f406aea.html" title="AssetModule" alt="" coords="395,72,533,120"/>
-<area shape="rect" id="node3" href="dir_511678282fae3b236ea9571cd62bbc80.html" title="FileSystemModule" alt="" coords="184,72,371,120"/>
-<area shape="rect" id="node4" href="dir_a3f6fd9b1a6f2c3026db7198b09ab0cf.html" title="LogModule" alt="" coords="37,72,160,120"/>
-<area shape="rect" id="clust2" href="dir_a45b41982f9e45f9e73ec841f70f7600.html" alt="" coords="27,61,640,131"/>
-<area shape="rect" id="clust1" href="dir_11522b5b7e5fd02e7f7980ad4667a586.html" title="src" alt="" coords="16,16,651,141"/>
+<area shape="rect" id="node2" href="dir_4a46cdf4329ad63e479fbd878f406aea.html" title="AssetModule" alt="" coords="601,72,738,120"/>
+<area shape="rect" id="node3" href="dir_511678282fae3b236ea9571cd62bbc80.html" title="FileSystemModule" alt="" coords="389,72,576,120"/>
+<area shape="rect" id="node4" href="dir_a3f6fd9b1a6f2c3026db7198b09ab0cf.html" title="LogModule" alt="" coords="243,72,365,120"/>
+<area shape="rect" id="node5" href="dir_1ca166060f49b9bb660406b68bca2fb3.html" title="ThreadingModule" alt="" coords="37,72,219,120"/>
+<area shape="rect" id="clust2" href="dir_a45b41982f9e45f9e73ec841f70f7600.html" alt="" coords="27,61,845,131"/>
+<area shape="rect" id="clust1" href="dir_11522b5b7e5fd02e7f7980ad4667a586.html" title="src" alt="" coords="16,16,856,141"/>
 </map>
