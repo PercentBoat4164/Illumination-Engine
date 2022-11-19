@@ -13,7 +13,6 @@ class IERenderEngine;
 
 // External dependencies
 #define GLM_FORCE_RADIANS
-
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 

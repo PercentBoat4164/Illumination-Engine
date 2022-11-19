@@ -9,8 +9,7 @@
 #include <string>
 
 #define GLEW_IMPLEMENTATION
-
-#include <include/GL/glew.h>
+#include <GL/glew.h>
 
 struct IEUniformBufferObject {
 public:

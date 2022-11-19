@@ -3,8 +3,12 @@
 /*-build*
 /.idea
 # Visual Studio Code
-/out/build/x64-Debug/
 /.vs/
+/out/
 /CMakeSettings.json
 # Ignore pre-compiled shaders
 /res/Shaders/*/*.spv
+# Ignore dependencies
+/ext/deps/
+# Ignore the download guard
+__DOWNLOAD_GUARD__

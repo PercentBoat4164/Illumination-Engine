@@ -10,7 +10,6 @@
 #include <assimp/scene.h>
 
 #define GLM_FORCE_RADIANS
-
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
@@ -94,9 +93,9 @@ void IERenderable::_openglLoadFromDiskToRAM() {
     );
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_WARN,
           "Failed to prepare scene from file: " + std::string(directory + modelName) +
-            "\t\tError: " + importer.GetErrorString()
+            "\t\tError: " + importer.GetErrorString(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
 
@@ -124,9 +123,9 @@ void IERenderable::_vulkanLoadFromDiskToRAM() {
     );
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         linkedRenderEngine->settings->logger.log(
-          ILLUMINATION_ENGINE_LOG_LEVEL_ERROR,
           "Failed to prepare scene from file: " + std::string(directory + modelName) +
-            "\t\tError: " + importer.GetErrorString()
+            "\t\tError: " + importer.GetErrorString(),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     }
 
