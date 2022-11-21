@@ -60,13 +60,26 @@ void IE::Graphics::DescriptorSet::build(
 }
 
 void IE::Graphics::DescriptorSet::build(IE::Graphics::RenderEngine *t_engineLink) {
+    std::vector<VkDescriptorPoolSize> poolSizes{};
+    for (auto descriptor : PER_FRAME_DESCRIPTOR_SET_LAYOUT_INFO) {
+        bool typeAlreadyExists{};
+        for (VkDescriptorPoolSize &poolSize : poolSizes) {
+            if (get<0>(descriptor) == poolSize.type) {
+                ++poolSize.descriptorCount;
+                typeAlreadyExists = true;
+                break;
+            }
+        }
+        if (!typeAlreadyExists) poolSizes.push_back({.type = get<0>(descriptor), .descriptorCount = 1});
+    }
+
     VkDescriptorPoolCreateInfo poolCreateInfo{
       .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
       .pNext         = nullptr,
       .flags         = 0x0,
       .maxSets       = 0x1,
-      .poolSizeCount = static_cast<uint32_t>(DESCRIPTOR_POOL_SIZES[m_setNumber].size()),
-      .pPoolSizes    = DESCRIPTOR_POOL_SIZES[m_setNumber].data()};
+      .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
+      .pPoolSizes    = poolSizes.data()};
 
     VkResult result{vkCreateDescriptorPool(t_engineLink->m_device.device, &poolCreateInfo, nullptr, &m_pool)};
     if (result != VK_SUCCESS)
@@ -77,33 +90,33 @@ void IE::Graphics::DescriptorSet::build(IE::Graphics::RenderEngine *t_engineLink
     else t_engineLink->getLogger().log("Created Descriptor Pool");
 }
 
-bool IE::Graphics::DescriptorSet::isDescriptorControlledBySetType(
-  IE::Graphics::DescriptorSet::SetNumber t_type,
-  std::string                            name
-) {
-    for (const std::string &descriptor : DESCRIPTOR_TYPE_MAP[t_type])
-        if (descriptor == name) return true;
-    return false;
-}
-
-VkDescriptorSetLayout_T *IE::Graphics::DescriptorSet::getLayout(
+VkDescriptorSetLayout IE::Graphics::DescriptorSet::getLayout(
   IE::Graphics::RenderEngine          *t_engineLink,
   size_t                               t_set,
   std::vector<std::shared_ptr<Shader>> t_shaders
 ) {
     std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-    for (std::shared_ptr<Shader> &shader : t_shaders) {
-        for (Shader::ReflectionInfo &info : shader->reflectedInfo) {
-            if (info.set == t_set) {
-                layoutBindings.push_back(
-                  {.binding            = info.binding,
-                   .descriptorType     = info.type,
-                   .descriptorCount    = 1,  // Indicated size of array in shader. Arrays are not supported yet.
-                   .stageFlags         = shader->m_stage,
-                   .pImmutableSamplers = nullptr}
-                );
-            }
-        }
+    VkDescriptorSetLayout                     layout;
+    if (t_set != 0) {
+        for (std::shared_ptr<Shader> &shader : t_shaders)
+            for (Shader::ReflectionInfo &info : shader->reflectedInfo)
+                if (info.set == t_set)
+                    layoutBindings.push_back(
+                      {.binding         = info.binding,
+                       .descriptorType  = info.type,
+                       .descriptorCount = 1,  // Indicates size of array in shader. Arrays are not supported yet.
+                       .stageFlags      = shader->m_stage,
+                       .pImmutableSamplers = nullptr}
+                    );
+    } else {
+        for (auto descriptor : PER_FRAME_DESCRIPTOR_SET_LAYOUT_INFO)
+            layoutBindings.push_back(
+              {.binding            = get<1>(descriptor),
+               .descriptorType     = get<0>(descriptor),
+               .descriptorCount    = 1,  // Indicates size of array in shader. Arrays are not supported yet.
+               .stageFlags         = VK_SHADER_STAGE_ALL_GRAPHICS,
+               .pImmutableSamplers = nullptr}
+            );
     }
     VkDescriptorSetLayoutCreateInfo layoutCreateInfo{
       .sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
@@ -111,30 +124,22 @@ VkDescriptorSetLayout_T *IE::Graphics::DescriptorSet::getLayout(
       .flags        = 0x0,
       .bindingCount = static_cast<uint32_t>(layoutBindings.size()),
       .pBindings    = layoutBindings.data()};
-    VkDescriptorSetLayout layout;
-    vkCreateDescriptorSetLayout(t_engineLink->m_device.device, &layoutCreateInfo, nullptr, &layout);
+    VkResult result{
+      vkCreateDescriptorSetLayout(t_engineLink->m_device.device, &layoutCreateInfo, nullptr, &layout)};
+    if (result != VK_SUCCESS)
+        t_engineLink->getLogger().log(
+          "Failed to create descriptor set layout! Error: " +
+          IE::Graphics::RenderEngine::translateVkResultCodes(result)
+        );
+    else t_engineLink->getLogger().log("Created Descriptor Set Layout");
     return layout;
 }
 
 IE::Graphics::DescriptorSet::DescriptorSet(IE::Graphics::DescriptorSet::SetNumber t_type) : m_setNumber(t_type) {
 }
 
-const std::array<std::vector<std::string>, 4> IE::Graphics::DescriptorSet::DESCRIPTOR_TYPE_MAP{
-  IE::Graphics::DescriptorSet::PER_FRAME_DESCRIPTORS,
-  IE::Graphics::DescriptorSet::PER_SUBPASS_DESCRIPTORS,
-  IE::Graphics::DescriptorSet::PER_MATERIAL_DESCRIPTORS,
-  IE::Graphics::DescriptorSet::PER_OBJECT_DESCRIPTORS};
-const std::vector<std::string> IE::Graphics::DescriptorSet::PER_FRAME_DESCRIPTORS{"camera"};
-const std::vector<std::string> IE::Graphics::DescriptorSet::PER_SUBPASS_DESCRIPTORS{"perspective"};
-const std::vector<std::string> IE::Graphics::DescriptorSet::PER_MATERIAL_DESCRIPTORS{
-  "diffuseTexture",
-  "specularTexture"};
-
-const std::vector<std::string> IE::Graphics::DescriptorSet::PER_OBJECT_DESCRIPTORS{"object"};
-
-const std::array<std::vector<VkDescriptorPoolSize>, 4> IE::Graphics::DescriptorSet::DESCRIPTOR_POOL_SIZES{
-  {{{.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 2}},
-   {{.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 1}},
-   {{.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, .descriptorCount = 1}},
-   {{.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 1}}}
+const std::vector<std::tuple<VkDescriptorType, uint32_t>>
+  IE::Graphics::DescriptorSet::PER_FRAME_DESCRIPTOR_SET_LAYOUT_INFO{
+    {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0},
+    {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}
 };

@@ -291,7 +291,7 @@ void IE::Graphics::Pipeline::build(
             ),
           Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-    else m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Pipeline!");
+    else m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Pipeline");
 }
 
 IE::Graphics::Pipeline::Pipeline() = default;

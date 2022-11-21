@@ -29,9 +29,12 @@ layout (IE_OBJECT_DATA) uniform ObjectData {
     mat3 normalMatrix;
 } object;
 
-layout (location = 0) in vec2 fragmentTextureCoordinates;
-layout (location = 1) in vec3 interpolatedNormal;
-layout (location = 2) in vec3 fragmentPosition;
+layout (location = 0) in vec3 fragmentPosition;
+layout (location = 1) in vec3 interpolatedColor;
+layout (location = 2) in vec2 interpolatedTextureCoordinates;
+layout (location = 3) in vec3 interpolatedNormal;
+layout (location = 4) in vec3 interpolatedTangent;
+layout (location = 5) in vec3 interpolatedBitangent;
 
 layout (location = 0) out vec4 fragmentColor;
 
@@ -50,10 +53,10 @@ void main() {
     float distanceFromFragmentToLight = length(fragmentPosition - lightPosition);
     float lightIntensityAfterAttenuation = 1 / (1 + distanceFromFragmentToLight + distanceFromFragmentToLight * distanceFromFragmentToLight) * brightness;
     vec3 lightDirection = normalize(lightPosition - fragmentPosition);
-    vec3 diffuse = vec3(texture(diffuseTexture, fragmentTextureCoordinates)) * max(dot(normalizedInterpolatedNormal, lightDirection), 0.0f) * lightColor * lightIntensityAfterAttenuation;
-    vec3 ambient = ambientStrength * lightColor;
+    vec3 diffuse = vec3(texture(diffuseTexture, interpolatedTextureCoordinates)) * max(dot(normalizedInterpolatedNormal, lightDirection), 0.0f) * lightColor * lightIntensityAfterAttenuation;
+    vec3 ambient = ambientStrength * lightColor - interpolatedColor - interpolatedTangent - interpolatedBitangent;
     vec3 viewDirection = normalize(camera.position - fragmentPosition);
-    vec3 specular = vec3(texture(specularTexture, fragmentTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
+    vec3 specular = vec3(texture(specularTexture, interpolatedTextureCoordinates)) * pow(max(dot(normalizedInterpolatedNormal, normalize(lightDirection + viewDirection)), 0.0f), 16.0f) * lightColor * lightIntensityAfterAttenuation;
     fragmentColor = aces(vec4((ambient + diffuse + specular), 1.0f));
     //    fragmentColor = aces(vec4((ambient + diffuse), 1.0f));
     //    fragmentColor = aces(vec4(texture(diffuseTexture, fragmentTextureCoordinates)));

@@ -182,8 +182,8 @@ std::vector<IE::Graphics::Shader::ReflectionInfo> IE::Graphics::Shader::getRefle
                .type = VK_DESCRIPTOR_TYPE_SAMPLER}
             );
         }
-        return reflectedInfo;
     }
+    return reflectedInfo;
 }
 
 void IE::Graphics::Shader::build(IE::Graphics::Subpass *t_subpass) {

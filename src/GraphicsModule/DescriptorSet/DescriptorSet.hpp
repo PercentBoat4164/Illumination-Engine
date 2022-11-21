@@ -24,20 +24,13 @@ public:
 
     void build(RenderEngine *t_engineLink);
 
-    static bool isDescriptorControlledBySetType(SetNumber t_type, std::string name);
-
-    static VkDescriptorSetLayout_T *getLayout(
+    static VkDescriptorSetLayout getLayout(
       IE::Graphics::RenderEngine          *t_engineLink,
       size_t                               t_set,
       std::vector<std::shared_ptr<Shader>> t_shaders
     );
 
 private:
-    static const std::array<std::vector<std::string>, 4>          DESCRIPTOR_TYPE_MAP;
-    static const std::vector<std::string>                         PER_FRAME_DESCRIPTORS;
-    static const std::vector<std::string>                         PER_SUBPASS_DESCRIPTORS;
-    static const std::vector<std::string>                         PER_MATERIAL_DESCRIPTORS;
-    static const std::vector<std::string>                         PER_OBJECT_DESCRIPTORS;
-    static const std::array<std::vector<VkDescriptorPoolSize>, 4> DESCRIPTOR_POOL_SIZES;
+    static const std::vector<std::tuple<VkDescriptorType, uint32_t>> PER_FRAME_DESCRIPTOR_SET_LAYOUT_INFO;
 };
 }  // namespace IE::Graphics
