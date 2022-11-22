@@ -31,8 +31,8 @@ public:
         windowedResolution   = {defaultResolution};
         currentResolution    = fullscreen ? &fullscreenResolution : &windowedResolution;
         defaultPosition      = {
-               (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
-               (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
+          (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
+          (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
         fullscreenPosition = {0, 0};
         windowedPosition   = {defaultPosition};
         currentPosition    = fullscreen ? &fullscreenPosition : &windowedPosition;
