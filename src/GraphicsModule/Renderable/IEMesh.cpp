@@ -2,7 +2,7 @@
 
 #include "Buffer/IEBuffer.hpp"
 #include "Core/FileSystemModule/File.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "IERenderEngine.hpp"
 
 IEMesh::IEMesh(IERenderEngine *engineLink) {

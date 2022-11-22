@@ -5,7 +5,7 @@
 #include "IERenderEngine.hpp"
 
 /* Include dependencies from Core. */
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 
 /* Include external dependencies. */
 #include <vulkan/vulkan.h>

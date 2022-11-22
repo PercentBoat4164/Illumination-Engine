@@ -1,6 +1,6 @@
 #include "IECommandBuffer.hpp"
 
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "GraphicsModule/Shader/IEDescriptorSet.hpp"
 #include "GraphicsModule/Shader/IEPipeline.hpp"
 #include "IEDependency.hpp"

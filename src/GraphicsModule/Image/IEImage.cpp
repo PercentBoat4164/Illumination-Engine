@@ -6,7 +6,7 @@
 #include "IERenderEngine.hpp"
 
 /* Include dependencies from Core. */
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 
 [[maybe_unused]] [[nodiscard]] uint8_t IEImage::getHighestMSAASampleCount(uint8_t requested) const {
     uint8_t                 count = 1;

@@ -29,9 +29,7 @@ void IE::Script::detail::PythonScript::compile() {
     if (fclose(file) != 0) {
         // log error using errno
     }
-    std::string importPath{
-      "/home/thaddeus/Documents/Programming/C++/Illumination-Engine/cmake-build-debug-gcc-v12/bin/build/"
-      "lib.linux-x86_64-3.10"};
+    std::string importPath{"build/lib.linux-x86_64-3.10"};
     size = importPath.size();
     PySys_SetPath(Py_DecodeLocale(importPath.c_str(), &size));
     PyRun_SimpleString("import rotate");

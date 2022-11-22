@@ -1,5 +1,5 @@
 #include "Core/FileSystemModule/FileSystem.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "Core/ThreadingModule/ThreadPool.hpp"
 #include "GraphicsModule/IERenderEngine.hpp"
 #include "InputModule/IEKeyboard.hpp"

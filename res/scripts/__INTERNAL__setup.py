@@ -11,5 +11,5 @@ def compile(file):
     )
 
 
-if __name__ == "__main__":
-    compile(sys.argv[1])
+# if __name__ == "__main__":
+#     compile(sys.argv[1])

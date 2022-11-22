@@ -30,8 +30,8 @@ set(IE_PREFER_LOCAL_LIBS ON)
 add_subdirectory(ext)  # Generate external dependencies from source
 add_subdirectory(src)  # Generate Illumination Engine from source
 
-add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res DEPENDS ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res COMMENT "Copying resource files...")
-file(COPY ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})  # Move resource files
+add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res COMMAND ${CMAKE_COMMAND} -E copy_if_different ${IE_BASE_DIR}/res ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res DEPENDS ${IE_BASE_DIR}/res COMMENT "Copying resource files...")
+file(COPY ${IE_BASE_DIR}/res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})  # Move resource files
 
 add_compile_options(-fmodules-ts)
 if (CMAKE_BUILD_TYPE STREQUAL Debug)

@@ -7,7 +7,7 @@
 /* Include dependencies from Core. */
 #include "Core/AssetModule/IEAsset.hpp"
 #include "Core/IEWindowUser.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION

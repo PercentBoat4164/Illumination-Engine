@@ -5,7 +5,7 @@
 #include "IERenderEngine.hpp"
 
 /* Include dependencies from Core. */
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 
 void IECommandPool::create(IERenderEngine *engineLink, IECommandPool::CreateInfo *createInfo) {
     linkedRenderEngine = engineLink;
