@@ -3,11 +3,9 @@
 #include "WorkerThread.hpp"  // for WorkerThread
 
 IE::Core::ThreadPool::ThreadPool(uint8_t threadCount) : m_threads(threadCount), m_shutdown(false) {
-    std::generate(
-      m_threads.begin(),
-      m_threads.begin() + static_cast<int8_t>(threadCount),
-      [&]() -> std::thread { return std::thread(IE::Core::detail::WorkerThread(this)); }
-    );
+    std::generate(m_threads.begin(), m_threads.begin() + static_cast<int8_t>(threadCount), [&]() -> std::thread {
+        return std::thread(IE::Core::detail::WorkerThread(this));
+    });
 }
 
 std::condition_variable &IE::Core::ThreadPool::getCondition() {
