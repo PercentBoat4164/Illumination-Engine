@@ -1,6 +1,6 @@
 # Project exclude paths
 # CLion
-/*-build*
+/*-build-*
 /.idea
 # Visual Studio Code
 /.vs/

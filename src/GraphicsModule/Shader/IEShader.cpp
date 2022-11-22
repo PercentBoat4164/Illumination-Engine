@@ -6,7 +6,7 @@
 
 
 /* Include dependencies from Core. */
-#include "Core/FileSystemModule/IEFile.hpp"
+#include "Core/FileSystemModule/File.hpp"
 
 void IEShader::setAPI(const IEAPI &API) {
     if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
@@ -23,36 +23,35 @@ void IEShader::destroy() {
     deletionQueue.clear();
 }
 
-std::function<void(IEShader &, IERenderEngine *, IEFile *)> IEShader::_create = nullptr;
+std::function<void(IEShader &, IERenderEngine *, IE::Core::File *)> IEShader::_create = nullptr;
 
-void IEShader::create(IERenderEngine *engineLink, IEFile *shaderFile) {
+void IEShader::create(IERenderEngine *engineLink, IE::Core::File *shaderFile) {
     _create(*this, engineLink, shaderFile);
 }
 
-void IEShader::_openglCreate(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
+void IEShader::_openglCreate(IERenderEngine *renderEngineLink, IE::Core::File *shaderFile) {
     file               = shaderFile;
     linkedRenderEngine = renderEngineLink;
     GLenum shaderType  = GL_VERTEX_SHADER;
-    if (file->extensions()[0] == "frag") shaderType = GL_FRAGMENT_SHADER;
+    if (file->extension == ".frag") shaderType = GL_FRAGMENT_SHADER;
     shaderID = glCreateShader(shaderType);
-    compile(file->path, file->path);
+    compile(file->path.string(), file->path.string());
 }
 
-void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IEFile *shaderFile) {
-    file                                = shaderFile;
-    linkedRenderEngine                  = renderEngineLink;
-    std::vector<std::string> extensions = file->extensions();
-    std::string              fileContents;
-    if (std::find(extensions.begin(), extensions.end(), "spv") == extensions.end()) {
-        compile(file->path, file->path + ".spv");
-        file = new IEFile{file->path + ".spv"};
+void IEShader::_vulkanCreate(IERenderEngine *renderEngineLink, IE::Core::File *shaderFile) {
+    file               = shaderFile;
+    linkedRenderEngine = renderEngineLink;
+    std::string fileContents;
+    if (file->extension == ".spv") {
+        compile(file->path.string(), file->path.string() + ".spv");
+        file = new IE::Core::File{file->path.string() + ".spv"};
     }
-    file->open();
-    fileContents = file->read((size_t) file->length, 0);
-    file->close();
+    file                       = shaderFile;
+    std::vector<char> contents = file->read();
+    fileContents               = std::string(contents.begin(), contents.end());
     VkShaderModuleCreateInfo shaderModuleCreateInfo{
       .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-      .codeSize = static_cast<size_t>(file->length),
+      .codeSize = static_cast<size_t>(file->size),
       .pCode    = reinterpret_cast<const uint32_t *>(fileContents.data()),
     };
     VkResult result =
@@ -81,13 +80,12 @@ void IEShader::compile(const std::string &input, const std::string &output) {
 }
 
 void IEShader::_openglCompile(const std::string &input, std::string) {
-    file->open();
-    std::string contents = file->read((size_t) file->length, 0);
-
     // Compile shader
-    GLint         result = GL_FALSE;
-    int           infoLogLength;
-    const GLchar *shader = contents.c_str();
+    GLint             result = GL_FALSE;
+    int               infoLogLength;
+    std::vector<char> code = file->read();
+    std::string       contents{code.begin(), code.end()};
+    const GLchar     *shader = contents.data();
     glShaderSource(shaderID, 1, &shader, nullptr);
     glCompileShader(shaderID);
     glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);

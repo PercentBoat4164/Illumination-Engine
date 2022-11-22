@@ -13,13 +13,12 @@
 
 // External dependencies
 #define GLEW_IMPLEMENTATION
-#include <GL/glew.h>  // GL/glew.h must be included before GLFW/glfw3.h
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
+#include <GL/glew.h>
 
 
 // System dependencies
 #include <array>
+#include <GLFW/glfw3.h>
 #include <string>
 
 class IESettings {

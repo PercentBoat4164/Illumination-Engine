@@ -1,7 +1,7 @@
 set(IEEngineModuleSourceFiles  # Gather sources
-        Engine.cpp
-        Window.cpp
-        )
+  Engine.cpp
+  Window.cpp
+  )
 
 # Create and define properties for the library
 add_library(IEEngineModule ${IEEngineModuleSourceFiles})
