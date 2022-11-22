@@ -8,7 +8,7 @@ class IERenderEngine;
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "GraphicsModule/CommandBuffer/IEDependency.hpp"
-#include "IEAPI.hpp"
+#include "GraphicsModule/IEAPI.hpp"
 
 // External dependencies
 #include <vk_mem_alloc.h>
