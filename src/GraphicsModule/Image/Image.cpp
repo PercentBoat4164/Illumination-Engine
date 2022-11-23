@@ -4,7 +4,7 @@
 #include "RenderEngine.hpp"
 
 void IE::Graphics::Image::createImage(
-  IE::Graphics::Image::Type                        t_type,
+  IE::Graphics::Image::Preset                      t_preset,
   uint64_t                                         t_flags,
   IE::Core::MultiDimensionalVector<unsigned char> &t_data
 ) {
@@ -16,7 +16,7 @@ void IE::Graphics::Image::createImage(
         );
         return;
     }
-    if (_createImage(t_type, t_flags, t_data)) m_status = IE_IMAGE_STATUS_CREATED;
+    if (_createImage(t_preset, t_flags, t_data)) m_status = IE_IMAGE_STATUS_CREATED;
 }
 
 void IE::Graphics::Image::destroyImage() {

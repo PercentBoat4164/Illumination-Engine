@@ -69,10 +69,9 @@ private:
     static IE::Core::ThreadPool                                m_threadPool;
     static IE::Core::FileSystem                                m_filesystem;
 
-    Core() = default;
-
     Core(const std::filesystem::path &t_path) {
         m_filesystem.setBaseDirectory(t_path);
     }
+
 } __attribute__((aligned(128)));
 }  // namespace IE::Core

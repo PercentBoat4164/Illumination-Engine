@@ -10,6 +10,7 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 		Buffer/BufferVulkan.cpp
 		CommandBuffer/CommandBuffer.cpp
 		CommandBuffer/CommandPool.cpp
+		Image/Image.cpp
 		Image/ImageVulkan.cpp
 		RenderEngine.cpp
 		DescriptorSet/DescriptorSet.cpp
@@ -22,6 +23,10 @@ set(IEGraphicsModuleSourceFiles  # Gather sources
 		Renderable/Vertex.cpp
 		SyncObjects/Fence.cpp
 		SyncObjects/Semaphore.cpp
+		Renderable/Material.cpp
+		Renderable/Mesh.cpp
+		Renderable/Instance.cpp
+		Renderable/Renderable.cpp
 		)
 
 # Create and define properties for the library

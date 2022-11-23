@@ -2,6 +2,7 @@
 
 #include "Image.hpp"
 
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan_core.h>
 
 namespace IE::Graphics::detail {
@@ -18,6 +19,9 @@ public:
 
     VkImage       m_id{};
     VkImageLayout m_layout{};
+    VmaAllocation m_allocation{};
+
+    bool _createImage(Preset t_preset, uint64_t t_flags, IE::Core::MultiDimensionalVector<unsigned char> &t_data);
 
     static VkImageLayout layoutFromPreset(Preset t_preset);
 

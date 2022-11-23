@@ -29,25 +29,6 @@ void IE::Graphics::CommandPool::create(
     else m_linkedRenderEngine->getLogger().log("Created CommandPool");
 }
 
-void IE::Graphics::CommandPool::prepareCommandBuffers(uint32_t commandBufferCount) {
-    m_commandBuffers.reserve(commandBufferCount);
-    for (uint32_t startIndex = m_commandBuffers.size(); startIndex < commandBufferCount; ++startIndex)
-        m_commandBuffers.push_back(std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine, this));
-}
-
-std::shared_ptr<IE::Graphics::CommandBuffer> IE::Graphics::CommandPool::index(uint32_t index) {
-    if (index <= m_commandBuffers.size()) {
-        if (index == m_commandBuffers.size())
-            m_commandBuffers.push_back(std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine, this));
-        return m_commandBuffers[index];
-    }
-    m_linkedRenderEngine->getLogger().log(
-      "Attempt to access a command buffer that does not exist!",
-      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
-    );
-    return m_commandBuffers[m_commandBuffers.size() - 1];
-}
-
 IE::Graphics::CommandPool::~CommandPool() {
     for (const std::shared_ptr<IE::Graphics::CommandBuffer> &commandBuffer : m_commandBuffers)
         commandBuffer->destroy();

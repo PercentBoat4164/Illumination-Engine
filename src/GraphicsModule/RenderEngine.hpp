@@ -14,6 +14,7 @@
 #define GLEW_IMPLEMENTATION
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
+#include "Renderable/Renderable.hpp"
 #include "VkBootstrap.h"
 
 #include <memory>
@@ -33,7 +34,7 @@
 namespace IE::Graphics {
 class RenderEngine : public IE::Core::Engine {
 public:
-    using AspectType = IEAspect;
+    using AspectType = IE::Graphics::Renderable;
 
 private:
     std::string m_applicationName{ILLUMINATION_ENGINE_NAME};
@@ -103,11 +104,6 @@ public:
 
     IE::Core::Logger getLogger();
 
-    IE::Graphics::CommandPool *tryGetCommandPool();
-
-    IE::Graphics::CommandPool *getCommandPool();
-    IEAspect                  *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
-
     IE::Graphics::API getAPI();
 
     IE::Core::Engine *create() override;
@@ -153,11 +149,17 @@ public:
 
     ~RenderEngine() override;
 
-    AspectType *getAspect(const std::string &t_id) override;
+#pragma clang diagnostic push
+#pragma ide diagnostic   ignored "HidingNonVirtualFunction"
+    std::shared_ptr<AspectType> createAspect(const std::string &t_id);
 
-    void     createRenderPasses();
-    VkFormat getColorFormat();
-    Settings getSettings();
-    void     createDescriptorSets();
+    std::shared_ptr<AspectType> getAspect(const std::string &t_id);
+#pragma clang diagnostic pop
+
+    void                         createRenderPasses();
+    VkFormat                     getColorFormat();
+    Settings                    &getSettings();
+    void                         createDescriptorSets();
+    std::shared_ptr<CommandPool> getCommandPool();
 };
 }  // namespace IE::Graphics

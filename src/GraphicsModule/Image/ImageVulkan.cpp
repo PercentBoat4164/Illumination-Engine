@@ -376,3 +376,58 @@ VkAccessFlags IE::Graphics::detail::ImageVulkan::accessFlagsFromPreset(IE::Graph
 IE::Graphics::Image::Intent IE::Graphics::detail::ImageVulkan::intentFromPreset(Preset t_preset) {
     return m_intents[t_preset];
 }
+
+bool IE::Graphics::detail::ImageVulkan::_createImage(
+  IE::Graphics::Image::Preset                      t_preset,
+  uint64_t                                         t_flags,
+  IE::Core::MultiDimensionalVector<unsigned char> &t_data
+) {
+    std::vector<uint32_t> queueFamilyIndices{
+      m_linkedRenderEngine->m_device.get_queue_index(vkb::QueueType::graphics).value(),
+    };
+
+    VkImageCreateInfo imageCreateInfo{
+      .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      .pNext                 = nullptr,
+      .flags                 = 0x0,
+      .imageType             = VK_IMAGE_TYPE_2D,
+      .format                = VK_FORMAT_R8G8B8_SRGB,
+      .extent                = {.width = 800, .height = 600, .depth = 1},
+      .mipLevels             = 0x1,
+      .arrayLayers           = 0x1,
+      .samples               = VK_SAMPLE_COUNT_1_BIT,
+      .tiling                = VK_IMAGE_TILING_OPTIMAL,
+      .usage                 = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      .sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
+      .queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size()),
+      .pQueueFamilyIndices   = queueFamilyIndices.data(),
+      .initialLayout         = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    };
+
+    VmaAllocationCreateInfo allocationCreateInfo{
+      .flags          = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
+      .usage          = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
+      .requiredFlags  = 0x0,
+      .preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+      .memoryTypeBits = UINT32_MAX,
+      .pool           = nullptr,
+      .pUserData      = dynamic_cast<Image *>(this),
+      .priority       = 0.0f};
+
+    VkResult result{vmaCreateImage(
+      m_linkedRenderEngine->getAllocator(),
+      &imageCreateInfo,
+      &allocationCreateInfo,
+      &m_id,
+      &m_allocation,
+      nullptr
+    )};
+    if (result != VK_SUCCESS) {
+        m_linkedRenderEngine->getLogger().log(
+          "Failed to create image! Error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result)
+        );
+        return false;
+    }
+    m_linkedRenderEngine->getLogger().log("Created Image");
+    return true;
+}

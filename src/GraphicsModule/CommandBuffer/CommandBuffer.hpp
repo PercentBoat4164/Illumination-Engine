@@ -44,13 +44,16 @@ class CommandBuffer {
     using RecordFlags = uint64_t;
 
 public:
-    VkCommandBuffer             commandBuffer{};
-    IE::Graphics::CommandPool  *commandPool{};
-    IE::Graphics::RenderEngine *linkedRenderEngine{};
-    Status                      status{};
-    RecordFlags                 recordFlags{};
+    VkCommandBuffer              m_commandBuffer{};
+    std::shared_ptr<CommandPool> m_commandPool{};
+    IE::Graphics::RenderEngine  *m_linkedRenderEngine{};
+    Status                       m_status{};
+    RecordFlags                  m_recordFlags{};
 
-    CommandBuffer(IE::Graphics::RenderEngine *linkedRenderEngine, IE::Graphics::CommandPool *parentCommandPool);
+    CommandBuffer(
+      IE::Graphics::RenderEngine                *t_engineLink,
+      std::shared_ptr<IE::Graphics::CommandPool> t_parentCommandPool
+    );
 
     void wait();
 

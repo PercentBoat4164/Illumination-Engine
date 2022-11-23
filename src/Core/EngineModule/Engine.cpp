@@ -4,10 +4,9 @@
 
 #include <utility>
 
-IEAspect *IE::Core::Engine::getAspect(const std::string &t_id) {
+std::shared_ptr<IE::Core::Aspect> IE::Core::Engine::getAspect(const std::string &t_id) {
     auto aspect = m_aspects.find(t_id);
-    if (aspect != m_aspects.end()) return aspect->second.get();
-    IE::Core::Core::getLogger()->log("Aspect '" + t_id + "' does not exist!");
+    if (aspect != m_aspects.end()) return aspect->second;
     return nullptr;
 }
 

@@ -1,6 +1,6 @@
 #include "RenderEngine.hpp"
 
-#include "Core/AssetModule/IEAsset.hpp"
+#include "Core/AssetModule/Asset.hpp"
 #include "Image/Image.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -361,7 +361,7 @@ VkFormat IE::Graphics::RenderEngine::getColorFormat() {
     return m_swapchain.image_format;
 }
 
-IE::Graphics::Settings IE::Graphics::RenderEngine::getSettings() {
+IE::Graphics::Settings &IE::Graphics::RenderEngine::getSettings() {
     return m_settings;
 }
 
@@ -445,31 +445,21 @@ IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
     return m_graphicsAPICallbackLog;
 }
 
-IE::Graphics::CommandPool *IE::Graphics::RenderEngine::tryGetCommandPool() {
-    for (const auto &commandPool : m_commandPools)
-        if (commandPool->tryLock()) {
-            commandPool->unlock();
-            return commandPool.get();
-        }
-    return nullptr;
+std::shared_ptr<IE::Graphics::CommandPool> IE::Graphics::RenderEngine::getCommandPool() {
+    static uint32_t commandPoolIndex;
+    return m_commandPools[commandPoolIndex++];
 }
 
-IE::Graphics::CommandPool *IE::Graphics::RenderEngine::getCommandPool() {
-    while (true) {
-        IE::Graphics::CommandPool *commandPool{tryGetCommandPool()};
-        if (commandPool != nullptr) return commandPool;
-    }
-}
-
-IEAspect *IE::Graphics::RenderEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
-    AspectType *aspect = getAspect(t_id);
-    if (aspect == nullptr) aspect = new AspectType();
-    t_asset.lock()->addAspect(aspect);
+std::shared_ptr<IE::Graphics::RenderEngine::AspectType>
+IE::Graphics::RenderEngine::createAspect(const std::string &t_id) {
+    std::shared_ptr<AspectType> aspect = getAspect(t_id);
+    if (aspect == nullptr) aspect = std::make_shared<AspectType>(this);
     return aspect;
 }
 
-IE::Graphics::RenderEngine::AspectType *IE::Graphics::RenderEngine::getAspect(const std::string &t_id) {
-    return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
+std::shared_ptr<IE::Graphics::RenderEngine::AspectType>
+IE::Graphics::RenderEngine::getAspect(const std::string &t_id) {
+    return std::static_pointer_cast<AspectType>(IE::Core::Engine::getAspect(t_id));
 }
 
 std::string IE::Graphics::RenderEngine::makeErrorMessage(

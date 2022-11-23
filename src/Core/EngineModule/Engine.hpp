@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Core/AssetModule/IEAspect.hpp"
+#include "Core/AssetModule/Aspect.hpp"
 
 #include <memory>
 #include <unordered_map>
 
 namespace IE::Core {
 class Engine {
-    using AspectType = IEAspect;
+    using AspectType = Aspect;
 
 protected:
-    std::unordered_map<std::string, std::shared_ptr<IEAspect>> m_aspects;
+    std::unordered_map<std::string, std::shared_ptr<Aspect>> m_aspects;
 
 public:
     Engine() = default;
@@ -25,11 +25,17 @@ public:
 
     virtual ~Engine() = default;
 
-
     virtual Engine *create() = 0;
 
-    virtual IEAspect *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) = 0;
+    template<typename T>
 
-    virtual IEAspect *getAspect(const std::string &t_id);
+        requires std::derived_from<T, IE::Core::Aspect>
+    std::shared_ptr<T> createAspect(const std::string &t_id) {
+        std::shared_ptr<T> aspect = getAspect(t_id);
+        if (aspect == nullptr) aspect = std::make_shared<T>();
+        return aspect;
+    }
+
+    std::shared_ptr<Aspect> getAspect(const std::string &t_id);
 };
 }  // namespace IE::Core

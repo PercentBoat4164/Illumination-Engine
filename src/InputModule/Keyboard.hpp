@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/AssetModule/IEAspect.hpp"
+#include "Core/AssetModule/Aspect.hpp"
 
 #ifndef GLEW_IMPLEMENTATION
 #    define GLEW_IMPLEMENTATION
@@ -64,7 +64,7 @@ namespace IE::Input {
 /**
  * @brief The Keyboard class is intended to manage keyboard event handling.
  */
-class Keyboard : public IEAspect {
+class Keyboard : public IE::Core::Aspect {
 public:
     void *attachment;  // pointer to object for access through the window user pointer
 

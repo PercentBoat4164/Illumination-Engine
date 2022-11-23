@@ -1,3 +1,4 @@
+#include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
 #include "GraphicsModule/Image/ImageVulkan.hpp"
 #include "RenderEngine.hpp"
@@ -9,6 +10,8 @@ int main(int argc, char **argv) {
         IE::Core::Core::getInst(resourceLocation);
     }
 
-    auto *renderEngine = IE::Core::Core::createEngine<IE::Graphics::RenderEngine>("renderEngine");
+    auto           *renderEngine = IE::Core::Core::createEngine<IE::Graphics::RenderEngine>("renderEngine");
+    IE::Core::Asset asset(IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue"));
+    asset.addAspect(renderEngine->createAspect("AncientStatue"));
     //    while (glfwWindowShouldClose(renderEngine->getWindow()) == 0) glfwPollEvents();
 }
