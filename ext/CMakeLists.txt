@@ -1,26 +1,7 @@
-include(FetchContent)  # Requires CMake 3.11
-include(FindPkgConfig)
+include(../cmake/AsyncCPM.cmake)
 
-set(IE_DEPS_DOWNLOAD_DIR   ${IE_BASE_DIR}/ext/deps)
-set(IE_DEPS_BUILD_DIR      ${CMAKE_BINARY_DIR}/deps)
-set(IE_DOWNLOAD_GUARD_FILE ${CMAKE_SOURCE_DIR}/__DOWNLOAD_GUARD__)
-
-set(FETCHCONTENT_BASE_DIR ${IE_DEPS_DOWNLOAD_DIR})
-
-# Possibly add https://github.com/libvips/libvips as the image importer of choice. (high speed, high compatibility, highly maintained, but does not use CMake)
-
-# package_DATA =     NAME        MODULE_NAME  EXPORT_LIB  BUILD_DIR      INCLUDE_DIR DOWNLOAD_ARGS
-set(assimp_DATA      assimp      assimp       EXT_AssImp ""             "/include"  GIT_REPOSITORY https://github.com/assimp/assimp                                               GIT_PROGRESS ON GIT_TAG v5.2.5)
-set(glm_DATA         glm         glm          EXT_GLM    ""             ""          GIT_REPOSITORY https://github.com/g-truc/glm                                                  GIT_PROGRESS ON GIT_TAG master)
-set(glew_DATA        glew        glew         EXT_OpenGL "/build/cmake" "/include"  URL            https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
-set(glfw_DATA        glfw        glfw3        EXT_GLFW   ""             "/include"  GIT_REPOSITORY https://github.com/glfw/glfw                                                   GIT_PROGRESS ON GIT_TAG 3.3.8)
-set(spdlog_DATA      spdlog      spdlog       EXT_SpdLog ""             "/include"  GIT_REPOSITORY https://github.com/gabime/spdlog                                               GIT_PROGRESS ON GIT_TAG v1.x)
-set(VkBootstrap_DATA VkBootstrap vk-bootstrap EXT_Vulkan ""             "/src"      GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap                                 GIT_PROGRESS ON GIT_TAG v0.6)
-set(vma_DATA         vma         vma          EXT_Vulkan ""             "/include"  GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator              GIT_PROGRESS ON GIT_TAG v3.0.1)
-set(Vulkan_DATA      Vulkan      Vulkan       EXT_Vulkan)
-set(OpenGL_DATA      OpenGL      OpenGL       EXT_OpenGL)
-set(DATA assimp_DATA glm_DATA glew_DATA glfw_DATA spdlog_DATA VkBootstrap_DATA vma_DATA Vulkan_DATA OpenGL_DATA)
-
+set(CPM_SOURCE_CACHE ${CMAKE_CURRENT_SOURCE_DIR}/deps)
+set(CPM_USE_LOCAL_PACKAGES ${IE_PREFER_LOCAL_LIBS})
 
 # All options for Dependencies should go here
 # AssImp Options
@@ -121,97 +102,41 @@ set(VMA_DEBUG_INITIALIZE_ALLOCATIONS)
 set(VMA_DEBUG_GLOBAL_MUTEX)
 set(VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT)
 
-# Lock the Download Guard
-file(LOCK ${IE_DOWNLOAD_GUARD_FILE} RESULT_VARIABLE HAS_DOWNLOAD_GUARD_LOCK TIMEOUT 0)
-if (NOT ${HAS_DOWNLOAD_GUARD_LOCK} MATCHES 0)
-	# Wait until the Download Guard is unlocked
-	file(LOCK ${IE_DOWNLOAD_GUARD_FILE})
+# CCache Options
+set(USE_CCACHE ON)
+
+if (USE_CCACHE)
+	if (MSVC)
+		set(USE_CCACHE OFF)
+	endif ()
+	if (XCODE)
+		set(USE_CCACHE OFF)
+	endif ()
 endif ()
 
-# FetchContent loop is guarded by the Download Guard
-# Do all the downloads here. They will only run in a single CMake instance at a time no matter how many are running.
-foreach (LIST ${DATA})
-	list(LENGTH ${LIST} LEN)
-	list(GET ${LIST} 0 NAME)
-	if (${LEN} MATCHES 3)
-		# If the package has no download arguments, then it must be in local storage
-		find_package(${NAME} REQUIRED QUIET)
-		if (PKG_CONFIG_FOUND AND NOT ${NAME}_FOUND)
-			list(GET ${LIST} 1 PACKAGE)
-			pkg_search_module(${NAME} ${PACKAGE} QUIET)
-		endif ()
-		if (${NAME}_FOUND)
-			if (${NAME}_VERSION)
-				message(STATUS "Using required local package ${NAME} v${${NAME}_VERSION}.")
-			else ()
-				message(STATUS "Using required local package ${NAME}.")
-			endif ()
-		else ()
-			message(ERROR "Failed to find required local package ${NAME}.")
-		endif ()
-	else ()
-		if (${IE_PREFER_LOCAL_LIBS})
-			# Get package from local storage
-			find_package(${NAME} QUIET)
-			if (${NAME}_FOUND)
-				message(STATUS "Using local ${NAME} version ${${NAME}_VERSION}.")
-			else ()
-				if (PKG_CONFIG_FOUND)
-					list(GET ${LIST} 1 PACKAGE)
-					pkg_search_module(${NAME} ${PACKAGE} QUIET)
-					if (${NAME}_FOUND)
-						message(STATUS "Using local ${NAME} version ${${NAME}_VERSION}.")
-					endif ()
-				endif ()
-			endif ()
-		endif ()
-		if (NOT ${NAME}_FOUND)
-			list(GET ${LIST} -1 VERSION)
-			message(STATUS "Using remote ${NAME} version ${VERSION}.")
-			list(SUBLIST ${LIST} 5 -1 ARGS)
-			FetchContent_Declare(${NAME} ${ARGS})
+# Add all packages
+# GLEW is wierd. Why is it like this?
+CPMAddPackage(NAME glew URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz VERSION 2.2.0)
+add_subdirectory(${glew_SOURCE_DIR}/build/cmake)
 
-			# Check old version information
-			file(APPEND ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version)
-			file(READ ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version OLD_VERSION)
+CPMAddPackage(NAME Ccache.cmake GITHUB_REPOSITORY TheLartians/Ccache.cmake VERSION 1.2.4)
+CPMAddPackage("gh:assimp/assimp@5.2.5")
+CPMAddPackage("gh:g-truc/glm#master")
+CPMAddPackage("gh:glfw/glfw#3.3.8")
+CPMAddPackage("gh:gabime/spdlog@1.11.0")
+CPMAddPackage("gh:charles-lunarg/vk-bootstrap@0.6")
+CPMAddPackage("gh:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@3.0.1")
+find_package(OpenGL)
+find_package(Vulkan)
 
-			# Download content if needed
-			if (NOT OLD_VERSION STREQUAL VERSION)
-				FetchContent_Populate(${NAME} SUBBUILD_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_subbuild SOURCE_DIR ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src BINARY_DIR ${IE_DEPS_BUILD_DIR}/${NAME}_build ${ARGS})
-
-				# Update version information
-				file(WRITE ${IE_DEPS_DOWNLOAD_DIR}/${NAME}Version ${VERSION})
-			endif ()
-		endif ()
-	endif ()
-endforeach ()
-
-# Unlock the Download Guard
-file(REMOVE ${IE_DOWNLOAD_GUARD_FILE})
-
-# add_subdirectory( calls should go after the Download Guard
-foreach (LIST ${DATA})
-	list(GET ${LIST} 0 NAME)
-	list(GET ${LIST} 2 EXPORT_LIB)
-	if (NOT TARGET ${EXPORT_LIB})
-		add_library(${EXPORT_LIB} main.cpp)
-		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_BASE_DIR})
-	endif ()
-	if (NOT ${NAME}_FOUND)
-		list(GET ${LIST} 3 CMAKE_DIR)
-		list(GET ${LIST} 4 INCLUDE_DIR)
-		add_subdirectory(${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src/${CMAKE_DIR})
-		target_include_directories(${EXPORT_LIB} PUBLIC ${IE_DEPS_DOWNLOAD_DIR}/${NAME}_src${INCLUDE_DIR})
-	endif ()
-	list(GET ${LIST} 1 PKG_NAME)
-	if (TARGET ${PKG_NAME})
-		target_link_libraries(${EXPORT_LIB} PUBLIC ${PKG_NAME})
-	else ()
-		if (TARGET ${NAME})
-			target_link_libraries(${EXPORT_LIB} PUBLIC ${NAME})
-		else ()
-			target_link_libraries(${EXPORT_LIB} PUBLIC ${${NAME}_LIBRARIES})
-			target_include_directories(${EXPORT_LIB} PUBLIC ${${NAME}_INCLUDE_DIRS})
-		endif ()
-	endif ()
-endforeach ()
+add_library(EXT_AssImp main.cpp)
+add_library(EXT_SpdLog main.cpp)
+add_library(EXT_OpenGL main.cpp)
+add_library(EXT_Vulkan main.cpp)
+add_library(INT_src main.cpp)
+target_link_libraries(EXT_AssImp PUBLIC assimp)
+target_link_libraries(EXT_SpdLog PUBLIC spdlog)
+target_link_libraries(EXT_OpenGL PUBLIC OpenGL glew glfw glm::glm)
+target_include_directories(EXT_OpenGL PUBLIC ${glew_SOURCE_DIR}/include)
+target_link_libraries(EXT_Vulkan PUBLIC Vulkan::Vulkan vk-bootstrap VulkanMemoryAllocator glfw glm::glm)
+target_include_directories(INT_src PUBLIC ${IE_BASE_DIR}/src)

@@ -6,7 +6,7 @@
 
 /* Include dependencies from Core. */
 #include "Core/AssetModule/IEAsset.hpp"
-#include "Core/IEWindowUser.hpp"
+#include "Core/Core.hpp"
 #include "Core/LogModule/Logger.hpp"
 
 /* Include external dependencies. */
@@ -73,11 +73,12 @@ GLFWwindow *IERenderEngine::createWindow() const {
         const char *description;
         int         code = glfwGetError(&description);
         settings->logger.log(
-
           "Failed to create window! Error: " + std::to_string(code) + " " + description,
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
+    IE::Core::Core::registerWindow(pWindow);
+    IE::Core::Core::getWindow(pWindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
     return pWindow;
 }
 
@@ -627,14 +628,12 @@ IERenderEngine::~IERenderEngine() {
 }
 
 void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
-    std::shared_ptr<IERenderEngine> renderEngine =
-      (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->renderEngine;
+    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
     *renderEngine->settings->currentPosition = {x, y};
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-    std::shared_ptr<IERenderEngine> renderEngine =
-      (std::shared_ptr<IERenderEngine>) ((IEWindowUser *) glfwGetWindowUserPointer(pWindow))->renderEngine;
+    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
     *renderEngine->settings->currentResolution = {width, height};
     renderEngine->framebufferResized           = true;
 }
@@ -837,3 +836,14 @@ std::function<void(IERenderEngine &)> IERenderEngine::_destroy =
   std::function<void(IERenderEngine &)>{[](IERenderEngine &) {
       return;
   }};
+
+IERenderEngine::AspectType *IERenderEngine::getAspect(const std::string &t_id) {
+    return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
+}
+
+IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
+    AspectType *aspect = getAspect(t_id);
+    if (!aspect) aspect = new AspectType();
+    t_asset.lock()->addAspect(aspect);
+    return aspect;
+}

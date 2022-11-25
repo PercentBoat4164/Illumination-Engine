@@ -7,7 +7,7 @@ class IECamera;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "Buffer/IEBuffer.hpp"
+#include "GraphicsModule/Buffer/IEBuffer.hpp"
 #include "GraphicsModule/Shader/IEDescriptorSet.hpp"
 #include "GraphicsModule/Shader/IEPipeline.hpp"
 #include "GraphicsModule/Shader/IEShader.hpp"

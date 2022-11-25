@@ -1,92 +1,87 @@
-#include "Core/FileSystemModule/FileSystem.hpp"
-#include "Core/LogModule/Logger.hpp"
-#include "Core/ThreadingModule/ThreadPool.hpp"
-#include "GraphicsModule/IERenderEngine.hpp"
-#include "InputModule/IEKeyboard.hpp"
+#include "Core/Core.hpp"
+#include "IERenderEngine.hpp"
+#include "InputModule/InputEngine.hpp"
+#include "InputModule/Keyboard.hpp"
 #include "ScriptingModule/Script.hpp"
 
 #include <iostream>
 
-int main() {
+int main(int argc, char **argv) {
+    if (argc >= 1) {
+        std::string programLocation  = std::string(argv[0]);
+        std::string resourceLocation = programLocation.substr(0, programLocation.find_last_of('/'));
+        IE::Core::Core::getInst(resourceLocation);
+    }
+
     auto script = IE::Script::Script::create("res/assets/AncientStatue/scripts/rotate.py");
     script->compile();
-    IESettings           settings   = IESettings();
-    IE::Core::FileSystem fileSystem = IE::Core::FileSystem("res/");
+    IESettings      settings     = IESettings();
+    IERenderEngine *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
 
-    // RenderEngine must be allocated on the heap.
-    std::shared_ptr<IERenderEngine> renderEngine = std::make_shared<IERenderEngine>(&settings);
-
-    IEKeyboard keyboard{renderEngine->window};
-    keyboard.editActions(
+    IE::Input::InputEngine inputEngine{renderEngine->window};
+    IE::Input::Keyboard   *keyboard = inputEngine.getAspect("keyboard");
+    keyboard->editActions(
       GLFW_KEY_W,
       [&](GLFWwindow *) {
           renderEngine->camera.position +=
             renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
       }
     );
-    keyboard.editActions(
+    keyboard->editActions(
       GLFW_KEY_A,
       [&](GLFWwindow *) {
           renderEngine->camera.position -=
             renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed;
       }
     );
-    keyboard.editActions(
+    keyboard->editActions(
       GLFW_KEY_S,
       [&](GLFWwindow *) {
           renderEngine->camera.position -=
             renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
       }
     );
-    keyboard.editActions(
+    keyboard->editActions(
       GLFW_KEY_D,
       [&](GLFWwindow *) {
           renderEngine->camera.position +=
             renderEngine->camera.right * renderEngine->frameTime * renderEngine->camera.speed;
       }
     );
-    keyboard.editActions(
+    keyboard->editActions(
       GLFW_KEY_SPACE,
       [&](GLFWwindow *) {
           renderEngine->camera.position +=
             renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
       }
     );
-    keyboard.editActions(
+    keyboard->editActions(
       GLFW_KEY_LEFT_SHIFT,
       [&](GLFWwindow *) {
           renderEngine->camera.position -=
             renderEngine->camera.up * renderEngine->frameTime * renderEngine->camera.speed;
       }
     );
-    keyboard.editActions(
+    keyboard->editActions(
       {GLFW_KEY_LEFT_CONTROL, GLFW_PRESS},
       [&](GLFWwindow *) { renderEngine->camera.speed *= 6.0; }
     );
-    keyboard.editActions(
+    keyboard->editActions(
       {GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE},
       [&](GLFWwindow *) { renderEngine->camera.speed /= 6.0; }
     );
-    keyboard.editActions(
+    keyboard->editActions(
       {GLFW_KEY_F11, GLFW_PRESS},
       [&](GLFWwindow *) { renderEngine->toggleFullscreen(); }
     );
-    keyboard.editActions({GLFW_KEY_ESCAPE, GLFW_REPEAT}, [&](GLFWwindow *) {
+    keyboard->editActions({GLFW_KEY_ESCAPE, GLFW_REPEAT}, [&](GLFWwindow *) {
         glfwSetWindowShouldClose(renderEngine->window, 1);
     });
 
-    fileSystem.addFile("assets/AncientStatue/models/ancientStatue.fbx");
-    fileSystem.addFile("assets/AncientStatue/models/ancientStatue.obj");
-    fileSystem.addFile("assets/AncientStatue/models/ancientStatue.glb");
-    fileSystem.addFile("assets/DeepslateFloor/models/DeepslateFloor.fbx");
-
-    IEWindowUser windowUser{std::shared_ptr<IERenderEngine>(renderEngine), &keyboard};
-    glfwSetWindowUserPointer(renderEngine->window, &windowUser);
-
-    std::shared_ptr<IEAsset> fbx = std::make_shared<IEAsset>();
-    fbx->filename                = "res/assets/AncientStatue/models/ancientStatue.fbx";
-    fbx->addAspect(new IERenderable{});
+    std::shared_ptr<IEAsset> fbx(std::make_shared<IEAsset>());
+    fbx->filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
     fbx->position = {2, 1, 0};
+    fbx->addAspect(new IERenderable{});
     renderEngine->addAsset(fbx);
     std::shared_ptr<IEAsset> obj = std::make_shared<IEAsset>();
     obj->filename                = "res/assets/AncientStatue/models/ancientStatue.obj";
@@ -118,7 +113,7 @@ int main() {
         glfwPollEvents();
         threadPool.submit([&] {
             script->update();
-            keyboard.handleQueue();
+            keyboard->handleQueue();
         });
     }
 }

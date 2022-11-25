@@ -13,6 +13,7 @@ struct GLFWmonitor;
 // Internal dependencies
 #include "CommandBuffer/IECommandPool.hpp"
 #include "Core/AssetModule/IEAsset.hpp"
+#include "Core/EngineModule/Engine.hpp"
 #include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
 #include "GraphicsModule/RenderPass/IERenderPass.hpp"
 #include "IEAPI.hpp"
@@ -30,7 +31,10 @@ struct GLFWmonitor;
 #include <string>
 #include <vector>
 
-class IERenderEngine {
+class IERenderEngine : public IE::Core::Engine {
+public:
+    using AspectType = IERenderable;
+
 private:
     /**
      * @brief Private helper function that creates a Vulkan instance.
@@ -300,4 +304,7 @@ public:
     );
 
     static void setAPI(const IEAPI &API);
+
+    AspectType *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
+    AspectType *getAspect(const std::string &t_id) override;
 };
