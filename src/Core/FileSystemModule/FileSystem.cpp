@@ -53,8 +53,8 @@ IE::Core::File *IE::Core::FileSystem::getFile(const std::filesystem::path &fileP
     return &iterator->second;
 }
 
-std::filesystem::path IE::Core::FileSystem::getBaseDirectory(const std::filesystem::path &t_path) {
-    return t_path;
+std::filesystem::path IE::Core::FileSystem::getBaseDirectory() {
+    return m_path;
 }
 
 void IE::Core::FileSystem::setBaseDirectory(const std::filesystem::path &t_path) {

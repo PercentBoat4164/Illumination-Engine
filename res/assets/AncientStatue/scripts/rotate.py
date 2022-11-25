@@ -3,7 +3,7 @@ def update():
 
 
 def initialize():
-    print("Initialized")
+    print("Initialized!")
 
 
 # if __name__ == '__main__':

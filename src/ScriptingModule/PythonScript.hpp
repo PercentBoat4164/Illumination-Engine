@@ -11,7 +11,10 @@ class PythonScript : public IE::Script::Script {
 private:
     static uint32_t m_pythonScripts;
 
+    std::string     m_scriptName;
     IE::Core::File *m_file;
+    PyObject       *scriptUpdate;
+    PyObject       *scriptInitialize;
 
     //    PyInterpreterState *state;
 
@@ -22,10 +25,10 @@ public:
 
     void initialize() override;
 
+    void load() override;
+
     void compile() override;
 
-    static std::shared_ptr<Script> create(IE::Core::File *t_file) {
-        return std::make_shared<IE::Script::detail::PythonScript>(t_file);
-    }
+    static std::shared_ptr<Script> create(IE::Core::File *t_file);
 };
 }  // namespace IE::Script::detail

@@ -33,7 +33,7 @@ public:
 
     void setBaseDirectory(const std::filesystem::path &t_path);
 
-    std::filesystem::path getBaseDirectory(const std::filesystem::path &t_path);
+    std::filesystem::path getBaseDirectory();
 
     std::filesystem::path &makePathAbsolute(std::filesystem::path &filePath);
 

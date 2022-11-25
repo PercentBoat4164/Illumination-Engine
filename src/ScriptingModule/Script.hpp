@@ -19,6 +19,8 @@ public:
 
     virtual void initialize() = 0;
 
+    virtual void load() = 0;
+
     virtual void compile() = 0;
 
     static std::shared_ptr<Script> create(Core::File *t_file);

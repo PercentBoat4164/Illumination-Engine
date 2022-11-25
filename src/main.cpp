@@ -13,16 +13,20 @@ int main(int argc, char **argv) {
         IE::Core::Core::getInst(resourceLocation);
     }
 
+    IE::Core::ThreadPool threadPool{};
+
     auto script = IE::Script::Script::create(
       IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue/scripts/rotate.py")
     );
-    script->compile();
-    script->initialize();
-    IESettings      settings     = IESettings();
-    IERenderEngine *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
+    std::future<void> script_load{IE::Core::Core::getThreadPool()->submit([&] {
+        script->compile();
+        script->load();
+        script->initialize();
+    })};
+    IESettings        settings     = IESettings();
+    IERenderEngine   *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
 
     // RenderEngine must be allocated on the heap.
-    IE::Core::ThreadPool threadPool{};
 
     renderEngine->settings->logger.log(
       "Beginning main loop.",
@@ -30,8 +34,10 @@ int main(int argc, char **argv) {
     );
 
     glfwSetTime(0.0);
+    script_load.wait();
     while (renderEngine->update()) {
+        std::future<void> script_execute{IE::Core::Core::getThreadPool()->submit([&] { script->update(); })};
         glfwPollEvents();
-        script->update();
+        script_execute.wait();
     }
 }
