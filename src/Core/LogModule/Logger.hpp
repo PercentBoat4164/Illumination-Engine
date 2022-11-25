@@ -8,7 +8,7 @@
 namespace IE::Core {
 /**
  * @brief A small logging tool that is a very thin wrapper for spdlog.
- * @class IELogger
+ * @class Logger
  */
 class Logger {
 private:

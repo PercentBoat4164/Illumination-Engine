@@ -3,7 +3,7 @@
 #include "Core/EngineModule/Engine.hpp"
 #include "Core/EngineModule/Window.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "Core/ThreadingModule/ThreadPool.hpp"
 
 #include <mutex>
@@ -20,7 +20,7 @@ public:
     static IE::Core::Core &getInst(const std::filesystem::path &t_path = "");
 
     template<typename T, typename... Args>
-        requires std::derived_from<T, IE::Core::Engine>
+    requires std::derived_from<T, IE::Core::Engine>
 
     static T *createEngine(std::string id, Args... args) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
@@ -34,7 +34,7 @@ public:
     }
 
     template<typename T>
-        requires std::derived_from<T, IE::Core::Engine>
+    requires std::derived_from<T, IE::Core::Engine>
 
     static T *getEngine(std::string id) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);

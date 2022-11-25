@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/FileSystemModule/File.hpp"
 #include "ScriptingModule/Script.hpp"
 
 #include <Python.h>
@@ -10,12 +11,12 @@ class PythonScript : public IE::Script::Script {
 private:
     static uint32_t m_pythonScripts;
 
-    std::string m_filename;
+    IE::Core::File *m_file;
 
     //    PyInterpreterState *state;
 
 public:
-    explicit PythonScript(std::string t_filename);
+    PythonScript(Core::File *t_file);
 
     void update() override;
 
@@ -23,8 +24,8 @@ public:
 
     void compile() override;
 
-    static std::unique_ptr<Script> create(const std::string &t_filename) {
-        return std::make_unique<IE::Script::detail::PythonScript>(t_filename);
+    static std::shared_ptr<Script> create(IE::Core::File *t_file) {
+        return std::make_shared<IE::Script::detail::PythonScript>(t_file);
     }
 };
 }  // namespace IE::Script::detail

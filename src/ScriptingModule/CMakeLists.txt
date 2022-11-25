@@ -11,5 +11,4 @@ execute_process(COMMAND python3 ${ILLUMINATION_ENGINE_BASE_DIRECTORY}/venv/bin/a
 set(Python_FIND_VIRTUALENV ONLY)
 find_package(Python COMPONENTS Development)
 
-target_link_libraries(IEScriptingModule PUBLIC IECore sol2 ${LUA_LIBRARIES} Python::Python)
-target_include_directories(IEScriptingModule PUBLIC ${LUA_INCLUDE_DIR} ${sol2_DIR})
+target_link_libraries(IEScriptingModule PUBLIC IECore Python::Python)

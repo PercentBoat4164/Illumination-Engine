@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/AssetModule/IEAspect.hpp"
+#include "Core/Core.hpp"
 
 #include <filesystem>
 #include <functional>
@@ -10,7 +11,7 @@
 namespace IE::Script {
 class Script : public IEAspect {
 private:
-    static std::unordered_map<std::string, std::function<std::unique_ptr<IE::Script::Script>(const std::string &)>>
+    static std::unordered_map<std::string, std::function<std::shared_ptr<IE::Script::Script>(IE::Core::File *)>>
       extensionsToLanguage;
 
 public:
@@ -20,6 +21,6 @@ public:
 
     virtual void compile() = 0;
 
-    static std::unique_ptr<IE::Script::Script> create(const std::string &filename);
+    static std::shared_ptr<Script> create(Core::File *t_file);
 };
 }  // namespace IE::Script

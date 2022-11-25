@@ -4,12 +4,11 @@
 
 #include <functional>
 
-std::unordered_map<std::string, std::function<std::unique_ptr<IE::Script::Script>(const std::string &)>>
+std::unordered_map<std::string, std::function<std::shared_ptr<IE::Script::Script>(IE::Core::File *)>>
   IE::Script::Script::extensionsToLanguage{
     {".py", &IE::Script::detail::PythonScript::create}
 };
 
-std::unique_ptr<IE::Script::Script> IE::Script::Script::create(const std::string &filename) {
-    std::string extension = filename.substr(filename.find_last_of('.'));
-    return extensionsToLanguage.at(extension)(filename);
+std::shared_ptr<IE::Script::Script> IE::Script::Script::create(IE::Core::File *t_file) {
+    return extensionsToLanguage.at(t_file->extension)(t_file);
 }
