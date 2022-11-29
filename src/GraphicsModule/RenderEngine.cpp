@@ -451,15 +451,13 @@ std::shared_ptr<IE::Graphics::CommandPool> IE::Graphics::RenderEngine::getComman
 }
 
 std::shared_ptr<IE::Graphics::RenderEngine::AspectType>
-IE::Graphics::RenderEngine::createAspect(const std::string &t_id) {
-    std::shared_ptr<AspectType> aspect = getAspect(t_id);
-    if (aspect == nullptr) aspect = std::make_shared<AspectType>(this);
-    return aspect;
+IE::Graphics::RenderEngine::createAspect(const std::string &t_id, IE::Core::File *t_resource) {
+    return IE::Core::Engine::_createAspect<AspectType>(t_id, t_resource);
 }
 
 std::shared_ptr<IE::Graphics::RenderEngine::AspectType>
 IE::Graphics::RenderEngine::getAspect(const std::string &t_id) {
-    return std::static_pointer_cast<AspectType>(IE::Core::Engine::getAspect(t_id));
+    return IE::Core::Engine::_getAspect<AspectType>(t_id);
 }
 
 std::string IE::Graphics::RenderEngine::makeErrorMessage(

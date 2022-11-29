@@ -75,13 +75,13 @@ public:
      * @param initialAttachment=nullptr
      * @return IeKeyboard
      */
-    explicit Keyboard(GLFWwindow *initialWindow, void *initialAttachment = nullptr);
+    explicit Keyboard(IE::Core::Engine *t_engine, IE::Core::File *);
 
     /**
      * @brief Sets the queue method. Pass one of the two pre-created key event handler functions.
-     * @param function
+     * @param t_function
      */
-    void setEnqueueMethod(GLFWkeyfun function = keyCallback);
+    void setEnqueueMethod(GLFWkeyfun t_function = keyCallback);
 
     /**
      * @brief Handles all the actions indicated by the key presses logged in the queue.
@@ -159,6 +159,10 @@ public:
      */
     void clearQueue();
 
+    auto setWindow(GLFWwindow *t_window) -> decltype(*this);
+
+    auto setAttachment(void *t_attachment) -> decltype(*this);
+
     /**
      * @brief Default key event handler function. Enqueues the key as pressed or released. Does not handle repeats.
      * @param window
@@ -173,6 +177,7 @@ private:
     GLFWwindow                                         *window;   // window this keyboard manages
     std::vector<IE::Input::detail::KeyPressDescription> queue{};  // queue of key presses
     std::unordered_map<IE::Input::detail::KeyPressDescription, std::pair<std::function<void(GLFWwindow *)>, bool>>
-      actionsOptions{};  // hash table of key press description to function
+               actionsOptions{};  // hash table of key press description to function
+    GLFWkeyfun m_function{keyCallback};
 };
 }  // namespace IE::Input

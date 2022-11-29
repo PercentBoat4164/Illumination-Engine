@@ -9,6 +9,7 @@
 
 namespace IE::Core {
 class File;
+class Engine;
 }  // namespace IE::Core
 
 namespace IE::Graphics {
@@ -22,9 +23,6 @@ public:
     CommandBuffer               m_commandBuffer;
     IE::Core::File             *m_file;
 
-    Renderable(IE::Graphics::RenderEngine *t_engineLink);
-
-    void createRenderable() {
-    }
+    Renderable(IE::Core::Engine *t_engineLink, IE::Core::File *t_resource);
 };
 }  // namespace IE::Graphics

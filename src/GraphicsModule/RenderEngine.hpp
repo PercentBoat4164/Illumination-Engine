@@ -149,12 +149,9 @@ public:
 
     ~RenderEngine() override;
 
-#pragma clang diagnostic push
-#pragma ide diagnostic   ignored "HidingNonVirtualFunction"
-    std::shared_ptr<AspectType> createAspect(const std::string &t_id);
+    std::shared_ptr<AspectType> createAspect(const std::string &t_id, IE::Core::File *t_resource);
 
     std::shared_ptr<AspectType> getAspect(const std::string &t_id);
-#pragma clang diagnostic pop
 
     void                         createRenderPasses();
     VkFormat                     getColorFormat();

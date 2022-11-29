@@ -12,6 +12,9 @@ int main(int argc, char **argv) {
 
     auto           *renderEngine = IE::Core::Core::createEngine<IE::Graphics::RenderEngine>("renderEngine");
     IE::Core::Asset asset(IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue"));
-    asset.addAspect(renderEngine->createAspect("AncientStatue"));
+    asset.addAspect(renderEngine->createAspect(
+      "AncientStatue",
+      IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue/models/ancientStatue.glb")
+    ));
     //    while (glfwWindowShouldClose(renderEngine->getWindow()) == 0) glfwPollEvents();
 }
