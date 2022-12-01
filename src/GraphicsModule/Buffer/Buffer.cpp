@@ -31,3 +31,10 @@ void IE::Graphics::Buffer::destroyBuffer() {
     }
     if (_destroyBuffer()) m_status = IE_BUFFER_STATUS_UNINITIALIZED;
 }
+
+std::shared_ptr<IE::Graphics::Buffer> IE::Graphics::Buffer::create(IE::Graphics::RenderEngine *t_engineLink) {
+    //    if (t_engineLink->getAPI().name == IE_RENDER_ENGINE_API_NAME_VULKAN)
+    return std::make_shared<IE::Graphics::detail::BufferVulkan>(t_engineLink);
+    //    if (t_engineLink->getAPI().name == IE_RENDER_ENGINE_API_NAME_OPENGL)
+    //        return std::make_shared<IE::Graphics::detail::BufferOpenGL>(t_engineLink);
+}

@@ -4,11 +4,10 @@
 #include "glm/gtc/quaternion.hpp"
 
 namespace IE::Graphics {
-class Instance {
-    glm::mat4 modelMatrix;
-    uint32_t  index;
-    glm::vec3 position;
-    glm::quat rotation;
-    glm::vec3 scale;
+struct Instance {
+    glm::vec3                        position;
+    glm::quat                        rotation;
+    glm::vec3                        scale;
+    std::shared_ptr<IE::Core::Asset> assetOffset;
 };
 }  // namespace IE::Graphics

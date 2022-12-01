@@ -22,7 +22,8 @@ public:
         IE_BUFFER_TYPE_VERTEX_BUFFER   = 0x2,
         IE_BUFFER_TYPE_UNIFORM_BUFFER  = 0x3,
         IE_BUFFER_TYPE_STORAGE_BUFFER  = 0x4,
-        IE_BUFFER_TYPE_INSTANCE_BUFFER = 0x5
+        IE_BUFFER_TYPE_INSTANCE_BUFFER = 0x5,
+        IE_BUFFER_TYPE_STAGING_BUFFER  = 0x6
     };
 
     Status                      m_status{IE_BUFFER_STATUS_UNINITIALIZED};
@@ -30,12 +31,21 @@ public:
     std::shared_ptr<std::mutex> m_mutex{};
     IE::Graphics::RenderEngine *m_linkedRenderEngine{};
 
+    Buffer(IE::Graphics::RenderEngine *t_engineLink) : m_linkedRenderEngine(t_engineLink) {
+    }
+
     virtual ~Buffer() = default;
 
+    static std::shared_ptr<IE::Graphics::Buffer> create(IE::Graphics::RenderEngine *t_engineLink);
+
+    void createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize);
+
+    void destroyBuffer();
+
 protected:
-    virtual void createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize);
     virtual bool _createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize) = 0;
-    virtual void destroyBuffer();
+
+
     virtual bool _destroyBuffer() = 0;
 };
 }  // namespace IE::Graphics

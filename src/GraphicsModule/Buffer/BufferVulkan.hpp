@@ -13,6 +13,9 @@ public:
     VmaAllocationInfo  m_allocationInfo{};
     VmaAllocation      m_allocation{};
 
+    BufferVulkan(IE::Graphics::RenderEngine *t_engineLink) : IE::Graphics::Buffer(t_engineLink) {
+    }
+
 protected:
     bool _createBuffer(Type type, uint64_t flags, void *data, size_t dataSize) override;
 

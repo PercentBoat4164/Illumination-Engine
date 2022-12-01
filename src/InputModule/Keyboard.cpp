@@ -48,6 +48,7 @@ auto IE::Input::Keyboard::setWindow(GLFWwindow *t_window) -> decltype(*this) {
 
 auto IE::Input::Keyboard::setAttachment(void *t_attachment) -> decltype(*this) {
     attachment = t_attachment;
+    return *this;
 }
 
 void IE::Input::Keyboard::setEnqueueMethod(GLFWkeyfun t_function) {
