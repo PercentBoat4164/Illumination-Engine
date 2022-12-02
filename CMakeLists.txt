@@ -30,25 +30,28 @@ add_custom_command(
 
 set(IE_PREFER_LOCAL_LIBS ON)
 
+# Compilation and linking options
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	# Needed for compilation success.
+	add_compile_options("-Wno-deprecated-non-prototype")
+
+	# Added to prevent known errors from clouding the log.
+	add_compile_options("-Wno-nullability-completeness")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+	# Needed for compilation success.
+	add_compile_options("-Wno-unused-command-line-argument")
+	add_compile_options("-Wno-deprecated-non-prototype")
+	add_compile_options("-fp=consistent")
+
+	# Added to prevent known errors from clouding the log.
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+else ()
+	message(WARNING "Unsupported compiler in use: ${CMAKE_CXX_COMPILER_ID}")
+endif ()
+
+#add_link_options("-fuse-ld=lld") # Use LLVM's lld linker for speed.
+
+
 add_subdirectory(ext)  # Generate external dependencies from source
 add_subdirectory(src)  # Generate Illumination Engine from source
-
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-	add_compile_options(-fexceptions -Wno-unused-function)
-endif ()
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "IntelLLVM")
-	add_compile_options(-Wunused-command-line-argument)
-endif ()
-
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_compile_options(-g)  # Compile with debug information
-else ()
-    add_compile_options(-O3)  # Compile with level 3 optimizations
-endif ()
-
-# Use LLVM's lld linker for speed.
-add_link_options("-fuse-ld=lld")
-add_compile_options("-fuse-ld=lld")
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=lld")
-set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=lld")
-set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=lld")
