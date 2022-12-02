@@ -8,7 +8,11 @@ if (WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif ()
 
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON)  # Uncomment this line if you have no internet connection
+# Detect compiler and OS
+message("Using ${CMAKE_CXX_COMPILER_ID} on ${CMAKE_SYSTEM_NAME}.")
+add_compile_definitions("COMPILER=${CMAKE_CXX_COMPILER_ID}")
+add_compile_definitions("OS=${CMAKE_SYSTEM_NAME}")
+
 
 set(IE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})  # Directory Illumination Engine is being built in
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)  # Directory to put library files
@@ -29,10 +33,22 @@ set(IE_PREFER_LOCAL_LIBS ON)
 add_subdirectory(ext)  # Generate external dependencies from source
 add_subdirectory(src)  # Generate Illumination Engine from source
 
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_compile_options("-g")  # Compile with debug information
-else ()
-    add_compile_options("-O3")  # Compile with level 3 optimizations
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+	add_compile_options(-fexceptions -Wno-unused-function)
+endif ()
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "IntelLLVM")
+	add_compile_options(-Wunused-command-line-argument)
 endif ()
 
-add_link_options("-fuse-ld=lld")  # Use LLVM's lld linker for speed
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+    add_compile_options(-g)  # Compile with debug information
+else ()
+    add_compile_options(-O3)  # Compile with level 3 optimizations
+endif ()
+
+# Use LLVM's lld linker for speed.
+add_link_options("-fuse-ld=lld")
+add_compile_options("-fuse-ld=lld")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=lld")
+set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=lld")
+set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=lld")

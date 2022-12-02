@@ -7,13 +7,13 @@
 
 int main(int argc, char **argv) {
     if (argc >= 1) {
-        std::string programLocation  = std::string(argv[0]);
-        std::string resourceLocation = programLocation.substr(0, programLocation.find_last_of('/'));
+        auto programLocation  = std::filesystem::path(argv[0]);
+        std::string const resourceLocation = programLocation.parent_path().string();
         IE::Core::Core::getInst(resourceLocation);
     }
 
-    IESettings      settings     = IESettings();
-    IERenderEngine *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
+    IESettings      const settings     = IESettings();
+    auto *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
 
     IE::Input::InputEngine inputEngine{renderEngine->window};
     IE::Input::Keyboard   *keyboard = inputEngine.getAspect("keyboard");

@@ -12,7 +12,7 @@
 #define ILLUMINATION_ENGINE_CORE_LOGGER_NAME  "Illumination Engine"
 #define ILLUMINATION_ENGINE_CORE_LOG_FILENAME "logs/IlluminationEngine.log"
 
-class GLFWwindow;
+struct GLFWwindow;
 
 namespace IE::Core {
 class Core final {
@@ -72,6 +72,5 @@ private:
     Core(const std::filesystem::path &t_path) {
         m_filesystem.setBaseDirectory(t_path);
     }
-
-} __attribute__((aligned(128)));
+};
 }  // namespace IE::Core
