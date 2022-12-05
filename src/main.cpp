@@ -23,8 +23,15 @@ int main(int argc, char **argv) {
         script->load();
         script->initialize();
     })};
-    IESettings        settings     = IESettings();
-    IERenderEngine   *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
+
+    IESettings               settings     = IESettings();
+    IERenderEngine          *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
+    std::shared_ptr<IEAsset> pythonRunner = std::make_shared<IEAsset>();
+    pythonRunner->filename                = "res/assets/AncientStatue/models/ancientStatue.fbx";
+    pythonRunner->position                = {0, 3, 0};
+    pythonRunner->addAspect(new IERenderable);
+    pythonRunner->addAspect(script.get());
+    renderEngine->addAsset(pythonRunner);
 
     // RenderEngine must be allocated on the heap.
 

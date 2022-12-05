@@ -1,6 +1,6 @@
 #include "PythonScript.hpp"
 
-#define ILLUMINATION_ENGINE_INTERNAL_PYTHON_SETUP_SCRIPT std::string("res.scripts.__INTERNAL__setup")
+#define ILLUMINATION_ENGINE_INTERNAL_PYTHON_SETUP_SCRIPT std::string("res.scripts.setup")
 
 uint32_t IE::Script::detail::PythonScript::m_pythonScripts{};
 
