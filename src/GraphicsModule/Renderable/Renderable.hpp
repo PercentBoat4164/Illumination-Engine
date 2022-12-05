@@ -15,12 +15,6 @@ class Engine;
 
 namespace IE::Graphics {
 class Renderable : public IE::Core::Aspect {
-private:
-    std::shared_ptr<IE::Graphics::Buffer> buildInstanceBuffer() {
-        std::shared_ptr<IE::Graphics::Buffer> instanceBuffer{IE::Graphics::Buffer::create(m_linkedRenderEngine)};
-        instanceBuffer->createBuffer(IE::Graphics::Buffer::IE_BUFFER_TYPE_INSTANCE_BUFFER, 0x0, nullptr, 0x0);
-        return instanceBuffer;
-    }
 
 public:
     IE::Graphics::RenderEngine *m_linkedRenderEngine;
@@ -34,11 +28,12 @@ public:
     Renderable(IE::Core::Engine *t_engineLink, IE::Core::File *t_resource);
 
     void update() {
-        auto instanceBuffer = buildInstanceBuffer();
+        std::shared_ptr<IE::Graphics::Buffer> instanceBuffer{IE::Graphics::Buffer::create(m_linkedRenderEngine)};
+        instanceBuffer->createBuffer(IE::Graphics::Buffer::IE_BUFFER_TYPE_INSTANCE_BUFFER, 0x0, nullptr, 0x0);
 
         vkCmdDrawIndexedIndirect(
           m_commandBuffer.m_commandBuffer,
-          instanceBuffer->m_id,
+          instanceBuffer->getVkBuffer(),
           0,
           m_instances.size(),
           sizeof(decltype(m_instances)::value_type)

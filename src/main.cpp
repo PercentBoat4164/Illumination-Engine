@@ -16,5 +16,10 @@ int main(int argc, char **argv) {
       "AncientStatue",
       IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue/models/ancientStatue.glb")
     ));
-    //    while (glfwWindowShouldClose(renderEngine->getWindow()) == 0) glfwPollEvents();
+
+    while (glfwWindowShouldClose(renderEngine->getWindow()) == 0) {
+        renderEngine->update();
+        glfwPollEvents();
+        renderEngine->finish();
+    }
 }

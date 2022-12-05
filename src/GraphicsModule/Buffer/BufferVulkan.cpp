@@ -31,7 +31,7 @@ bool IE::Graphics::detail::BufferVulkan::_createBuffer(
       m_linkedRenderEngine->getAllocator(),
       &createInfo,
       &allocationCreateInfo,
-      &m_id,
+      &m_buffer,
       &m_allocation,
       &m_allocationInfo
     )};
@@ -50,6 +50,14 @@ bool IE::Graphics::detail::BufferVulkan::_createBuffer(
 }
 
 bool IE::Graphics::detail::BufferVulkan::_destroyBuffer() {
-    vmaDestroyBuffer(m_linkedRenderEngine->getAllocator(), m_id, m_allocation);
+    vmaDestroyBuffer(m_linkedRenderEngine->getAllocator(), m_buffer, m_allocation);
     return true;
+}
+
+GLenum IE::Graphics::detail::BufferVulkan::getGLBuffer() {
+    throw std::runtime_error("Invalid API!");
+}
+
+VkBuffer IE::Graphics::detail::BufferVulkan::getVkBuffer() {
+    return m_buffer;
 }

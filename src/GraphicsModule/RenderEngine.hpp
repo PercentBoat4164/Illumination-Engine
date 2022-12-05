@@ -98,6 +98,8 @@ public:
 
     explicit RenderEngine() = default;
 
+    bool update() override;
+
     GLFWwindow *getWindow();
 
     VmaAllocator getAllocator();

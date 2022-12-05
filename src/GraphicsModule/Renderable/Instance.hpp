@@ -1,7 +1,10 @@
 #pragma once
 
+#include "Core/AssetModule/Asset.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
+
+#include <memory>
 
 namespace IE::Graphics {
 struct Instance {

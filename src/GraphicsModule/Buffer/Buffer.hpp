@@ -2,6 +2,10 @@
 
 #include "Core/MultiDimensionalVector.hpp"
 
+#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
+
+// System dependencies
 #include <cstddef>
 #include <memory>
 #include <mutex>
@@ -42,9 +46,12 @@ public:
 
     void destroyBuffer();
 
+    virtual GLenum getGLBuffer() = 0;
+
+    virtual VkBuffer getVkBuffer() = 0;
+
 protected:
     virtual bool _createBuffer(Type t_type, uint64_t t_flags, void *t_data, size_t t_dataSize) = 0;
-
 
     virtual bool _destroyBuffer() = 0;
 };

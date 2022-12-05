@@ -5,7 +5,7 @@
 #include "Keyboard.hpp"
 
 std::shared_ptr<IE::Input::InputEngine::AspectType> IE::Input::InputEngine::createAspect(const std::string &t_id) {
-    return IE::Core::Engine::_createAspect<AspectType>(t_id, nullptr);
+    return IE::Core::Engine::_createAspect<AspectType>(t_id, nullptr, this);
 }
 
 std::shared_ptr<IE::Input::InputEngine::AspectType> IE::Input::InputEngine::getAspect(const std::string &t_id) {

@@ -6,8 +6,10 @@
 
 namespace IE::Graphics::detail {
 class BufferVulkan : public ::IE::Graphics::Buffer {
+private:
+    VkBuffer m_buffer{};
+
 public:
-    VkBuffer           m_id{};
     VkBufferUsageFlags m_usage{};
     VmaMemoryUsage     m_allocationUsage{};
     VmaAllocationInfo  m_allocationInfo{};
@@ -15,6 +17,10 @@ public:
 
     BufferVulkan(IE::Graphics::RenderEngine *t_engineLink) : IE::Graphics::Buffer(t_engineLink) {
     }
+
+    GLenum getGLBuffer() override;
+
+    VkBuffer getVkBuffer() override;
 
 protected:
     bool _createBuffer(Type type, uint64_t flags, void *data, size_t dataSize) override;

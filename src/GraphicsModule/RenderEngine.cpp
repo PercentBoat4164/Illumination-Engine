@@ -452,7 +452,7 @@ std::shared_ptr<IE::Graphics::CommandPool> IE::Graphics::RenderEngine::getComman
 
 std::shared_ptr<IE::Graphics::RenderEngine::AspectType>
 IE::Graphics::RenderEngine::createAspect(const std::string &t_id, IE::Core::File *t_resource) {
-    return IE::Core::Engine::_createAspect<AspectType>(t_id, t_resource);
+    return IE::Core::Engine::_createAspect<AspectType>(t_id, t_resource, this);
 }
 
 std::shared_ptr<IE::Graphics::RenderEngine::AspectType>
@@ -471,4 +471,13 @@ std::string IE::Graphics::RenderEngine::makeErrorMessage(
       "Got error: " + t_error + " in " + t_function + "() of " + t_file + ":" + std::to_string(t_line) + "."};
     if (!t_moreInfo.empty()) error += " For more information see: " + t_moreInfo + ".";
     return error;
+}
+
+bool IE::Graphics::RenderEngine::update() {
+    for (std::pair<const std::string, std::shared_ptr<IE::Core::Aspect>> &aspect : m_aspects) {
+        std::shared_ptr<IE::Graphics::Renderable> renderable =
+          std::dynamic_pointer_cast<IE::Graphics::Renderable>(aspect.second);
+        IE::Core::Core::getThreadPool()->submit([renderable] { renderable->update(); });
+    }
+    return false;
 }
