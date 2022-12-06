@@ -3,6 +3,8 @@
 #include "Image/ImageVulkan.hpp"
 #include "RenderEngine.hpp"
 
+#include <vulkan/vulkan.h>
+
 IE::Graphics::RenderPassSeries::RenderPassSeries(IE::Graphics::RenderEngine *t_engineLink) :
         m_linkedRenderEngine(t_engineLink) {
 }
@@ -253,4 +255,18 @@ auto IE::Graphics::RenderPassSeries::addRenderPass(IE::Graphics::RenderPass &t_p
         }
     }
     return *this;
+}
+
+bool IE::Graphics::RenderPassSeries::start(size_t frameNumber) {
+    return m_renderPasses[m_currentPass].start(m_masterCommandBuffer, m_framebuffer);
+}
+
+bool IE::Graphics::RenderPassSeries::nextPass() {
+    m_currentPass = m_currentPass >= m_renderPasses.size() ? m_currentPass + 1 : 0;
+    m_renderPasses[m_currentPass].nextPass(m_masterCommandBuffer);
+    return true;
+}
+
+bool IE::Graphics::RenderPassSeries::finish() {
+    return true;
 }

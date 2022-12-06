@@ -132,12 +132,24 @@ void IE::Graphics::Pipeline::build(
 
     // Pipeline viewport state
     std::vector<VkViewport> viewports{
-      {.x = 0, .y = 0, .width = 800, .height = 600, .minDepth = 0, .maxDepth = 1},
+      {.x     = 0,
+       .y     = 0,
+       .width = static_cast<float>(
+         m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[0]
+       ), .height = static_cast<float>(
+         m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[1]
+       ), .minDepth = 0,
+       .maxDepth = 1},
     };
     std::vector<VkRect2D> scissors{
       {
        {.x = 0, .y = 0},
-       {.width = 800, .height = 600},
+       {.width = static_cast<uint32_t>(
+           m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[0]
+         ),
+         .height = static_cast<uint32_t>(
+           m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[1]
+         )},
        }
     };
 

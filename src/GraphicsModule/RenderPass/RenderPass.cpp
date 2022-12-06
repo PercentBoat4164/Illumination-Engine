@@ -40,3 +40,31 @@ void IE::Graphics::RenderPass::build(
     // Build all the subpasses controlled by this render pass.
     for (auto &subpass : m_subpasses) subpass.build(this);
 }
+
+bool IE::Graphics::RenderPass::start(
+  std::shared_ptr<CommandBuffer> masterCommandBuffer,
+  IE::Graphics::Framebuffer      framebuffer
+) {
+    VkClearValue              defaultClearValue{0, 0, 0};
+    std::vector<VkClearValue> clearColors(framebuffer.attachments.size(), defaultClearValue);
+    VkRenderPassBeginInfo     renderPassBeginInfo{
+          .sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+          .pNext       = nullptr,
+          .renderPass  = m_renderPass,
+          .framebuffer = framebuffer.m_framebuffer,
+          .renderArea =
+        VkRect2D{
+                 .offset = VkOffset2D{.x = 0, .y = 0},
+                 .extent =
+            VkExtent2D{
+                  .width = static_cast<uint32_t>(m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[0]),
+                  .height = static_cast<uint32_t>(m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[1]),
+            }},
+          .clearValueCount = static_cast<uint32_t>(framebuffer.attachments.size())
+    };
+    masterCommandBuffer->recordBeginRenderPass(
+      &renderPassBeginInfo,
+      VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS
+    );
+    return true;
+}

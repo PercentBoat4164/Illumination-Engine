@@ -9,7 +9,7 @@ public:
     IE::Graphics::Image depthImage{};
     RenderEngine       *linkedRenderEngine{};
 
-    Light(IERenderEngine *engineLink) : linkedRenderEngine(engineLink) {
+    Light(RenderEngine *engineLink) : linkedRenderEngine(engineLink) {
         Image::CreateInfo depthImageCreateInfo{
           .format   = VK_FORMAT_D16_UNORM,  // 16 bit depth image
           .aspect   = VK_IMAGE_ASPECT_DEPTH_BIT,

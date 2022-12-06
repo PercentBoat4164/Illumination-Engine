@@ -474,10 +474,28 @@ std::string IE::Graphics::RenderEngine::makeErrorMessage(
 }
 
 bool IE::Graphics::RenderEngine::update() {
+    CommandBuffer masterCommandBuffer(this, getCommandPool());
+    // Record all command buffers for this frame
     for (std::pair<const std::string, std::shared_ptr<IE::Core::Aspect>> &aspect : m_aspects) {
         std::shared_ptr<IE::Graphics::Renderable> renderable =
           std::dynamic_pointer_cast<IE::Graphics::Renderable>(aspect.second);
         IE::Core::Core::getThreadPool()->submit([renderable] { renderable->update(); });
     }
-    return false;
+
+    m_renderPassSeries.start(m_frameNumber++);
+
+    // Render all renderables in all passes
+    std::vector<VkCommandBuffer> commandBuffers;
+    commandBuffers.reserve(m_aspects.size());
+    do {
+        for (std::pair<const std::string, std::shared_ptr<IE::Core::Aspect>> &aspect : m_aspects) {
+            std::shared_ptr<IE::Graphics::Renderable> renderable =
+              std::dynamic_pointer_cast<IE::Graphics::Renderable>(aspect.second);
+            commandBuffers.push_back(renderable->getCommands());
+        }
+        vkCmdExecuteCommands(masterCommandBuffer.m_commandBuffer, commandBuffers.size(), commandBuffers.data());
+    } while (m_renderPassSeries.nextPass());
+
+    m_renderPassSeries.finish();
+    return true;
 }

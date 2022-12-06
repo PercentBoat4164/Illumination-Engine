@@ -6,7 +6,7 @@ add_subdirectory(ThreadingModule)
 add_subdirectory(EngineModule)
 
 # Create and define properties for the library
-add_library(IECore MultiDimensionalVector.cpp Core.cpp Engine.cpp)
+add_library(IECore MultiDimensionalVector.cpp Core.cpp)
 set_target_properties(IECore PROPERTIES LINKER_LANGUAGE CXX)
 
 # Add internal dependency libraries to the target

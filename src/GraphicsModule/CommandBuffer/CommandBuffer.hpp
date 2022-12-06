@@ -1,9 +1,5 @@
 #pragma once
 
-class IECommandPool;
-
-class IERenderEngine;
-
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -11,15 +7,15 @@ class IERenderEngine;
 #include <vulkan/vulkan.h>
 
 namespace IE::Graphics {
-class CommandPool;
-class Buffer;
-class IEPipeline;
-class IEDescriptorSet;
-class RenderEngine;
-
 namespace detail {
 class ImageVulkan;
 }  // namespace detail
+
+class CommandPool;
+class Buffer;
+class Pipeline;
+class DescriptorSet;
+class RenderEngine;
 
 class CommandBuffer {
     enum Status {
@@ -108,14 +104,14 @@ public:
       VkDeviceSize                               *pStrides
     );
 
-    void recordBindPipeline(VkPipelineBindPoint pipelineBindPoint, const std::shared_ptr<IEPipeline> &pipeline);
+    void recordBindPipeline(VkPipelineBindPoint pipelineBindPoint, const std::shared_ptr<Pipeline> &pipeline);
 
     void recordBindDescriptorSets(
-      VkPipelineBindPoint                                  pipelineBindPoint,
-      const std::shared_ptr<IEPipeline>                   &pipeline,
-      uint32_t                                             firstSet,
-      const std::vector<std::shared_ptr<IEDescriptorSet>> &descriptorSets,
-      std::vector<uint32_t>                                dynamicOffsets
+      VkPipelineBindPoint                                pipelineBindPoint,
+      const std::shared_ptr<Pipeline>                   &pipeline,
+      uint32_t                                           firstSet,
+      const std::vector<std::shared_ptr<DescriptorSet>> &descriptorSets,
+      std::vector<uint32_t>                              dynamicOffsets
     );
 
     void recordDrawIndexed(
@@ -139,5 +135,6 @@ public:
     CommandBuffer(const CommandBuffer &source) = delete;
 
     CommandBuffer(CommandBuffer &&source) = delete;
+    void recordBeginRenderPass(VkRenderPassBeginInfo *pRenderPassBegin, VkSubpassContents contents);
 };
 }  // namespace IE::Graphics

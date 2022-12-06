@@ -387,12 +387,15 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(
     };
 
     VkImageCreateInfo imageCreateInfo{
-      .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-      .pNext                 = nullptr,
-      .flags                 = 0x0,
-      .imageType             = VK_IMAGE_TYPE_2D,
-      .format                = VK_FORMAT_R8G8B8_SRGB,
-      .extent                = {.width = 800, .height = 600, .depth = 1},
+      .sType     = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      .pNext     = nullptr,
+      .flags     = 0x0,
+      .imageType = VK_IMAGE_TYPE_2D,
+      .format    = VK_FORMAT_R8G8B8_SRGB,
+      .extent =
+        {.width  = static_cast<uint32_t>(m_linkedRenderEngine->m_currentResolution[0]),
+                 .height = static_cast<uint32_t>(m_linkedRenderEngine->m_currentResolution[1]),
+                 .depth  = 1},
       .mipLevels             = 0x1,
       .arrayLayers           = 0x1,
       .samples               = VK_SAMPLE_COUNT_1_BIT,

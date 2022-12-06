@@ -55,8 +55,8 @@ private:
       ILLUMINATION_ENGINE_GRAPHICS_LOGGER_FILENAME};
     GLFWwindow                                             *m_window{};
     std::array<size_t, 2>                                   m_defaultResolution{800, 600};
-    std::array<size_t, 2>                                   m_currentResolution = m_defaultResolution;
     std::array<size_t, 2>                                   m_defaultPosition{10, 10};
+    size_t                                                  m_frameNumber;
     bool                                                    m_useVsync{false};
     std::vector<VkImageView>                                m_swapchainImageViews;
     std::vector<std::shared_ptr<IE::Graphics::Semaphore>>   m_imageAvailableSemaphores{};
@@ -94,7 +94,8 @@ private:
     static void framebufferResizeCallback(GLFWwindow *pWindow, int x, int y);
 
 public:
-    vkb::Device m_device;
+    std::array<size_t, 2> m_currentResolution{m_defaultResolution};
+    vkb::Device           m_device;
 
     explicit RenderEngine() = default;
 

@@ -326,8 +326,8 @@ void IE::Graphics::CommandBuffer::recordBindIndexBuffer(
 }
 
 void IE::Graphics::CommandBuffer::recordBindPipeline(
-  VkPipelineBindPoint                pipelineBindPoint,
-  const std::shared_ptr<IEPipeline> &pipeline
+  VkPipelineBindPoint              pipelineBindPoint,
+  const std::shared_ptr<Pipeline> &pipeline
 ) {
     m_commandPool->m_commandPoolMutex->lock();
     if (m_status != IE_COMMAND_BUFFER_STATE_RECORDING) {
@@ -344,11 +344,11 @@ void IE::Graphics::CommandBuffer::recordBindPipeline(
 }
 
 void IE::Graphics::CommandBuffer::recordBindDescriptorSets(
-  VkPipelineBindPoint                                  pipelineBindPoint,
-  const std::shared_ptr<IEPipeline>                   &pipeline,
-  uint32_t                                             firstSet,
-  const std::vector<std::shared_ptr<IEDescriptorSet>> &descriptorSets,
-  std::vector<uint32_t>                                dynamicOffsets
+  VkPipelineBindPoint                                pipelineBindPoint,
+  const std::shared_ptr<Pipeline>                   &pipeline,
+  uint32_t                                           firstSet,
+  const std::vector<std::shared_ptr<DescriptorSet>> &descriptorSets,
+  std::vector<uint32_t>                              dynamicOffsets
 ) {
     std::vector<VkDescriptorSet> pDescriptorSets{};
     pDescriptorSets.resize(descriptorSets.size());
@@ -396,6 +396,24 @@ void IE::Graphics::CommandBuffer::recordDrawIndexed(
     }
     vkCmdDrawIndexed(m_commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     m_commandPool->m_commandPoolMutex->unlock();
+}
+
+void IE::Graphics::CommandBuffer::recordBeginRenderPass(
+  VkRenderPassBeginInfo *pRenderPassBegin,
+  VkSubpassContents      contents
+) {
+    std::unique_lock<std::mutex> lock(*m_commandPool->m_commandPoolMutex.get());
+    if (m_status != IE_COMMAND_BUFFER_STATE_RECORDING) {
+        record(false);
+        if (m_status != IE_COMMAND_BUFFER_STATE_RECORDING) {
+            m_linkedRenderEngine->getLogger().log(
+
+              "Attempt to record a render pass beginning on a command buffer that is not recording!",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+            );
+        }
+    }
+    vkCmdBeginRenderPass(m_commandBuffer, pRenderPassBegin, contents);
 }
 
 void IE::Graphics::CommandBuffer::recordSetViewport(
