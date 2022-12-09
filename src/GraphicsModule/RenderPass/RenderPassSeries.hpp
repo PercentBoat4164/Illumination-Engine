@@ -8,6 +8,11 @@
 namespace IE::Graphics {
 class RenderPassSeries {
 public:
+    enum ProgressionStatus {
+        IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_END,
+        IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_CONTINUE,
+    };
+
     explicit RenderPassSeries(IE::Graphics::RenderEngine *t_engineLink);
 
     auto build() -> decltype(*this);
@@ -16,9 +21,9 @@ public:
 
     bool start(size_t frameNumber);
 
-    bool finish();
+    void finish();
 
-    bool nextPass();
+    ProgressionStatus nextPass();
 
     std::vector<std::pair<std::string, Image::Preset>> m_attachmentPool;
     size_t                                             m_currentPass;
@@ -26,6 +31,8 @@ public:
     IE::Graphics::Framebuffer                          m_framebuffer;
     IE::Graphics::RenderEngine                        *m_linkedRenderEngine;
     std::shared_ptr<IE::Graphics::CommandBuffer>       m_masterCommandBuffer;
+
+    void execute(std::vector<VkCommandBuffer> t_commandBuffers);
 
 private:
     std::vector<std::vector<VkAttachmentDescription>> buildAttachmentDescriptions();

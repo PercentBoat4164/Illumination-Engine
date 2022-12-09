@@ -22,7 +22,7 @@ public:
     std::vector<std::shared_ptr<CommandBuffer>> m_commandBuffers{};
     IE::Graphics::RenderEngine                 *m_linkedRenderEngine{};
     VkQueue                                     m_queue{};
-    std::shared_ptr<std::mutex>                 m_commandPoolMutex{};
+    std::shared_ptr<std::mutex>                 m_commandPoolMutex{std::make_shared<std::mutex>()};
 
     CommandPool() = default;
 
@@ -41,9 +41,5 @@ public:
     );
 
     ~CommandPool();
-
-    bool tryLock();
-
-    void unlock();
 };
 }  // namespace IE::Graphics

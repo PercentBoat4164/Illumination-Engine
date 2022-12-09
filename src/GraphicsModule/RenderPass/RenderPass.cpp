@@ -43,8 +43,9 @@ void IE::Graphics::RenderPass::build(
 
 bool IE::Graphics::RenderPass::start(
   std::shared_ptr<CommandBuffer> masterCommandBuffer,
-  IE::Graphics::Framebuffer      framebuffer
+  IE::Graphics::Framebuffer     &framebuffer
 ) {
+    m_currentPass = 0;
     VkClearValue              defaultClearValue{0, 0, 0};
     std::vector<VkClearValue> clearColors(framebuffer.attachments.size(), defaultClearValue);
     VkRenderPassBeginInfo     renderPassBeginInfo{
@@ -57,8 +58,8 @@ bool IE::Graphics::RenderPass::start(
                  .offset = VkOffset2D{.x = 0, .y = 0},
                  .extent =
             VkExtent2D{
-                  .width = static_cast<uint32_t>(m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[0]),
-                  .height = static_cast<uint32_t>(m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[1]),
+                  .width  = static_cast<uint32_t>(framebuffer.m_resolution[0]),
+                  .height = static_cast<uint32_t>(framebuffer.m_resolution[1]),
             }},
           .clearValueCount = static_cast<uint32_t>(framebuffer.attachments.size())
     };
@@ -67,4 +68,16 @@ bool IE::Graphics::RenderPass::start(
       VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS
     );
     return true;
+}
+
+bool IE::Graphics::RenderPass::nextPass(std::shared_ptr<IE::Graphics::CommandBuffer> masterCommandBuffer) {
+    if (++m_currentPass < m_subpasses.size()) {
+        masterCommandBuffer->recordNextSubpass();
+        return IE_RENDER_PASS_PROGRESSION_STATUS_NEXT_SUBPASS_IN_SAME_RENDER_PASS;
+    }
+    return IE_RENDER_PASS_PROGRESSION_STATUS_NEXT_RENDER_PASS;
+}
+
+void IE::Graphics::RenderPass::finish(std::shared_ptr<CommandBuffer> masterCommandBuffer) {
+    masterCommandBuffer->recordEndRenderPass();
 }

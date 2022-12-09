@@ -313,35 +313,34 @@ IE::Core::Engine *IE::Graphics::RenderEngine::create() {
         engine->createSurface();
         engine->createDevice();
     })};
-    std::future<void> swapchain{IE::Core::Core::getThreadPool()->submit([&] {
-        device.wait();
-        engine->createSwapchain();
-    })};
-    std::future<void> syncObjects{IE::Core::Core::getThreadPool()->submit([&] {
-        swapchain.wait();
-        engine->createSyncObjects();
-    })};
-    std::future<void> allocator{IE::Core::Core::getThreadPool()->submit([&] {
-        device.wait();
-        engine->createAllocator();
-    })};
-    std::future<void> renderPasses{IE::Core::Core::getThreadPool()->submit([&] {
-        device.wait();
+
+    // Dependency chain
+    std::future<void> commandPoolRenderPasses{IE::Core::Core::getThreadPool()->submit([&] {
+        device.wait();  // Needs the device to create Command Pools
+        engine->createCommandPools();
         engine->createRenderPasses();
     })};
-    std::future<void> commandPools{IE::Core::Core::getThreadPool()->submit([&] {
-        swapchain.wait();
-        engine->createCommandPools();
+
+    // Dependency chain
+    std::future<void> swapchainSyncObjects{IE::Core::Core::getThreadPool()->submit([&] {
+        device.wait();  // Needs the device to allocate a swapchain
+        engine->createSwapchain();
+        engine->createSyncObjects();
     })};
+
+    std::future<void> allocator{IE::Core::Core::getThreadPool()->submit([&] {
+        device.wait();  // Needs the device to create the allocator
+        engine->createAllocator();
+    })};
+
     std::future<void> descriptorSet{IE::Core::Core::getThreadPool()->submit([&] {
-        device.wait();
+        device.wait();  // Needs the device to allocate descriptor sets
         engine->createDescriptorSets();
     })};
     allocator.wait();
-    syncObjects.wait();
-    renderPasses.wait();
-    commandPools.wait();
     descriptorSet.wait();
+    commandPoolRenderPasses.wait();
+    swapchainSyncObjects.wait();
     return static_cast<IE::Core::Engine *>(engine);
 }
 
@@ -446,7 +445,10 @@ IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
 }
 
 std::shared_ptr<IE::Graphics::CommandPool> IE::Graphics::RenderEngine::getCommandPool() {
-    static uint32_t commandPoolIndex;
+    static uint32_t              commandPoolIndex;
+    static std::mutex            functionMutex;
+    std::unique_lock<std::mutex> lock(functionMutex);
+    commandPoolIndex %= m_commandPools.size();
     return m_commandPools[commandPoolIndex++];
 }
 
@@ -482,19 +484,22 @@ bool IE::Graphics::RenderEngine::update() {
         IE::Core::Core::getThreadPool()->submit([renderable] { renderable->update(); });
     }
 
-    m_renderPassSeries.start(m_frameNumber++);
 
     // Render all renderables in all passes
     std::vector<VkCommandBuffer> commandBuffers;
     commandBuffers.reserve(m_aspects.size());
+
+    m_renderPassSeries.start(m_frameNumber++);
     do {
         for (std::pair<const std::string, std::shared_ptr<IE::Core::Aspect>> &aspect : m_aspects) {
             std::shared_ptr<IE::Graphics::Renderable> renderable =
               std::dynamic_pointer_cast<IE::Graphics::Renderable>(aspect.second);
-            commandBuffers.push_back(renderable->getCommands());
+            auto renderableCommands{renderable->getCommands()};
+            if (renderableCommands) commandBuffers.push_back(renderableCommands);
         }
-        vkCmdExecuteCommands(masterCommandBuffer.m_commandBuffer, commandBuffers.size(), commandBuffers.data());
-    } while (m_renderPassSeries.nextPass());
+        if (!commandBuffers.empty()) m_renderPassSeries.execute(commandBuffers);
+    } while (m_renderPassSeries.nextPass() !=
+             IE::Graphics::RenderPassSeries::IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_END);
 
     m_renderPassSeries.finish();
     return true;

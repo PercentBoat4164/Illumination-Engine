@@ -236,6 +236,16 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
     // Build render passes.
     for (size_t i{0}; i < m_renderPasses.size(); ++i)
         m_renderPasses[i].build(this, attachmentDescriptions[i], subpassDescriptions[i], subpassDependencies[i]);
+
+    // Build command buffer
+    m_masterCommandBuffer =
+      std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine, m_linkedRenderEngine->getCommandPool());
+    m_masterCommandBuffer->allocate();
+    m_masterCommandBuffer->record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+    // Build frame buffer
+    //    m_framebuffer.build();
+
     return *this;
 }
 
@@ -258,15 +268,25 @@ auto IE::Graphics::RenderPassSeries::addRenderPass(IE::Graphics::RenderPass &t_p
 }
 
 bool IE::Graphics::RenderPassSeries::start(size_t frameNumber) {
+    m_currentPass = 0;
     return m_renderPasses[m_currentPass].start(m_masterCommandBuffer, m_framebuffer);
 }
 
-bool IE::Graphics::RenderPassSeries::nextPass() {
-    m_currentPass = m_currentPass >= m_renderPasses.size() ? m_currentPass + 1 : 0;
-    m_renderPasses[m_currentPass].nextPass(m_masterCommandBuffer);
-    return true;
+IE::Graphics::RenderPassSeries::ProgressionStatus IE::Graphics::RenderPassSeries::nextPass() {
+    if (m_renderPasses[m_currentPass].nextPass(m_masterCommandBuffer) == IE::Graphics::RenderPass::IE_RENDER_PASS_PROGRESSION_STATUS_NEXT_RENDER_PASS) {
+        m_renderPasses[m_currentPass++].finish(m_masterCommandBuffer);
+        if (m_currentPass >= m_renderPasses.size())
+            return IE::Graphics::RenderPassSeries::IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_END;
+        m_renderPasses[m_currentPass].start(m_masterCommandBuffer, m_framebuffer);
+    }
+    return IE::Graphics::RenderPassSeries::IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_CONTINUE;
 }
 
-bool IE::Graphics::RenderPassSeries::finish() {
-    return true;
+void IE::Graphics::RenderPassSeries::finish() {
+    /**@todo Presentation should happen when the render pass series has finished. */
+    //    vkQueuePresentKHR()
+}
+
+void IE::Graphics::RenderPassSeries::execute(std::vector<VkCommandBuffer> t_commandBuffers) {
+    m_masterCommandBuffer->recordExecuteSecondaryCommandBuffers(t_commandBuffers);
 }

@@ -16,6 +16,7 @@ public:
 
     IE::Graphics::Subpass *m_subpass;
     VkDescriptorPool       m_pool;
+    VkDescriptorSet        m_set;
     SetNumber              m_setNumber;
 
     DescriptorSet(SetNumber t_type);

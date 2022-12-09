@@ -51,8 +51,6 @@ public:
       std::shared_ptr<IE::Graphics::CommandPool> t_parentCommandPool
     );
 
-    void wait();
-
     /**
      * @brief Allocate this command buffer as a primary command buffer.
      */
@@ -63,9 +61,13 @@ public:
      */
     void record(RecordFlags t_flags = 0);
 
-    void free(bool synchronize = true);
+    void free(std::unique_lock<std::mutex> &lock);
 
-    void reset(bool synchronize = true);
+    void free();
+
+    void reset(std::unique_lock<std::mutex> &lock);
+
+    void reset();
 
     void execute(
       VkSemaphore input  = reinterpret_cast<VkSemaphore>(static_cast<void *>(nullptr)),
@@ -114,6 +116,8 @@ public:
       std::vector<uint32_t>                              dynamicOffsets
     );
 
+    void recordNextSubpass();
+
     void recordDrawIndexed(
       uint32_t indexCount,
       uint32_t instanceCount,
@@ -135,6 +139,9 @@ public:
     CommandBuffer(const CommandBuffer &source) = delete;
 
     CommandBuffer(CommandBuffer &&source) = delete;
+
     void recordBeginRenderPass(VkRenderPassBeginInfo *pRenderPassBegin, VkSubpassContents contents);
+
+    void recordExecuteSecondaryCommandBuffers(std::vector<VkCommandBuffer> t_commandBuffers);
 };
 }  // namespace IE::Graphics
