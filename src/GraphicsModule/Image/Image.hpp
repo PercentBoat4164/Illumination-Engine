@@ -34,14 +34,21 @@ public:
 
     Status                      m_status{IE_IMAGE_STATUS_UNINITIALIZED};
     Preset                      m_preset;
-    std::shared_ptr<std::mutex> m_mutex{};
+    std::shared_ptr<std::mutex> m_mutex{std::make_shared<std::mutex>()};
     IE::Graphics::RenderEngine *m_linkedRenderEngine{};
+
+    explicit Image(IE::Graphics::RenderEngine *t_engineLink) : m_linkedRenderEngine(t_engineLink) {
+    }
 
     virtual void
     createImage(Preset t_preset, uint64_t t_flags, IE::Core::MultiDimensionalVector<unsigned char> &t_data);
+
+    virtual void destroyImage();
+
+protected:
     virtual bool
     _createImage(Preset t_preset, uint64_t t_flags, IE::Core::MultiDimensionalVector<unsigned char> &t_data) = 0;
-    virtual void destroyImage();
+
     virtual bool _destroyImage() = 0;
 };
 }  // namespace IE::Graphics

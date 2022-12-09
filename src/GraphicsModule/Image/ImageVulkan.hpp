@@ -17,11 +17,18 @@ private:
 public:
     virtual ~ImageVulkan() = default;
 
+    explicit ImageVulkan(IE::Graphics::RenderEngine *t_engineLink) : IE::Graphics::Image(t_engineLink) {
+    }
+
     VkImage       m_id{};
     VkImageLayout m_layout{};
+    VkImageView   m_view{};
     VmaAllocation m_allocation{};
 
-    bool _createImage(Preset t_preset, uint64_t t_flags, IE::Core::MultiDimensionalVector<unsigned char> &t_data);
+    bool _createImage(Preset t_preset, uint64_t t_flags, IE::Core::MultiDimensionalVector<unsigned char> &t_data)
+      override;
+
+    bool _destroyImage() override;
 
     static VkImageLayout layoutFromPreset(Preset t_preset);
 

@@ -382,6 +382,8 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(
   uint64_t                                         t_flags,
   IE::Core::MultiDimensionalVector<unsigned char> &t_data
 ) {
+    m_preset = t_preset;
+
     std::vector<uint32_t> queueFamilyIndices{
       m_linkedRenderEngine->m_device.get_queue_index(vkb::QueueType::graphics).value(),
     };
@@ -391,20 +393,22 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(
       .pNext     = nullptr,
       .flags     = 0x0,
       .imageType = VK_IMAGE_TYPE_2D,
-      .format    = VK_FORMAT_R8G8B8_SRGB,
+      .format    = intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_FORMAT_B8G8R8A8_SRGB :
+                                                                         VK_FORMAT_D32_SFLOAT_S8_UINT,
       .extent =
         {.width  = static_cast<uint32_t>(m_linkedRenderEngine->m_currentResolution[0]),
                  .height = static_cast<uint32_t>(m_linkedRenderEngine->m_currentResolution[1]),
                  .depth  = 1},
-      .mipLevels             = 0x1,
-      .arrayLayers           = 0x1,
-      .samples               = VK_SAMPLE_COUNT_1_BIT,
-      .tiling                = VK_IMAGE_TILING_OPTIMAL,
-      .usage                 = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      .sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
+      .mipLevels   = 0x1,
+      .arrayLayers = 0x1,
+      .samples     = VK_SAMPLE_COUNT_1_BIT,
+      .tiling      = VK_IMAGE_TILING_OPTIMAL,
+      .usage       = intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT :
+                                                                           VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
       .queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size()),
       .pQueueFamilyIndices   = queueFamilyIndices.data(),
-      .initialLayout         = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+      .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED
     };
 
     VmaAllocationCreateInfo allocationCreateInfo{
@@ -432,5 +436,41 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(
         return false;
     }
     m_linkedRenderEngine->getLogger().log("Created Image");
+
+    // Create view
+    VkImageViewCreateInfo imageViewCreateInfo{
+      .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .pNext    = nullptr,
+      .flags    = 0x0,
+      .image    = m_id,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format   = intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_FORMAT_B8G8R8A8_SRGB :
+                                                                        VK_FORMAT_D32_SFLOAT_S8_UINT,
+      .components =
+        VkComponentMapping{
+                           .r = VK_COMPONENT_SWIZZLE_R,
+                           .g = VK_COMPONENT_SWIZZLE_G,
+                           .b = VK_COMPONENT_SWIZZLE_B,
+                           .a = VK_COMPONENT_SWIZZLE_A                },
+      .subresourceRange = VkImageSubresourceRange{
+                           .aspectMask     = intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_IMAGE_ASPECT_COLOR_BIT :
+                                                                                VK_IMAGE_ASPECT_DEPTH_BIT,        .baseMipLevel   = 0,
+                           .levelCount     = VK_REMAINING_MIP_LEVELS,
+                           .baseArrayLayer = 0,
+                           .layerCount     = VK_REMAINING_ARRAY_LAYERS}
+    };
+    result = vkCreateImageView(m_linkedRenderEngine->m_device.device, &imageViewCreateInfo, nullptr, &m_view);
+    if (result != VK_SUCCESS) {
+        m_linkedRenderEngine->getLogger().log(
+          "Failed to create image view! Error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result)
+        );
+        return false;
+    }
+    m_linkedRenderEngine->getLogger().log("Created Image View");
     return true;
+}
+
+bool IE::Graphics::detail::ImageVulkan::_destroyImage() {
+    vmaDestroyImage(m_linkedRenderEngine->getAllocator(), m_id, m_allocation);
+    return false;
 }

@@ -6,10 +6,11 @@ IE::Graphics::RenderPass::RenderPass(Preset t_preset) : m_preset(t_preset) {
 }
 
 void IE::Graphics::RenderPass::build(
-  RenderPassSeries                     *t_renderPassSeries,
-  std::vector<VkAttachmentDescription> &t_attachmentDescriptions,
-  std::vector<VkSubpassDescription>    &t_subpassDescriptions,
-  std::vector<VkSubpassDependency>     &t_subpassDependency
+  RenderPassSeries                         *t_renderPassSeries,
+  std::vector<VkAttachmentDescription>     &t_attachmentDescriptions,
+  std::vector<VkSubpassDescription>        &t_subpassDescriptions,
+  std::vector<VkSubpassDependency>         &t_subpassDependency,
+  std::vector<IE::Graphics::Image::Preset> &t_attachmentPresets
 ) {
     m_renderPassSeries = t_renderPassSeries;
 
@@ -39,29 +40,30 @@ void IE::Graphics::RenderPass::build(
 
     // Build all the subpasses controlled by this render pass.
     for (auto &subpass : m_subpasses) subpass.build(this);
+
+    // Build the framebuffer used with this render pass
+    m_framebuffer.build(this, t_attachmentPresets);
 }
 
-bool IE::Graphics::RenderPass::start(
-  std::shared_ptr<CommandBuffer> masterCommandBuffer,
-  IE::Graphics::Framebuffer     &framebuffer
-) {
+bool IE::Graphics::RenderPass::start(std::shared_ptr<CommandBuffer> masterCommandBuffer) {
     m_currentPass = 0;
     VkClearValue              defaultClearValue{0, 0, 0};
-    std::vector<VkClearValue> clearColors(framebuffer.attachments.size(), defaultClearValue);
+    std::vector<VkClearValue> clearColors(m_framebuffer.attachments.size(), defaultClearValue);
     VkRenderPassBeginInfo     renderPassBeginInfo{
           .sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
           .pNext       = nullptr,
           .renderPass  = m_renderPass,
-          .framebuffer = framebuffer.m_framebuffer,
+          .framebuffer = m_framebuffer.m_framebuffer,
           .renderArea =
         VkRect2D{
                  .offset = VkOffset2D{.x = 0, .y = 0},
                  .extent =
             VkExtent2D{
-                  .width  = static_cast<uint32_t>(framebuffer.m_resolution[0]),
-                  .height = static_cast<uint32_t>(framebuffer.m_resolution[1]),
+                  .width  = static_cast<uint32_t>(m_framebuffer.m_resolution[0]),
+                  .height = static_cast<uint32_t>(m_framebuffer.m_resolution[1]),
             }},
-          .clearValueCount = static_cast<uint32_t>(framebuffer.attachments.size())
+          .clearValueCount = static_cast<uint32_t>(clearColors.size()),
+          .pClearValues    = clearColors.data()
     };
     masterCommandBuffer->recordBeginRenderPass(
       &renderPassBeginInfo,

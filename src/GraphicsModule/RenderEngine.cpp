@@ -476,7 +476,8 @@ std::string IE::Graphics::RenderEngine::makeErrorMessage(
 }
 
 bool IE::Graphics::RenderEngine::update() {
-    CommandBuffer masterCommandBuffer(this, getCommandPool());
+    ++m_frameNumber;
+
     // Record all command buffers for this frame
     for (std::pair<const std::string, std::shared_ptr<IE::Core::Aspect>> &aspect : m_aspects) {
         std::shared_ptr<IE::Graphics::Renderable> renderable =
@@ -489,7 +490,7 @@ bool IE::Graphics::RenderEngine::update() {
     std::vector<VkCommandBuffer> commandBuffers;
     commandBuffers.reserve(m_aspects.size());
 
-    m_renderPassSeries.start(m_frameNumber++);
+    m_renderPassSeries.start();
     do {
         for (std::pair<const std::string, std::shared_ptr<IE::Core::Aspect>> &aspect : m_aspects) {
             std::shared_ptr<IE::Graphics::Renderable> renderable =

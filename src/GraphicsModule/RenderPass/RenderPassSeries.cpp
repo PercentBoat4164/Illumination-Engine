@@ -9,8 +9,11 @@ IE::Graphics::RenderPassSeries::RenderPassSeries(IE::Graphics::RenderEngine *t_e
         m_linkedRenderEngine(t_engineLink) {
 }
 
-std::vector<std::vector<VkAttachmentDescription>> IE::Graphics::RenderPassSeries::buildAttachmentDescriptions() {
-    std::vector<std::vector<VkAttachmentDescription>> attachmentDescriptions(m_renderPasses.size());
+std::
+  tuple<std::vector<std::vector<VkAttachmentDescription>>, std::vector<std::vector<IE::Graphics::Image::Preset>>>
+  IE::Graphics::RenderPassSeries::buildAttachmentDescriptions() {
+    std::vector<std::vector<VkAttachmentDescription>>     attachmentDescriptions(m_renderPasses.size());
+    std::vector<std::vector<IE::Graphics::Image::Preset>> attachmentPresets(m_renderPasses.size());
     for (size_t i{0}; i < m_renderPasses.size(); ++i) {
         for (size_t j{0}; j < m_renderPasses[i].m_subpasses.size(); ++j) {
             for (const auto &attachment : m_renderPasses[i].m_subpasses[j].m_attachments) {
@@ -99,10 +102,11 @@ std::vector<std::vector<VkAttachmentDescription>> IE::Graphics::RenderPassSeries
                         IE::Graphics::detail::ImageVulkan::layoutFromPreset(nextAttachmentUsage->second.m_preset) :
                         IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_preset)}
                 );
+                attachmentPresets[i].push_back(attachment.second.m_preset);
             }
         }
     }
-    return attachmentDescriptions;
+    return {attachmentDescriptions, attachmentPresets};
 }
 
 std::vector<std::vector<VkSubpassDescription>> IE::Graphics::RenderPassSeries::buildSubpassDescriptions() {
@@ -224,28 +228,33 @@ EXIT_FIND_SUBPASS_DEPENDENCY_LOOP:;
 }
 
 auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
+    // Generate attachment descriptions.
+    std::tuple<
+      std::vector<std::vector<VkAttachmentDescription>>,
+      std::vector<std::vector<IE::Graphics::Image::Preset>>>
+      attachmentDescriptions{buildAttachmentDescriptions()};
+
     // Generate all the VkSubpassDescriptions
     std::vector<std::vector<VkSubpassDescription>> subpassDescriptions{buildSubpassDescriptions()};
-
-    // Generate attachment descriptions.
-    std::vector<std::vector<VkAttachmentDescription>> attachmentDescriptions{buildAttachmentDescriptions()};
 
     // Generate subpass dependencies.
     std::vector<std::vector<VkSubpassDependency>> subpassDependencies{buildSubpassDependencies()};
 
     // Build render passes.
     for (size_t i{0}; i < m_renderPasses.size(); ++i)
-        m_renderPasses[i].build(this, attachmentDescriptions[i], subpassDescriptions[i], subpassDependencies[i]);
+        m_renderPasses[i].build(
+          this,
+          std::get<0>(attachmentDescriptions)[i],
+          subpassDescriptions[i],
+          subpassDependencies[i],
+          std::get<1>(attachmentDescriptions)[i]
+        );
 
     // Build command buffer
     m_masterCommandBuffer =
       std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine, m_linkedRenderEngine->getCommandPool());
     m_masterCommandBuffer->allocate();
     m_masterCommandBuffer->record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-
-    // Build frame buffer
-    //    m_framebuffer.build();
-
     return *this;
 }
 
@@ -267,9 +276,9 @@ auto IE::Graphics::RenderPassSeries::addRenderPass(IE::Graphics::RenderPass &t_p
     return *this;
 }
 
-bool IE::Graphics::RenderPassSeries::start(size_t frameNumber) {
+bool IE::Graphics::RenderPassSeries::start() {
     m_currentPass = 0;
-    return m_renderPasses[m_currentPass].start(m_masterCommandBuffer, m_framebuffer);
+    return m_renderPasses[m_currentPass].start(m_masterCommandBuffer);
 }
 
 IE::Graphics::RenderPassSeries::ProgressionStatus IE::Graphics::RenderPassSeries::nextPass() {
@@ -277,7 +286,7 @@ IE::Graphics::RenderPassSeries::ProgressionStatus IE::Graphics::RenderPassSeries
         m_renderPasses[m_currentPass++].finish(m_masterCommandBuffer);
         if (m_currentPass >= m_renderPasses.size())
             return IE::Graphics::RenderPassSeries::IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_END;
-        m_renderPasses[m_currentPass].start(m_masterCommandBuffer, m_framebuffer);
+        m_renderPasses[m_currentPass].start(m_masterCommandBuffer);
     }
     return IE::Graphics::RenderPassSeries::IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_CONTINUE;
 }

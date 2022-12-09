@@ -24,6 +24,7 @@ public:
 
     Preset                             m_preset;
     IE::Graphics::RenderPassSeries    *m_renderPassSeries{};
+    IE::Graphics::Framebuffer          m_framebuffer;
     VkRenderPass                       m_renderPass{};
     size_t                             m_currentPass{};
     std::vector<IE::Graphics::Subpass> m_subpasses;
@@ -36,15 +37,16 @@ public:
     }
 
     void build(
-      RenderPassSeries                     *t_renderPassSeries,
-      std::vector<VkAttachmentDescription> &t_attachmentDescriptions,
-      std::vector<VkSubpassDescription>    &t_subpassDescriptions,
-      std::vector<VkSubpassDependency>     &t_subpassDependency
+      RenderPassSeries                         *t_renderPassSeries,
+      std::vector<VkAttachmentDescription>     &t_attachmentDescriptions,
+      std::vector<VkSubpassDescription>        &t_subpassDescriptions,
+      std::vector<VkSubpassDependency>         &t_subpassDependency,
+      std::vector<IE::Graphics::Image::Preset> &t_attachmentPresets
     );
 
     bool nextPass(std::shared_ptr<IE::Graphics::CommandBuffer> masterCommandBuffer);
 
-    bool start(std::shared_ptr<CommandBuffer> masterCommandBuffer, Framebuffer &framebuffer);
+    bool start(std::shared_ptr<CommandBuffer> masterCommandBuffer);
 
     void finish(std::shared_ptr<CommandBuffer> masterCommandBuffer);
 };
