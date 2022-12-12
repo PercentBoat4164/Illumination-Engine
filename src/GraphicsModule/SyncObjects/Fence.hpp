@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <vulkan/vulkan_core.h>
 
 namespace IE::Graphics {
