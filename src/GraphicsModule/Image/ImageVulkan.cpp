@@ -349,20 +349,22 @@ VkFormat IE::Graphics::detail::ImageVulkan::formatFromPreset(
   IE::Graphics::Image::Preset t_preset,
   IE::Graphics::RenderEngine *t_engineLink
 ) {
-    VkFormatFeatureFlags featureFlags{featuresFromPreset(t_preset)};
-    // Try for an optimal format.
-    for (VkFormat format : formats) {
-        VkFormatProperties properties;
-        vkGetPhysicalDeviceFormatProperties(t_engineLink->m_device.physical_device, format, &properties);
-        if (properties.optimalTilingFeatures & featureFlags) return format;
-    }
-    // Try for any compatible format.
-    for (VkFormat format : formats) {
-        VkFormatProperties properties;
-        vkGetPhysicalDeviceFormatProperties(t_engineLink->m_device.physical_device, format, &properties);
-        if (properties.optimalTilingFeatures & featureFlags) return format;
-    }
-    return VK_FORMAT_UNDEFINED;
+    return intentFromPreset(t_preset) == IE_IMAGE_INTENT_COLOR ? VK_FORMAT_B8G8R8A8_SRGB :
+                                                                 VK_FORMAT_D32_SFLOAT_S8_UINT;
+    //    VkFormatFeatureFlags featureFlags{featuresFromPreset(t_preset)};
+    //    // Try for an optimal format.
+    //    for (VkFormat format : formats) {
+    //        VkFormatProperties properties;
+    //        vkGetPhysicalDeviceFormatProperties(t_engineLink->m_device.physical_device, format, &properties);
+    //        if (properties.optimalTilingFeatures & featureFlags) return format;
+    //    }
+    //    // Try for any compatible format.
+    //    for (VkFormat format : formats) {
+    //        VkFormatProperties properties;
+    //        vkGetPhysicalDeviceFormatProperties(t_engineLink->m_device.physical_device, format, &properties);
+    //        if (properties.optimalTilingFeatures & featureFlags) return format;
+    //    }
+    //    return VK_FORMAT_UNDEFINED;
 }
 
 VkPipelineStageFlags IE::Graphics::detail::ImageVulkan::stageFromPreset(Preset t_preset) {
@@ -393,8 +395,7 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(
       .pNext     = nullptr,
       .flags     = 0x0,
       .imageType = VK_IMAGE_TYPE_2D,
-      .format    = intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_FORMAT_B8G8R8A8_SRGB :
-                                                                         VK_FORMAT_D32_SFLOAT_S8_UINT,
+      .format    = formatFromPreset(m_preset, m_linkedRenderEngine),
       .extent =
         {.width  = static_cast<uint32_t>(m_linkedRenderEngine->m_currentResolution[0]),
                  .height = static_cast<uint32_t>(m_linkedRenderEngine->m_currentResolution[1]),
@@ -444,17 +445,16 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(
       .flags    = 0x0,
       .image    = m_id,
       .viewType = VK_IMAGE_VIEW_TYPE_2D,
-      .format   = intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_FORMAT_B8G8R8A8_SRGB :
-                                                                        VK_FORMAT_D32_SFLOAT_S8_UINT,
+      .format   = formatFromPreset(m_preset, m_linkedRenderEngine),
       .components =
         VkComponentMapping{
                            .r = VK_COMPONENT_SWIZZLE_R,
                            .g = VK_COMPONENT_SWIZZLE_G,
                            .b = VK_COMPONENT_SWIZZLE_B,
-                           .a = VK_COMPONENT_SWIZZLE_A                },
+                           .a = VK_COMPONENT_SWIZZLE_A},
       .subresourceRange = VkImageSubresourceRange{
                            .aspectMask     = intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_IMAGE_ASPECT_COLOR_BIT :
-                                                                                VK_IMAGE_ASPECT_DEPTH_BIT,        .baseMipLevel   = 0,
+                                                                                VK_IMAGE_ASPECT_DEPTH_BIT, .baseMipLevel   = 0,
                            .levelCount     = VK_REMAINING_MIP_LEVELS,
                            .baseArrayLayer = 0,
                            .layerCount     = VK_REMAINING_ARRAY_LAYERS}

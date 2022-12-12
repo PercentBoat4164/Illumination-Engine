@@ -7,7 +7,9 @@ void IE::Graphics::Framebuffer::build(
   IE::Graphics::RenderPass                 *t_renderPass,
   std::vector<IE::Graphics::Image::Preset> &t_attachmentPresets
 ) {
-    m_renderPass = t_renderPass;
+    m_renderPass    = t_renderPass;
+    m_resolution[0] = m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[0];
+    m_resolution[1] = m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[1];
 
     IE::Core::MultiDimensionalVector<unsigned char> tmp{};
     attachments.reserve(t_attachmentPresets.size());
@@ -34,11 +36,9 @@ void IE::Graphics::Framebuffer::build(
       .renderPass      = m_renderPass->m_renderPass,
       .attachmentCount = static_cast<uint32_t>(attachmentViews.size()),
       .pAttachments    = attachmentViews.data(),
-      .width =
-        static_cast<uint32_t>(m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[0]),
-      .height =
-        static_cast<uint32_t>(m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[1]),
-      .layers = 0x1};
+      .width           = static_cast<uint32_t>(m_resolution[0]),
+      .height          = static_cast<uint32_t>(m_resolution[1]),
+      .layers          = 0x1};
     VkResult result{vkCreateFramebuffer(
       m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
       &framebufferCreateInfo,

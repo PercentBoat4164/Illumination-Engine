@@ -39,6 +39,6 @@ private:
       std::vector<std::vector<IE::Graphics::Image::Preset>>>
                                                    buildAttachmentDescriptions();
     std::vector<std::vector<VkSubpassDescription>> buildSubpassDescriptions();
-    std::vector<std::vector<VkSubpassDependency>>     buildSubpassDependencies();
+    std::vector<std::vector<VkSubpassDependency>>  buildSubpassDependencies();
 };
 }  // namespace IE::Graphics

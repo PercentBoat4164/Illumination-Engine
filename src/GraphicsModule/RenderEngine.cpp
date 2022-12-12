@@ -15,11 +15,7 @@ VkBool32 IE::Graphics::RenderEngine::APIDebugMessenger(
   const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
   void                                       *pUserData
 ) {
-    reinterpret_cast<IE::Core::Logger *>(pUserData)->log(
-      messageSeverity,
-      std::string(pCallbackData->pMessageIdName) + " ID: " + std::to_string(pCallbackData->messageIdNumber) +
-        " | " + vkb::to_string_message_type(messageType) + " " + pCallbackData->pMessage
-    );
+    reinterpret_cast<IE::Core::Logger *>(pUserData)->log(messageSeverity, pCallbackData->pMessage);
     return VK_TRUE;
 }
 
@@ -275,7 +271,7 @@ void IE::Graphics::RenderEngine::createDescriptorSets() {
 }
 
 void IE::Graphics::RenderEngine::createRenderPasses() {
-    //     Specify all subpasses and their attachment usages.
+    // Specify all subpasses and their attachment usages.
     std::vector<std::shared_ptr<Shader>> colorShaders{
       std::make_shared<Shader>("shaders/Vulkan/fragmentShader.frag"),
       std::make_shared<Shader>("shaders/Vulkan/vertexShader.vert")};
