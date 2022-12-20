@@ -17,7 +17,7 @@ class IECamera;
 #include "Image/IETexture.hpp"
 
 // Modular dependencies
-#include "Core/AssetModule/IEAspect.hpp"
+#include "Core/AssetModule/Aspect.hpp"
 #include "IEMesh.hpp"
 
 // External dependencies
@@ -36,7 +36,7 @@ enum IERenderableStatus {
     IE_RENDERABLE_STATE_IN_VRAM  = 0x4
 };
 
-class IERenderable : public IEAspect {
+class IERenderable : public IE::Core::Aspect {
 public:
     std::string           modelName{};
     std::vector<IEMesh>   meshes{};

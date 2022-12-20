@@ -18,7 +18,7 @@ IE::Core::Logger::Logger(const std::string &t_name, const std::string &t_path, F
         ));
     }
     m_logger = std::make_shared<spdlog::async_logger>(t_name, sinks.begin(), sinks.end(), spdlog::thread_pool());
-    setLogLevel(IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_TRACE);
+    setLogLevel(ILLUMINATION_ENGINE_LOG_LEVEL_TRACE);
     log("Created logger");
 }
 

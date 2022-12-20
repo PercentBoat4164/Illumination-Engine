@@ -3,12 +3,12 @@
 #include <memory>
 #include <spdlog/logger.h>
 #include <string>
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 namespace IE::Core {
 /**
  * @brief A small logging tool that is a very thin wrapper for spdlog.
- * @class Logger
+ * @class IELogger
  */
 class Logger {
 private:
@@ -47,13 +47,11 @@ public:
     explicit Logger(
       const std::string &t_name,
       const std::string &t_path  = "",
-      Flags              t_flags = IE::Core::Logger::ILLUMINATION_ENGINE_LOG_TO_STDOUT
+      Flags              t_flags = ILLUMINATION_ENGINE_LOG_TO_STDOUT
     );
 
-    void log(
-      const std::string      &t_msg,
-      IE::Core::Logger::Level t_level = IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_TRACE
-    ) const;
+    void
+    log(const std::string &t_msg, IE::Core::Logger::Level t_level = ILLUMINATION_ENGINE_LOG_LEVEL_TRACE) const;
 
     void log(VkDebugUtilsMessageSeverityFlagBitsEXT t_level, const std::string &t_msg) const;
 
@@ -67,8 +65,8 @@ public:
  * @details This is used to create IE::Graphics::Image::Locations from the uint8_ts that are used to perform the
  * binary operators. Before converting the t_flags to an IE::Core::Logger::Flags, validity checks are
  *performed to ensure that the t_flags does not represent a physically impossible scenario.
- * @param t_flags The value that the new Location should take on.
- * @return A verified IE::Graphics::Image::Location.
+ * @param t_flags The value that the new Status should take on.
+ * @return A verified IE::Graphics::Image::Status.
  **/
 constexpr IE::Core::Logger::Flags Flags(uint8_t t_flags) {
     if (t_flags & IE::Core::Logger::Flags::ILLUMINATION_ENGINE_LOG_TO_NONE && (t_flags & ~IE::Core::Logger::Flags::ILLUMINATION_ENGINE_LOG_TO_NONE))

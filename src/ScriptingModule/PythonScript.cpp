@@ -1,8 +1,8 @@
 #include "PythonScript.hpp"
 
-#define ILLUMINATION_ENGINE_INTERNAL_PYTHON_SETUP_SCRIPT std::string("res.scripts.setup")
+#include "Core/Core.hpp"
 
-uint32_t IE::Script::detail::PythonScript::m_pythonScripts{};
+#define ILLUMINATION_ENGINE_INTERNAL_PYTHON_SETUP_SCRIPT std::string("res.scripts.setup")
 
 void IE::Script::detail::PythonScript::update() {
     PyObject_CallNoArgs(scriptUpdate);
@@ -28,19 +28,20 @@ void IE::Script::detail::PythonScript::compile() {
     PyObject_CallOneArg(compiler, PyUnicode_FromString(m_file->path.c_str()));
 }
 
-IE::Script::detail::PythonScript::PythonScript(IE::Core::File *t_file) : m_file(t_file) {
-    if (Py_IsInitialized() == 0 && m_pythonScripts == 0) {
+IE::Script::detail::PythonScript::PythonScript(IE::Core::Engine *t_engine, IE::Core::File *t_file) :
+        Script(t_engine, t_file),
+        m_file(t_file) {
+    if (!Py_IsInitialized()) {
         Py_Initialize();
         std::string path = IE::Core::Core::getFileSystem()->getBaseDirectory();
         wchar_t    *wc   = reinterpret_cast<wchar_t *>(malloc(path.size() * sizeof(wchar_t)));
         mbstowcs(wc, path.c_str(), path.size());
         PySys_SetArgv(0, &wc);
         delete wc;
-    } else if (Py_IsInitialized() == 0 && m_pythonScripts > 0 || Py_IsInitialized() > 0 && m_pythonScripts == 0) {
     }
-    ++m_pythonScripts;
 }
 
-std::shared_ptr<IE::Script::Script> IE::Script::detail::PythonScript::create(IE::Core::File *t_file) {
-    return std::make_shared<IE::Script::detail::PythonScript>(t_file);
+std::shared_ptr<IE::Script::Script>
+IE::Script::detail::PythonScript::create(IE::Core::Engine *t_engine, IE::Core::File *t_file) {
+    return std::make_shared<IE::Script::detail::PythonScript>(t_engine, t_file);
 }

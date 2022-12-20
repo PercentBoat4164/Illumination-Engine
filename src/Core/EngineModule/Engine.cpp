@@ -4,13 +4,6 @@
 
 #include <utility>
 
-IEAspect *IE::Core::Engine::getAspect(const std::string &t_id) {
-    auto aspect = m_aspects.find(t_id);
-    if (aspect != m_aspects.end()) return aspect->second.get();
-    IE::Core::Core::getLogger()->log("Aspect '" + t_id + "' does not exist!");
-    return nullptr;
-}
-
 IE::Core::Engine &IE::Core::Engine::operator=(const IE::Core::Engine &t_other) {
     if (this == &t_other) m_aspects = t_other.m_aspects;
     return *this;
@@ -19,4 +12,11 @@ IE::Core::Engine &IE::Core::Engine::operator=(const IE::Core::Engine &t_other) {
 IE::Core::Engine &IE::Core::Engine::operator=(IE::Core::Engine &&t_other) noexcept {
     if (this == &t_other) m_aspects = std::exchange(t_other.m_aspects, {});
     return *this;
+}
+
+bool IE::Core::Engine::finish() {
+    std::unique_lock<std::mutex> lock(m_jobsMutex);
+    for (std::future<void> &job : m_jobs) job.get();
+    m_jobs.clear();
+    return true;
 }

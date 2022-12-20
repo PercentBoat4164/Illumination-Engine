@@ -1,16 +1,19 @@
 #pragma once
 
-#include "Core/AssetModule/IEAspect.hpp"
+#include "Core/AssetModule/Aspect.hpp"
 
 #ifndef GLEW_IMPLEMENTATION
 #    define GLEW_IMPLEMENTATION
 #    include <GL/glew.h>
 #endif
 
+#include "Core/Core.hpp"
+
 #include <any>
 #include <cstdint>
 #include <functional>
 #include <GLFW/glfw3.h>
+#include <memory>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -62,24 +65,24 @@ namespace IE::Input {
 /**
  * @brief The Keyboard class is intended to manage keyboard event handling.
  */
-class Keyboard : public IEAspect {
+class Keyboard : public IE::Core::Aspect {
 public:
     void *attachment;  // pointer to object for access through the window user pointer
 
     /**
      * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the
-     * IeKeyboard object.
+     * Keyboard object.
      * @param initialWindow
      * @param initialAttachment=nullptr
      * @return IeKeyboard
      */
-    explicit Keyboard(GLFWwindow *initialWindow, void *initialAttachment = nullptr);
+    explicit Keyboard(IE::Core::Engine *t_engine, IE::Core::File *);
 
     /**
      * @brief Sets the queue method. Pass one of the two pre-created key event handler functions.
-     * @param function
+     * @param t_function
      */
-    void setEnqueueMethod(GLFWkeyfun function = keyCallback);
+    void setEnqueueMethod(GLFWkeyfun t_function = keyCallback);
 
     /**
      * @brief Handles all the actions indicated by the key presses logged in the queue.
@@ -157,6 +160,10 @@ public:
      */
     void clearQueue();
 
+    auto setWindow(GLFWwindow *t_window) -> decltype(*this);
+
+    auto setAttachment(void *t_attachment) -> decltype(*this);
+
     /**
      * @brief Default key event handler function. Enqueues the key as pressed or released. Does not handle repeats.
      * @param window
@@ -171,6 +178,7 @@ private:
     GLFWwindow                                         *window;   // window this keyboard manages
     std::vector<IE::Input::detail::KeyPressDescription> queue{};  // queue of key presses
     std::unordered_map<IE::Input::detail::KeyPressDescription, std::pair<std::function<void(GLFWwindow *)>, bool>>
-      actionsOptions{};  // hash table of key press description to function
+               actionsOptions{};  // hash table of key press description to function
+    GLFWkeyfun m_function{keyCallback};
 };
 }  // namespace IE::Input

@@ -1,8 +1,8 @@
 set(IELogModuleSourceFiles  # Gather sources
-  Logger.cpp
-  )
+		Logger.cpp
+		)
 
 # Create and define properties for the library
 add_library(IELogModule ${IELogModuleSourceFiles})
-target_link_libraries(IELogModule PUBLIC INT_src EXT_SpdLog EXT_Vulkan)
+target_link_libraries(IELogModule PUBLIC INT_src EXT_SpdLog)
 set_target_properties(IELogModule PROPERTIES LINKER_LANGUAGE CXX)
