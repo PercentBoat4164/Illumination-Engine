@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace IE::Input::detail {
 /**

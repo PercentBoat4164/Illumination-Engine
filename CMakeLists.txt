@@ -46,7 +46,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
 	# Added to prevent known errors from clouding the log.
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-else ()
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+elseif ()
 	message(WARNING "Unsupported compiler in use: ${CMAKE_CXX_COMPILER_ID}")
 endif ()
 
