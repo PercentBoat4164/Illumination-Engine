@@ -5,7 +5,7 @@
 #include "GraphicsModule/Renderable/IERenderable.hpp"
 
 /* Include dependencies from Core. */
-#include "Core/AssetModule/IEAsset.hpp"
+#include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
 #include "Core/LogModule/Logger.hpp"
 
@@ -423,7 +423,7 @@ void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
         // If aspect is downcast-able to a renderable
         if (dynamic_cast<IERenderable *>(aspect.get())) {
             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
-            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->filename);
+            std::dynamic_pointer_cast<IERenderable>(aspect)->create(nullptr, this);
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
         }
@@ -735,7 +735,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
     //	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only code
-    //block. 	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
+    // block. 	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
     //	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = createWindow();

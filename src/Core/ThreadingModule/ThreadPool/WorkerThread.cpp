@@ -21,7 +21,5 @@ void IE::Core::detail::WorkerThread::operator()() {
     }
 }
 
-IE::Core::detail::WorkerThread::WorkerThread(ThreadPool *threadPool) : m_threadPool{threadPool}, m_id{m_nextId++} {
+IE::Core::detail::WorkerThread::WorkerThread(ThreadPool *threadPool) : m_threadPool{threadPool} {
 }
-
-uint32_t IE::Core::detail::WorkerThread::m_nextId{};

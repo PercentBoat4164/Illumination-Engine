@@ -39,3 +39,7 @@ void IE::Core::ThreadPool::shutdown() {
     for (auto &m_thread : m_threads)
         if (m_thread.joinable()) m_thread.join();
 }
+
+IE::Core::ThreadPool::~ThreadPool() {
+    shutdown();
+}

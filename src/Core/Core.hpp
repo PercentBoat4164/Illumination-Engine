@@ -4,7 +4,7 @@
 #include "Core/EngineModule/Window.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
 #include "Core/LogModule/Logger.hpp"
-#include "Core/ThreadingModule/ThreadPool.hpp"
+#include "Core/ThreadingModule/ThreadPool/ThreadPool.hpp"
 
 #include <mutex>
 #include <unordered_map>

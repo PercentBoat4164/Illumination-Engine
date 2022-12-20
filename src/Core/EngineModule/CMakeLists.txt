@@ -1,7 +1,7 @@
 set(IEEngineModuleSourceFiles  # Gather sources
-  Engine.cpp
-  Window.cpp
-  )
+		Engine.cpp
+		Window.cpp
+		)
 
 # Create and define properties for the library
 add_library(IEEngineModule ${IEEngineModuleSourceFiles})
@@ -9,4 +9,4 @@ add_library(IEEngineModule ${IEEngineModuleSourceFiles})
 set_target_properties(IEEngineModule PROPERTIES LINKER_LANGUAGE CXX)
 
 # Add internal dependency libraries to the target
-target_link_libraries(IEEngineModule PUBLIC IECore)
+target_link_libraries(IEEngineModule PUBLIC INT_src IECore)

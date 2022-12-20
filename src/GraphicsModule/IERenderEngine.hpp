@@ -12,7 +12,7 @@ struct GLFWmonitor;
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "CommandBuffer/IECommandPool.hpp"
-#include "Core/AssetModule/IEAsset.hpp"
+#include "Core/AssetModule/Asset.hpp"
 #include "Core/EngineModule/Engine.hpp"
 #include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
 #include "GraphicsModule/RenderPass/IERenderPass.hpp"

@@ -14,8 +14,8 @@ public:
 
     InputEngine(GLFWwindow *t_window);
 
-    AspectType *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
+    std::shared_ptr<AspectType> createAspect(const std::string &t_id);
 
-    AspectType *getAspect(const std::string &t_id) override;
+    std::shared_ptr<AspectType> getAspect(const std::string &t_id);
 };
 }  // namespace IE::Input
