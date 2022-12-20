@@ -8,8 +8,8 @@
 
 int main(int argc, char **argv) {
     if (argc >= 1) {
-        std::string programLocation  = std::string(argv[0]);
-        std::string resourceLocation = programLocation.substr(0, programLocation.find_last_of('/'));
+        auto programLocation  = std::filesystem::path(argv[0]);
+        std::string const resourceLocation = programLocation.parent_path().string();
         IE::Core::Core::getInst(resourceLocation);
     }
 

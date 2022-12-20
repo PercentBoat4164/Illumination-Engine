@@ -9,7 +9,11 @@ if (WIN32)
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif ()
 
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON)  # Uncomment this line if you have no internet connection
+# Detect compiler and OS
+message("Using ${CMAKE_CXX_COMPILER_ID} on ${CMAKE_SYSTEM_NAME}.")
+add_compile_definitions("COMPILER=${CMAKE_CXX_COMPILER_ID}")
+add_compile_definitions("OS=${CMAKE_SYSTEM_NAME}")
+
 
 set(IE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})  # Directory Illumination Engine is being built in
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)  # Directory to put library files
@@ -27,17 +31,29 @@ add_custom_command(
 
 set(IE_PREFER_LOCAL_LIBS ON)
 
-add_subdirectory(ext)  # Generate external dependencies from source
-add_subdirectory(src)  # Generate Illumination Engine from source
+# Compilation and linking options
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	# Needed for compilation success.
+	add_compile_options("-Wno-deprecated-non-prototype")
 
-add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res COMMAND ${CMAKE_COMMAND} -E copy_if_different ${IE_BASE_DIR}/res ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res DEPENDS ${IE_BASE_DIR}/res COMMENT "Copying resource files...")
-file(COPY ${IE_BASE_DIR}/res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})  # Move resource files
+	# Added to prevent known errors from clouding the log.
+	add_compile_options("-Wno-nullability-completeness")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+	# Needed for compilation success.
+	add_compile_options("-Wno-unused-command-line-argument")
+	add_compile_options("-Wno-deprecated-non-prototype")
+	add_compile_options("-fp=consistent")
 
-add_compile_options(-fmodules-ts)
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-	add_compile_options(-g)  # Compile with debug information
-else ()
-	add_compile_options(-O3)  # Compile with level 3 optimizations
+	# Added to prevent known errors from clouding the log.
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+elseif ()
+	message(WARNING "Unsupported compiler in use: ${CMAKE_CXX_COMPILER_ID}")
 endif ()
 
-add_link_options("-fuse-ld=lld")  # Use LLVM's lld linker for speed
+#add_link_options("-fuse-ld=lld") # Use LLVM's lld linker for speed.
+
+
+add_subdirectory(ext)  # Generate external dependencies from source
+add_subdirectory(src)  # Generate Illumination Engine from source
