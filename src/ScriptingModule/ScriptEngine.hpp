@@ -8,7 +8,7 @@ class Script;
 class ScriptEngine : public IE::Core::Engine {
     static const std::unordered_map<
       std::string,
-      std::function<std::shared_ptr<IE::Script::Script>(IE::Core::Engine *, IE::Core::File *)>>
+      std::function<std::shared_ptr<IE::Script::Script>(std::shared_ptr<IE::Core::Engine>, IE::Core::File *)>>
       extensionsToLanguage;
 
 public:

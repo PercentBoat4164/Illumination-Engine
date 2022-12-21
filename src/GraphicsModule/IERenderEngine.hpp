@@ -248,7 +248,7 @@ public:
     // global depth image used by all framebuffers. Should this be here?
     std::shared_ptr<IEImage>                       depthImage{};
 
-    void addAsset(const std::shared_ptr<IEAsset> &asset);
+    void addAsset(const std::shared_ptr<IE::Core::Asset> &asset);
 
     explicit IERenderEngine(IESettings &settings);
 
@@ -305,6 +305,9 @@ public:
 
     static void setAPI(const IEAPI &API);
 
-    AspectType *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
-    AspectType *getAspect(const std::string &t_id) override;
+    std::shared_ptr<AspectType> createAspect(const std::string &t_id);
+
+    std::shared_ptr<AspectType> getAspect(const std::string &t_id);
+
+    std::shared_ptr<Engine> create() override;
 };

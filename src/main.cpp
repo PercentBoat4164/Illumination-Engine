@@ -14,10 +14,10 @@ int main(int argc, char **argv) {
     }
 
     const IESettings settings     = IESettings();
-    auto            *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
+    std::shared_ptr<IERenderEngine> renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
 
-    IE::Input::InputEngine inputEngine{renderEngine->window};
-    std::shared_ptr<IE::Input::Keyboard> keyboard = inputEngine.getAspect("keyboard");
+    std::shared_ptr<IE::Input::InputEngine> inputEngine = IE::Core::Core::createEngine<IE::Input::InputEngine>("input engine", renderEngine->window);
+    std::shared_ptr<IE::Input::Keyboard> keyboard = inputEngine->getAspect("keyboard");
     keyboard->editActions(
       GLFW_KEY_W,
       [&](GLFWwindow *) {
@@ -76,22 +76,21 @@ int main(int argc, char **argv) {
         glfwSetWindowShouldClose(renderEngine->window, 1);
     });
 
-    std::shared_ptr<IEAsset> fbx(std::make_shared<IEAsset>());
-    fbx->filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
+    std::shared_ptr<IE::Core::Asset> fbx(std::make_shared<IE::Core::Asset>(IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue")));
     fbx->position = {2, 1, 0};
-    fbx->addAspect(new IERenderable{});
+    fbx->addAspect(IE::Core::Core::getEngine("render engine"));
     renderEngine->addAsset(fbx);
-    std::shared_ptr<IEAsset> obj = std::make_shared<IEAsset>();
+    std::shared_ptr<IE::Core::Asset> obj = std::make_shared<IE::Core::Asset>();
     obj->filename                = "res/assets/AncientStatue/models/ancientStatue.obj";
     obj->addAspect(new IERenderable{});
     obj->position = {0, 1, 0};
     renderEngine->addAsset(obj);
-    std::shared_ptr<IEAsset> glb = std::make_shared<IEAsset>();
+    std::shared_ptr<IE::Core::Asset> glb = std::make_shared<IE::Core::Asset>();
     glb->filename                = "res/assets/AncientStatue/models/ancientStatue.glb";
     glb->addAspect(new IERenderable{});
     glb->position = {-2, 1, 0};
     renderEngine->addAsset(glb);
-    std::shared_ptr<IEAsset> floor = std::make_shared<IEAsset>();
+    std::shared_ptr<IE::Core::Asset> floor = std::make_shared<IE::Core::Asset>();
     floor->filename                = "res/assets/DeepslateFloor/models/DeepslateFloor.fbx";
     floor->addAspect(new IERenderable{});
     renderEngine->addAsset(floor);

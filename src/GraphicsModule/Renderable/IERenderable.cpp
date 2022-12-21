@@ -169,10 +169,10 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
     for (auto &associatedAsset : associatedAssets) {
-        IEAsset   thisAsset  = *associatedAsset.lock();
-        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
+        IE::Core::Asset   thisAsset  = *associatedAsset.lock();
+        glm::quat quaternion = glm::yawPitchRoll(rotation.x, rotation.y, rotation.z);
         modelMatrix          = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), scale), position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );
@@ -192,10 +192,10 @@ void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t re
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
     for (auto &associatedAsset : associatedAssets) {
-        IEAsset   thisAsset  = *associatedAsset.lock();
-        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
+        IE::Core::Asset   thisAsset  = *associatedAsset.lock();
+        glm::quat quaternion = glm::yawPitchRoll(rotation.x, rotation.y, rotation.z);
         modelMatrix          = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), scale), position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );

@@ -22,26 +22,26 @@ public:
     template<typename T, typename... Args>
     requires std::derived_from<T, IE::Core::Engine>
 
-    static T *createEngine(std::string id, Args... args) {
+    static std::shared_ptr<T>createEngine(std::string id, Args... args) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
         if (m_engines.find(id) != m_engines.end())
             m_logger.log(
               "Engine '" + id + "' already exists!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
-        m_engines[id] = new T(args...);
-        return static_cast<T *>(m_engines[id]);
+        m_engines[id] = std::make_shared<T>(args...);
+        return std::static_pointer_cast<T>(m_engines[id]);
     }
 
     template<typename T>
     requires std::derived_from<T, IE::Core::Engine>
 
-    static T *getEngine(std::string id) {
+    static std::shared_ptr<T>getEngine(std::string id) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
-        return static_cast<T *>(m_engines.at(id));
+        return std::static_pointer_cast<T>(m_engines.at(id));
     }
 
-    static IE::Core::Engine *getEngine(std::string id);
+    static std::shared_ptr<IE::Core::Engine> getEngine(std::string id);
 
     template<typename... Args>
     static void registerWindow(GLFWwindow *t_window, Args... args) {
@@ -63,7 +63,7 @@ public:
 private:
     static IE::Core::Logger                                    m_logger;
     static std::mutex                                          m_enginesMutex;
-    static std::unordered_map<std::string, IE::Core::Engine *> m_engines;
+    static std::unordered_map<std::string, std::shared_ptr<IE::Core::Engine>> m_engines;
     static std::mutex                                          m_windowsMutex;
     static std::unordered_map<GLFWwindow *, IE::Core::Window>  m_windows;
     static ThreadPool                                          m_threadPool;

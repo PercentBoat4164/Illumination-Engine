@@ -418,12 +418,12 @@ IERenderEngine::IERenderEngine(IESettings *settings) {
     settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
 
-void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
-    for (std::shared_ptr<IEAspect> &aspect : asset->aspects) {
+void IERenderEngine::addAsset(const std::shared_ptr<IE::Core::Asset> &asset) {
+    for (std::shared_ptr<IE::Core::Aspect> &aspect : asset->m_aspects) {
         // If aspect is downcast-able to a renderable
-        if (dynamic_cast<IERenderable *>(aspect.get())) {
+        if (dynamic_cast<IERenderable *>(aspect.get()) != nullptr) {
             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
-            std::dynamic_pointer_cast<IERenderable>(aspect)->create(nullptr, this);
+            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, "a");  // todo: Move this elsewhere, or otherwise fix.
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
         }
@@ -837,13 +837,14 @@ std::function<void(IERenderEngine &)> IERenderEngine::_destroy =
       return;
   }};
 
-IERenderEngine::AspectType *IERenderEngine::getAspect(const std::string &t_id) {
-    return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
+std::shared_ptr<IERenderEngine::AspectType> IERenderEngine::getAspect(const std::string &t_id) {
+    return IE::Core::Engine::_getAspect<AspectType>(t_id);
 }
 
-IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
-    AspectType *aspect = getAspect(t_id);
-    if (!aspect) aspect = new AspectType();
-    t_asset.lock()->addAspect(aspect);
+std::shared_ptr<IERenderEngine::AspectType> IERenderEngine::createAspect(const std::string &t_id) {
+    std::shared_ptr<AspectType> aspect = getAspect(t_id);
+    if (!aspect) aspect = std::shared_ptr<AspectType>();
     return aspect;
 }
+
+std::shared_ptr<> create();

@@ -13,7 +13,7 @@ void IE::Script::detail::PythonScript::initialize() {
 }
 
 void IE::Script::detail::PythonScript::load() {
-    m_scriptName     = m_file->name.substr(0, m_file->name.find_last_of('.'));
+    m_scriptName     = m_file->name.substr(0, m_file->name.find_last_of('.')); // Get rid of .py
     PyObject *module = PyImport_Import(PyUnicode_FromString(m_scriptName.c_str()));
     scriptInitialize = PyObject_GetAttrString(module, "initialize");
     scriptUpdate     = PyObject_GetAttrString(module, "update");
@@ -28,7 +28,7 @@ void IE::Script::detail::PythonScript::compile() {
     PyObject_CallOneArg(compiler, PyUnicode_FromString(m_file->path.c_str()));
 }
 
-IE::Script::detail::PythonScript::PythonScript(IE::Core::Engine *t_engine, IE::Core::File *t_file) :
+IE::Script::detail::PythonScript::PythonScript(std::shared_ptr<IE::Core::Engine>t_engine, IE::Core::File *t_file) :
         Script(t_engine, t_file),
         m_file(t_file) {
     if (!Py_IsInitialized()) {
@@ -42,6 +42,6 @@ IE::Script::detail::PythonScript::PythonScript(IE::Core::Engine *t_engine, IE::C
 }
 
 std::shared_ptr<IE::Script::Script>
-IE::Script::detail::PythonScript::create(IE::Core::Engine *t_engine, IE::Core::File *t_file) {
+IE::Script::detail::PythonScript::create(std::shared_ptr<IE::Core::Engine>t_engine, IE::Core::File *t_file) {
     return std::make_shared<IE::Script::detail::PythonScript>(t_engine, t_file);
 }

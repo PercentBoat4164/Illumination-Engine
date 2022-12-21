@@ -50,6 +50,9 @@ public:
     std::string           directory{};
     glm::mat4             modelMatrix{};
     IERenderableStatus    status{IE_RENDERABLE_STATE_UNKNOWN};
+    glm::vec3 rotation{0, 0, 0};
+    glm::vec3 position{0, 0, 0};
+    glm::vec3 scale{0, 0, 0};
 
     IERenderable() = default;
 

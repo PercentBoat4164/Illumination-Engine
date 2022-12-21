@@ -18,3 +18,11 @@ IE::Input::InputEngine::InputEngine(GLFWwindow *t_window) : m_window(t_window) {
     keyboard->setWindow(m_window);
     m_aspects["keyboard"] = keyboard;
 }
+
+std::shared_ptr<Engine> IE::Input::InputEngine::create() {
+    return std::shared_ptr<Engine>();
+}
+
+bool IE::Input::InputEngine::update() {
+    return false;
+}
