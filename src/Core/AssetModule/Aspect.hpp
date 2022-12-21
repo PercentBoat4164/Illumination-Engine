@@ -22,7 +22,8 @@ class Asset;
 
 class Aspect {
 public:
-    Aspect(IE::Core::Engine *t_engine, IE::Core::File *t_resource) {}
+    Aspect(IE::Core::Engine *t_engine, IE::Core::File *t_resource) {
+    }
 
     virtual ~Aspect() = default;
 

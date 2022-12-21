@@ -14,8 +14,9 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
-    create(engineLink, filePath);
+IERenderable::IERenderable(IE::Core::Engine *t_engineLink, IE::Core::File *t_resources) :
+        IE::Core::Aspect(t_engineLink, t_resources) {
+    create(static_cast<IERenderEngine *>(t_engineLink), t_resources->path.string());
 }
 
 void IERenderable::setAPI(const IEAPI &API) {
@@ -169,9 +170,9 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
     for (auto &associatedAsset : associatedAssets) {
-        IE::Core::Asset   thisAsset  = *associatedAsset.lock();
-        glm::quat quaternion = glm::yawPitchRoll(rotation.x, rotation.y, rotation.z);
-        modelMatrix          = glm::rotate(
+        IE::Core::Asset thisAsset  = *associatedAsset.lock();
+        glm::quat       quaternion = glm::yawPitchRoll(rotation.x, rotation.y, rotation.z);
+        modelMatrix                = glm::rotate(
           glm::translate(glm::scale(glm::identity<glm::mat4>(), scale), position),
           glm::angle(quaternion),
           glm::axis(quaternion)
@@ -192,9 +193,9 @@ void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t re
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
     for (auto &associatedAsset : associatedAssets) {
-        IE::Core::Asset   thisAsset  = *associatedAsset.lock();
-        glm::quat quaternion = glm::yawPitchRoll(rotation.x, rotation.y, rotation.z);
-        modelMatrix          = glm::rotate(
+        IE::Core::Asset thisAsset  = *associatedAsset.lock();
+        glm::quat       quaternion = glm::yawPitchRoll(rotation.x, rotation.y, rotation.z);
+        modelMatrix                = glm::rotate(
           glm::translate(glm::scale(glm::identity<glm::mat4>(), scale), position),
           glm::angle(quaternion),
           glm::axis(quaternion)

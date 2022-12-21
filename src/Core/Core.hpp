@@ -20,9 +20,9 @@ public:
     static IE::Core::Core &getInst(const std::filesystem::path &t_path = "");
 
     template<typename T, typename... Args>
-    requires std::derived_from<T, IE::Core::Engine>
+        requires std::derived_from<T, IE::Core::Engine>
 
-    static std::shared_ptr<T>createEngine(std::string id, Args... args) {
+    static std::shared_ptr<T> createEngine(std::string id, Args... args) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
         if (m_engines.find(id) != m_engines.end())
             m_logger.log(
@@ -34,9 +34,9 @@ public:
     }
 
     template<typename T>
-    requires std::derived_from<T, IE::Core::Engine>
+        requires std::derived_from<T, IE::Core::Engine>
 
-    static std::shared_ptr<T>getEngine(std::string id) {
+    static std::shared_ptr<T> getEngine(std::string id) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
         return std::static_pointer_cast<T>(m_engines.at(id));
     }
@@ -61,13 +61,13 @@ public:
     static ThreadPool *getThreadPool();
 
 private:
-    static IE::Core::Logger                                    m_logger;
-    static std::mutex                                          m_enginesMutex;
+    static IE::Core::Logger                                                   m_logger;
+    static std::mutex                                                         m_enginesMutex;
     static std::unordered_map<std::string, std::shared_ptr<IE::Core::Engine>> m_engines;
-    static std::mutex                                          m_windowsMutex;
-    static std::unordered_map<GLFWwindow *, IE::Core::Window>  m_windows;
-    static ThreadPool                                          m_threadPool;
-    static FileSystem                                          m_filesystem;
+    static std::mutex                                                         m_windowsMutex;
+    static std::unordered_map<GLFWwindow *, IE::Core::Window>                 m_windows;
+    static ThreadPool                                                         m_threadPool;
+    static FileSystem                                                         m_filesystem;
 
     Core(const std::filesystem::path &t_path) {
         m_filesystem.setBaseDirectory(t_path);

@@ -20,7 +20,8 @@ protected:
 
     template<typename T>
 
-    requires std::derived_from<T, IE::Core::Aspect> std::shared_ptr<T>
+        requires std::derived_from<T, IE::Core::Aspect>
+    std::shared_ptr<T>
     _createAspect(const std::string &t_id, IE::Core::File *t_resource, IE::Core::Engine *downCastedSelf) {
         std::shared_ptr<T> aspect = _getAspect<T>(t_id);
         if (aspect == nullptr) {
@@ -33,7 +34,8 @@ protected:
 
     template<typename T>
 
-    requires std::derived_from<T, IE::Core::Aspect> std::shared_ptr<T> _getAspect(const std::string &t_id) {
+        requires std::derived_from<T, IE::Core::Aspect>
+    std::shared_ptr<T> _getAspect(const std::string &t_id) {
         std::unique_lock<std::mutex> lock(m_aspectsMutex);
         auto                         aspect = m_aspects.find(t_id);
         if (aspect != m_aspects.end()) return std::static_pointer_cast<T>(aspect->second);

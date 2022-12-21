@@ -8,8 +8,10 @@ class Script;
 class ScriptEngine : public IE::Core::Engine {
     static const std::unordered_map<
       std::string,
-      std::function<std::shared_ptr<IE::Script::Script>(std::shared_ptr<IE::Core::Engine>, IE::Core::File *)>>
+      std::function<std::shared_ptr<IE::Script::Script>(IE::Core::Engine *, IE::Core::File *)>>
       extensionsToLanguage;
+
+    using AspectType = IE::Script::Script;
 
 public:
     std::shared_ptr<IE::Script::Script> createAspect(const std::string &t_id, IE::Core::File *t_resource);

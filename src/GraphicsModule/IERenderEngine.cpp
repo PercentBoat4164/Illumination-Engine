@@ -423,7 +423,6 @@ void IERenderEngine::addAsset(const std::shared_ptr<IE::Core::Asset> &asset) {
         // If aspect is downcast-able to a renderable
         if (dynamic_cast<IERenderable *>(aspect.get()) != nullptr) {
             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
-            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, "a");  // todo: Move this elsewhere, or otherwise fix.
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
         }
@@ -841,10 +840,11 @@ std::shared_ptr<IERenderEngine::AspectType> IERenderEngine::getAspect(const std:
     return IE::Core::Engine::_getAspect<AspectType>(t_id);
 }
 
-std::shared_ptr<IERenderEngine::AspectType> IERenderEngine::createAspect(const std::string &t_id) {
-    std::shared_ptr<AspectType> aspect = getAspect(t_id);
-    if (!aspect) aspect = std::shared_ptr<AspectType>();
-    return aspect;
+std::shared_ptr<IERenderEngine::AspectType>
+IERenderEngine::createAspect(const std::string &t_id, IE::Core::File *t_resource) {
+    return IE::Core::Engine::_createAspect<AspectType>(t_id, t_resource, static_cast<Engine *>(this));
 }
 
-std::shared_ptr<> create();
+std::shared_ptr<IE::Core::Engine> IERenderEngine::create() {
+    return std::make_shared<IERenderEngine>();
+}

@@ -1,8 +1,8 @@
 set(IEThreadingModuleSourceFiles  # Gather sources
-		ThreadPool/JobQueue.cpp
-		ThreadPool/ThreadPool.cpp
-		ThreadPool/WorkerThread.cpp
-		)
+  ThreadPool/JobQueue.cpp
+  ThreadPool/ThreadPool.cpp
+  ThreadPool/WorkerThread.cpp
+  )
 
 
 add_library(IEThreadingModule ${IEThreadingModuleSourceFiles})

@@ -1,6 +1,6 @@
 set(IEScriptingModuleSourceFiles  # Gather sources
-		Script.cpp
-		PythonScript.cpp LuaScript.cpp LuaScript.hpp ScriptEngine.cpp ScriptEngine.hpp JavaScript.cpp JavaScript.hpp SharedObjectScript.cpp SharedObjectScript.hpp CSharpScript.cpp CSharpScript.hpp)
+  Script.cpp
+  PythonScript.cpp LuaScript.cpp LuaScript.hpp ScriptEngine.cpp ScriptEngine.hpp JavaScript.cpp JavaScript.hpp SharedObjectScript.cpp SharedObjectScript.hpp CSharpScript.cpp CSharpScript.hpp)
 
 # Create and define properties for the library
 add_library(IEScriptingModule ${IEScriptingModuleSourceFiles})

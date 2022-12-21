@@ -305,9 +305,9 @@ public:
 
     static void setAPI(const IEAPI &API);
 
-    std::shared_ptr<AspectType> createAspect(const std::string &t_id);
+    std::shared_ptr<AspectType> createAspect(const std::string &t_id, IE::Core::File *t_resource);
 
     std::shared_ptr<AspectType> getAspect(const std::string &t_id);
 
-    std::shared_ptr<Engine> create() override;
+    std::shared_ptr<IE::Core::Engine> create() override;
 };

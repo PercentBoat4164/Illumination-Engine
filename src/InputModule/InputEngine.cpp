@@ -19,8 +19,8 @@ IE::Input::InputEngine::InputEngine(GLFWwindow *t_window) : m_window(t_window) {
     m_aspects["keyboard"] = keyboard;
 }
 
-std::shared_ptr<Engine> IE::Input::InputEngine::create() {
-    return std::shared_ptr<Engine>();
+std::shared_ptr<IE::Core::Engine> IE::Input::InputEngine::create() {
+    return std::shared_ptr<IE::Input::InputEngine>();
 }
 
 bool IE::Input::InputEngine::update() {

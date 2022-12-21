@@ -14,10 +14,7 @@ private:
 
     //    PyInterpreterState *state;
 public:
-    PythonScript(
-      std::shared_ptr<IE::Core::Engine>t_engine,
-      IE::Core::File   *t_file
-    );
+    PythonScript(IE::Core::Engine *t_engine, IE::Core::File *t_file);
 
     void update() override;
 
@@ -27,6 +24,6 @@ public:
 
     void compile() override;
 
-    static std::shared_ptr<Script> create(std::shared_ptr<IE::Core::Engine>t_engine, IE::Core::File *t_file);
+    static std::shared_ptr<Script> create(IE::Core::Engine *t_engine, IE::Core::File *t_file);
 };
 }  // namespace IE::Script::detail

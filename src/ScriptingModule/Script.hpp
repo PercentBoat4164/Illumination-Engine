@@ -5,7 +5,7 @@
 namespace IE::Script {
 class Script : public IE::Core::Aspect {
 protected:
-    Script(std::shared_ptr<Core::Engine> t_engine, Core::File *t_resource);
+    Script(Core::Engine *t_engine, Core::File *t_resource);
 
 public:
     virtual void update() = 0;

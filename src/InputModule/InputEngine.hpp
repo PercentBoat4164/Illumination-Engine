@@ -19,6 +19,6 @@ public:
 
     std::shared_ptr<Engine> create() override;
 
-    bool                    update() override;
+    bool update() override;
 };
 }  // namespace IE::Input
