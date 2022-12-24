@@ -51,7 +51,7 @@ public:
 
     virtual ~Engine() = default;
 
-    virtual Engine *create() = 0;
+    virtual std::shared_ptr<Engine> create() = 0;
 
     virtual bool update() = 0;
 

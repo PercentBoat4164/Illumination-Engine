@@ -20,8 +20,9 @@ class ThreadPool {
 public:
     template<typename F, typename... Args>
     auto submit(F &&f, Args &&...args) -> std::future<decltype(f(args...))> {
-        std::function<decltype(f(args...))()> func{std::bind(std::forward<F>(f), std::forward<Args>(args)...)};
-        auto                  task_ptr{std::make_shared<std::packaged_task<decltype(f(args...))()>>(func)};
+        auto                  task_ptr{std::make_shared<std::packaged_task<decltype(f(args...))()>>(
+          [f, ... args = std::forward<Args>(args)] { return f(args...); }
+        )};
         std::function<void()> wrapper_func{[task_ptr]() {
             (*task_ptr)();
         }};

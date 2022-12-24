@@ -49,7 +49,7 @@ public:
             );
         }
         if (t_points.begin()->size() != (t_points.end() - 1)->size())
-            throw std::range_error("Dimensionality of indices do not match!");
+            throw std::range_error("Dimensionality of m_indices do not match!");
         if (t_points.begin()->size() > m_dimensions.size())
             throw std::range_error("Dimensionality of m_input exceeds dimensionality of vector.");
 

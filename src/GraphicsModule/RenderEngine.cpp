@@ -298,8 +298,8 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
     m_renderPassSeries.build();
 }
 
-IE::Core::Engine *IE::Graphics::RenderEngine::create() {
-    auto *engine{new IE::Graphics::RenderEngine()};
+std::shared_ptr<IE::Core::Engine> IE::Graphics::RenderEngine::create() {
+    std::shared_ptr<IE::Graphics::RenderEngine> engine{std::make_shared<IE::Graphics::RenderEngine>()};
     engine->m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
     std::future<void> window{IE::Core::Core::getThreadPool()->submit([&] { engine->createWindow(); })};
     std::future<void> instance{IE::Core::Core::getThreadPool()->submit([&] { engine->createInstance(); })};
@@ -337,7 +337,7 @@ IE::Core::Engine *IE::Graphics::RenderEngine::create() {
     descriptorSet.wait();
     commandPoolRenderPasses.wait();
     swapchainSyncObjects.wait();
-    return static_cast<IE::Core::Engine *>(engine);
+    return engine;
 }
 
 GLFWwindow *IE::Graphics::RenderEngine::getWindow() {

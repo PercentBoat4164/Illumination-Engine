@@ -1,6 +1,5 @@
 #pragma once
 /* Define macros used throughout the file. */
-#define ILLUMINATION_ENGINE_PI 3.141592653589793238462643383279
 
 /* Predefine classes used with pointers or as return values for functions. */
 class IERenderEngine;
@@ -19,21 +18,23 @@ class IERenderEngine;
 // System dependencies
 #include <cmath>
 
-class IECamera {
+namespace IE::Graphics {
+class RenderEngine;
+
+class Camera {
 public:
-    void create(IERenderEngine *engineLink);
+    void create(IE::Graphics::RenderEngine *engineLink);
 
     void update();
 
     void updateSettings();
 
-    IERenderEngine *linkedRenderEngine{};
-    float           yaw{90};
-    float           pitch{0};
-    double          aspectRatio{16.0 / 9};
-    double          fov{90};
-    double          horizontalFOV{
-      tanh(tan(fov * (ILLUMINATION_ENGINE_PI / 360)) * 1 / aspectRatio) * (360 / ILLUMINATION_ENGINE_PI)};
+    IE::Graphics::RenderEngine *linkedRenderEngine{};
+    float                       yaw{90};
+    float                       pitch{0};
+    double                      aspectRatio{16.0 / 9};
+    double                      fov{90};
+    double horizontalFOV{tanh(tan(fov * (glm::pi<double>() / 360)) * 1 / aspectRatio) * (360 / glm::pi<double>())};
     glm::vec3 front{glm::normalize(glm::vec3{
       cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
       sin(glm::radians(yaw)) * cos(glm::radians(pitch)),
@@ -45,3 +46,4 @@ public:
     glm::vec3 position{};
     float     speed{1};
 };
+}  // namespace IE::Graphics

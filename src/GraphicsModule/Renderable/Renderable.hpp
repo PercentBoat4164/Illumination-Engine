@@ -15,33 +15,20 @@ class Engine;
 
 namespace IE::Graphics {
 class Renderable : public IE::Core::Aspect {
-
 public:
-    IE::Graphics::RenderEngine    *m_linkedRenderEngine;
-    DescriptorSet                  m_descriptorSet{DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_OBJECT};
-    std::shared_ptr<Material>      m_material;
-    Mesh                           m_mesh;
-    std::vector<Instance>          m_instances;
-    std::shared_ptr<CommandBuffer> m_commandBuffer;
-    IE::Core::File                *m_file;
+    IE::Graphics::RenderEngine            *m_linkedRenderEngine;
+    DescriptorSet                          m_descriptorSet{DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_OBJECT};
+    Mesh                                   m_mesh;
+    std::vector<std::shared_ptr<Material>> m_materials;
+    std::vector<Instance>                  m_instances;
+    std::shared_ptr<CommandBuffer>         m_commandBuffer;
 
     Renderable(IE::Core::Engine *t_engineLink, IE::Core::File *t_resource);
 
-    void update() {
-        std::shared_ptr<IE::Graphics::Buffer> instanceBuffer{IE::Graphics::Buffer::create(m_linkedRenderEngine)};
-        instanceBuffer->createBuffer(IE::Graphics::Buffer::IE_BUFFER_TYPE_INSTANCE_BUFFER, 0x0, nullptr, 0x0);
+    void update();
 
-        vkCmdDrawIndexedIndirect(
-          m_commandBuffer->m_commandBuffer,
-          instanceBuffer->getVkBuffer(),
-          0,
-          m_instances.size(),
-          sizeof(decltype(m_instances)::value_type)
-        );
-    }
+    VkCommandBuffer getCommands();
 
-    VkCommandBuffer getCommands() {
-        return m_commandBuffer->m_commandBuffer;
-    }
+    void load();
 };
 }  // namespace IE::Graphics

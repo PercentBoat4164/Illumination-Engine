@@ -109,7 +109,7 @@ public:
 
     IE::Graphics::API getAPI();
 
-    IE::Core::Engine *create() override;
+    std::shared_ptr<IE::Core::Engine> create() override;
 
     static std::string translateVkResultCodes(VkResult t_result);
 
