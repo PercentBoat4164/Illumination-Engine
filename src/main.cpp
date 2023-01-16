@@ -12,8 +12,8 @@ int main(int argc, char **argv) {
         IE::Core::Core::getInst(resourceLocation);
     }
 
-    IESettings      const settings     = IESettings();
-    auto *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine");
+    IESettings       settings     = IESettings();
+    auto *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine", settings);
 
     IE::Input::InputEngine inputEngine{renderEngine->window};
     IE::Input::Keyboard   *keyboard = inputEngine.getAspect("keyboard");

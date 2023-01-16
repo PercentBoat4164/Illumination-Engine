@@ -730,13 +730,19 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
         settings.logger.log("Failed to initialize GLFW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
     glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+#ifndef __APPLE__
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+#else
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+#endif
 #ifndef NDEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
-    //	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only code
-    // block. 	glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
-    //	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only codeblock.
+    glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
 
     window = createWindow();
 
@@ -762,14 +768,15 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
 #ifndef NDEBUG
     glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronously
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronous
+#ifndef __APPLE__
     glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+#endif
 #endif
 
     camera.create(this);
     this->settings->logger.log(
-
       reinterpret_cast<const char *>(glGetString(GL_RENDERER)),
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );

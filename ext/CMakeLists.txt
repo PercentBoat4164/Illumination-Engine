@@ -3,11 +3,19 @@ include(../cmake/AsyncCPM.cmake)
 set(CPM_SOURCE_CACHE ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 set(CPM_USE_LOCAL_PACKAGES ${IE_PREFER_LOCAL_LIBS})
 
+#if (APPLE)
+#
+#    file(GLOB FRAMEWORK_DIRECTORIES
+#            LIST_DIRECTORIES ON /Library/Developer/CommandLineTools/SDKs/*/System/Library/Frameworks)
+#    set(CMAKE_FRAMEWORK_PATH ${FRAMEWORK_DIRECTORIES})
+#	message("${CMAKE_FRAMEWORK_PATH}")
+#endif ()
+
 # All options for Dependencies should go here
 # AssImp Options
 set(ASSIMP_HUNTER_ENABLED OFF)
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
-if (MACOS)
+if (APPLE)
 	set(ASSIMP_BUILD_FRAMEWORK OFF)
 endif ()
 set(ASSIMP_DOUBLE_PRECISION OFF)
