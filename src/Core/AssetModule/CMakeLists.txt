@@ -1,7 +1,7 @@
 set(IEAssetModuleSourceFiles  # Gather sources
-  IEAspect.cpp
-  IEAsset.cpp
-  )
+		IEAspect.cpp
+		IEAsset.cpp
+		)
 
 # Create and define properties for the executable target
 add_library(IEAssetModule ${IEAssetModuleSourceFiles})

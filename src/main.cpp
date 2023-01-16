@@ -7,23 +7,20 @@
 
 int main(int argc, char **argv) {
     if (argc >= 1) {
-        auto programLocation  = std::filesystem::path(argv[0]);
+        auto              programLocation  = std::filesystem::path(argv[0]);
         std::string const resourceLocation = programLocation.parent_path().string();
         IE::Core::Core::getInst(resourceLocation);
     }
 
-    IESettings       settings     = IESettings();
-    auto *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine", settings);
+    IESettings settings     = IESettings();
+    auto      *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine", settings);
 
     IE::Input::InputEngine inputEngine{renderEngine->window};
     IE::Input::Keyboard   *keyboard = inputEngine.getAspect("keyboard");
-    keyboard->editActions(
-      GLFW_KEY_W,
-      [&](GLFWwindow *) {
-          renderEngine->camera.position +=
-            renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
-      }
-    );
+    keyboard->editActions(GLFW_KEY_W, [&](GLFWwindow *) {
+        renderEngine->camera.position +=
+          renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
+    });
     keyboard->editActions(
       GLFW_KEY_A,
       [&](GLFWwindow *) {
@@ -100,10 +97,7 @@ int main(int argc, char **argv) {
 
     IE::Core::ThreadPool threadPool{};
 
-    renderEngine->settings->logger.log(
-      "Beginning main loop.",
-      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
-    );
+    settings.logger.log("Beginning main loop.", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 
     glfwSetTime(0.0);
     while (renderEngine->update()) {

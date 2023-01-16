@@ -740,7 +740,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 #endif
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only codeblock.
-    glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);  // Use Core Profile by default.
+    glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);    // Use Core Profile by default.
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
@@ -769,10 +769,10 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 #ifndef NDEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronous
-#ifndef __APPLE__
+#    ifndef __APPLE__
     glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-#endif
+#    endif
 #endif
 
     camera.create(this);
