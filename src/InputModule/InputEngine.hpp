@@ -3,7 +3,7 @@
 #include "Core/EngineModule/Engine.hpp"
 #include "Keyboard.hpp"
 
-class GLFWwindow;
+struct GLFWwindow;
 
 namespace IE::Input {
 class InputEngine : public IE::Core::Engine {

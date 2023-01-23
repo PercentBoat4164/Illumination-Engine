@@ -1,7 +1,10 @@
 set(IEThreadingModuleSourceFiles  # Gather sources
-		ThreadPool/JobQueue.cpp
-		ThreadPool/ThreadPool.cpp
-		ThreadPool/WorkerThread.cpp
+		CoroutineTask.cpp
+		FunctionTask.cpp
+		Pool.cpp
+		Queue.cpp
+		Task.cpp
+		ThreadPool.cpp
 		)
 
 

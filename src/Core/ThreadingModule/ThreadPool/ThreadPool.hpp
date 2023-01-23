@@ -1,69 +1,106 @@
 #pragma once
 
-#include "JobQueue.hpp"  // for JobQueue
+#include "CoroutineTask.hpp"
+#include "FunctionTask.hpp"
+#include "Pool.hpp"
+#include "Queue.hpp"
+#include "Task.hpp"
 
-#include <algorithm>           // for max
-#include <condition_variable>  // for condition_variable
-#include <cstdint>             // for uint8_t
-#include <functional>          // for function, bind
-#include <future>              // for future, packaged_task
-#include <memory>              // for make_shared
-#include <mutex>               // for mutex
-#include <thread>              // for thread
-#include <utility>             // for forward
-#include <vector>              // for vector
-
-#define MAX_THREADS std::max(static_cast<uint8_t>(std::thread::hardware_concurrency() - 1U), uint8_t{1U})
+#include <any>
+#include <atomic>
+#include <condition_variable>
+#include <coroutine>
+#include <functional>
 
 namespace IE::Core {
-class ThreadPool {
-public:
-    template<typename F, typename... Args>
-    auto submit(F &&f, Args &&...args) -> std::future<decltype(f(args...))> {
-        auto                  task_ptr{std::make_shared<std::packaged_task<decltype(f(args...))()>>(
-          [f, ... args = std::forward<Args>(args)] { return f(args...); }
-        )};
-        std::function<void()> wrapper_func{[task_ptr]() {
-            (*task_ptr)();
-        }};
-        m_queue.enqueue(wrapper_func);
-        m_conditional_lock.notify_one();
-        return task_ptr->get_future();
+class ThreadPool;
+
+struct ResumeAfter {
+    ResumeAfter() = default;
+
+    template<typename... Args>
+    ResumeAfter(ThreadPool *t_threadPool, Args &&...args) :
+            m_ready([... args = std::forward<Args>(args)] { return (... && args->finished()); }),
+            m_threadPool(t_threadPool) {
     }
 
-    explicit ThreadPool(uint8_t threadCount = MAX_THREADS);
+    // Indicates the readiness of the coroutine to continue. True -> resume, False -> suspend
+    bool await_ready() {
+        return m_ready();
+    }
 
-    ThreadPool(const ThreadPool &) = delete;
+    void await_suspend(std::coroutine_handle<> t_handle);
 
-    ThreadPool(ThreadPool &&) = delete;
+    void await_resume() {
+    }
 
-    ThreadPool &operator=(const ThreadPool &) = delete;
-
-    ThreadPool &operator=(ThreadPool &&) = delete;
-
-    ~ThreadPool();
-
-public:
-    [[nodiscard]] std::condition_variable &getCondition();
-
-    [[nodiscard]] IE::Core::detail::JobQueue<std::function<void()>> &getQueue();
-
-    [[nodiscard]] std::vector<std::thread> &getThreads();
-
-    [[nodiscard]] std::condition_variable &getConditionalLock();
-
-    [[nodiscard]] std::mutex &getConditionalMutex();
-
-    [[nodiscard]] bool isShutdown() const;
-
-    void shutdown();
+    void resume() {
+        m_handle.resume();
+    }
 
 private:
-    std::condition_variable                           m_condition;
-    IE::Core::detail::JobQueue<std::function<void()>> m_queue;
-    std::vector<std::thread>                          m_threads;
-    std::condition_variable                           m_conditional_lock;
-    std::mutex                                        m_conditional_mutex;
-    bool                                              m_shutdown;
+    ThreadPool             *m_threadPool;
+    std::function<bool()>   m_ready;
+    std::coroutine_handle<> m_handle;
+};
+
+class Worker {
+public:
+    Worker(ThreadPool *t_threadPool);
+
+    ThreadPool *m_threadPool;
+};
+
+class ThreadPool {
+    std::vector<std::thread>         m_workers;
+    Queue<std::shared_ptr<BaseTask>> m_activeQueue;
+    Pool<ResumeAfter>                m_suspendedPool;
+    std::mutex                       m_workAssignmentMutex;
+    std::condition_variable          m_workAssignmentConditionVariable;
+    std::atomic<bool>                m_shutdown{false};
+
+public:
+    explicit ThreadPool(size_t threads = std::thread::hardware_concurrency()) {
+        m_workers.reserve(threads);
+        for (; threads > 0; --threads) m_workers.emplace_back([this] { Worker(this); });
+    }
+
+    template<typename T, typename... Args>
+
+        requires requires(T &&f, Args &&...args) { typename decltype(f(args...))::ReturnType; }
+
+    auto submit(T &&f, Args &&...args) -> std::shared_ptr<Task<typename decltype(f(args...))::ReturnType>> {
+        using ReturnType = typename decltype(f(args...))::ReturnType;
+        auto job{std::make_shared<CoroutineTask<ReturnType>>(f(args...))};
+        job->connectHandle();
+        m_activeQueue.push(std::static_pointer_cast<BaseTask>(job));
+        m_workAssignmentConditionVariable.notify_one();
+        return job;
+    }
+
+    template<typename T, typename... Args>
+    auto submit(T &&f, Args &&...args) -> std::shared_ptr<Task<decltype(f(args...))>> {
+        auto job{std::make_shared<FunctionTask<decltype(f(args...))>>([f, ... args = std::forward<Args>(args)] {
+            return f(args...);
+        })};
+        m_activeQueue.push(std::static_pointer_cast<BaseTask>(job));
+        m_workAssignmentConditionVariable.notify_one();
+        return job;
+    }
+
+    template<typename... Args>
+    ResumeAfter resumeAfter(Args &&...args) {
+        return ResumeAfter(this, args...);
+    }
+
+    ~ThreadPool() {
+        m_shutdown = true;
+        m_workAssignmentConditionVariable.notify_all();
+        for (std::thread &thread : m_workers)
+            if (thread.joinable()) thread.join();
+    }
+
+    friend Worker::Worker(ThreadPool *t_threadPool);
+    friend void ResumeAfter::await_suspend(std::coroutine_handle<> t_handle);
 };
 }  // namespace IE::Core

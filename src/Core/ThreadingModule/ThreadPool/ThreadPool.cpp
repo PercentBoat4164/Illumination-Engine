@@ -1,45 +1,21 @@
 #include "ThreadPool.hpp"
 
-#include "WorkerThread.hpp"  // for WorkerThread
-
-IE::Core::ThreadPool::ThreadPool(uint8_t threadCount) : m_threads(threadCount), m_shutdown(false) {
-    std::generate(m_threads.begin(), m_threads.begin() + static_cast<int8_t>(threadCount), [&]() -> std::thread {
-        return std::thread(IE::Core::detail::WorkerThread(this));
-    });
+IE::Core::Worker::Worker(ThreadPool *t_threadPool) : m_threadPool(t_threadPool) {
+    while (!m_threadPool->m_shutdown) {
+        // Get and execute the oldest active job.
+        std::shared_ptr<BaseTask> activeJob;
+        if (m_threadPool->m_activeQueue.pop(activeJob)) activeJob->execute();
+        ResumeAfter suspendedJob;
+        while (m_threadPool->m_suspendedPool.pop(suspendedJob)) suspendedJob.resume();
+        // Wait for a job to become available on the active queue.
+        std::unique_lock<std::mutex> lock(m_threadPool->m_workAssignmentMutex);
+        if (m_threadPool->m_activeQueue.empty() && !m_threadPool->m_shutdown)
+            m_threadPool->m_workAssignmentConditionVariable.wait(lock);
+        if (m_threadPool->m_shutdown) return;
+    }
 }
 
-std::condition_variable &IE::Core::ThreadPool::getCondition() {
-    return m_condition;
-}
-
-IE::Core::detail::JobQueue<std::function<void()>> &IE::Core::ThreadPool::getQueue() {
-    return m_queue;
-}
-
-std::vector<std::thread> &IE::Core::ThreadPool::getThreads() {
-    return m_threads;
-}
-
-std::condition_variable &IE::Core::ThreadPool::getConditionalLock() {
-    return m_conditional_lock;
-}
-
-std::mutex &IE::Core::ThreadPool::getConditionalMutex() {
-    return m_conditional_mutex;
-}
-
-bool IE::Core::ThreadPool::isShutdown() const {
-    return m_shutdown;
-}
-
-void IE::Core::ThreadPool::shutdown() {
-    m_shutdown = true;
-    m_conditional_lock.notify_all();
-
-    for (auto &m_thread : m_threads)
-        if (m_thread.joinable()) m_thread.join();
-}
-
-IE::Core::ThreadPool::~ThreadPool() {
-    shutdown();
+void IE::Core::ResumeAfter::await_suspend(std::coroutine_handle<> t_handle) {
+    m_handle = t_handle;
+    m_threadPool->m_suspendedPool.push(*this);
 }

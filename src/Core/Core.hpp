@@ -12,7 +12,7 @@
 #define ILLUMINATION_ENGINE_CORE_LOGGER_NAME  "Illumination Engine"
 #define ILLUMINATION_ENGINE_CORE_LOG_FILENAME "logs/IlluminationEngine.log"
 
-class GLFWwindow;
+struct GLFWwindow;
 
 namespace IE::Core {
 class Core final {
