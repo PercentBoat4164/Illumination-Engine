@@ -17,10 +17,13 @@ int main(int argc, char **argv) {
 
     IE::Input::InputEngine inputEngine{renderEngine->window};
     IE::Input::Keyboard   *keyboard = inputEngine.getAspect("keyboard");
-    keyboard->editActions(GLFW_KEY_W, [&](GLFWwindow *) {
-        renderEngine->camera.position +=
-          renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
-    });
+    keyboard->editActions(
+      GLFW_KEY_W,
+      [&](GLFWwindow *) {
+          renderEngine->camera.position +=
+            renderEngine->camera.front * renderEngine->frameTime * renderEngine->camera.speed;
+      }
+    );
     keyboard->editActions(
       GLFW_KEY_A,
       [&](GLFWwindow *) {
@@ -95,13 +98,11 @@ int main(int argc, char **argv) {
 
     renderEngine->camera.position = {0.0F, -2.0F, 1.0F};
 
-    IE::Core::ThreadPool threadPool{};
-
     settings.logger.log("Beginning main loop.", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 
     glfwSetTime(0.0);
     while (renderEngine->update()) {
         glfwPollEvents();
-        threadPool.submit([&] { keyboard->handleQueue(); });
+        IE::Core::Core::getThreadPool()->submit([&] { keyboard->handleQueue(); });
     }
 }
