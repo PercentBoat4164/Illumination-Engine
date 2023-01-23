@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.24 FATAL_ERROR)  # 3.24 is required for Vulkan::shaderc_combined
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)  # 3.14 is required for CPM
+#message("${CMAKE_OSX_SYSROOT}")
+#set(CMAKE_OSX_SYSROOT /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk CACHE PATH "" FORCE)
+#message("${CMAKE_OSX_SYSROOT}")
 project(IlluminationEngine VERSION 0.0.0)
 
 # Illumination Engine Options
@@ -9,10 +12,14 @@ set(CMAKE_CXX_STANDARD 23)
 
 set(BUILD_SHARED_LIBS OFF)
 if (WIN32)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif ()
 
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON)  # Uncomment this line if you have no internet connection
+# Detect compiler and OS
+message("Using ${CMAKE_CXX_COMPILER_ID} on ${CMAKE_SYSTEM_NAME}.")
+add_compile_definitions("COMPILER=${CMAKE_CXX_COMPILER_ID}")
+add_compile_definitions("OS=${CMAKE_SYSTEM_NAME}")
+
 
 set(IE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})  # Directory Illumination Engine is being built in
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)  # Directory to put library files
@@ -28,18 +35,31 @@ add_custom_command(
 		DEPENDS ${IE_BASE_DIR}/res
 		COMMENT "Copying resource files...")
 
+set(IE_PREFER_LOCAL_LIBS ON)
+
+# Compilation and linking options
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	# Needed for compilation success.
+	add_compile_options("-Wno-deprecated-non-prototype")
+
+	# Added to prevent known errors from clouding the log.
+	add_compile_options("-Wno-nullability-completeness")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+	# Needed for compilation success.
+	add_compile_options("-Wno-unused-command-line-argument")
+	add_compile_options("-Wno-deprecated-non-prototype")
+	add_compile_options("-fp=consistent")
+
+	# Added to prevent known errors from clouding the log.
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+elseif ()
+	message(WARNING "Unsupported compiler in use: ${CMAKE_CXX_COMPILER_ID}")
+endif ()
+
+#add_link_options("-fuse-ld=lld") # Use LLVM's lld linker for speed.
+
+
 add_subdirectory(ext)  # Generate external dependencies from source
 add_subdirectory(src)  # Generate Illumination Engine from source
-
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_compile_options(-g)  # Compile with debug information
-else ()
-    add_compile_options(-O3)  # Compile with level 3 optimizations
-endif ()
-
-if (IE_USE_THREAD_SANITIZE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	message(STATUS "Using the LLVM ThreadSanitizer. This may result in huge memory consumption and very slow code.")
-	add_compile_options(-fsanitize=thread)
-endif ()
-
-add_link_options(-fuse-ld=lld)  # Use LLVM's lld linker for speed

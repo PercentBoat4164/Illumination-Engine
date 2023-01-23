@@ -38,6 +38,6 @@ set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(IEGraphicsModule PUBLIC IECore)
 
 # Add external dependency libraries and include directories to the target
-target_link_libraries(IEGraphicsModule PUBLIC INT_src EXT_AssImp EXT_GLM EXT_GLFW EXT_OpenGL EXT_Vulkan)
+target_link_libraries(IEGraphicsModule PUBLIC INT_src EXT_AssImp EXT_OpenGL EXT_Vulkan)
 
 add_dependencies(IEGraphicsModule IEGMShaders CopyResources)  # Add shader pre-compilation as a dependency

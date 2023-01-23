@@ -3,6 +3,7 @@
 #include "File.hpp"
 #include "Importer.hpp"
 
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 #include <vector>
