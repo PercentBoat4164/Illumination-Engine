@@ -1,7 +1,4 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)  # 3.14 is required for CPM
-#message("${CMAKE_OSX_SYSROOT}")
-#set(CMAKE_OSX_SYSROOT /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk CACHE PATH "" FORCE)
-#message("${CMAKE_OSX_SYSROOT}")
 project(IlluminationEngine VERSION 0.0.0)
 
 set(CMAKE_CXX_STANDARD 23)

@@ -1,15 +1,10 @@
-include(../cmake/AsyncCPM.cmake)
-
+# CPM Options
 set(CPM_SOURCE_CACHE ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 set(CPM_USE_LOCAL_PACKAGES ${IE_PREFER_LOCAL_LIBS})
 
-#if (APPLE)
-#
-#    file(GLOB FRAMEWORK_DIRECTORIES
-#            LIST_DIRECTORIES ON /Library/Developer/CommandLineTools/SDKs/*/System/Library/Frameworks)
-#    set(CMAKE_FRAMEWORK_PATH ${FRAMEWORK_DIRECTORIES})
-#	message("${CMAKE_FRAMEWORK_PATH}")
-#endif ()
+# Download the latest CPM.cmake file
+file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/latest/download/CPM.cmake ${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
 
 # All options for Dependencies should go here
 # AssImp Options
@@ -122,7 +117,11 @@ endif ()
 
 # Add all packages
 # GLEW is wierd. Why is it like this?
-CPMAddPackage(NAME glew URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz VERSION 2.2.0)
+CPMAddPackage(
+  NAME glew
+  URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
+  VERSION 2.2.0
+)
 add_subdirectory(${glew_SOURCE_DIR}/build/cmake)
 
 CPMAddPackage(NAME Ccache.cmake GITHUB_REPOSITORY TheLartians/Ccache.cmake VERSION 1.2.4)
