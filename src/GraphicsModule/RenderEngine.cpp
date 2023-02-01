@@ -258,11 +258,10 @@ void IE::Graphics::RenderEngine::createSyncObjects() {
 
 void IE::Graphics::RenderEngine::createCommandPools() {
     // Each thread is given a command pool to record buffers to.
-    m_commandPools.resize(IE::Core::Core::getThreadPool()->getThreads().size() + 1);
-    for (size_t i = IE::Core::Core::getThreadPool()->getThreads().size() + 1; i > 0; --i) {
-        m_commandPools[i - 1] = std::make_shared<IE::Graphics::CommandPool>();
-        m_commandPools[i - 1]
-          ->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
+    m_commandPools.resize(IE::Core::Core::getThreadPool()->getWorkerCount());
+    for (size_t i{}; i < m_commandPools.size(); ++i) {
+        m_commandPools[i] = std::make_shared<IE::Graphics::CommandPool>();
+        m_commandPools[i]->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
     }
 }
 
@@ -298,46 +297,65 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
     m_renderPassSeries.build();
 }
 
-std::shared_ptr<IE::Core::Engine> IE::Graphics::RenderEngine::create() {
-    std::shared_ptr<IE::Graphics::RenderEngine> engine{std::make_shared<IE::Graphics::RenderEngine>()};
-    engine->m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
-    std::future<void> window{IE::Core::Core::getThreadPool()->submit([&] { engine->createWindow(); })};
-    std::future<void> instance{IE::Core::Core::getThreadPool()->submit([&] { engine->createInstance(); })};
-    std::future<void> device{IE::Core::Core::getThreadPool()->submit([&] {
-        window.wait();
-        instance.wait();
-        engine->createSurface();
-        engine->createDevice();
-    })};
+IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
+    m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
+    auto window{IE::Core::Core::getThreadPool()
+                  ->submit([](IE::Graphics::RenderEngine *engine) { engine->createWindow(); }, this)};
+    auto instance{IE::Core::Core::getThreadPool()
+                    ->submit([](IE::Graphics::RenderEngine *engine) { engine->createInstance(); }, this)};
+    auto device{IE::Core::Core::getThreadPool()->submit(
+      [](
+        IE::Graphics::RenderEngine                      *engine,
+        std::shared_ptr<IE::Core::Threading::Task<void>> window,
+        std::shared_ptr<IE::Core::Threading::Task<void>> instance
+      ) -> IE::Core::Threading::CoroutineTask<void> {
+          co_await IE::Core::Core::getThreadPool()->resumeAfter(window, instance);
+          engine->createSurface();
+          engine->createDevice();
+      },
+      this,
+      window,
+      instance
+    )};
 
     // Dependency chain
-    std::future<void> commandPoolRenderPasses{IE::Core::Core::getThreadPool()->submit([&] {
-        device.wait();  // Needs the device to create Command Pools
-        engine->createCommandPools();
-        engine->createRenderPasses();
-    })};
+    auto commandPoolRenderPasses{IE::Core::Core::getThreadPool()->submit(
+      [](IE::Graphics::RenderEngine *engine, std::shared_ptr<IE::Core::Threading::Task<void>> device)
+        -> IE::Core::Threading::CoroutineTask<void> {
+          // Needs the device to create Command Pools
+          co_await IE::Core::Core::getThreadPool()->resumeAfter(device);
+          engine->createCommandPools();
+          engine->createAllocator();
+          engine->createRenderPasses();
+      },
+      this,
+      device
+    )};
 
-    // Dependency chain
-    std::future<void> swapchainSyncObjects{IE::Core::Core::getThreadPool()->submit([&] {
-        device.wait();  // Needs the device to allocate a swapchain
-        engine->createSwapchain();
-        engine->createSyncObjects();
-    })};
+    auto swapchainSyncObjects{IE::Core::Core::getThreadPool()->submit(
+      [](IE::Graphics::RenderEngine *engine, std::shared_ptr<IE::Core::Threading::Task<void>> device)
+        -> IE::Core::Threading::CoroutineTask<void> {
+          // Needs the device to allocate a swapchain
+          co_await IE::Core::Core::getThreadPool()->resumeAfter(device);
+          engine->createSyncObjects();
+      },
+      this,
+      device
+    )};
 
-    std::future<void> allocator{IE::Core::Core::getThreadPool()->submit([&] {
-        device.wait();  // Needs the device to create the allocator
-        engine->createAllocator();
-    })};
 
-    std::future<void> descriptorSet{IE::Core::Core::getThreadPool()->submit([&] {
-        device.wait();  // Needs the device to allocate descriptor sets
-        engine->createDescriptorSets();
-    })};
-    allocator.wait();
-    descriptorSet.wait();
-    commandPoolRenderPasses.wait();
-    swapchainSyncObjects.wait();
-    return engine;
+    auto descriptorSet{IE::Core::Core::getThreadPool()->submit(
+      [](IE::Graphics::RenderEngine *engine, std::shared_ptr<IE::Core::Threading::Task<void>> device)
+        -> IE::Core::Threading::CoroutineTask<void> {
+          // Needs the device to allocate descriptor sets
+          co_await IE::Core::Core::getThreadPool()->resumeAfter(device);
+          engine->createDescriptorSets();
+      },
+      this,
+      device
+    )};
+    co_await IE::Core::Core::getThreadPool()
+      ->resumeAfter(descriptorSet, commandPoolRenderPasses, swapchainSyncObjects);
 }
 
 GLFWwindow *IE::Graphics::RenderEngine::getWindow() {
@@ -407,23 +425,17 @@ std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result
 }
 
 IE::Graphics::RenderEngine::~RenderEngine() {
-    auto syncObject{IE::Core::Core::getThreadPool()->submit([&] {
-        m_imageAvailableSemaphores.clear();
-        m_renderFinishedSemaphores.clear();
-        m_inFlightFences.clear();
-        m_imagesInFlight.clear();
-    })};
-    auto swapchainImageDestruction{IE::Core::Core::getThreadPool()->submit([&] {
-        for (VkImageView swapchainImageView : m_swapchainImageViews)
-            vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
-    })};
-    auto commandPoolDestruction{IE::Core::Core::getThreadPool()->submit([&] { m_commandPools.clear(); })};
+    m_imageAvailableSemaphores.clear();
+    m_renderFinishedSemaphores.clear();
+    m_inFlightFences.clear();
+    m_imagesInFlight.clear();
+    for (VkImageView swapchainImageView : m_swapchainImageViews)
+        vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
+    m_commandPools.clear();
     if (m_allocator != nullptr) vmaDestroyAllocator(m_allocator);
     if (m_swapchain != nullptr) vkb::destroy_swapchain(m_swapchain);
     if ((m_instance != nullptr) && (m_surface != nullptr)) vkb::destroy_surface(m_instance, m_surface);
-    syncObject.wait();
-    swapchainImageDestruction.wait();
-    commandPoolDestruction.wait();
+
     if (m_device != nullptr) vkb::destroy_device(m_device);
     if (m_instance != nullptr) vkb::destroy_instance(m_instance);
 }
@@ -500,4 +512,11 @@ bool IE::Graphics::RenderEngine::update() {
 
     m_renderPassSeries.finish();
     return true;
+}
+
+IE::Graphics::RenderEngine::RenderEngine() {
+    auto createTask = create();
+    createTask.connectHandle();
+    createTask.execute();
+    createTask.wait();
 }

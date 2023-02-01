@@ -4,7 +4,7 @@
 #include "Core/EngineModule/Window.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
 #include "Core/LogModule/Logger.hpp"
-#include "Core/ThreadingModule/ThreadPool/ThreadPool.hpp"
+#include "Core/ThreadingModule/ThreadPool.hpp"
 
 #include <mutex>
 #include <unordered_map>
@@ -22,16 +22,17 @@ public:
     template<typename T, typename... Args>
         requires std::derived_from<T, IE::Core::Engine>
 
-    static std::shared_ptr<T> createEngine(const std::string &id, Args... args) {
+    static IE::Core::Threading::CoroutineTask<std::shared_ptr<T>> createEngine(std::string id, Args... args) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
         if (m_engines.find(id) != m_engines.end())
             m_logger.log(
               "Engine '" + id + "' already exists!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
-        std::shared_ptr<Engine> engine = T().create(args...);
-        m_engines[id]                  = engine;
-        return std::static_pointer_cast<T>(engine);
+        auto engine = IE::Core::Core::getThreadPool()->submit([args...] { return std::make_shared<T>(args...); });
+        co_await IE::Core::Core::getThreadPool()->resumeAfter(engine);
+        m_engines[id] = engine->value();
+        co_return std::static_pointer_cast<T>(engine->value());
     }
 
     template<typename T>
@@ -55,9 +56,9 @@ public:
 
     static IE::Core::Window *getWindow(GLFWwindow *t_window);
 
-    static IE::Core::Logger     *getLogger();
-    static IE::Core::FileSystem *getFileSystem();
-    static IE::Core::ThreadPool *getThreadPool();
+    static IE::Core::Logger                      *getLogger();
+    static IE::Core::FileSystem *const            getFileSystem();
+    static IE::Core::Threading::ThreadPool *const getThreadPool();
 
 private:
     static IE::Core::Logger                                                   m_logger;
@@ -65,11 +66,11 @@ private:
     static std::unordered_map<std::string, std::shared_ptr<IE::Core::Engine>> m_engines;
     static std::mutex                                                         m_windowsMutex;
     static std::unordered_map<GLFWwindow *, IE::Core::Window>                 m_windows;
-    static IE::Core::ThreadPool                                               m_threadPool;
-    static IE::Core::FileSystem                                               m_filesystem;
+    static IE::Core::Threading::ThreadPool *const                             m_threadPool;
+    static IE::Core::FileSystem *const                                        m_filesystem;
 
     Core(const std::filesystem::path &t_path) {
-        m_filesystem.setBaseDirectory(t_path);
+        m_filesystem->setBaseDirectory(t_path);
     }
 
 } __attribute__((aligned(128)));

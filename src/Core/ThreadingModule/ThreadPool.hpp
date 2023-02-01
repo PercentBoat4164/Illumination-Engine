@@ -12,21 +12,22 @@
 #include <coroutine>
 #include <functional>
 
-namespace IE::Core {
+namespace IE::Core::Threading {
 class ThreadPool;
 
 struct ResumeAfter {
     ResumeAfter() = default;
 
     template<typename... Args>
-    ResumeAfter(ThreadPool *t_threadPool, Args &&...args) :
-            m_ready([... args = std::forward<Args>(args)] { return (... && args->finished()); }),
+    ResumeAfter(ThreadPool *t_threadPool, Args... args) :
+            m_ready([args...] { return (... && args->finished()); }),
             m_threadPool(t_threadPool) {
     }
 
     // Indicates the readiness of the coroutine to continue. True -> resume, False -> suspend
     bool await_ready() {
-        return m_ready();
+        bool result = m_ready();
+        return result;
     }
 
     void await_suspend(std::coroutine_handle<> t_handle);
@@ -47,15 +48,12 @@ private:
 class Worker {
 public:
     Worker(ThreadPool *t_threadPool);
-
-    ThreadPool *m_threadPool;
 };
 
 class ThreadPool {
     std::vector<std::thread>         m_workers;
     Queue<std::shared_ptr<BaseTask>> m_activeQueue;
     Pool<ResumeAfter>                m_suspendedPool;
-    std::mutex                       m_workAssignmentMutex;
     std::condition_variable          m_workAssignmentConditionVariable;
     std::atomic<bool>                m_shutdown{false};
 
@@ -70,8 +68,7 @@ public:
         requires requires(T &&f, Args &&...args) { typename decltype(f(args...))::ReturnType; }
 
     auto submit(T &&f, Args &&...args) -> std::shared_ptr<Task<typename decltype(f(args...))::ReturnType>> {
-        using ReturnType = typename decltype(f(args...))::ReturnType;
-        auto job{std::make_shared<CoroutineTask<ReturnType>>(f(args...))};
+        auto job{std::make_shared<CoroutineTask<typename decltype(f(args...))::ReturnType>>(f(args...))};
         job->connectHandle();
         m_activeQueue.push(std::static_pointer_cast<BaseTask>(job));
         m_workAssignmentConditionVariable.notify_one();
@@ -89,8 +86,8 @@ public:
     }
 
     template<typename... Args>
-    ResumeAfter resumeAfter(Args &&...args) {
-        return ResumeAfter(this, args...);
+    ResumeAfter resumeAfter(Args... args) {
+        return {this, args...};
     }
 
     ~ThreadPool() {
@@ -100,7 +97,11 @@ public:
             if (thread.joinable()) thread.join();
     }
 
+    uint32_t getWorkerCount() {
+        return m_workers.size();
+    }
+
     friend Worker::Worker(ThreadPool *t_threadPool);
     friend void ResumeAfter::await_suspend(std::coroutine_handle<> t_handle);
 };
-}  // namespace IE::Core
+}  // namespace IE::Core::Threading

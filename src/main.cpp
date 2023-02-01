@@ -10,7 +10,13 @@ int main(int argc, char **argv) {
         IE::Core::Core::getInst(resourceLocation);
     }
 
-    auto            renderEngine = IE::Core::Core::createEngine<IE::Graphics::RenderEngine>("renderEngine");
+    auto renderEngineCreator = IE::Core::Core::getThreadPool()->submit(
+      IE::Core::Core::createEngine<IE::Graphics::RenderEngine>,
+      "render engine"
+    );
+    renderEngineCreator->wait();
+    std::shared_ptr<IE::Graphics::RenderEngine> renderEngine = renderEngineCreator->value();
+
     IE::Core::Asset asset(IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue"));
     asset.addAspect(renderEngine->createAspect(
       "AncientStatue",

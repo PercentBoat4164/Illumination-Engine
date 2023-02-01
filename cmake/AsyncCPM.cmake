@@ -713,12 +713,7 @@ function(CPMAddPackage)
 		get_filename_component(download_directory ${download_directory} ABSOLUTE)
 		list(APPEND CPM_ARGS_UNPARSED_ARGUMENTS SOURCE_DIR ${download_directory})
 
-		# Check if this process already controls this cache entry.
-		file(LOCK ${download_directory}/../cmake.lock RESULT_VARIABLE CPM_HAS_LOCK TIMEOUT 0)
-		# If it does not wait until it has control.
-		if (CPM_HAS_LOCK)
-			file(LOCK ${download_directory}/../cmake.lock)
-		endif ()
+		file(LOCK ${download_directory}/../cmake.lock)
 
 		if (EXISTS ${download_directory})
 			cpm_store_fetch_properties(
@@ -798,17 +793,8 @@ function(CPMAddPackage)
 		cpm_get_fetch_properties("${CPM_ARGS_NAME}")
 	endif ()
 
-	if (EXISTS ${download_directory})
-		file(
-				LOCK ${download_directory}/../cmake.lock
-				RESULT_VARIABLE CPM_HAS_LOCK
-				TIMEOUT 0
-		)
-		# If it does, remove the lock file.
-		if (${CPM_HAS_LOCK} MATCHES "File already locked")
-			file(REMOVE ${download_directory}/../cmake.lock)
-		endif ()
-	endif ()
+
+	file(REMOVE ${download_directory}/../cmake.lock)
 
 	set(${CPM_ARGS_NAME}_ADDED YES)
 	cpm_export_variables("${CPM_ARGS_NAME}")

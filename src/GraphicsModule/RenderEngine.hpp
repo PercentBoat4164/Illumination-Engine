@@ -97,7 +97,7 @@ public:
     std::array<size_t, 2> m_currentResolution{m_defaultResolution};
     vkb::Device           m_device;
 
-    explicit RenderEngine() = default;
+    RenderEngine();
 
     bool update() override;
 
@@ -109,7 +109,7 @@ public:
 
     IE::Graphics::API getAPI();
 
-    std::shared_ptr<IE::Core::Engine> create() override;
+    Core::Threading::CoroutineTask<void> create();
 
     static std::string translateVkResultCodes(VkResult t_result);
 
