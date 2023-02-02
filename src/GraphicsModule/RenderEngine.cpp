@@ -515,8 +515,4 @@ bool IE::Graphics::RenderEngine::update() {
 }
 
 IE::Graphics::RenderEngine::RenderEngine() {
-    auto createTask = create();
-    createTask.connectHandle();
-    createTask.execute();
-    createTask.wait();
 }

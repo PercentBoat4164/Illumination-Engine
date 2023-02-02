@@ -29,10 +29,11 @@ public:
               "Engine '" + id + "' already exists!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
-        auto engine = IE::Core::Core::getThreadPool()->submit([args...] { return std::make_shared<T>(args...); });
-        co_await IE::Core::Core::getThreadPool()->resumeAfter(engine);
-        m_engines[id] = engine->value();
-        co_return std::static_pointer_cast<T>(engine->value());
+        auto engine        = std::make_shared<T>(args...);
+        auto engineCreator = IE::Core::Core::getThreadPool()->submit(engine->create());
+        co_await IE::Core::Core::getThreadPool()->resumeAfter(engineCreator);
+        m_engines[id] = engine;
+        co_return std::static_pointer_cast<T>(engine);
     }
 
     template<typename T>

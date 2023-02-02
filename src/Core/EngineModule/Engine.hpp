@@ -54,6 +54,8 @@ public:
 
     virtual bool update() = 0;
 
+    virtual IE::Core::Threading::CoroutineTask<void> create() = 0;
+
     virtual bool finish();
 };
 }  // namespace IE::Core

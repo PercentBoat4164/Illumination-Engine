@@ -109,7 +109,7 @@ public:
 
     IE::Graphics::API getAPI();
 
-    Core::Threading::CoroutineTask<void> create();
+    Core::Threading::CoroutineTask<void> create() override;
 
     static std::string translateVkResultCodes(VkResult t_result);
 
