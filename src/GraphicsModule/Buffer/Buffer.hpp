@@ -32,13 +32,11 @@ public:
 
     Status                      m_status{IE_BUFFER_STATUS_UNINITIALIZED};
     Type                        type{};
-    std::shared_ptr<std::mutex> m_mutex{};
+    std::shared_ptr<std::mutex> m_mutex{std::make_shared<std::mutex>()};
     IE::Graphics::RenderEngine *m_linkedRenderEngine{};
 
     Buffer(IE::Graphics::RenderEngine *t_engineLink) : m_linkedRenderEngine(t_engineLink) {
     }
-
-    virtual ~Buffer() = default;
 
     static std::shared_ptr<IE::Graphics::Buffer> create(IE::Graphics::RenderEngine *t_engineLink);
 

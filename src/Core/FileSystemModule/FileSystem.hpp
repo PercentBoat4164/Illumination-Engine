@@ -39,12 +39,12 @@ public:
     std::filesystem::path &makePathAbsolute(std::filesystem::path &filePath);
 
     template<class T>
-    void importFile(T *data, File &file, unsigned int flags = 0) {
+    void importFile(T *data, File *file, unsigned int flags = 0) {
         m_importer.import(data, file, flags);
     }
 
     template<class T>
-    void importFile(T *data, std::string filePath, unsigned int flags = 0) {
+    void importFile(T *data, std::filesystem::path filePath, unsigned int flags = 0) {
         m_importer.import(data, getFile(filePath), flags);
     };
 

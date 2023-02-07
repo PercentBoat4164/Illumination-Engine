@@ -52,3 +52,16 @@ void IE::Graphics::Framebuffer::build(
         );
     else m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Framebuffer");
 }
+
+IE::Graphics::Framebuffer::~Framebuffer() {
+    destroy();
+}
+
+void IE::Graphics::Framebuffer::destroy() {
+    for (auto &attachment : attachments) attachment->destroyImage();
+    vkDestroyFramebuffer(
+      m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
+      m_framebuffer,
+      nullptr
+    );
+}

@@ -36,15 +36,14 @@ void IE::Graphics::Semaphore::blocking_wait() {
 }
 
 IE::Graphics::Semaphore::~Semaphore() {
-    std::unique_lock<std::mutex> lock(*semaphoreMutex);
+    std::lock_guard<std::mutex> lock(*semaphoreMutex);
     status = IE_SEMAPHORE_STATUS_INVALID;
     vkDestroySemaphore(linkedRenderEngine->m_device.device, semaphore, nullptr);
 }
 
 IE::Graphics::Semaphore::Semaphore(const IE::Graphics::Semaphore &t_other) {
     if (this != &t_other) {
-        std::unique_lock<std::mutex> lock(*semaphoreMutex);
-        std::unique_lock<std::mutex> otherLock(*t_other.semaphoreMutex);
+        std::scoped_lock<std::mutex, std::mutex> lock(*semaphoreMutex, *t_other.semaphoreMutex);
         status.store(t_other.status.load());
         semaphore          = t_other.semaphore;
         linkedRenderEngine = t_other.linkedRenderEngine;

@@ -18,6 +18,8 @@ public:
     BufferVulkan(IE::Graphics::RenderEngine *t_engineLink) : IE::Graphics::Buffer(t_engineLink) {
     }
 
+    ~BufferVulkan();
+
     GLenum getGLBuffer() override;
 
     VkBuffer getVkBuffer() override;

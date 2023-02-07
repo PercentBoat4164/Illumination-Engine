@@ -8,7 +8,7 @@ void IE::Graphics::Image::createImage(
   uint64_t                                         t_flags,
   IE::Core::MultiDimensionalVector<unsigned char> &t_data
 ) {
-    std::unique_lock<std::mutex> lock(*m_mutex);
+    std::lock_guard<std::mutex> lock(*m_mutex);
     if (m_status == IE_IMAGE_STATUS_CREATED) {
         m_linkedRenderEngine->getLogger().log(
           "Attempted to create an image that already exists!",
@@ -20,7 +20,7 @@ void IE::Graphics::Image::createImage(
 }
 
 void IE::Graphics::Image::destroyImage() {
-    std::unique_lock<std::mutex> lock(*m_mutex);
+    std::lock_guard<std::mutex> lock(*m_mutex);
     if (m_status == IE_IMAGE_STATUS_UNINITIALIZED) {
         m_linkedRenderEngine->getLogger().log(
           "Attempted to destroy an image that does not exist!",

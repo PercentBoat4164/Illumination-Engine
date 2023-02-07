@@ -22,16 +22,20 @@ public:
         IE_RENDER_PASS_PROGRESSION_STATUS_NEXT_RENDER_PASS,
     };
 
-    Preset                             m_preset;
-    IE::Graphics::RenderPassSeries    *m_renderPassSeries{};
-    IE::Graphics::Framebuffer          m_framebuffer;
-    VkRenderPass                       m_renderPass{};
-    size_t                             m_currentPass{};
-    std::vector<IE::Graphics::Subpass> m_subpasses;
+    Preset                                              m_preset;
+    IE::Graphics::RenderPassSeries                     *m_renderPassSeries{};
+    IE::Graphics::Framebuffer                           m_framebuffer;
+    VkRenderPass                                        m_renderPass{};
+    size_t                                              m_currentPass{};
+    std::vector<std::shared_ptr<IE::Graphics::Subpass>> m_subpasses;
 
     explicit RenderPass(Preset t_preset);
 
-    auto addSubpass(IE::Graphics::Subpass &t_subpass) -> decltype(*this) {
+    ~RenderPass();
+
+    void destroy();
+
+    auto addSubpass(std::shared_ptr<IE::Graphics::Subpass> t_subpass) -> decltype(*this) {
         m_subpasses.push_back(t_subpass);
         return *this;
     }
@@ -44,10 +48,6 @@ public:
       std::vector<IE::Graphics::Image::Preset> &t_attachmentPresets
     );
 
-    bool nextPass(std::shared_ptr<IE::Graphics::CommandBuffer> masterCommandBuffer);
-
-    bool start(std::shared_ptr<CommandBuffer> masterCommandBuffer);
-
-    void finish(std::shared_ptr<CommandBuffer> masterCommandBuffer);
+    void execute();
 };
 }  // namespace IE::Graphics

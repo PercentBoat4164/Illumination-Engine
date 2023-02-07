@@ -274,9 +274,10 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
     std::vector<std::shared_ptr<Shader>> colorShaders{
       std::make_shared<Shader>("shaders/Vulkan/fragmentShader.frag"),
       std::make_shared<Shader>("shaders/Vulkan/vertexShader.vert")};
-    Subpass colorSubpass{Subpass::IE_SUBPASS_PRESET_CUSTOM, colorShaders};
+    std::shared_ptr<Subpass> colorSubpass{
+      std::make_shared<Subpass>(Subpass::IE_SUBPASS_PRESET_CUSTOM, colorShaders)};
     colorSubpass
-      .addOrModifyAttachment(
+      ->addOrModifyAttachment(
         "color",
         Subpass::IE_ATTACHMENT_CONSUMPTION_GENERATE,
         Image::IE_IMAGE_PRESET_FRAMEBUFFER_COLOR
@@ -287,8 +288,9 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
         Image::IE_IMAGE_PRESET_FRAMEBUFFER_DEPTH
       );
 
-    RenderPass finalImageRenderPass{RenderPass::IE_RENDER_PASS_PRESET_CUSTOM};
-    finalImageRenderPass.addSubpass(colorSubpass);
+    std::shared_ptr<RenderPass> finalImageRenderPass{
+      std::make_shared<RenderPass>(RenderPass::IE_RENDER_PASS_PRESET_CUSTOM)};
+    finalImageRenderPass->addSubpass(colorSubpass);
 
     // Accumulate the render passes into render pass series.
     m_renderPassSeries.addRenderPass(finalImageRenderPass);
@@ -342,7 +344,6 @@ IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
       this,
       device
     )};
-
 
     auto descriptorSet{IE::Core::Core::getThreadPool()->submit(
       [](IE::Graphics::RenderEngine *engine, std::shared_ptr<IE::Core::Threading::Task<void>> device)
@@ -425,6 +426,9 @@ std::string IE::Graphics::RenderEngine::translateVkResultCodes(VkResult t_result
 }
 
 IE::Graphics::RenderEngine::~RenderEngine() {
+    // Destroy all aspects before the other stuff.
+    m_aspects.clear();
+
     m_imageAvailableSemaphores.clear();
     m_renderFinishedSemaphores.clear();
     m_inFlightFences.clear();
@@ -453,9 +457,9 @@ IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
 }
 
 std::shared_ptr<IE::Graphics::CommandPool> IE::Graphics::RenderEngine::getCommandPool() {
-    static uint32_t              commandPoolIndex;
-    static std::mutex            functionMutex;
-    std::unique_lock<std::mutex> lock(functionMutex);
+    static uint32_t             commandPoolIndex;
+    static std::mutex           functionMutex;
+    std::lock_guard<std::mutex> lock(functionMutex);
     commandPoolIndex %= m_commandPools.size();
     return m_commandPools[commandPoolIndex++];
 }
@@ -483,35 +487,15 @@ std::string IE::Graphics::RenderEngine::makeErrorMessage(
     return error;
 }
 
-bool IE::Graphics::RenderEngine::update() {
+IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
     ++m_frameNumber;
-
-    // Record all command buffers for this frame
-    for (std::pair<const std::string, std::shared_ptr<IE::Core::Aspect>> &aspect : m_aspects) {
-        std::shared_ptr<IE::Graphics::Renderable> renderable =
-          std::dynamic_pointer_cast<IE::Graphics::Renderable>(aspect.second);
-        IE::Core::Core::getThreadPool()->submit([renderable] { renderable->update(); });
-    }
-
 
     // Render all renderables in all passes
     std::vector<VkCommandBuffer> commandBuffers;
     commandBuffers.reserve(m_aspects.size());
 
-    m_renderPassSeries.start();
-    do {
-        for (std::pair<const std::string, std::shared_ptr<IE::Core::Aspect>> &aspect : m_aspects) {
-            std::shared_ptr<IE::Graphics::Renderable> renderable =
-              std::dynamic_pointer_cast<IE::Graphics::Renderable>(aspect.second);
-            auto renderableCommands{renderable->getCommands()};
-            if (renderableCommands) commandBuffers.push_back(renderableCommands);
-        }
-        if (!commandBuffers.empty()) m_renderPassSeries.execute(commandBuffers);
-    } while (m_renderPassSeries.nextPass() !=
-             IE::Graphics::RenderPassSeries::IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_END);
-
-    m_renderPassSeries.finish();
-    return true;
+    m_renderPassSeries.execute();
+    co_return true;
 }
 
 IE::Graphics::RenderEngine::RenderEngine() {

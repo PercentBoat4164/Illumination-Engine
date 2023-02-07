@@ -19,7 +19,7 @@ void IE::Graphics::DescriptorSet::build(
         std::vector<Shader::ReflectionInfo> reflectionInfo = shader->getReflectionInfo();
         for (Shader::ReflectionInfo &info : reflectionInfo) {
             // Does this resource belong to this set?
-            if (info.set == m_setNumber) {
+            if (info.set == m_type) {
                 bool typeAlreadyExists{};
                 // Has a resource of this type already been added to this set?
                 for (VkDescriptorPoolSize &poolSize : poolSizes) {
@@ -135,7 +135,7 @@ VkDescriptorSetLayout IE::Graphics::DescriptorSet::getLayout(
     return layout;
 }
 
-IE::Graphics::DescriptorSet::DescriptorSet(IE::Graphics::DescriptorSet::SetNumber t_type) : m_setNumber(t_type) {
+IE::Graphics::DescriptorSet::DescriptorSet(IE::Graphics::DescriptorSet::SetType t_type) : m_type(t_type) {
 }
 
 const std::vector<std::tuple<VkDescriptorType, uint32_t>>
@@ -143,3 +143,21 @@ const std::vector<std::tuple<VkDescriptorType, uint32_t>>
     {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0},
     {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}
 };
+
+void IE::Graphics::DescriptorSet::destroy() {
+    for (auto &layout : m_layouts)
+        vkDestroyDescriptorSetLayout(
+          m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
+          layout,
+          nullptr
+        );
+    vkDestroyDescriptorPool(
+      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
+      m_pool,
+      nullptr
+    );
+}
+
+IE::Graphics::DescriptorSet::~DescriptorSet() {
+    destroy();
+}

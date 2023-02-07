@@ -211,3 +211,11 @@ VkShaderStageFlagBits IE::Graphics::Shader::stageFromExecutionModel(spv::Executi
         default: return VK_SHADER_STAGE_ALL;
     }
 }
+
+void IE::Graphics::Shader::destroy() {
+    vkDestroyShaderModule(m_subpass->m_linkedRenderEngine->m_device.device, m_module, nullptr);
+}
+
+IE::Graphics::Shader::~Shader() {
+    destroy();
+}

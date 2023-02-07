@@ -23,9 +23,10 @@ int main(int argc, char **argv) {
       IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue/models/ancientStatue.glb")
     ));
 
-    while (glfwWindowShouldClose(renderEngine->getWindow()) == 0) {
-        renderEngine->update();
-        glfwPollEvents();
-        renderEngine->finish();
-    }
+
+    //    while (glfwWindowShouldClose(renderEngine->getWindow()) == 0) {
+    //        auto job = IE::Core::Core::getThreadPool()->submit(renderEngine->update());
+    //        glfwPollEvents();
+    //        job->wait();
+    //    }
 }

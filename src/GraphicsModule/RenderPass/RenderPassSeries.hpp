@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Core.hpp"
 #include "Image/Image.hpp"
 #include "RenderPass.hpp"
 
@@ -17,21 +18,20 @@ public:
 
     auto build() -> decltype(*this);
 
-    auto addRenderPass(RenderPass &t_pass) -> decltype(*this);
+    auto addRenderPass(std::shared_ptr<RenderPass> t_pass) -> decltype(*this);
 
-    bool start();
+    std::vector<std::pair<std::string, Image::Preset>>     m_attachmentPool;
+    size_t                                                 m_currentPass{};
+    std::vector<std::shared_ptr<IE::Graphics::RenderPass>> m_renderPasses;
+    IE::Graphics::RenderEngine                            *m_linkedRenderEngine;
+    std::shared_ptr<IE::Graphics::CommandBuffer>           m_masterCommandBuffer;
 
-    void finish();
+    Core::Threading::CoroutineTask<void> execute();
 
-    ProgressionStatus nextPass();
-
-    std::vector<std::pair<std::string, Image::Preset>> m_attachmentPool;
-    size_t                                             m_currentPass{};
-    std::vector<IE::Graphics::RenderPass>              m_renderPasses;
-    IE::Graphics::RenderEngine                        *m_linkedRenderEngine;
-    std::shared_ptr<IE::Graphics::CommandBuffer>       m_masterCommandBuffer;
-
-    void execute(std::vector<VkCommandBuffer> t_commandBuffers);
+    void destroy() {
+        for (auto &renderPass : m_renderPasses) renderPass->destroy();
+        m_masterCommandBuffer->free();
+    }
 
 private:
     std::tuple<

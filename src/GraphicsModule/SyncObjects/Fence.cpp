@@ -9,15 +9,14 @@ IE::Graphics::Fence::Fence(IE::Graphics::RenderEngine *t_engineLink, bool t_sign
 }
 
 IE::Graphics::Fence::~Fence() {
-    std::unique_lock<std::mutex> lock(*fenceMutex);
+    std::lock_guard<std::mutex> lock(*fenceMutex);
     status = IE_FENCE_STATUS_INVALID;
     vkDestroyFence(linkedRenderEngine->m_device.device, fence, nullptr);
 }
 
 IE::Graphics::Fence::Fence(const IE::Graphics::Fence &t_other) {
     if (this != &t_other) {
-        std::unique_lock<std::mutex> lock(*fenceMutex);
-        std::unique_lock<std::mutex> otherLock(*t_other.fenceMutex);
+        std::scoped_lock<std::mutex, std::mutex> lock(*fenceMutex, *t_other.fenceMutex);
         status.store(t_other.status.load());
         fence              = t_other.fence;
         linkedRenderEngine = t_other.linkedRenderEngine;
@@ -32,7 +31,7 @@ void IE::Graphics::Fence::create(IE::Graphics::RenderEngine *t_engineLink, bool 
       .pNext = nullptr,
       .flags = t_signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0u,
     };
-    std::unique_lock<std::mutex> lock(*fenceMutex);
+    std::lock_guard<std::mutex> lock(*fenceMutex);
     VkResult result{vkCreateFence(linkedRenderEngine->m_device.device, &createInfo, nullptr, &fence)};
     if (result != VK_SUCCESS)
         linkedRenderEngine->getLogger().log(

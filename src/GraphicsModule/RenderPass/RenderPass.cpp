@@ -39,47 +39,21 @@ void IE::Graphics::RenderPass::build(
     else m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Render Pass");
 
     // Build all the subpasses controlled by this render pass.
-    for (auto &subpass : m_subpasses) subpass.build(this);
+    for (auto &subpass : m_subpasses) subpass->build(this);
 
     // Build the framebuffer used with this render pass
     m_framebuffer.build(this, t_attachmentPresets);
 }
 
-bool IE::Graphics::RenderPass::start(std::shared_ptr<CommandBuffer> masterCommandBuffer) {
-    m_currentPass = 0;
-    VkClearValue              defaultClearValue{0, 0, 0};
-    std::vector<VkClearValue> clearColors(m_framebuffer.attachments.size(), defaultClearValue);
-    VkRenderPassBeginInfo     renderPassBeginInfo{
-          .sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-          .pNext       = nullptr,
-          .renderPass  = m_renderPass,
-          .framebuffer = m_framebuffer.m_framebuffer,
-          .renderArea =
-        VkRect2D{
-                 .offset = VkOffset2D{.x = 0, .y = 0},
-                 .extent =
-            VkExtent2D{
-                  .width  = static_cast<uint32_t>(m_framebuffer.m_resolution[0]),
-                  .height = static_cast<uint32_t>(m_framebuffer.m_resolution[1]),
-            }},
-          .clearValueCount = static_cast<uint32_t>(clearColors.size()),
-          .pClearValues    = clearColors.data()
-    };
-    masterCommandBuffer->recordBeginRenderPass(
-      &renderPassBeginInfo,
-      VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS
-    );
-    return true;
+void IE::Graphics::RenderPass::execute() {
 }
 
-bool IE::Graphics::RenderPass::nextPass(std::shared_ptr<IE::Graphics::CommandBuffer> masterCommandBuffer) {
-    if (++m_currentPass < m_subpasses.size()) {
-        masterCommandBuffer->recordNextSubpass();
-        return IE_RENDER_PASS_PROGRESSION_STATUS_NEXT_SUBPASS_IN_SAME_RENDER_PASS;
-    }
-    return IE_RENDER_PASS_PROGRESSION_STATUS_NEXT_RENDER_PASS;
+IE::Graphics::RenderPass::~RenderPass() {
+    destroy();
 }
 
-void IE::Graphics::RenderPass::finish(std::shared_ptr<CommandBuffer> masterCommandBuffer) {
-    masterCommandBuffer->recordEndRenderPass();
+void IE::Graphics::RenderPass::destroy() {
+    for (auto &subpass : m_subpasses) subpass->destroy();
+    m_framebuffer.destroy();
+    vkDestroyRenderPass(m_renderPassSeries->m_linkedRenderEngine->m_device.device, m_renderPass, nullptr);
 }

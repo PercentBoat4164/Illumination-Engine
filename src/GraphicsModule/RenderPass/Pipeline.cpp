@@ -36,6 +36,13 @@ void IE::Graphics::Pipeline::build(
       nullptr,
       &m_layout
     )};
+    // As they are no longer needed, the descriptor set layouts get destroyed
+    for (auto &layout : descriptorSetLayouts)
+        vkDestroyDescriptorSetLayout(
+          m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
+          layout,
+          nullptr
+        );
     if (layoutResult != VK_SUCCESS)
         m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
           "Failed to create pipeline layout with error: " +
@@ -260,7 +267,7 @@ void IE::Graphics::Pipeline::build(
     // Pipeline assembly
     uint32_t subpassNumber{0};
     for (; subpassNumber < m_subpass->m_renderPass->m_subpasses.size(); ++subpassNumber)
-        if (&m_subpass->m_renderPass->m_subpasses[subpassNumber] == m_subpass) break;
+        if (m_subpass->m_renderPass->m_subpasses[subpassNumber].get() == m_subpass) break;
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo{
       .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -306,4 +313,14 @@ void IE::Graphics::Pipeline::build(
     else m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Pipeline");
 }
 
+void IE::Graphics::Pipeline::destroy() {
+    vkDestroyPipelineLayout(m_subpass->m_linkedRenderEngine->m_device.device, m_layout, nullptr);
+    vkDestroyPipelineCache(m_subpass->m_linkedRenderEngine->m_device.device, m_cache, nullptr);
+    vkDestroyPipeline(m_subpass->m_linkedRenderEngine->m_device.device, m_pipeline, nullptr);
+}
+
 IE::Graphics::Pipeline::Pipeline() = default;
+
+IE::Graphics::Pipeline::~Pipeline() {
+    destroy();
+}

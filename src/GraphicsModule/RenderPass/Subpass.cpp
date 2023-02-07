@@ -1,6 +1,8 @@
 #include "Subpass.hpp"
 
 #include "Image/Image.hpp"
+#include "Renderable/Renderable.hpp"
+#include "RenderEngine.hpp"
 #include "RenderPass.hpp"
 
 IE::Graphics::Subpass::Subpass(
@@ -40,4 +42,25 @@ void IE::Graphics::Subpass::build(IE::Graphics::RenderPass *t_renderPass) {
     }
     descriptorSet.build(this, shaders);
     pipeline.build(this, shaders);
+}
+
+void IE::Graphics::Subpass::registerRenderable(IE::Graphics::Renderable *t_renderable) {
+    auto buffer{std::make_shared<CommandBuffer>(m_linkedRenderEngine->getCommandPool())};
+
+    buffer->allocate(IE_COMMAND_BUFFER_ALLOCATE_SECONDARY);
+    buffer->record(0, m_renderPass, 0, &m_renderPass->m_framebuffer);
+}
+
+void IE::Graphics::Subpass::execute(IE::Graphics::CommandBuffer t_masterCommandBuffer) {
+    t_masterCommandBuffer.recordExecuteSecondaryCommandBuffers(m_commandBuffers);
+}
+
+void IE::Graphics::Subpass::destroy() {
+    descriptorSet.destroy();
+    pipeline.destroy();
+    for (auto &shader : shaders) shader->destroy();
+}
+
+IE::Graphics::Subpass::~Subpass() {
+    destroy();
 }

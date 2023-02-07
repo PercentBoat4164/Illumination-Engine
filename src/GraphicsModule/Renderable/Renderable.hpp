@@ -16,18 +16,16 @@ class Engine;
 namespace IE::Graphics {
 class Renderable : public IE::Core::Aspect {
 public:
-    IE::Graphics::RenderEngine            *m_linkedRenderEngine;
-    DescriptorSet                          m_descriptorSet{DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_OBJECT};
-    Mesh                                   m_mesh;
-    std::vector<std::shared_ptr<Material>> m_materials;
-    std::vector<Instance>                  m_instances;
-    std::shared_ptr<CommandBuffer>         m_commandBuffer;
+    IE::Graphics::RenderEngine                 *m_linkedRenderEngine;
+    DescriptorSet                               m_descriptorSet{DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_OBJECT};
+    Mesh                                        m_mesh;
+    std::vector<std::shared_ptr<Material>>      m_materials;
+    std::vector<Instance>                       m_instances;
+    std::vector<std::shared_ptr<CommandBuffer>> m_commandBuffers;
 
     Renderable(IE::Core::Engine *t_engineLink, IE::Core::File *t_resource);
 
-    void update();
-
-    VkCommandBuffer getCommands();
+    std::vector<VkCommandBuffer> getCommands();
 
     void load();
 };

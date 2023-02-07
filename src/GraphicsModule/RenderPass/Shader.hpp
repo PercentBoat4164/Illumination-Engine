@@ -43,6 +43,10 @@ public:
 
     void build(Subpass *t_subpass);
 
+    void destroy();
+
+    ~Shader();
+
     static VkShaderStageFlagBits stageFromExecutionModel(spv::ExecutionModel model);
 };
 }  // namespace IE::Graphics

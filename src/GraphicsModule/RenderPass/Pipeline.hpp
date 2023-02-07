@@ -16,7 +16,10 @@ public:
 
     Pipeline();
 
+    ~Pipeline();
+
     void
     build(IE::Graphics::Subpass *t_subpass, const std::vector<std::shared_ptr<IE::Graphics::Shader>> &t_shaders);
+    void destroy();
 };
 }  // namespace IE::Graphics

@@ -2,6 +2,7 @@
 
 #include "GraphicsModule/DescriptorSet/DescriptorSet.hpp"
 #include "Pipeline.hpp"
+#include "Renderable/Renderable.hpp"
 #include "Shader.hpp"
 
 #include <Image/Image.hpp>
@@ -50,6 +51,11 @@ public:
 
     explicit Subpass(Preset t_preset, std::vector<std::shared_ptr<Shader>> &t_shader);
 
+    ~Subpass();
+
+    IE::Graphics::RenderEngine *m_linkedRenderEngine;
+
+    // Building
     Preset                               m_preset;
     RenderPass                          *m_renderPass{};
     Pipeline                             pipeline;
@@ -69,5 +75,15 @@ public:
     ) -> decltype(*this);
 
     void build(IE::Graphics::RenderPass *t_renderPass);
+
+    // Executing
+    std::vector<std::shared_ptr<IE::Graphics::CommandBuffer>> m_commandBuffers{};
+
+    void registerRenderable(IE::Graphics::Renderable *t_renderable);
+
+    void destroy();
+
+    void execute();
+    void execute(CommandBuffer t_masterCommandBuffer);
 };
 }  // namespace IE::Graphics

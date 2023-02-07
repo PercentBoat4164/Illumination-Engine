@@ -5,6 +5,7 @@
 
 void IE::Graphics::Mesh::load(const aiScene *t_scene) {
     aiMesh *mesh = t_scene->mMeshes[0];
+
     // record indices
     m_vertices.reserve(mesh->mNumVertices);
     Vertex temporaryVertex{};
@@ -27,7 +28,7 @@ void IE::Graphics::Mesh::load(const aiScene *t_scene) {
     }
 
     // Create vertex buffer.
-    m_vertexBuffer->create(m_linkedRenderEngine);
+    m_vertexBuffer = Buffer::create(m_linkedRenderEngine);
     m_vertexBuffer->createBuffer(
       Buffer::IE_BUFFER_TYPE_VERTEX_BUFFER,
       0x0,
@@ -53,7 +54,7 @@ void IE::Graphics::Mesh::load(const aiScene *t_scene) {
     m_indices.shrink_to_fit();
 
     // Create index buffer
-    m_indexBuffer->create(m_linkedRenderEngine);
+    m_indexBuffer = Buffer::create(m_linkedRenderEngine);
     m_indexBuffer->createBuffer(
       Buffer::IE_BUFFER_TYPE_INDEX_BUFFER,
       0x0,

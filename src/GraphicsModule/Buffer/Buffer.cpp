@@ -1,5 +1,6 @@
 #include "Buffer.hpp"
 
+#include "BufferOpenGL.hpp"
 #include "Core/LogModule/Logger.hpp"
 #include "RenderEngine.hpp"
 
@@ -9,7 +10,8 @@ void IE::Graphics::Buffer::createBuffer(
   void                      *t_data,
   size_t                     t_dataSize
 ) {
-    std::unique_lock<std::mutex> lock(*m_mutex);
+    std::lock_guard<std::mutex> lock(*m_mutex);
+    type = t_type;
     if (m_status == IE_BUFFER_STATUS_CREATED) {
         m_linkedRenderEngine->getLogger().log(
           "Attempted to create a buffer that already exists!",
@@ -21,7 +23,7 @@ void IE::Graphics::Buffer::createBuffer(
 }
 
 void IE::Graphics::Buffer::destroyBuffer() {
-    std::unique_lock<std::mutex> lock(*m_mutex);
+    std::lock_guard<std::mutex> lock(*m_mutex);
     if (m_status == IE_BUFFER_STATUS_UNINITIALIZED) {
         m_linkedRenderEngine->getLogger().log(
           "Attempted to destroy a buffer that does not exist!",
@@ -33,8 +35,9 @@ void IE::Graphics::Buffer::destroyBuffer() {
 }
 
 std::shared_ptr<IE::Graphics::Buffer> IE::Graphics::Buffer::create(IE::Graphics::RenderEngine *t_engineLink) {
-    //    if (t_engineLink->getAPI().name == IE_RENDER_ENGINE_API_NAME_VULKAN)
-    return std::make_shared<IE::Graphics::detail::BufferVulkan>(t_engineLink);
-    //    if (t_engineLink->getAPI().name == IE_RENDER_ENGINE_API_NAME_OPENGL)
+    if (t_engineLink->getAPI().name == IE_RENDER_ENGINE_API_NAME_VULKAN)
+        return std::make_shared<IE::Graphics::detail::BufferVulkan>(t_engineLink);
+    if (t_engineLink->getAPI().name == IE_RENDER_ENGINE_API_NAME_OPENGL)
+        ;
     //        return std::make_shared<IE::Graphics::detail::BufferOpenGL>(t_engineLink);
 }

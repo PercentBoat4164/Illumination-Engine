@@ -99,7 +99,7 @@ public:
 
     RenderEngine();
 
-    bool update() override;
+    Core::Threading::CoroutineTask<bool> update() override;
 
     GLFWwindow *getWindow();
 

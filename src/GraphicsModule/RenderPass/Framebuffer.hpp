@@ -17,6 +17,11 @@ public:
     IE::Graphics::RenderPass           *m_renderPass;
     std::vector<std::shared_ptr<Image>> attachments{};
     void
+
     build(IE::Graphics::RenderPass *t_renderPass, std::vector<IE::Graphics::Image::Preset> &t_attachmentPresets);
+
+    void destroy();
+
+    ~Framebuffer();
 };
 }  // namespace IE::Graphics

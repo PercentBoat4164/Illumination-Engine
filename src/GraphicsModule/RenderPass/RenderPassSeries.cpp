@@ -15,13 +15,13 @@ std::
     std::vector<std::vector<VkAttachmentDescription>>     attachmentDescriptions(m_renderPasses.size());
     std::vector<std::vector<IE::Graphics::Image::Preset>> attachmentPresets(m_renderPasses.size());
     for (size_t i{0}; i < m_renderPasses.size(); ++i) {
-        for (size_t j{0}; j < m_renderPasses[i].m_subpasses.size(); ++j) {
-            for (const auto &attachment : m_renderPasses[i].m_subpasses[j].m_attachments) {
+        for (size_t j{0}; j < m_renderPasses[i]->m_subpasses.size(); ++j) {
+            for (const auto &attachment : m_renderPasses[i]->m_subpasses[j]->m_attachments) {
                 // Get previous usage of this attachment by another render pass.
                 std::pair<std::string, Subpass::AttachmentDescription> *previousAttachmentUsage{nullptr};
                 for (size_t k{i == 0 ? i : i - 1}; k > 0; --k) {
-                    for (int l{static_cast<int>(m_renderPasses[k].m_subpasses.size())}; l > 0; --l) {
-                        for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
+                    for (int l{static_cast<int>(m_renderPasses[k]->m_subpasses.size())}; l > 0; --l) {
+                        for (auto &thisAttachment : m_renderPasses[k]->m_subpasses[l]->m_attachments) {
                             if (thisAttachment.first == attachment.first) {
                                 previousAttachmentUsage = &thisAttachment;
                                 break;
@@ -32,8 +32,8 @@ std::
                 if (previousAttachmentUsage == nullptr) {
                     // Look at the end to see if it should be loaded from the previous frame.
                     for (size_t k{m_renderPasses.size() - 1}; k > i; --k) {
-                        for (int l{static_cast<int>(m_renderPasses[k].m_subpasses.size() - 1)}; l > 0; --l) {
-                            for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
+                        for (int l{static_cast<int>(m_renderPasses[k]->m_subpasses.size() - 1)}; l > 0; --l) {
+                            for (auto &thisAttachment : m_renderPasses[k]->m_subpasses[l]->m_attachments) {
                                 if (thisAttachment.first == attachment.first) {
                                     previousAttachmentUsage = &thisAttachment;
                                     break;
@@ -46,8 +46,8 @@ std::
                 // Get next usage of this attachment by another render pass.
                 std::pair<std::string, Subpass::AttachmentDescription> *nextAttachmentUsage{nullptr};
                 for (size_t k{i + 1}; k < m_renderPasses.size(); ++k) {
-                    for (size_t l{0}; l < m_renderPasses[k].m_subpasses.size(); ++l) {
-                        for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
+                    for (size_t l{0}; l < m_renderPasses[k]->m_subpasses.size(); ++l) {
+                        for (auto &thisAttachment : m_renderPasses[k]->m_subpasses[l]->m_attachments) {
                             if (thisAttachment.first == attachment.first) {
                                 nextAttachmentUsage = &thisAttachment;
                                 break;
@@ -58,8 +58,8 @@ std::
                 if (nextAttachmentUsage == nullptr) {
                     // Look at the beginning to see if it should be stored for the next frame.
                     for (size_t k{0}; k < i; ++k) {
-                        for (size_t l{0}; l < m_renderPasses[k].m_subpasses.size(); ++l) {
-                            for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
+                        for (size_t l{0}; l < m_renderPasses[k]->m_subpasses.size(); ++l) {
+                            for (auto &thisAttachment : m_renderPasses[k]->m_subpasses[l]->m_attachments) {
                                 if (thisAttachment.first == attachment.first) {
                                     nextAttachmentUsage = &thisAttachment;
                                     break;
@@ -112,8 +112,8 @@ std::
 std::vector<std::vector<VkSubpassDescription>> IE::Graphics::RenderPassSeries::buildSubpassDescriptions() {
     std::vector<std::vector<VkSubpassDescription>> subpassDescriptions(m_renderPasses.size());
     for (size_t i{0}; i < m_renderPasses.size(); ++i) {
-        for (auto &subpass : m_renderPasses[i].m_subpasses) {
-            for (const auto &attachment : subpass.m_attachments) {
+        for (auto &subpass : m_renderPasses[i]->m_subpasses) {
+            for (const auto &attachment : subpass->m_attachments) {
                 VkAttachmentReference reference{
                   .attachment = static_cast<uint32_t>(std::distance(
                     m_attachmentPool.begin(),
@@ -125,18 +125,18 @@ std::vector<std::vector<VkSubpassDescription>> IE::Graphics::RenderPassSeries::b
                   )),
                   .layout     = IE::Graphics::detail::ImageVulkan::layoutFromPreset(attachment.second.m_preset)};
                 switch (IE::Graphics::detail::ImageVulkan::intentFromPreset(attachment.second.m_preset)) {
-                    case Image::IE_IMAGE_INTENT_COLOR: subpass.m_color.push_back(reference); break;
-                    case Image::IE_IMAGE_INTENT_DEPTH: subpass.m_depth.push_back(reference); break;
+                    case Image::IE_IMAGE_INTENT_COLOR: subpass->m_color.push_back(reference); break;
+                    case Image::IE_IMAGE_INTENT_DEPTH: subpass->m_depth.push_back(reference); break;
                 }
             }
 
-            if (!subpass.m_resolve.empty() && subpass.m_resolve.size() != subpass.m_color.size())
+            if (!subpass->m_resolve.empty() && subpass->m_resolve.size() != subpass->m_color.size())
                 m_linkedRenderEngine->getLogger().log(
                   "If resolve attachments are specified, there must be the same number of resolve attachments as "
                   "color attachments.",
                   Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
                 );
-            if (subpass.m_depth.size() > 1)
+            if (subpass->m_depth.size() > 1)
                 m_linkedRenderEngine->getLogger().log(
                   "There can only be one depth attachment in a subpass.",
                   Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
@@ -145,14 +145,14 @@ std::vector<std::vector<VkSubpassDescription>> IE::Graphics::RenderPassSeries::b
             subpassDescriptions[i].push_back(
               {.flags                   = 0x0,
                .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
-               .inputAttachmentCount    = static_cast<uint32_t>(subpass.m_input.size()),
-               .pInputAttachments       = subpass.m_input.data(),
-               .colorAttachmentCount    = static_cast<uint32_t>(subpass.m_color.size()),
-               .pColorAttachments       = subpass.m_color.data(),
-               .pResolveAttachments     = subpass.m_resolve.data(),
-               .pDepthStencilAttachment = subpass.m_depth.data(),
-               .preserveAttachmentCount = static_cast<uint32_t>(subpass.m_preserve.size()),
-               .pPreserveAttachments    = subpass.m_preserve.data()}
+               .inputAttachmentCount    = static_cast<uint32_t>(subpass->m_input.size()),
+               .pInputAttachments       = subpass->m_input.data(),
+               .colorAttachmentCount    = static_cast<uint32_t>(subpass->m_color.size()),
+               .pColorAttachments       = subpass->m_color.data(),
+               .pResolveAttachments     = subpass->m_resolve.data(),
+               .pDepthStencilAttachment = subpass->m_depth.data(),
+               .preserveAttachmentCount = static_cast<uint32_t>(subpass->m_preserve.size()),
+               .pPreserveAttachments    = subpass->m_preserve.data()}
             );
         }
     }
@@ -162,14 +162,14 @@ std::vector<std::vector<VkSubpassDescription>> IE::Graphics::RenderPassSeries::b
 std::vector<std::vector<VkSubpassDependency>> IE::Graphics::RenderPassSeries::buildSubpassDependencies() {
     std::vector<std::vector<VkSubpassDependency>> subpassDependencies(m_renderPasses.size());
     for (size_t i{0}; i < m_renderPasses.size(); ++i) {
-        for (size_t j{0}; j < m_renderPasses[i].m_subpasses.size(); ++j) {
-            for (auto &attachment : m_renderPasses[i].m_subpasses[j].m_attachments) {
+        for (size_t j{0}; j < m_renderPasses[i]->m_subpasses.size(); ++j) {
+            for (auto &attachment : m_renderPasses[i]->m_subpasses[j]->m_attachments) {
                 // Find the next usage of each attachment.
                 size_t k{i};
                 size_t l{j + 1};
                 for (; k < m_renderPasses.size(); ++k) {
-                    for (; l < m_renderPasses[k].m_subpasses.size(); ++l) {
-                        for (auto &thisAttachment : m_renderPasses[k].m_subpasses[l].m_attachments) {
+                    for (; l < m_renderPasses[k]->m_subpasses.size(); ++l) {
+                        for (auto &thisAttachment : m_renderPasses[k]->m_subpasses[l]->m_attachments) {
                             if (thisAttachment.first == attachment.first) {
                                 // Record dependency as external if the dependent subpass is not in this render
                                 // pass.
@@ -242,7 +242,7 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
 
     // Build render passes.
     for (size_t i{0}; i < m_renderPasses.size(); ++i)
-        m_renderPasses[i].build(
+        m_renderPasses[i]->build(
           this,
           std::get<0>(attachmentDescriptions)[i],
           subpassDescriptions[i],
@@ -251,17 +251,17 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
         );
 
     // Build command buffer
-    m_masterCommandBuffer =
-      std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine, m_linkedRenderEngine->getCommandPool());
+    m_masterCommandBuffer = std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine->getCommandPool());
     m_masterCommandBuffer->allocate();
     m_masterCommandBuffer->record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     return *this;
 }
 
-auto IE::Graphics::RenderPassSeries::addRenderPass(IE::Graphics::RenderPass &t_pass) -> decltype(*this) {
+auto IE::Graphics::RenderPassSeries::addRenderPass(std::shared_ptr<IE::Graphics::RenderPass> t_pass)
+  -> decltype(*this) {
     m_renderPasses.push_back(t_pass);
-    for (const auto &subpass : t_pass.m_subpasses) {
-        for (const auto &requestedAttachment : subpass.m_attachments) {
+    for (const auto &subpass : t_pass->m_subpasses) {
+        for (const auto &requestedAttachment : subpass->m_attachments) {
             bool found{false};
             for (const auto &existingAttachment : m_attachmentPool) {
                 if (requestedAttachment.first == existingAttachment.first) {
@@ -276,26 +276,9 @@ auto IE::Graphics::RenderPassSeries::addRenderPass(IE::Graphics::RenderPass &t_p
     return *this;
 }
 
-bool IE::Graphics::RenderPassSeries::start() {
-    m_currentPass = 0;
-    return m_renderPasses[m_currentPass].start(m_masterCommandBuffer);
-}
-
-IE::Graphics::RenderPassSeries::ProgressionStatus IE::Graphics::RenderPassSeries::nextPass() {
-    if (m_renderPasses[m_currentPass].nextPass(m_masterCommandBuffer) == IE::Graphics::RenderPass::IE_RENDER_PASS_PROGRESSION_STATUS_NEXT_RENDER_PASS) {
-        m_renderPasses[m_currentPass++].finish(m_masterCommandBuffer);
-        if (m_currentPass >= m_renderPasses.size())
-            return IE::Graphics::RenderPassSeries::IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_END;
-        m_renderPasses[m_currentPass].start(m_masterCommandBuffer);
-    }
-    return IE::Graphics::RenderPassSeries::IE_RENDER_PASS_SERIES_PROGRESSION_STATUS_CONTINUE;
-}
-
-void IE::Graphics::RenderPassSeries::finish() {
-    /**@todo Presentation should happen when the render pass series has finished. */
-    //    vkQueuePresentKHR()
-}
-
-void IE::Graphics::RenderPassSeries::execute(std::vector<VkCommandBuffer> t_commandBuffers) {
-    m_masterCommandBuffer->recordExecuteSecondaryCommandBuffers(t_commandBuffers);
+IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderPassSeries::execute() {
+    std::vector<std::shared_ptr<IE::Core::Threading::BaseTask>> tasks;
+    for (std::shared_ptr<RenderPass> renderPass : m_renderPasses)
+        tasks.push_back(IE::Core::Core::getThreadPool()->submit([&renderPass] { renderPass->execute(); }));
+    co_await IE::Core::Core::getThreadPool()->resumeAfter(tasks);
 }

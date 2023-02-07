@@ -16,27 +16,29 @@ class Buffer;
 class Pipeline;
 class DescriptorSet;
 class RenderEngine;
+class RenderPass;
+class Framebuffer;
+
+enum Status {
+    IE_COMMAND_BUFFER_STATE_NONE       = 0x0,
+    IE_COMMAND_BUFFER_STATE_INITIAL    = 0x1,
+    IE_COMMAND_BUFFER_STATE_RECORDING  = 0x2,
+    IE_COMMAND_BUFFER_STATE_EXECUTABLE = 0x3,
+    IE_COMMAND_BUFFER_STATE_PENDING    = 0x4,
+    IE_COMMAND_BUFFER_STATE_INVALID    = 0x5
+};
+
+enum AllocationFlagBits {
+    IE_COMMAND_BUFFER_ALLOCATE_SECONDARY = 0x1,
+};
+
+using AllocationFlags = uint64_t;
+
+enum RecordFlagBits {
+    IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT = 0x1
+};
 
 class CommandBuffer {
-    enum Status {
-        IE_COMMAND_BUFFER_STATE_NONE       = 0x0,
-        IE_COMMAND_BUFFER_STATE_INITIAL    = 0x1,
-        IE_COMMAND_BUFFER_STATE_RECORDING  = 0x2,
-        IE_COMMAND_BUFFER_STATE_EXECUTABLE = 0x3,
-        IE_COMMAND_BUFFER_STATE_PENDING    = 0x4,
-        IE_COMMAND_BUFFER_STATE_INVALID    = 0x5
-    };
-
-    enum AllocationFlagBits {
-        IE_COMMAND_BUFFER_ALLOCATE_SECONDARY = 0x1,
-    };
-
-    using AllocationFlags = uint64_t;
-
-    enum RecordFlagBits {
-        IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT = 0x1
-    };
-
     using RecordFlags = uint64_t;
 
 public:
@@ -45,11 +47,9 @@ public:
     IE::Graphics::RenderEngine  *m_linkedRenderEngine{};
     Status                       m_status{};
     RecordFlags                  m_recordFlags{};
+    AllocationFlags              m_allocationFlags{};
 
-    CommandBuffer(
-      IE::Graphics::RenderEngine                *t_engineLink,
-      std::shared_ptr<IE::Graphics::CommandPool> t_parentCommandPool
-    );
+    CommandBuffer(std::shared_ptr<IE::Graphics::CommandPool> t_parentCommandPool);
 
     /**
      * @brief Allocate this command buffer as a primary command buffer.
@@ -59,13 +59,18 @@ public:
     /**
      * @brief Prepare this command buffer for recording.
      */
-    void record(RecordFlags t_flags = 0);
+    void record(
+      RecordFlags  t_flags       = 0,
+      RenderPass  *t_renderPass  = nullptr,
+      uint32_t     t_subpass     = 0,
+      Framebuffer *t_framebuffer = nullptr
+    );
 
-    void free(std::unique_lock<std::mutex> &lock);
+    void free(std::lock_guard<std::mutex> &lock);
 
     void free();
 
-    void reset(std::unique_lock<std::mutex> &lock);
+    void reset(std::lock_guard<std::mutex> &lock);
 
     void reset();
 
@@ -143,5 +148,6 @@ public:
     void recordBeginRenderPass(VkRenderPassBeginInfo *pRenderPassBegin, VkSubpassContents contents);
 
     void recordExecuteSecondaryCommandBuffers(std::vector<VkCommandBuffer> t_commandBuffers);
+    void recordExecuteSecondaryCommandBuffers(std::vector<std::shared_ptr<CommandBuffer>> t_commandBuffers);
 };
 }  // namespace IE::Graphics

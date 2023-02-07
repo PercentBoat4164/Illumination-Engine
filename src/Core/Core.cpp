@@ -31,8 +31,8 @@ IE::Core::Threading::ThreadPool *const IE::Core::Core::getThreadPool() {
 }
 
 IE::Core::Window *IE::Core::Core::getWindow(GLFWwindow *t_window) {
-    std::unique_lock<std::mutex> lock(m_windowsMutex);
-    auto                         window = m_windows.find(t_window);
+    std::lock_guard<std::mutex> lock(m_windowsMutex);
+    auto                        window = m_windows.find(t_window);
     if (window != m_windows.end()) return &window->second;
     else
         m_logger.log(
