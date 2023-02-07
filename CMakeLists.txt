@@ -1,15 +1,9 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)  # 3.14 is required for CPM
-
 project(IlluminationEngine VERSION 0.0.0)
-
-# Illumination Engine Options
-set(IE_SANITIZER OFF)
-option(IE_SANITIZER "The sanitizer to evaluate with. Valid options: THREAD, ADDRESS, LEAK" "THREAD")
-option(IE_PREFER_LOCAL_LIBS "Use local libs instead of downloading if available." ON)
-option(BUILD_SHARED_LIBS "Use shared libs in place of static ones to build." OFF)
 
 set(CMAKE_CXX_STANDARD 23)
 
+set(BUILD_SHARED_LIBS OFF)
 if (WIN32)
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif ()
@@ -34,6 +28,8 @@ add_custom_command(
 		DEPENDS ${IE_BASE_DIR}/res
 		COMMENT "Copying resource files...")
 
+set(IE_PREFER_LOCAL_LIBS ON)
+
 # Compilation and linking options
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	# Needed for compilation success.
@@ -41,6 +37,13 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
 	# Added to prevent known errors from clouding the log.
 	add_compile_options("-Wno-nullability-completeness")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+	# Needed for compilation success.
+	add_compile_options("-Wno-unused-command-line-argument")
+	add_compile_options("-Wno-deprecated-non-prototype")
+	add_compile_options("-fp=consistent")
+
+	# Added to prevent known errors from clouding the log.
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
@@ -48,29 +51,7 @@ elseif ()
 	message(WARNING "Unsupported compiler in use: ${CMAKE_CXX_COMPILER_ID}")
 endif ()
 
-# Thread Sanitizer
-if (IE_SANITIZER STREQUAL "THREAD")
-	message(WARNING "Building Illumination Engine with Thread Sanitizer active!")
-	add_compile_options("-fsanitize=thread" "-O2" "-g")
-	add_link_options("-fsanitize=thread")
-endif ()
-
-# Address Sanitizer
-if (IE_SANITIZER STREQUAL "ADDRESS")
-	message(WARNING "Building Illumination Engine with Address Sanitizer active!")
-	add_compile_options("-fsanitize=address" "-fno-omit-frame-pointer" "-O1")
-	add_link_options("-fsanitize=address")
-endif ()
-
-# Leak Sanitizer (included in Address Sanitizer)
-if (IE_SANITIZER STREQUAL "LEAK")
-	message(WARNING "Building Illumination Engine with Address(Leak) Sanitizer active!")
-	add_compile_options("-fsanitize=leak" "-fno-omit-frame-pointer" "-O1")
-	add_link_options("-fsanitize=leak")
-endif ()
-
-# Linker specification
-add_link_options("-fuse-ld=lld") # Use LLVM's lld linker for speed.
+#add_link_options("-fuse-ld=lld") # Use LLVM's lld linker for speed.
 
 
 add_subdirectory(ext)  # Generate external dependencies from source
