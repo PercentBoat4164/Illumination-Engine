@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.11 FATAL_ERROR)  # 3.11 is required for FetchContent
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)  # 3.14 is required for CPM
 project(IlluminationEngine VERSION 0.0.0)
 
 set(CMAKE_CXX_STANDARD 23)
 
 set(BUILD_SHARED_LIBS OFF)
 if (WIN32)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif ()
 
 # Detect compiler and OS
@@ -46,7 +46,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
 	# Added to prevent known errors from clouding the log.
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-else ()
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+elseif ()
 	message(WARNING "Unsupported compiler in use: ${CMAKE_CXX_COMPILER_ID}")
 endif ()
 

@@ -1,7 +1,7 @@
 set(IEGMOpenGLShaderSourceFiles
-  fragmentShader.frag
-  vertexShader.vert
-  )
+		fragmentShader.frag
+		vertexShader.vert
+		)
 
 add_custom_target(IEGMOpenGLShaders)  # Create the custom target
 

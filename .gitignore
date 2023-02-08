@@ -10,5 +10,5 @@
 /res/Shaders/*/*.spv
 # Ignore dependencies
 /ext/deps/
-# Ignore the download guard
-__DOWNLOAD_GUARD__
+# Ignore CPM
+/cmake/CPM.cmake
