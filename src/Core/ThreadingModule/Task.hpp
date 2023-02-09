@@ -5,6 +5,7 @@
 #include <coroutine>
 #include <functional>
 
+namespace IE::Core::Threading {
 class BaseTask {
 public:
     bool finished() {
@@ -38,3 +39,4 @@ class Task<void> : public BaseTask {
 public:
     void value(){};
 };
+}  // namespace IE::Core::Threading
