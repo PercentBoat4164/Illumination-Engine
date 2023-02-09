@@ -16,11 +16,10 @@ public:
         IE_DESCRIPTOR_SET_TYPE_PER_OBJECT
     };
 
-    IE::Graphics::Subpass             *m_subpass;
-    VkDescriptorPool                   m_pool;
-    VkDescriptorSet                    m_set;
-    std::vector<VkDescriptorSetLayout> m_layouts;
-    SetType                            m_type;
+    VkDescriptorPool m_pool;
+    VkDescriptorSet  m_set;
+    SetType          m_type;
+    RenderEngine    *m_linkedRenderEngine;
 
     DescriptorSet(SetType t_type);
 

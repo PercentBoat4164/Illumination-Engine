@@ -52,7 +52,7 @@ bool IE::Graphics::detail::BufferVulkan::_createBuffer(
 }
 
 bool IE::Graphics::detail::BufferVulkan::_destroyBuffer() {
-    vmaDestroyBuffer(m_linkedRenderEngine->getAllocator(), m_buffer, m_allocation);
+    if (m_buffer) vmaDestroyBuffer(m_linkedRenderEngine->getAllocator(), m_buffer, m_allocation);
     return true;
 }
 

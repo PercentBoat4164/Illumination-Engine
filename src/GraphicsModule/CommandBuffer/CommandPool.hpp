@@ -41,5 +41,6 @@ public:
     );
 
     ~CommandPool();
+    void destroy();
 };
 }  // namespace IE::Graphics

@@ -28,6 +28,7 @@ public:
     VkRenderPass                                        m_renderPass{};
     size_t                                              m_currentPass{};
     std::vector<std::shared_ptr<IE::Graphics::Subpass>> m_subpasses;
+    RenderEngine                                       *m_linkedRenderEngine;
 
     explicit RenderPass(Preset t_preset);
 

@@ -11,7 +11,7 @@ void IE::Graphics::DescriptorSet::build(
   IE::Graphics::Subpass                              *t_subpass,
   std::vector<std::shared_ptr<IE::Graphics::Shader>> &t_shaders
 ) {
-    m_subpass = t_subpass;
+    m_linkedRenderEngine = t_subpass->m_linkedRenderEngine;
 
     std::vector<VkDescriptorPoolSize> poolSizes;
 
@@ -42,24 +42,19 @@ void IE::Graphics::DescriptorSet::build(
       .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
       .pPoolSizes    = poolSizes.data()};
 
-    VkResult result{vkCreateDescriptorPool(
-      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-      &poolCreateInfo,
-      nullptr,
-      &m_pool
-    )};
+    VkResult result{
+      vkCreateDescriptorPool(m_linkedRenderEngine->m_device.device, &poolCreateInfo, nullptr, &m_pool)};
     if (result != VK_SUCCESS)
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+        m_linkedRenderEngine->getLogger().log(
           "Failed to create descriptor pool with error: " +
           IE::Graphics::RenderEngine::translateVkResultCodes(result)
         );
-    else
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
-          "Created Descriptor Pool"
-        );
+    else m_linkedRenderEngine->getLogger().log("Created Descriptor Pool");
 }
 
 void IE::Graphics::DescriptorSet::build(IE::Graphics::RenderEngine *t_engineLink) {
+    m_linkedRenderEngine = t_engineLink;
+
     std::vector<VkDescriptorPoolSize> poolSizes{};
     for (auto descriptor : PER_FRAME_DESCRIPTOR_SET_LAYOUT_INFO) {
         bool typeAlreadyExists{};
@@ -145,17 +140,10 @@ const std::vector<std::tuple<VkDescriptorType, uint32_t>>
 };
 
 void IE::Graphics::DescriptorSet::destroy() {
-    for (auto &layout : m_layouts)
-        vkDestroyDescriptorSetLayout(
-          m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-          layout,
-          nullptr
-        );
-    vkDestroyDescriptorPool(
-      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-      m_pool,
-      nullptr
-    );
+    if (m_pool) {
+        vkDestroyDescriptorPool(m_linkedRenderEngine->m_device.device, m_pool, nullptr);
+        m_pool = VK_NULL_HANDLE;
+    }
 }
 
 IE::Graphics::DescriptorSet::~DescriptorSet() {

@@ -11,7 +11,7 @@ IE::Graphics::Fence::Fence(IE::Graphics::RenderEngine *t_engineLink, bool t_sign
 IE::Graphics::Fence::~Fence() {
     std::lock_guard<std::mutex> lock(*fenceMutex);
     status = IE_FENCE_STATUS_INVALID;
-    vkDestroyFence(linkedRenderEngine->m_device.device, fence, nullptr);
+    if (fence) vkDestroyFence(linkedRenderEngine->m_device.device, fence, nullptr);
 }
 
 IE::Graphics::Fence::Fence(const IE::Graphics::Fence &t_other) {

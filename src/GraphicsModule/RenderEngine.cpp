@@ -340,6 +340,7 @@ IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
           // Needs the device to allocate a swapchain
           co_await IE::Core::Core::getThreadPool()->resumeAfter(device);
           engine->createSyncObjects();
+          engine->createSwapchain();
       },
       this,
       device
@@ -429,16 +430,20 @@ IE::Graphics::RenderEngine::~RenderEngine() {
     // Destroy all aspects before the other stuff.
     m_aspects.clear();
 
+    // Destroy the render pass series
+    m_renderPassSeries.destroy();
+
     m_imageAvailableSemaphores.clear();
     m_renderFinishedSemaphores.clear();
     m_inFlightFences.clear();
     m_imagesInFlight.clear();
     for (VkImageView swapchainImageView : m_swapchainImageViews)
-        vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
+        if (swapchainImageView) vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
     m_commandPools.clear();
     if (m_allocator != nullptr) vmaDestroyAllocator(m_allocator);
     if (m_swapchain != nullptr) vkb::destroy_swapchain(m_swapchain);
     if ((m_instance != nullptr) && (m_surface != nullptr)) vkb::destroy_surface(m_instance, m_surface);
+    m_engineDescriptor.destroy();
 
     if (m_device != nullptr) vkb::destroy_device(m_device);
     if (m_instance != nullptr) vkb::destroy_instance(m_instance);
@@ -456,12 +461,12 @@ IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
     return m_graphicsAPICallbackLog;
 }
 
-std::shared_ptr<IE::Graphics::CommandPool> IE::Graphics::RenderEngine::getCommandPool() {
+IE::Graphics::CommandPool *IE::Graphics::RenderEngine::getCommandPool() {
     static uint32_t             commandPoolIndex;
     static std::mutex           functionMutex;
     std::lock_guard<std::mutex> lock(functionMutex);
     commandPoolIndex %= m_commandPools.size();
-    return m_commandPools[commandPoolIndex++];
+    return m_commandPools[commandPoolIndex++].get();
 }
 
 std::shared_ptr<IE::Graphics::RenderEngine::AspectType>

@@ -32,16 +32,13 @@ void IE::Graphics::Shader::compile() {
       compiler.CompileGlslToSpv(str, m_kind, m_file->path.string().c_str(), options)};
 
     if (compilationResult.GetCompilationStatus() != shaderc_compilation_status_success)
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+        m_linkedRenderEngine->getLogger().log(
           "Shader Compiler encountered " + std::to_string(compilationResult.GetNumErrors()) + " error(s) and " +
             std::to_string(compilationResult.GetNumWarnings()) + " warning(s) in " + m_file->path.string() +
             ":\n" + compilationResult.GetErrorMessage().erase(compilationResult.GetErrorMessage().length() - 1),
           Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-    else
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
-          "Compiled Shader " + m_file->path.string()
-        );
+    else m_linkedRenderEngine->getLogger().log("Compiled Shader " + m_file->path.string());
 
     // reflect
     m_code = {compilationResult.begin(), compilationResult.end()};
@@ -55,20 +52,16 @@ void IE::Graphics::Shader::compile() {
       .flags    = 0x0,
       .codeSize = m_code.size() * 4,
       .pCode    = m_code.data()};
-    VkResult result{vkCreateShaderModule(
-      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-      &shaderModuleCreateInfo,
-      nullptr,
-      &m_module
-    )};
+    VkResult result{
+      vkCreateShaderModule(m_linkedRenderEngine->m_device.device, &shaderModuleCreateInfo, nullptr, &m_module)};
     if (result != VK_SUCCESS) {
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+        m_linkedRenderEngine->getLogger().log(
           "Failed to create shader module with error: " +
             IE::Graphics::RenderEngine::translateVkResultCodes(result),
           Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     }
-    m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Shader Module");
+    m_linkedRenderEngine->getLogger().log("Created Shader Module");
 }
 
 IE::Graphics::Shader::Shader(const std::filesystem::path &t_filename) :
@@ -186,8 +179,8 @@ std::vector<IE::Graphics::Shader::ReflectionInfo> IE::Graphics::Shader::getRefle
     return reflectedInfo;
 }
 
-void IE::Graphics::Shader::build(IE::Graphics::Subpass *t_subpass) {
-    m_subpass = t_subpass;
+void IE::Graphics::Shader::build(IE::Graphics::RenderEngine *t_engineLink) {
+    m_linkedRenderEngine = t_engineLink;
 }
 
 VkShaderStageFlagBits IE::Graphics::Shader::stageFromExecutionModel(spv::ExecutionModel model) {
@@ -213,7 +206,11 @@ VkShaderStageFlagBits IE::Graphics::Shader::stageFromExecutionModel(spv::Executi
 }
 
 void IE::Graphics::Shader::destroy() {
-    vkDestroyShaderModule(m_subpass->m_linkedRenderEngine->m_device.device, m_module, nullptr);
+    if (m_module) {
+        vkDestroyShaderModule(m_linkedRenderEngine->m_device.device, m_module, nullptr);
+        m_module = VK_NULL_HANDLE;
+    }
+    // todo Figure out why the `reflection` fails to destroy.
 }
 
 IE::Graphics::Shader::~Shader() {

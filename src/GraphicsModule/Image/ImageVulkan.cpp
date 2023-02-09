@@ -471,6 +471,9 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(
 }
 
 bool IE::Graphics::detail::ImageVulkan::_destroyImage() {
-    vmaDestroyImage(m_linkedRenderEngine->getAllocator(), m_id, m_allocation);
+    if (m_id) {
+        vmaDestroyImage(m_linkedRenderEngine->getAllocator(), m_id, m_allocation);
+        m_id = VK_NULL_HANDLE;
+    }
     return false;
 }

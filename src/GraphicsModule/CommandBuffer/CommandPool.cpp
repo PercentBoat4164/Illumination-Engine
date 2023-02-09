@@ -29,9 +29,11 @@ void IE::Graphics::CommandPool::create(
     else m_linkedRenderEngine->getLogger().log("Created CommandPool");
 }
 
-IE::Graphics::CommandPool::~CommandPool() {
-    for (const std::shared_ptr<IE::Graphics::CommandBuffer> &commandBuffer : m_commandBuffers)
-        commandBuffer->destroy();
+void IE::Graphics::CommandPool::destroy() {
     m_commandBuffers.clear();
-    vkDestroyCommandPool(m_linkedRenderEngine->m_device.device, m_commandPool, nullptr);
+    if (m_commandPool) vkDestroyCommandPool(m_linkedRenderEngine->m_device.device, m_commandPool, nullptr);
+}
+
+IE::Graphics::CommandPool::~CommandPool() {
+    destroy();
 }

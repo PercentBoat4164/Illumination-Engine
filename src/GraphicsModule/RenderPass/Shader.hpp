@@ -31,7 +31,7 @@ public:
     shaderc_shader_kind                              m_kind;
     VkShaderStageFlagBits                            m_stage;
     VkShaderModule                                   m_module{};
-    IE::Graphics::Subpass                           *m_subpass{};
+    IE::Graphics::RenderEngine                      *m_linkedRenderEngine;
 
     void compile();
 
@@ -41,7 +41,7 @@ public:
 
     std::vector<ReflectionInfo> getReflectionInfo();
 
-    void build(Subpass *t_subpass);
+    void build(IE::Graphics::RenderEngine *t_engineLink);
 
     void destroy();
 

@@ -7,16 +7,15 @@ void IE::Graphics::Framebuffer::build(
   IE::Graphics::RenderPass                 *t_renderPass,
   std::vector<IE::Graphics::Image::Preset> &t_attachmentPresets
 ) {
-    m_renderPass    = t_renderPass;
-    m_resolution[0] = m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[0];
-    m_resolution[1] = m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[1];
+    m_linkedRenderEngine = t_renderPass->m_linkedRenderEngine;
+    m_renderPass         = t_renderPass;
+    m_resolution[0]      = m_linkedRenderEngine->m_currentResolution[0];
+    m_resolution[1]      = m_linkedRenderEngine->m_currentResolution[1];
 
     IE::Core::MultiDimensionalVector<unsigned char> tmp{};
     attachments.reserve(t_attachmentPresets.size());
     for (size_t i{}; i < t_attachmentPresets.size(); ++i) {
-        attachments.push_back(std::make_shared<IE::Graphics::detail::ImageVulkan>(
-          m_renderPass->m_renderPassSeries->m_linkedRenderEngine
-        ));
+        attachments.push_back(std::make_shared<IE::Graphics::detail::ImageVulkan>(m_linkedRenderEngine));
         attachments[i]->createImage(t_attachmentPresets[i], 0x0, tmp);
     }
 
@@ -39,18 +38,14 @@ void IE::Graphics::Framebuffer::build(
       .width           = static_cast<uint32_t>(m_resolution[0]),
       .height          = static_cast<uint32_t>(m_resolution[1]),
       .layers          = 0x1};
-    VkResult result{vkCreateFramebuffer(
-      m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-      &framebufferCreateInfo,
-      nullptr,
-      &m_framebuffer
-    )};
+    VkResult result{
+      vkCreateFramebuffer(m_linkedRenderEngine->m_device.device, &framebufferCreateInfo, nullptr, &m_framebuffer)};
     if (result != VK_SUCCESS)
-        m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+        m_linkedRenderEngine->getLogger().log(
           "Failed to create framebuffer! Error: " + IE::Graphics::RenderEngine::translateVkResultCodes(result),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-    else m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Framebuffer");
+    m_linkedRenderEngine->getLogger().log("Created Framebuffer");
 }
 
 IE::Graphics::Framebuffer::~Framebuffer() {
@@ -59,9 +54,8 @@ IE::Graphics::Framebuffer::~Framebuffer() {
 
 void IE::Graphics::Framebuffer::destroy() {
     for (auto &attachment : attachments) attachment->destroyImage();
-    vkDestroyFramebuffer(
-      m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-      m_framebuffer,
-      nullptr
-    );
+    if (m_framebuffer) {
+        vkDestroyFramebuffer(m_linkedRenderEngine->m_device.device, m_framebuffer, nullptr);
+        m_framebuffer = VK_NULL_HANDLE;
+    }
 }

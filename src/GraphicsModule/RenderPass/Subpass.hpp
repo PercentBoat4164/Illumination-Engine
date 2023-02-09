@@ -83,7 +83,6 @@ public:
 
     void destroy();
 
-    void execute();
     void execute(CommandBuffer t_masterCommandBuffer);
 };
 }  // namespace IE::Graphics

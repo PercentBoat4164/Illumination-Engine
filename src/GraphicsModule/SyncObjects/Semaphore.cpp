@@ -38,7 +38,7 @@ void IE::Graphics::Semaphore::blocking_wait() {
 IE::Graphics::Semaphore::~Semaphore() {
     std::lock_guard<std::mutex> lock(*semaphoreMutex);
     status = IE_SEMAPHORE_STATUS_INVALID;
-    vkDestroySemaphore(linkedRenderEngine->m_device.device, semaphore, nullptr);
+    if (semaphore) vkDestroySemaphore(linkedRenderEngine->m_device.device, semaphore, nullptr);
 }
 
 IE::Graphics::Semaphore::Semaphore(const IE::Graphics::Semaphore &t_other) {

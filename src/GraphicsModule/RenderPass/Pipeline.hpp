@@ -13,13 +13,13 @@ public:
     VkPipelineLayout m_layout{};
     VkPipelineCache  m_cache{VK_NULL_HANDLE};
     Subpass         *m_subpass;
-
-    Pipeline();
+    RenderEngine    *m_linkedRenderEngine{};
 
     ~Pipeline();
 
     void
     build(IE::Graphics::Subpass *t_subpass, const std::vector<std::shared_ptr<IE::Graphics::Shader>> &t_shaders);
+
     void destroy();
 };
 }  // namespace IE::Graphics

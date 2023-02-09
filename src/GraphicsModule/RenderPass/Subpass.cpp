@@ -11,8 +11,6 @@ IE::Graphics::Subpass::Subpass(
 ) :
         m_preset(t_preset),
         shaders(t_shaders) {
-    for (auto &shader : shaders) shader->m_subpass = this;
-    pipeline.m_subpass = this;
 }
 
 auto IE::Graphics::Subpass::addOrModifyAttachment(
@@ -35,9 +33,11 @@ auto IE::Graphics::Subpass::addOrModifyAttachment(
 }
 
 void IE::Graphics::Subpass::build(IE::Graphics::RenderPass *t_renderPass) {
-    m_renderPass = t_renderPass;
+    m_linkedRenderEngine = t_renderPass->m_linkedRenderEngine;
+    m_renderPass         = t_renderPass;
+
     for (auto &shader : shaders) {
-        shader->build(this);
+        shader->build(m_linkedRenderEngine);
         shader->compile();
     }
     descriptorSet.build(this, shaders);
@@ -45,6 +45,16 @@ void IE::Graphics::Subpass::build(IE::Graphics::RenderPass *t_renderPass) {
 }
 
 void IE::Graphics::Subpass::registerRenderable(IE::Graphics::Renderable *t_renderable) {
+    if (t_renderable->m_linkedRenderEngine != m_linkedRenderEngine) {
+        m_linkedRenderEngine->getLogger().log(
+          "Attempted to link a foreign renderable to this render engine!",
+          Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
+        t_renderable->m_linkedRenderEngine->getLogger().log(
+          "Attempted to link this renderable to a foreign render engine!",
+          Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
+    }
     auto buffer{std::make_shared<CommandBuffer>(m_linkedRenderEngine->getCommandPool())};
 
     buffer->allocate(IE_COMMAND_BUFFER_ALLOCATE_SECONDARY);

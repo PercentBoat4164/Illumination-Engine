@@ -12,7 +12,8 @@ void IE::Graphics::RenderPass::build(
   std::vector<VkSubpassDependency>         &t_subpassDependency,
   std::vector<IE::Graphics::Image::Preset> &t_attachmentPresets
 ) {
-    m_renderPassSeries = t_renderPassSeries;
+    m_linkedRenderEngine = t_renderPassSeries->m_linkedRenderEngine;
+    m_renderPassSeries   = t_renderPassSeries;
 
     // Build this render pass
     VkRenderPassCreateInfo renderPassCreateInfo{
@@ -25,18 +26,14 @@ void IE::Graphics::RenderPass::build(
       .pSubpasses      = t_subpassDescriptions.data(),
       .dependencyCount = static_cast<uint32_t>(t_subpassDependency.size()),
       .pDependencies   = t_subpassDependency.data()};
-    VkResult result{vkCreateRenderPass(
-      m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-      &renderPassCreateInfo,
-      nullptr,
-      &m_renderPass
-    )};
+    VkResult result{
+      vkCreateRenderPass(m_linkedRenderEngine->m_device.device, &renderPassCreateInfo, nullptr, &m_renderPass)};
     if (result != VK_SUCCESS)
-        m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+        m_linkedRenderEngine->getLogger().log(
           "Failed to create Render Pass with error: " + RenderEngine::translateVkResultCodes(result),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-    else m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Render Pass");
+    else m_linkedRenderEngine->getLogger().log("Created Render Pass");
 
     // Build all the subpasses controlled by this render pass.
     for (auto &subpass : m_subpasses) subpass->build(this);
@@ -55,5 +52,8 @@ IE::Graphics::RenderPass::~RenderPass() {
 void IE::Graphics::RenderPass::destroy() {
     for (auto &subpass : m_subpasses) subpass->destroy();
     m_framebuffer.destroy();
-    vkDestroyRenderPass(m_renderPassSeries->m_linkedRenderEngine->m_device.device, m_renderPass, nullptr);
+    if (m_renderPass) {
+        vkDestroyRenderPass(m_linkedRenderEngine->m_device.device, m_renderPass, nullptr);
+        m_renderPass = VK_NULL_HANDLE;
+    }
 }

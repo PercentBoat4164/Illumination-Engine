@@ -113,8 +113,15 @@ void IE::Graphics::CommandBuffer::record(
 }
 
 void IE::Graphics::CommandBuffer::free(std::lock_guard<std::mutex> &lock) {
-    vkFreeCommandBuffers(m_linkedRenderEngine->m_device.device, m_commandPool->m_commandPool, 1, &m_commandBuffer);
-    m_status = IE_COMMAND_BUFFER_STATE_NONE;
+    if (m_status > IE_COMMAND_BUFFER_STATE_NONE) {
+        vkFreeCommandBuffers(
+          m_linkedRenderEngine->m_device.device,
+          m_commandPool->m_commandPool,
+          1,
+          &m_commandBuffer
+        );
+        m_status = IE_COMMAND_BUFFER_STATE_NONE;
+    }
 }
 
 void IE::Graphics::CommandBuffer::free() {
@@ -122,7 +129,7 @@ void IE::Graphics::CommandBuffer::free() {
     free(lock);
 }
 
-IE::Graphics::CommandBuffer::CommandBuffer(std::shared_ptr<IE::Graphics::CommandPool> t_parentCommandPool) :
+IE::Graphics::CommandBuffer::CommandBuffer(IE::Graphics::CommandPool *t_parentCommandPool) :
         m_commandPool(t_parentCommandPool),
         m_linkedRenderEngine(t_parentCommandPool->m_linkedRenderEngine),
         m_status(IE_COMMAND_BUFFER_STATE_NONE) {
@@ -407,4 +414,8 @@ void IE::Graphics::CommandBuffer::recordExecuteSecondaryCommandBuffers(
     std::vector<VkCommandBuffer> commandBuffers(t_commandBuffers.size());
     for (size_t i{}; i < t_commandBuffers.size(); ++i) commandBuffers[i] = t_commandBuffers[i]->m_commandBuffer;
     recordExecuteSecondaryCommandBuffers(commandBuffers);
+}
+
+IE::Graphics::CommandBuffer::~CommandBuffer() {
+    destroy();
 }

@@ -156,10 +156,10 @@ public:
 
     std::shared_ptr<AspectType> getAspect(const std::string &t_id);
 
-    void                         createRenderPasses();
-    VkFormat                     getColorFormat();
-    Settings                    &getSettings();
-    void                         createDescriptorSets();
-    std::shared_ptr<CommandPool> getCommandPool();
+    void         createRenderPasses();
+    VkFormat     getColorFormat();
+    Settings    &getSettings();
+    void         createDescriptorSets();
+    CommandPool *getCommandPool();
 };
 }  // namespace IE::Graphics

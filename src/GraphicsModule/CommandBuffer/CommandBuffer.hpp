@@ -42,14 +42,18 @@ class CommandBuffer {
     using RecordFlags = uint64_t;
 
 public:
-    VkCommandBuffer              m_commandBuffer{};
-    std::shared_ptr<CommandPool> m_commandPool{};
-    IE::Graphics::RenderEngine  *m_linkedRenderEngine{};
-    Status                       m_status{};
-    RecordFlags                  m_recordFlags{};
-    AllocationFlags              m_allocationFlags{};
+    VkCommandBuffer             m_commandBuffer{};
+    CommandPool                *m_commandPool{};
+    IE::Graphics::RenderEngine *m_linkedRenderEngine{};
+    Status                      m_status{};
+    RecordFlags                 m_recordFlags{};
+    AllocationFlags             m_allocationFlags{};
 
-    CommandBuffer(std::shared_ptr<IE::Graphics::CommandPool> t_parentCommandPool);
+    CommandBuffer(IE::Graphics::CommandPool *t_parentCommandPool);
+
+    ~CommandBuffer();
+
+    void destroy();
 
     /**
      * @brief Allocate this command buffer as a primary command buffer.
@@ -138,8 +142,6 @@ public:
     void recordSetScissor(uint32_t firstScissor, uint32_t scissorCount, const VkRect2D *pScissors);
 
     void recordEndRenderPass();
-
-    void destroy();
 
     CommandBuffer(const CommandBuffer &source) = delete;
 

@@ -28,5 +28,7 @@ public:
     std::vector<VkCommandBuffer> getCommands();
 
     void load();
+
+    ~Renderable() = default;
 };
 }  // namespace IE::Graphics

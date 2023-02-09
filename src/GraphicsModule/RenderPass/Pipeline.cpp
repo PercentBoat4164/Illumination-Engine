@@ -8,18 +8,15 @@ void IE::Graphics::Pipeline::build(
   IE::Graphics::Subpass                      *t_subpass,
   const std::vector<std::shared_ptr<Shader>> &t_shaders
 ) {
-    m_subpass = t_subpass;
+    m_linkedRenderEngine = t_subpass->m_linkedRenderEngine;
+    m_subpass            = t_subpass;
 
     // Build pipeline layout
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
     std::vector<VkPushConstantRange>   pushConstantRanges;
 
     for (size_t i{}; i < 4; ++i)
-        descriptorSetLayouts.push_back(IE::Graphics::DescriptorSet::getLayout(
-          m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine,
-          i,
-          t_shaders
-        ));
+        descriptorSetLayouts.push_back(IE::Graphics::DescriptorSet::getLayout(m_linkedRenderEngine, i, t_shaders));
 
     VkPipelineLayoutCreateInfo layoutCreateInfo{
       .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -30,29 +27,18 @@ void IE::Graphics::Pipeline::build(
       .pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size()),
       .pPushConstantRanges    = pushConstantRanges.data()};
 
-    VkResult layoutResult{vkCreatePipelineLayout(
-      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-      &layoutCreateInfo,
-      nullptr,
-      &m_layout
-    )};
+    VkResult layoutResult{
+      vkCreatePipelineLayout(m_linkedRenderEngine->m_device.device, &layoutCreateInfo, nullptr, &m_layout)};
     // As they are no longer needed, the descriptor set layouts get destroyed
     for (auto &layout : descriptorSetLayouts)
-        vkDestroyDescriptorSetLayout(
-          m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-          layout,
-          nullptr
-        );
+        vkDestroyDescriptorSetLayout(m_linkedRenderEngine->m_device.device, layout, nullptr);
     if (layoutResult != VK_SUCCESS)
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+        m_linkedRenderEngine->getLogger().log(
           "Failed to create pipeline layout with error: " +
             IE::Graphics::RenderEngine::translateVkResultCodes(layoutResult),
           Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-    else
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
-          "Created Pipeline Layout"
-        );
+    else m_linkedRenderEngine->getLogger().log("Created Pipeline Layout");
 
     // Build pipeline cache
     VkPipelineCacheCreateInfo cacheCreateInfo{
@@ -62,21 +48,15 @@ void IE::Graphics::Pipeline::build(
       .initialDataSize = 0x0,
       .pInitialData    = nullptr,
     };
-    VkResult cacheResult{vkCreatePipelineCache(
-      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
-      &cacheCreateInfo,
-      nullptr,
-      &m_cache
-    )};
+    VkResult cacheResult{
+      vkCreatePipelineCache(m_linkedRenderEngine->m_device.device, &cacheCreateInfo, nullptr, &m_cache)};
     if (cacheResult != VK_SUCCESS)
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+        m_linkedRenderEngine->getLogger().log(
           "Failed to create pipeline cache with error: " +
             IE::Graphics::RenderEngine::translateVkResultCodes(cacheResult),
           Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-    else
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Pipeline Cache"
-        );
+    else m_linkedRenderEngine->getLogger().log("Created Pipeline Cache");
 
     // Pipeline shader stage
     std::vector<VkSpecializationMapEntry> specializationMaps(0);
@@ -139,24 +119,18 @@ void IE::Graphics::Pipeline::build(
 
     // Pipeline viewport state
     std::vector<VkViewport> viewports{
-      {.x     = 0,
-       .y     = 0,
-       .width = static_cast<float>(
-         m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[0]
-       ), .height = static_cast<float>(
-         m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[1]
-       ), .minDepth = 0,
+      {.x        = 0,
+       .y        = 0,
+       .width    = static_cast<float>(m_linkedRenderEngine->m_currentResolution[0]),
+       .height   = static_cast<float>(m_linkedRenderEngine->m_currentResolution[1]),
+       .minDepth = 0,
        .maxDepth = 1},
     };
     std::vector<VkRect2D> scissors{
       {
        {.x = 0, .y = 0},
-       {.width = static_cast<uint32_t>(
-           m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[0]
-         ),
-         .height = static_cast<uint32_t>(
-           m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_currentResolution[1]
-         )},
+       {.width  = static_cast<uint32_t>(m_linkedRenderEngine->m_currentResolution[0]),
+         .height = static_cast<uint32_t>(m_linkedRenderEngine->m_currentResolution[1])},
        }
     };
 
@@ -291,7 +265,7 @@ void IE::Graphics::Pipeline::build(
     };
 
     VkResult result{vkCreateGraphicsPipelines(
-      m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->m_device.device,
+      m_linkedRenderEngine->m_device.device,
       m_cache,
       1,
       &pipelineCreateInfo,
@@ -299,7 +273,7 @@ void IE::Graphics::Pipeline::build(
       &m_pipeline
     )};
     if (result != VK_SUCCESS)
-        m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log(
+        m_linkedRenderEngine->getLogger().log(
           "Failed to create graphics pipeline! Error: " +
             IE::Graphics::RenderEngine::makeErrorMessage(
               IE::Graphics::RenderEngine::translateVkResultCodes(result),
@@ -310,16 +284,23 @@ void IE::Graphics::Pipeline::build(
             ),
           Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-    else m_subpass->m_renderPass->m_renderPassSeries->m_linkedRenderEngine->getLogger().log("Created Pipeline");
+    else m_linkedRenderEngine->getLogger().log("Created Pipeline");
 }
 
 void IE::Graphics::Pipeline::destroy() {
-    vkDestroyPipelineLayout(m_subpass->m_linkedRenderEngine->m_device.device, m_layout, nullptr);
-    vkDestroyPipelineCache(m_subpass->m_linkedRenderEngine->m_device.device, m_cache, nullptr);
-    vkDestroyPipeline(m_subpass->m_linkedRenderEngine->m_device.device, m_pipeline, nullptr);
+    if (m_layout) {
+        vkDestroyPipelineLayout(m_linkedRenderEngine->m_device.device, m_layout, nullptr);
+        m_layout = VK_NULL_HANDLE;
+    }
+    if (m_cache) {
+        vkDestroyPipelineCache(m_linkedRenderEngine->m_device.device, m_cache, nullptr);
+        m_cache = VK_NULL_HANDLE;
+    }
+    if (m_pipeline) {
+        vkDestroyPipeline(m_linkedRenderEngine->m_device.device, m_pipeline, nullptr);
+        m_pipeline = VK_NULL_HANDLE;
+    }
 }
-
-IE::Graphics::Pipeline::Pipeline() = default;
 
 IE::Graphics::Pipeline::~Pipeline() {
     destroy();
