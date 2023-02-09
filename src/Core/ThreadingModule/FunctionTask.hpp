@@ -5,6 +5,7 @@
 #include <functional>
 #include <mutex>
 
+namespace IE::Core::Threading {
 template<typename T>
 class FunctionTask : public Task<T> {
 public:
@@ -28,3 +29,4 @@ public:
 
     std::function<T()> m_wrappedFunction;
 };
+}  // namespace IE::Core::Threading

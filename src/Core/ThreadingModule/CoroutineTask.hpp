@@ -6,6 +6,7 @@
 #include <functional>
 #include <mutex>
 
+namespace IE::Core::Threading {
 template<typename T>
 class CoroutineTask : public Task<T> {
 public:
@@ -65,7 +66,7 @@ public:
         if (!*(BaseTask::m_finished)) {
             std::mutex                   mutex;
             std::unique_lock<std::mutex> lock(mutex);
-            BaseTask::m_finishedNotifier->wait(lock);
+            BaseTask::m_finishedNotifier->wait(lock, [&] { return BaseTask::m_finished->operator bool(); });
         }
     }
 
@@ -120,13 +121,14 @@ public:
     }
 
     void wait() override {
-        if (!*(BaseTask::m_finished)) {
+        if (!*m_finished) {
             std::mutex                   mutex;
             std::unique_lock<std::mutex> lock(mutex);
-            BaseTask::m_finishedNotifier->wait(lock);
+            m_finishedNotifier->wait(lock, [&] { return m_finished->operator bool(); });
         }
     }
 
 private:
     std::coroutine_handle<promise_type> m_handle;
 };
+}  // namespace IE::Core::Threading

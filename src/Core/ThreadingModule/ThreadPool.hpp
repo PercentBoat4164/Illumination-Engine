@@ -12,15 +12,24 @@
 #include <coroutine>
 #include <functional>
 
-namespace IE::Core {
+namespace IE::Core::Threading {
 class ThreadPool;
 
 struct ResumeAfter {
     ResumeAfter() = default;
 
     template<typename... Args>
-    ResumeAfter(ThreadPool *t_threadPool, Args &&...args) :
-            m_ready([... args = std::forward<Args>(args)] { return (... && args->finished()); }),
+    ResumeAfter(ThreadPool *t_threadPool, Args... args) :
+            m_ready([args...] { return (... && args->finished()); }),
+            m_threadPool(t_threadPool) {
+    }
+
+    ResumeAfter(ThreadPool *t_threadPool, std::vector<std::shared_ptr<BaseTask>> t_tasks) :
+            m_ready([t_tasks] {
+                return std::all_of(t_tasks.begin(), t_tasks.end(), [](std::shared_ptr<BaseTask> task) {
+                    return task->finished();
+                });
+            }),
             m_threadPool(t_threadPool) {
     }
 
@@ -46,16 +55,17 @@ private:
 
 class Worker {
 public:
-    Worker(ThreadPool *t_threadPool);
+    explicit Worker(ThreadPool *t_threadPool);
 
-    ThreadPool *m_threadPool;
+    Worker() = default;
+
+    void start(ThreadPool *t_threadPool);
 };
 
 class ThreadPool {
     std::vector<std::thread>         m_workers;
     Queue<std::shared_ptr<BaseTask>> m_activeQueue;
     Pool<ResumeAfter>                m_suspendedPool;
-    std::mutex                       m_workAssignmentMutex;
     std::condition_variable          m_workAssignmentConditionVariable;
     std::atomic<bool>                m_shutdown{false};
 
@@ -65,13 +75,21 @@ public:
         for (; threads > 0; --threads) m_workers.emplace_back([this] { Worker(this); });
     }
 
+    template<typename T>
+    auto submit(CoroutineTask<T> &&f) -> std::shared_ptr<Task<T>> {
+        auto job{std::make_shared<CoroutineTask<T>>(f)};
+        job->connectHandle();
+        m_activeQueue.push(std::static_pointer_cast<BaseTask>(job));
+        m_workAssignmentConditionVariable.notify_one();
+        return std::static_pointer_cast<Task<T>>(job);
+    }
+
     template<typename T, typename... Args>
 
         requires requires(T &&f, Args &&...args) { typename decltype(f(args...))::ReturnType; }
 
     auto submit(T &&f, Args &&...args) -> std::shared_ptr<Task<typename decltype(f(args...))::ReturnType>> {
-        using ReturnType = typename decltype(f(args...))::ReturnType;
-        auto job{std::make_shared<CoroutineTask<ReturnType>>(f(args...))};
+        auto job{std::make_shared<CoroutineTask<typename decltype(f(args...))::ReturnType>>(f(args...))};
         job->connectHandle();
         m_activeQueue.push(std::static_pointer_cast<BaseTask>(job));
         m_workAssignmentConditionVariable.notify_one();
@@ -89,8 +107,12 @@ public:
     }
 
     template<typename... Args>
-    ResumeAfter resumeAfter(Args &&...args) {
-        return ResumeAfter(this, args...);
+    ResumeAfter resumeAfter(Args... args) {
+        return {this, args...};
+    }
+
+    ResumeAfter resumeAfter(std::vector<std::shared_ptr<BaseTask>> t_tasks) {
+        return {this, t_tasks};
     }
 
     ~ThreadPool() {
@@ -100,7 +122,11 @@ public:
             if (thread.joinable()) thread.join();
     }
 
-    friend Worker::Worker(ThreadPool *t_threadPool);
+    uint32_t getWorkerCount() {
+        return m_workers.size();
+    }
+
+    friend void Worker::start(ThreadPool *t_threadPool);
     friend void ResumeAfter::await_suspend(std::coroutine_handle<> t_handle);
 };
-}  // namespace IE::Core
+}  // namespace IE::Core::Threading

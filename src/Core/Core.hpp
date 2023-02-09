@@ -56,9 +56,9 @@ public:
 
     static IE::Core::Window *getWindow(GLFWwindow *t_window);
 
-    static Logger     *getLogger();
-    static FileSystem *getFileSystem();
-    static ThreadPool *getThreadPool();
+    static Logger                *getLogger();
+    static FileSystem            *getFileSystem();
+    static Threading::ThreadPool *getThreadPool();
 
 private:
     static IE::Core::Logger                                    m_logger;
@@ -66,7 +66,7 @@ private:
     static std::unordered_map<std::string, IE::Core::Engine *> m_engines;
     static std::mutex                                          m_windowsMutex;
     static std::unordered_map<GLFWwindow *, IE::Core::Window>  m_windows;
-    static ThreadPool                                          m_threadPool;
+    static Threading::ThreadPool                               m_threadPool;
     static FileSystem                                          m_filesystem;
 
     Core(const std::filesystem::path &t_path) {
