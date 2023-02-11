@@ -48,7 +48,7 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
 #endif
 
     // Build the instance and check for errors.
-    vkb::detail::Result<vkb::Instance> instanceBuilder = builder.build();
+    vkb::Result<vkb::Instance> instanceBuilder = builder.build();
     if (!instanceBuilder) {
         settings->logger.log(
 
@@ -135,7 +135,7 @@ vkb::Device IERenderEngine::setUpDevice(
     selector.prefer_gpu_device_type(vkb::PreferredDeviceType::discrete);
 
     // Set surface for physical device.
-    vkb::detail::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(surface).select();
+    vkb::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(surface).select();
 
     // Prepare to build logical device
     vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
@@ -144,7 +144,7 @@ vkb::Device IERenderEngine::setUpDevice(
     if (desiredExtensionFeatures != nullptr) logicalDeviceBuilder.add_pNext(desiredExtensionFeatures);
 
     // Build logical device.
-    vkb::detail::Result<vkb::Device> logicalDevice = logicalDeviceBuilder.build();
+    vkb::Result<vkb::Device> logicalDevice = logicalDeviceBuilder.build();
     if (!logicalDevice) {
         // Failed? Report the error.
         settings->logger.log(
@@ -183,7 +183,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
       .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     if (useOldSwapchain)  // Use the old swapchain if it exists and its usage was requested.
         swapchainBuilder.set_old_swapchain(swapchain);
-    vkb::detail::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
+    vkb::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
     if (!thisSwapchain) {
         // Failure! Log it then continue without deleting the old swapchain.
         settings->logger.log(
@@ -223,29 +223,29 @@ void IERenderEngine::createSyncObjects() {
 }
 
 void IERenderEngine::createCommandPools() {
-    IECommandPool::CreateInfo    commandPoolCreateInfo{};
-    vkb::detail::Result<VkQueue> graphicsQueueDetails = device.get_queue(vkb::QueueType::graphics);
+    IECommandPool::CreateInfo commandPoolCreateInfo{};
+    vkb::Result<VkQueue>      graphicsQueueDetails = device.get_queue(vkb::QueueType::graphics);
     if (graphicsQueueDetails.has_value()) graphicsQueue = graphicsQueueDetails.value();
     if (graphicsQueue != nullptr) {
         graphicsCommandPool                = std::make_shared<IECommandPool>();
         commandPoolCreateInfo.commandQueue = vkb::QueueType::graphics;
         graphicsCommandPool->create(this, &commandPoolCreateInfo);
     }
-    vkb::detail::Result<VkQueue> presentQueueDetails = device.get_queue(vkb::QueueType::present);
+    vkb::Result<VkQueue> presentQueueDetails = device.get_queue(vkb::QueueType::present);
     if (presentQueueDetails.has_value()) presentQueue = presentQueueDetails.value();
     if (presentQueue != nullptr) {
         presentCommandPool                 = std::make_shared<IECommandPool>();
         commandPoolCreateInfo.commandQueue = vkb::QueueType::present;
         presentCommandPool->create(this, &commandPoolCreateInfo);
     }
-    vkb::detail::Result<VkQueue> transferQueueDetails = device.get_queue(vkb::QueueType::transfer);
+    vkb::Result<VkQueue> transferQueueDetails = device.get_queue(vkb::QueueType::transfer);
     if (transferQueueDetails.has_value()) transferQueue = transferQueueDetails.value();
     if (transferQueue != nullptr) {
         transferCommandPool                = std::make_shared<IECommandPool>();
         commandPoolCreateInfo.commandQueue = vkb::QueueType::transfer;
         transferCommandPool->create(this, &commandPoolCreateInfo);
     }
-    vkb::detail::Result<VkQueue> computeQueueDetails = device.get_queue(vkb::QueueType::compute);
+    vkb::Result<VkQueue> computeQueueDetails = device.get_queue(vkb::QueueType::compute);
     if (computeQueueDetails.has_value()) computeQueue = computeQueueDetails.value();
     if (computeQueue != nullptr) {
         computeCommandPool                 = std::make_shared<IECommandPool>();

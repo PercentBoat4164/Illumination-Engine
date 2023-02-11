@@ -1,6 +1,6 @@
 set(IELogModuleSourceFiles  # Gather sources
-		IELogger.cpp
-		)
+        IELogger.cpp
+        )
 
 # Create and define properties for the library
 add_library(IELogModule ${IELogModuleSourceFiles})
