@@ -739,7 +739,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
 #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy. Put into macOS only codeblock.
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy.
     glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);    // Use Core Profile by default.
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
@@ -781,7 +781,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );
     this->settings->logger.log(
-      API.name + " v" + API.version.name,
+      API.name + " v" + API.version.name + "@" + reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION)),
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );
 }
