@@ -223,7 +223,7 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
           .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
         if (m_swapchain != nullptr)  // Use the old swapchain if it exists.
             swapchainBuilder.set_old_swapchain(m_swapchain);
-        vkb::detail::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
+        vkb::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
         if (!thisSwapchain) {
             m_graphicsAPICallbackLog.log(
               "Failed to create swapchain! Error: " + thisSwapchain.error().message(),

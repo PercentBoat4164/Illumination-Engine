@@ -139,7 +139,7 @@ CPMAddPackage("gh:assimp/assimp@5.2.5")
 CPMAddPackage("gh:g-truc/glm#master")
 CPMAddPackage("gh:glfw/glfw#3.3.8")
 CPMAddPackage("gh:gabime/spdlog@1.11.0")
-CPMAddPackage("gh:charles-lunarg/vk-bootstrap@0.6")
+CPMAddPackage("gh:charles-lunarg/vk-bootstrap@0.7")
 CPMAddPackage("gh:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@3.0.1")
 CPMAddPackage("gh:KhronosGroup/SPIRV-Cross#main")  # This should be main. The latest guaranteed working version is kept there. All tags are for older versions.
 

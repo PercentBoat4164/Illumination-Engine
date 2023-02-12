@@ -32,9 +32,6 @@ set(IE_PREFER_LOCAL_LIBS ON)
 
 # Compilation and linking options
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	# Needed for compilation success.
-	add_compile_options("-Wno-deprecated-non-prototype")
-
 	# Added to prevent known errors from clouding the log.
 	add_compile_options("-Wno-nullability-completeness")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
