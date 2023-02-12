@@ -1,7 +1,7 @@
 set(IEGMVulkanShaderSourceFiles  # Gather sources
-		fragmentShader.frag
-		vertexShader.vert
-		)
+        fragmentShader.frag
+        vertexShader.vert
+        )
 
 add_custom_target(IEGMVulkanShaders)  # Create the custom target
 

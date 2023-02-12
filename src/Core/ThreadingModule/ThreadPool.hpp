@@ -6,11 +6,15 @@
 #include "Queue.hpp"
 #include "Task.hpp"
 
-#include <any>
+#if defined(AppleClang)
+#    include <experimental/coroutine>
+#else
+#    include <coroutine>
+#endif
 #include <atomic>
 #include <condition_variable>
-#include <coroutine>
 #include <functional>
+#include <thread>
 
 namespace IE::Core::Threading {
 class ThreadPool;
@@ -38,7 +42,11 @@ struct ResumeAfter {
         return m_ready();
     }
 
-    void await_suspend(std::coroutine_handle<> t_handle);
+#if defined(AppleClang)
+    void await_suspend(std::experimental::coroutine_handle<> t_handle);
+#else
+    void                    await_suspend(std::coroutine_handle<> t_handle);
+#endif
 
     void await_resume() {
     }
@@ -48,25 +56,37 @@ struct ResumeAfter {
     }
 
 private:
-    ThreadPool             *m_threadPool;
-    std::function<bool()>   m_ready;
+    ThreadPool           *m_threadPool;
+    std::function<bool()> m_ready;
+#if defined(AppleClang)
+    std::experimental::coroutine_handle<> m_handle;
+#else
     std::coroutine_handle<> m_handle;
+#endif
 };
 
 class Worker {
 public:
-    Worker(ThreadPool *t_threadPool);
+    explicit Worker(ThreadPool *t_threadPool);
+
+    Worker() = default;
+
+    void start(ThreadPool *t_threadPool);
 };
 
 class ThreadPool {
     std::vector<std::thread>         m_workers;
     Queue<std::shared_ptr<BaseTask>> m_activeQueue;
     Pool<ResumeAfter>                m_suspendedPool;
-    std::condition_variable          m_workAssignmentConditionVariable;
+    std::condition_variable_any      m_workAssignmentConditionVariable;
     std::atomic<bool>                m_shutdown{false};
 
 public:
+#if defined(AppleClang)
     explicit ThreadPool(size_t threads = std::thread::hardware_concurrency()) {
+#else
+    explicit ThreadPool(size_t threads = std::thread::hardware_concurrency()) {
+#endif
         m_workers.reserve(threads);
         for (; threads > 0; --threads) m_workers.emplace_back([this] { Worker(this); });
     }
@@ -122,7 +142,11 @@ public:
         return m_workers.size();
     }
 
-    friend Worker::Worker(ThreadPool *t_threadPool);
+    friend void Worker::start(ThreadPool *t_threadPool);
+#if defined(AppleClang)
+    friend void ResumeAfter::await_suspend(std::experimental::coroutine_handle<> t_handle);
+#else
     friend void ResumeAfter::await_suspend(std::coroutine_handle<> t_handle);
+#endif
 };
 }  // namespace IE::Core::Threading
