@@ -166,6 +166,7 @@ vkb::Device IE::Graphics::RenderEngine::createDevice() {
         // extensions. Check if those extensions are supported by this GPU, then label the unsupported features as
         // such.
         selector.prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).set_surface(m_surface);
+        selector.add_required_extensions({VK_KHR_MAINTENANCE2_EXTENSION_NAME});
         auto physicalDeviceBuilder = selector.select();
         if (!physicalDeviceBuilder)
             m_graphicsAPICallbackLog.log(
@@ -214,28 +215,24 @@ VmaAllocator IE::Graphics::RenderEngine::createAllocator() {
 vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
     if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
         // Create swapchain builder
-        vkb::SwapchainBuilder swapchainBuilder{m_device};
-        swapchainBuilder
-          .set_desired_present_mode(m_useVsync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
-          .set_desired_extent(m_currentResolution[0], m_currentResolution[1])
-          // This may have to change in the event that HDR is to be supported.
-          .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})
-          .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+        vkb::SwapchainBuilder swapchainBuilder{m_device, m_surface};
         if (m_swapchain != nullptr)  // Use the old swapchain if it exists.
             swapchainBuilder.set_old_swapchain(m_swapchain);
-        vkb::Result<vkb::Swapchain> thisSwapchain = swapchainBuilder.build();
+        swapchainBuilder.set_desired_extent(m_currentResolution[0], m_currentResolution[1])
+          .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})
+          .set_desired_present_mode(m_useVsync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR);
+        vkb::Result<vkb::Swapchain> thisSwapchain{swapchainBuilder.build()};
         if (!thisSwapchain) {
             m_graphicsAPICallbackLog.log(
               "Failed to create swapchain! Error: " + thisSwapchain.error().message(),
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
         } else {
-            m_graphicsAPICallbackLog.log("Created Swapchain");
             vkb::destroy_swapchain(m_swapchain);
             m_swapchain           = thisSwapchain.value();
             m_swapchainImageViews = m_swapchain.get_image_views().value();
+            m_graphicsAPICallbackLog.log("Created Swapchain");
         }
-
         return m_swapchain;
     }
     return {};
