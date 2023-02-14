@@ -20,10 +20,12 @@
 #include <array>
 #include <GLFW/glfw3.h>
 #include <string>
+#include <SDL.h>
 
 class IESettings {
 public:
     IESettings() {
+        SDL_Init();
         glfwInit();
         primaryMonitor       = glfwGetPrimaryMonitor();
         defaultResolution    = {800, 600};

@@ -5,9 +5,9 @@
 #define IE_ENGINE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT "VariableDescriptorCount"
 
 /* Predefine classes used with pointers or as return values for functions. */
-struct GLFWwindow;
+struct SDL_Window;
 
-struct GLFWmonitor;
+struct SDL_DisplayMode;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
@@ -25,6 +25,7 @@ struct GLFWmonitor;
 // External dependencies
 #include <VkBootstrap.h>
 #include <vulkan/vulkan.h>
+#include <SDL.h>
 
 // System dependencies
 #include <algorithm>
@@ -46,7 +47,7 @@ private:
      * @brief Creates a window using hardcoded hints and settings from settings.
      * @return The window that was just created.
      */
-    GLFWwindow *createWindow() const;
+    SDL_Window *createWindow() const;
 
     /**
      * @brief Changes the window icon to all of the images found in [path] with a
@@ -221,8 +222,8 @@ public:
     std::shared_ptr<IECommandPool>                 computeCommandPool{};
     IEAPI                                          API;
     ExtensionAndFeatureInfo                        extensionAndFeatureInfo{};
-    GLFWmonitor                                   *monitor{};
-    GLFWwindow                                    *window{};
+    SDL_DisplayMode                                   *monitor{};
+    SDL_Window                                    *window{};
     vkb::Device                                    device{};
     vkb::Swapchain                                 swapchain{};
     vkb::Instance                                  instance{};

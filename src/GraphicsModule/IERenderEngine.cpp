@@ -11,8 +11,8 @@
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+
+#include <SDL.h>
 
 #define VMA_IMPLEMENTATION
 
@@ -61,17 +61,18 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     return instance;
 }
 
-GLFWwindow *IERenderEngine::createWindow() const {
-    GLFWwindow *pWindow = glfwCreateWindow(
-      settings->defaultResolution[0],
-      settings->defaultResolution[1],
-      settings->applicationName.c_str(),
-      nullptr,
-      nullptr
+SDL_Window *IERenderEngine::createWindow() const {
+    SDL_Window *pWindow = SDL_CreateWindow(
+     pWindow,
+      SDL_WINDOWPOS_CENTERED,
+      SDL_WINDOWPOS_CENTERED,
+      600,
+      800,
+      0
     );
     if (pWindow == nullptr) {
         const char *description;
-        int         code = glfwGetError(&description);
+        int         code = SDL_GetError(&description);
         settings->logger.log(
           "Failed to create window! Error: " + std::to_string(code) + " " + description,
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
