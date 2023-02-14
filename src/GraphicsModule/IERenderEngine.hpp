@@ -227,7 +227,7 @@ public:
     vkb::Device                                    device{};
     vkb::Swapchain                                 swapchain{};
     vkb::Instance                                  instance{};
-    vkb::detail::Result<vkb::SystemInfo>           systemInfo{vkb::SystemInfo::get_system_info()};
+    vkb::Result<vkb::SystemInfo>                   systemInfo{vkb::SystemInfo::get_system_info()};
     VkSurfaceKHR                                   surface{};
     VmaAllocator                                   allocator{};
     VkQueue                                        graphicsQueue{};

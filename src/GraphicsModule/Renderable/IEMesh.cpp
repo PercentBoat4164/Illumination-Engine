@@ -1,6 +1,7 @@
 #include "IEMesh.hpp"
 
 #include "Buffer/IEBuffer.hpp"
+#include "Core/Core.hpp"
 #include "Core/FileSystemModule/File.hpp"
 #include "Core/LogModule/IELogger.hpp"
 #include "IERenderEngine.hpp"
@@ -185,11 +186,17 @@ void IEMesh::_openglLoadFromRAMToVRAM() {
 
     indexBuffer->uploadToVRAM();
 
+#if defined(__APPLE__)
+    std::string shaderDir{"shaders/OpenGL/macOS/"};
+#else
+    std::string shaderDir{"shaders/OpenGL/"};
+#endif
+
     shaders.resize(2);
     shaders[0] = std::make_shared<IEShader>();
-    shaders[0]->create(linkedRenderEngine, new IE::Core::File{"shaders/OpenGL/vertexShader.vert"});
+    shaders[0]->create(linkedRenderEngine, new IE::Core::File(shaderDir + "vertexShader.vert"));
     shaders[1] = std::make_shared<IEShader>();
-    shaders[1]->create(linkedRenderEngine, new IE::Core::File{"shaders/OpenGL/fragmentShader.frag"});
+    shaders[1]->create(linkedRenderEngine, new IE::Core::File(shaderDir + "fragmentShader.frag"));
 
     pipeline->create(
       linkedRenderEngine,

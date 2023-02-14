@@ -32,21 +32,19 @@ set(IE_PREFER_LOCAL_LIBS ON)
 
 # Compilation and linking options
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	# Needed for compilation success.
-	add_compile_options("-Wno-deprecated-non-prototype")
+	add_compile_definitions("Clang")
 
 	# Added to prevent known errors from clouding the log.
 	add_compile_options("-Wno-nullability-completeness")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
-	# Needed for compilation success.
-	add_compile_options("-Wno-unused-command-line-argument")
-	add_compile_options("-Wno-deprecated-non-prototype")
-	add_compile_options("-fp=consistent")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	add_compile_definitions("GCC")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	add_compile_definitions("MSVC")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+	add_compile_definitions("AppleClang")
 
 	# Added to prevent known errors from clouding the log.
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+	add_compile_options("-Wno-nullability-completeness")
 elseif ()
 	message(WARNING "Unsupported compiler in use: ${CMAKE_CXX_COMPILER_ID}")
 endif ()
