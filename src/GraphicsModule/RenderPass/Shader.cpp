@@ -206,7 +206,7 @@ VkShaderStageFlagBits IE::Graphics::Shader::stageFromExecutionModel(spv::Executi
 }
 
 void IE::Graphics::Shader::destroy() {
-    if (m_module) {
+    if (m_module != nullptr) {
         vkDestroyShaderModule(m_linkedRenderEngine->m_device.device, m_module, nullptr);
         m_module = VK_NULL_HANDLE;
     }

@@ -170,18 +170,25 @@ vkb::Device IE::Graphics::RenderEngine::createDevice() {
         auto physicalDeviceBuilder = selector.select();
         if (!physicalDeviceBuilder)
             m_graphicsAPICallbackLog.log(
-              "Failed to find adequate GPU!",
+              "Failed to find adequate GPU! If one exists in your system, make sure that you have installed "
+              "drivers for it.",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
         else {
             m_graphicsAPICallbackLog.log("Selected GPU: " + physicalDeviceBuilder->name);
+            // AMD uses same scheme as Vulkan (10|10|12)
+            uint32_t NV_VERSION_MAJOR    = physicalDeviceBuilder->properties.driverVersion >> 22U & 0x3FFU;
+            uint32_t NV_VERSION_MINOR    = physicalDeviceBuilder->properties.driverVersion >> 14U & 0xFFU;
+            uint32_t NV_VERSION_PATCH    = physicalDeviceBuilder->properties.driverVersion >> 6U & 0xFFU;
+            uint32_t NV_VERSION_REVISION = physicalDeviceBuilder->properties.driverVersion & 0x2FU;
             m_graphicsAPICallbackLog.log(
-              "GPU Driver version: " + std::to_string(physicalDeviceBuilder->properties.driverVersion)
+              "GPU Driver version: " + std::to_string(NV_VERSION_MAJOR) + "." + std::to_string(NV_VERSION_MINOR) +
+              "." + std::to_string(NV_VERSION_PATCH) + "." + std::to_string(NV_VERSION_REVISION)
             );
         }
 
-        vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
-        auto               logicalDevice = logicalDeviceBuilder.build();
+        vkb::DeviceBuilder const logicalDeviceBuilder{physicalDeviceBuilder.value()};
+        auto                     logicalDevice = logicalDeviceBuilder.build();
         if (!logicalDevice)
             m_graphicsAPICallbackLog.log(
               "Failed to create Vulkan Device! Error: " + logicalDevice.error().message()
@@ -195,12 +202,12 @@ vkb::Device IE::Graphics::RenderEngine::createDevice() {
 
 VmaAllocator IE::Graphics::RenderEngine::createAllocator() {
     if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
-        VmaAllocatorCreateInfo allocatorInfo{
+        const VmaAllocatorCreateInfo allocatorInfo{
           .physicalDevice   = m_device.physical_device.physical_device,
           .device           = m_device.device,
           .instance         = m_instance.instance,
           .vulkanApiVersion = m_api.version.number};
-        VkResult result{vmaCreateAllocator(&allocatorInfo, &m_allocator)};
+        const VkResult result{vmaCreateAllocator(&allocatorInfo, &m_allocator)};
         if (result != VK_SUCCESS)
             m_graphicsAPICallbackLog.log(
               "Failed to create VmaAllocator with error: " + translateVkResultCodes(result),
@@ -435,7 +442,7 @@ IE::Graphics::RenderEngine::~RenderEngine() {
     m_inFlightFences.clear();
     m_imagesInFlight.clear();
     for (VkImageView swapchainImageView : m_swapchainImageViews)
-        if (swapchainImageView) vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
+        if (swapchainImageView != nullptr) vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
     m_commandPools.clear();
     if (m_allocator != nullptr) vmaDestroyAllocator(m_allocator);
     if (m_swapchain != nullptr) vkb::destroy_swapchain(m_swapchain);
@@ -496,7 +503,8 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
     std::vector<VkCommandBuffer> commandBuffers;
     commandBuffers.reserve(m_aspects.size());
 
-    m_renderPassSeries.execute();
+    auto job = IE::Core::Core::getThreadPool()->submit(m_renderPassSeries.execute());
+    co_await IE::Core::Core::getThreadPool()->resumeAfter(job);
     co_return true;
 }
 

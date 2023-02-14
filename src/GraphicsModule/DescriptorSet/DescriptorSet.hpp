@@ -16,7 +16,7 @@ public:
         IE_DESCRIPTOR_SET_TYPE_PER_OBJECT
     };
 
-    VkDescriptorPool m_pool;
+    VkDescriptorPool m_pool{VK_NULL_HANDLE};
     VkDescriptorSet  m_set;
     SetType          m_type;
     RenderEngine    *m_linkedRenderEngine;

@@ -22,11 +22,11 @@ IE::Core::Logger *IE::Core::Core::getLogger() {
     return &m_logger;
 }
 
-IE::Core::FileSystem *const IE::Core::Core::getFileSystem() {
+IE::Core::FileSystem *IE::Core::Core::getFileSystem() {
     return m_filesystem;
 }
 
-IE::Core::Threading::ThreadPool *const IE::Core::Core::getThreadPool() {
+IE::Core::Threading::ThreadPool *IE::Core::Core::getThreadPool() {
     return m_threadPool;
 }
 

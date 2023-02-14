@@ -57,9 +57,9 @@ public:
 
     static IE::Core::Window *getWindow(GLFWwindow *t_window);
 
-    static IE::Core::Logger                      *getLogger();
-    static IE::Core::FileSystem *const            getFileSystem();
-    static IE::Core::Threading::ThreadPool *const getThreadPool();
+    static IE::Core::Logger                *getLogger();
+    static IE::Core::FileSystem            *getFileSystem();
+    static IE::Core::Threading::ThreadPool *getThreadPool();
 
 private:
     static IE::Core::Logger                                                   m_logger;

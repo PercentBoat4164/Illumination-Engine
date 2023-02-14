@@ -23,7 +23,7 @@ Checks: '
   abseil-time-subtraction,
   abseil-upgrade-duration-conversions,
   
-  altera-id-dependent-backward-branch,
+  -altera-id-dependent-backward-branch,
   altera-kernel-name-restriction,
   altera-single-work-item-barrier,
   altera-struct-pack-align,
@@ -223,7 +223,7 @@ Checks: '
   -llvmlibc-restrict-system-libc-headers,
   
   misc-confusable-identifiers,
-  misc-const-correctness,
+  -misc-const-correctness,
   misc-definitions-in-headers,
   misc-misleading-bidirectional,
   misc-misleading-identifier,

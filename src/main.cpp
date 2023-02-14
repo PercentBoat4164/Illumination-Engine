@@ -23,6 +23,8 @@ int main(int argc, char **argv) {
       IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue/models/ancientStatue.glb")
     ));
 
+    IE::Core::Core::getLogger()->log("Initialization finished successfully. Starting main loop.");
+
 
     //    while (glfwWindowShouldClose(renderEngine->getWindow()) == 0) {
     //        auto job = IE::Core::Core::getThreadPool()->submit(renderEngine->update());
