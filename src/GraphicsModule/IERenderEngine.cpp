@@ -483,10 +483,7 @@ bool IERenderEngine::_vulkanUpdate() {
       VK_NULL_HANDLE,
       &imageIndex
     );
-    if (result != VK_SUCCESS) {
-        handleResolutionChange();
-        return glfwWindowShouldClose(window) != 1;
-    }
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) handleResolutionChange();
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
         vkWaitForFences(device.device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
     imagesInFlight[imageIndex] = inFlightFences[currentFrame];
@@ -781,7 +778,8 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );
     this->settings->logger.log(
-      API.name + " v" + API.version.name + "@" + reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION)),
+      API.name + " v" + API.version.name + "@" +
+        reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION)),
       IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
     );
 }
