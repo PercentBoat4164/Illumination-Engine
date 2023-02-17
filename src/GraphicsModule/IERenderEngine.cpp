@@ -77,6 +77,9 @@ GLFWwindow *IERenderEngine::createWindow() const {
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
+    int width, height;
+    glfwGetFramebufferSize(pWindow, &width, &height);
+    *settings->currentResolution = {width, height};
     IE::Core::Core::registerWindow(pWindow);
     IE::Core::Core::getWindow(pWindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
     return pWindow;
