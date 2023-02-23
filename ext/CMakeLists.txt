@@ -127,12 +127,13 @@ find_package(OpenGL REQUIRED)
 find_package(Vulkan REQUIRED shaderc_combined)
 
 # GLEW is wierd. Why is it like this?
+set(OpenGL_GL_PREFERENCE "GLVND")
 CPMAddPackage(
   NAME glew
   URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
   VERSION 2.2.0
+  SOURCE_SUBDIR build/cmake
 )
-add_subdirectory(${glew_SOURCE_DIR}/build/cmake)
 
 CPMAddPackage(NAME Ccache.cmake GITHUB_REPOSITORY TheLartians/Ccache.cmake VERSION 1.2.4)
 CPMAddPackage("gh:assimp/assimp@5.2.5")

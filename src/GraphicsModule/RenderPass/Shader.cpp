@@ -210,7 +210,6 @@ void IE::Graphics::Shader::destroy() {
         vkDestroyShaderModule(m_linkedRenderEngine->m_device.device, m_module, nullptr);
         m_module = VK_NULL_HANDLE;
     }
-    // todo Figure out why the `reflection` fails to destroy.
 }
 
 IE::Graphics::Shader::~Shader() {

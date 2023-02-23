@@ -475,5 +475,9 @@ bool IE::Graphics::detail::ImageVulkan::_destroyImage() {
         vmaDestroyImage(m_linkedRenderEngine->getAllocator(), m_id, m_allocation);
         m_id = VK_NULL_HANDLE;
     }
+    if (m_view) {
+        vkDestroyImageView(m_linkedRenderEngine->m_device.device, m_view, nullptr);
+        m_view = VK_NULL_HANDLE;
+    }
     return false;
 }

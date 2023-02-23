@@ -1,9 +1,5 @@
 #include "ThreadPool.hpp"
 
-IE::Core::Threading::Worker::Worker(ThreadPool *t_threadPool) {
-    start(t_threadPool);
-}
-
 void IE::Core::Threading::Worker::start(ThreadPool *t_threadPool) {
     ThreadPool               &pool = *t_threadPool;
     std::shared_ptr<BaseTask> activeJob;
