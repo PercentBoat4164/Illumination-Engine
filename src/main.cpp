@@ -2,7 +2,7 @@
 #include "IERenderEngine.hpp"
 #include "InputModule/InputEngine.hpp"
 #include "InputModule/Keyboard.hpp"
-
+#include <SDL.h>
 #include <iostream>
 
 int main(int argc, char **argv) {

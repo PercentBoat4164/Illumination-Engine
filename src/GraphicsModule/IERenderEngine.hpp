@@ -25,6 +25,7 @@ struct GLFWmonitor;
 // External dependencies
 #include <VkBootstrap.h>
 #include <vulkan/vulkan.h>
+#include <SDL.h>
 
 // System dependencies
 #include <algorithm>
@@ -221,8 +222,8 @@ public:
     std::shared_ptr<IECommandPool>                 computeCommandPool{};
     IEAPI                                          API;
     ExtensionAndFeatureInfo                        extensionAndFeatureInfo{};
-    GLFWmonitor                                   *monitor{};
-    GLFWwindow                                    *window{};
+    void                                           *monitor{};
+    SDL_Window                                     *window{};
     vkb::Device                                    device{};
     vkb::Swapchain                                 swapchain{};
     vkb::Instance                                  instance{};
