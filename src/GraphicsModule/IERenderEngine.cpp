@@ -114,8 +114,11 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
-    if (!SDL_Vulkan_CreateSurface(window, instance.instance, &surface))
-        settings->logger.log("Failed to create Vulkan surface for SDL window. Error:" + std::string(SDL_GetError()), IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL);
+    if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS)
+        settings->logger.log(
+          "Failed to create window surface!",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
     deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_surface(instance.instance, surface); });
     return surface;
 }
@@ -752,7 +755,7 @@ IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
-    void *window = createWindow();
+    window = createWindow();
 
     setWindowIcons("res/logos");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
