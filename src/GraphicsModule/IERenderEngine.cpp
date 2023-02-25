@@ -78,6 +78,9 @@ SDL_Window *IERenderEngine::createWindow() const {
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
+    int width, height;
+    glfwGetFramebufferSize(pWindow, &width, &height);
+    *settings->currentResolution = {width, height};
     IE::Core::Core::registerWindow(pWindow);
     IE::Core::Core::getWindow(pWindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
     return pWindow;
@@ -112,11 +115,8 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
-    if (glfwCreateWindowSurface(instance.instance, window, nullptr, &surface) != VK_SUCCESS)
-        settings->logger.log(
-          "Failed to create window surface!",
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
-        );
+    if (!SDL_Vulkan_CreateSurface(window, instance.instance, &surface))
+        settings->logger.log("Failed to create Vulkan surface for SDL window. Error:" + std::string(SDL_GetError()), IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL);
     deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_surface(instance.instance, surface); });
     return surface;
 }
@@ -333,9 +333,7 @@ void IERenderEngine::destroyCommandPools() {
     computeCommandPool->destroy();
 }
 
-IERenderEngine::IERenderEngine(IESettings *settings) {
-    this->settings = settings;
-
+IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     // Create a Vulkan instance
     createVulkanInstance();
 
@@ -457,6 +455,15 @@ bool IERenderEngine::update() {
 }
 
 bool IERenderEngine::_openGLUpdate() {
+    if (framebufferResized) {
+        framebufferResized = false;
+        handleResolutionChange();
+    }
+    if (shouldBeFullscreen) {
+        shouldBeFullscreen = false;
+        toggleFullscreen();
+        return glfwWindowShouldClose(window) != 1;
+    }
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -474,6 +481,14 @@ bool IERenderEngine::_openGLUpdate() {
 bool IERenderEngine::_vulkanUpdate() {
     if (window == nullptr) return false;
     if (renderables.empty()) return glfwWindowShouldClose(window) != 1;
+    if (framebufferResized) {
+        framebufferResized = false;
+        handleResolutionChange();
+    }
+    if (shouldBeFullscreen) {
+        shouldBeFullscreen = false;
+        toggleFullscreen();
+    }
     vkWaitForFences(device.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
     uint32_t imageIndex{0};
     VkResult result = vkAcquireNextImageKhr(
@@ -524,16 +539,14 @@ bool IERenderEngine::_vulkanUpdate() {
     graphicsCommandPool->index(imageIndex)->commandPool->commandPoolMutex.lock();
     result = vkQueuePresentKHR(presentQueue, &presentInfo);
     graphicsCommandPool->index(imageIndex)->commandPool->commandPoolMutex.unlock();
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-        framebufferResized = false;
-        handleResolutionChange();
-    } else if (result != VK_SUCCESS) {
-        throw std::runtime_error("failed to present swapchain image!");
-    }
+    if (result != VK_SUCCESS && result != VK_ERROR_OUT_OF_DATE_KHR)
+        settings->logger.log(
+          "Failed to present image! Error: " + translateVkResultCodes(result),
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
     currentFrame = (currentFrame + 1) % (int) swapchain.image_count;
     if (frameTime > 1.0 / 30.0) {
         settings->logger.log(
-
           "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime * 1000) + "ms to compute.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -718,14 +731,12 @@ bool IERenderEngine::ExtensionAndFeatureInfo::variableDescriptorCountSupportQuer
     return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount != 0U;
 }
 
-IERenderEngine::IERenderEngine(IESettings &settings) {
-    this->settings = &settings;
-
+IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings{t_settings}) {
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
     if (glfwInit() != GLFW_TRUE)
-        settings.logger.log("Failed to initialize GLFW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+        settings->logger.log("Failed to initialize GLFW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
     glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 #ifndef __APPLE__
@@ -742,11 +753,11 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
-    window = createWindow();
+    void *window = createWindow();
 
     setWindowIcons("res/logos");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    glfwGetWindowPos(window, &(*settings.currentPosition)[0], &(*settings.currentPosition)[1]);
+    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     glfwSetWindowPosCallback(window, windowPositionCallback);
@@ -754,12 +765,12 @@ IERenderEngine::IERenderEngine(IESettings &settings) {
 
     // Make context current
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(settings.vSync ? 1 : 0);
+    glfwSwapInterval(settings->vSync ? 1 : 0);
 
     // Initialize glew
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
-        settings.logger.log("Failed to initialize GLEW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+        settings->logger.log("Failed to initialize GLEW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
 
     // Get API Version
     autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);
@@ -852,4 +863,8 @@ IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<IEAsset> 
     if (!aspect) aspect = new AspectType();
     t_asset.lock()->addAspect(aspect);
     return aspect;
+}
+
+void IERenderEngine::queueToggleFullscreen() {
+    shouldBeFullscreen = !shouldBeFullscreen;
 }

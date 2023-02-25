@@ -67,8 +67,6 @@ private:
 
 class Worker {
 public:
-    explicit Worker(ThreadPool *t_threadPool);
-
     Worker() = default;
 
     void start(ThreadPool *t_threadPool);
@@ -88,7 +86,7 @@ public:
     explicit ThreadPool(size_t threads = std::thread::hardware_concurrency()) {
 #endif
         m_workers.reserve(threads);
-        for (; threads > 0; --threads) m_workers.emplace_back([this] { Worker(this); });
+        for (; threads > 0; --threads) m_workers.emplace_back([this] { Worker().start(this); });
     }
 
     template<typename T>

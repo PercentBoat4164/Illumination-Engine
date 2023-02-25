@@ -265,8 +265,9 @@ private:
     std::vector<std::function<void()>> renderableDeletionQueue{};
     std::vector<std::function<void()>> deletionQueue{};
     size_t                             currentFrame{};
-    bool                               framebufferResized{false};
+    bool                               framebufferResized{settings->fullscreen};
     float                              previousTime{};
+    bool                               shouldBeFullscreen{settings->fullscreen};
 
 
     static std::function<bool(IERenderEngine &)> _update;
@@ -308,4 +309,5 @@ public:
 
     AspectType *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
     AspectType *getAspect(const std::string &t_id) override;
+    void        queueToggleFullscreen();
 };
