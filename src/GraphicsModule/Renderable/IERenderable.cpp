@@ -164,7 +164,7 @@ std::function<void(IERenderable &, const IECamera &, float, uint32_t)> IERendera
 
 void IERenderable::update(uint32_t renderCommandBufferIndex) {
     if (status & IE_RENDERABLE_STATE_IN_VRAM)
-        _update(*this, linkedRenderEngine->camera, (float) glfwGetTime(), renderCommandBufferIndex);
+        _update(*this, linkedRenderEngine->camera, (float) SDL_GetTicks64(), renderCommandBufferIndex);
 }
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {

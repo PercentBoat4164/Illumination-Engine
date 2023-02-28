@@ -7,7 +7,7 @@
 /* Predefine classes used with pointers or as return values for functions. */
 struct SDL_Window;
 
-struct SDL_DisplayMode;
+//SDL_DisplayMode;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
@@ -26,6 +26,7 @@ struct SDL_DisplayMode;
 #include <VkBootstrap.h>
 #include <vulkan/vulkan.h>
 #include <SDL.h>
+#include <SDL_vulkan.h>
 
 // System dependencies
 #include <algorithm>
@@ -47,7 +48,7 @@ private:
      * @brief Creates a window using hardcoded hints and settings from settings.
      * @return The window that was just created.
      */
-    SDL_Window *createWindow() const;
+    SDL_Window *createWindow();
 
     /**
      * @brief Changes the window icon to all of the images found in [path] with a
@@ -222,7 +223,7 @@ public:
     std::shared_ptr<IECommandPool>                 computeCommandPool{};
     IEAPI                                          API;
     ExtensionAndFeatureInfo                        extensionAndFeatureInfo{};
-    SDL_DisplayMode                                   *monitor{};
+    //SDL_DisplayMode                                   *monitor{};
     SDL_Window                                    *window{};
     vkb::Device                                    device{};
     vkb::Swapchain                                 swapchain{};
@@ -286,25 +287,11 @@ private:
     void destroy();
 
 
-    static void framebufferResizeCallback(GLFWwindow *pWindow, int width, int height);
-
     void createRenderPass();
 
     void handleResolutionChange();
 
-    static void windowPositionCallback(GLFWwindow *pWindow, int x, int y);
-
 public:
-    static void APIENTRY glDebugOutput(
-      GLenum       source,
-      GLenum       type,
-      unsigned int id,
-      GLenum       severity,
-      GLsizei      length,
-      const char  *message,
-      const void  *userParam
-    );
-
     static void setAPI(const IEAPI &API);
 
     AspectType *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;

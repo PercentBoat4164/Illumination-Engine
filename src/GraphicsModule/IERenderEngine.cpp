@@ -12,7 +12,8 @@
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
 
-#include <SDL.h>
+
+
 
 #define VMA_IMPLEMENTATION
 
@@ -24,6 +25,9 @@
 
 /* Include system dependencies. */
 #include <filesystem>
+#include <SDL.h>
+#include <SDL_vulkan.h>
+#include <SDL_Video.h>
 
 vkb::Instance IERenderEngine::createVulkanInstance() {
     vkb::InstanceBuilder builder;
@@ -61,57 +65,53 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     return instance;
 }
 
-SDL_Window *IERenderEngine::createWindow() const {
-    SDL_Window *pWindow = SDL_CreateWindow(
-     pWindow,
-      SDL_WINDOWPOS_CENTERED,
-      SDL_WINDOWPOS_CENTERED,
-      600,
-      800,
-      0
-    );
-    if (pWindow == nullptr) {
-        const char *description;
-        int         code = SDL_GetError(&description);
+SDL_Window *IERenderEngine::createWindow(){
+
+    SDL_Window *window = SDL_CreateWindow(
+      settings->applicationName.c_str(),
+      settings->defaultPosition[0],
+      settings->defaultPosition[1],
+      settings->defaultResolution[0],
+      settings->defaultResolution[1],
+      SDL_WINDOW_VULKAN | SDL_WINDOW_OPENGL
+      );
+    if(!window)
         settings->logger.log(
-          "Failed to create window! Error: " + std::to_string(code) + " " + description,
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
-        );
-    }
+          "Failed to create window! Error: " + std::string(SDL_GetError()) + " ",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
     int width, height;
-    glfwGetFramebufferSize(pWindow, &width, &height);
     *settings->currentResolution = {width, height};
-    IE::Core::Core::registerWindow(pWindow);
-    IE::Core::Core::getWindow(pWindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
-    return pWindow;
+//    IE::Core::Core::registerWindow(window);
+//    IE::Core::Core::getWindow(window)->graphicsEngine = const_cast<IERenderEngine *>(this);
+    return window;
 }
 
 void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
-    int                    width;
-    int                    height;
-    int                    channels;
-    std::vector<GLFWimage> icons{};
-
-    // iterate over all files and directories within path recursively
-    for (const std::filesystem::directory_entry &file : std::filesystem::recursive_directory_iterator(path)) {
-        stbi_uc *pixels = stbi_load(
-          file.path().string().c_str(),
-          &width,
-          &height,
-          &channels,
-          STBI_rgb_alpha
-        );  // Load image from disk
-        if (pixels == nullptr) {
-            settings->logger.log(
-
-              "Failed to load icon " + file.path().generic_string() + ". Is this file an image?",
-              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
-            );
-        }
-        icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
-    }
-    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
-    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                // Free all pixel data
+//    int                    width;
+//    int                    height;
+//    int                    channels;
+//    std::vector<GLFWimage> icons{};
+//
+//    // iterate over all files and directories within path recursively
+//    for (const std::filesystem::directory_entry &file : std::filesystem::recursive_directory_iterator(path)) {
+//        stbi_uc *pixels = stbi_load(
+//          file.path().string().c_str(),
+//          &width,
+//          &height,
+//          &channels,
+//          STBI_rgb_alpha
+//        );  // Load image from disk
+//        if (pixels == nullptr) {
+//            settings->logger.log(
+//
+//              "Failed to load icon " + file.path().generic_string() + ". Is this file an image?",
+//              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+//            );
+//        }
+//        icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
+//    }
+//    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
+//    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                // Free all pixel data
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
@@ -340,15 +340,21 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+//    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     window = createWindow();
-    setWindowIcons("res/logos");
-    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
-    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
-    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    glfwSetWindowPosCallback(window, windowPositionCallback);
-    glfwSetWindowUserPointer(window, this);
+//    setWindowIcons("res/logos");
+    SDL_SetWindowMinimumSize(window, 1, 1);
+    SDL_SetWindowPosition(window, (*settings->currentPosition)[0], (*settings->currentPosition)[1]);
+//    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
+
+//    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    //SDL_GL_GetDrawableSize(window, settings->*currentResolution, *settings->currentResolution); *need to fix settings
+
+//    glfwSetWindowPosCallback(window, windowPositionCallback);
+    SDL_GetWindowPosition(window, (*settings->currentPosition), (*settings->currentPosition)); //check again later
+//    glfwSetWindowUserPointer(window, this);
+
+
 
     // Create surface
     createWindowSurface();
@@ -462,7 +468,7 @@ bool IERenderEngine::_openGLUpdate() {
     if (shouldBeFullscreen) {
         shouldBeFullscreen = false;
         toggleFullscreen();
-        return glfwWindowShouldClose(window) != 1;
+//        return glfwWindowShouldClose(window) != 1;
     }
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
@@ -470,17 +476,20 @@ bool IERenderEngine::_openGLUpdate() {
     camera.update();
     glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
     for (const std::weak_ptr<IERenderable> &renderable : renderables) renderable.lock()->update(0);
-    glfwSwapBuffers(window);
-    auto currentTime = (float) glfwGetTime();
+    //glfwSwapBuffers(window);
+   // auto currentTime = (float) glfwGetTime(); *prob don't need;keeping anyway
+    auto currentTime = (float) SDL_GetTicks64();
     frameTime        = currentTime - previousTime;
     previousTime     = currentTime;
     frameNumber++;
-    return !glfwWindowShouldClose(window);
+    return 0;
+   // return !glfwWindowShouldClose(window);
 }
 
 bool IERenderEngine::_vulkanUpdate() {
     if (window == nullptr) return false;
-    if (renderables.empty()) return glfwWindowShouldClose(window) != 1;
+    if (renderables.empty())
+        SDL_Quit();
     if (framebufferResized) {
         framebufferResized = false;
         handleResolutionChange();
@@ -551,76 +560,76 @@ bool IERenderEngine::_vulkanUpdate() {
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
-    auto currentTime = (float) glfwGetTime();
-    frameTime        = currentTime - previousTime;
-    previousTime     = currentTime;
-    frameNumber++;
-    return glfwWindowShouldClose(window) != 1;
+//    auto currentTime = (float) glfwGetTime();
+//    frameTime        = currentTime - previousTime;
+//    previousTime     = currentTime;
+//    frameNumber++;
+//    return glfwWindowShouldClose(window) != 1;
 }
 
 void IERenderEngine::toggleFullscreen() {
-    settings->fullscreen ^= true;
-    if (settings->fullscreen) {
-        int                monitorCount{};
-        int                windowX{};
-        int                windowY{};
-        int                windowWidth{};
-        int                windowHeight{};
-        int                monitorX{};
-        int                monitorY{};
-        int                monitorWidth;
-        int                monitorHeight;
-        int                bestMonitorWidth{};
-        int                bestMonitorHeight{};
-        int                bestMonitorRefreshRate{};
-        int                overlap;
-        int                bestOverlap{0};
-        GLFWmonitor      **monitors;
-        const GLFWvidmode *mode;
-        glfwGetWindowPos(window, &windowX, &windowY);
-        glfwGetWindowSize(window, &windowWidth, &windowHeight);
-        monitors = glfwGetMonitors(&monitorCount);
-        for (int i = 0; i < monitorCount; ++i) {
-            mode = glfwGetVideoMode(monitors[i]);
-            glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
-            monitorWidth  = mode->width;
-            monitorHeight = mode->height;
-            overlap =
-              std::max(0, std::min(windowX + windowWidth, monitorX + monitorWidth) - std::max(windowX, monitorX)) *
-              std::max(
-                0,
-                std::min(windowY + windowHeight, monitorY + monitorHeight) - std::max(windowY, monitorY)
-              );
-            if (bestOverlap < overlap) {
-                bestOverlap            = overlap;
-                monitor                = monitors[i];
-                bestMonitorWidth       = monitorWidth;
-                bestMonitorHeight      = monitorHeight;
-                bestMonitorRefreshRate = mode->refreshRate;
-            }
-        }
-        settings->refreshRate        = bestMonitorRefreshRate;
-        settings->currentResolution  = &settings->fullscreenResolution;
-        *settings->currentResolution = {bestMonitorWidth, bestMonitorHeight};
-        glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
-        settings->currentPosition = &settings->fullscreenPosition;
-    } else {
-        monitor                     = nullptr;
-        settings->currentResolution = &settings->windowedResolution;
-        settings->currentPosition   = &settings->windowedPosition;
+//    settings->fullscreen ^= true;
+//    if (settings->fullscreen) {
+//        int                monitorCount{};
+//        int                windowX{};
+//        int                windowY{};
+//        int                windowWidth{};
+//        int                windowHeight{};
+//        int                monitorX{};
+//        int                monitorY{};
+//        int                monitorWidth;
+//        int                monitorHeight;
+//        int                bestMonitorWidth{};
+//        int                bestMonitorHeight{};
+//        int                bestMonitorRefreshRate{};
+//        int                overlap;
+//        int                bestOverlap{0};
+//        GLFWmonitor      **monitors;
+//        const GLFWvidmode *mode;
+//        glfwGetWindowPos(window, &windowX, &windowY);
+//        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+//        monitors = glfwGetMonitors(&monitorCount);
+//        for (int i = 0; i < monitorCount; ++i) {
+//            mode = glfwGetVideoMode(monitors[i]);
+//            glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
+//            monitorWidth  = mode->width;
+//            monitorHeight = mode->height;
+//            overlap =
+//              std::max(0, std::min(windowX + windowWidth, monitorX + monitorWidth) - std::max(windowX, monitorX)) *
+//              std::max(
+//                0,
+//                std::min(windowY + windowHeight, monitorY + monitorHeight) - std::max(windowY, monitorY)
+//              );
+//            if (bestOverlap < overlap) {
+//                bestOverlap            = overlap;
+//                monitor                = monitors[i];
+//                bestMonitorWidth       = monitorWidth;
+//                bestMonitorHeight      = monitorHeight;
+//                bestMonitorRefreshRate = mode->refreshRate;
+//            }
+//        }
+//        settings->refreshRate        = bestMonitorRefreshRate;
+//        settings->currentResolution  = &settings->fullscreenResolution;
+//        *settings->currentResolution = {bestMonitorWidth, bestMonitorHeight};
+//        SDL_GetWindowPosition(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
+//        settings->currentPosition = &settings->fullscreenPosition;
+//    } else {
+//        monitor                     = nullptr;
+//        settings->currentResolution = &settings->windowedResolution;
+//        settings->currentPosition   = &settings->windowedPosition;
     }
-    glfwSetWindowMonitor(
-      window,
-      monitor,
-      (*settings->currentPosition)[0],
-      (*settings->currentPosition)[1],
-      (*settings->currentResolution)[0],
-      (*settings->currentResolution)[1],
-      settings->refreshRate
-    );
-    handleResolutionChange();
-    glfwSetWindowTitle(window, settings->applicationName.c_str());
-}
+//    glfwSetWindowMonitor(
+//      window,
+//      monitor,
+//      (*settings->currentPosition)[0],
+//      (*settings->currentPosition)[1],
+//      (*settings->currentResolution)[0],
+//      (*settings->currentResolution)[1],
+//      settings->refreshRate
+//    );
+//    handleResolutionChange();
+//    glfwSetWindowTitle(window, settings->applicationName.c_str());
+//}
 
 void IERenderEngine::_vulkanDestroy() {
     for (const std::shared_ptr<IECommandBuffer> &commandBuffer : graphicsCommandPool->commandBuffers)
@@ -638,16 +647,16 @@ IERenderEngine::~IERenderEngine() {
     destroy();
 }
 
-void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
-    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
-    *renderEngine->settings->currentPosition = {x, y};
-}
-
-void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
-    *renderEngine->settings->currentResolution = {width, height};
-    renderEngine->framebufferResized           = true;
-}
+//void IERenderEngine::windowPositionCallback(GLFWwindow *window, int x, int y) {
+//    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(window)->graphicsEngine);
+//    *renderEngine->settings->currentPosition = {x, y};
+//}
+//
+//void IERenderEngine::framebufferResizeCallback(GLFWwindow *window, int width, int height) {
+//    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(window)->graphicsEngine);
+//    *renderEngine->settings->currentResolution = {width, height};
+//    renderEngine->framebufferResized           = true;
+//}
 
 std::string IERenderEngine::translateVkResultCodes(VkResult result) {
     switch (result) {
@@ -735,37 +744,37 @@ IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
-    if (glfwInit() != GLFW_TRUE)
-        settings->logger.log("Failed to initialize GLFW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
-    glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-#ifndef __APPLE__
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-#else
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-#endif
-#ifndef NDEBUG
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-#endif
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy.
-    glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);    // Use Core Profile by default.
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
+//    if (glfwInit() != GLFW_TRUE)
+//        settings->logger.log("Failed to initialize GLFW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+//    glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
+//    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//#ifndef __APPLE__
+//    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+//#else
+//    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+//#endif
+//#ifndef NDEBUG
+//    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+//#endif
+//#ifdef __APPLE__
+//    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy.
+//    glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);    // Use Core Profile by default.
+//    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+//#endif
 
     void *window = createWindow();
 
-    setWindowIcons("res/logos");
-    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
-    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
-    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    glfwSetWindowPosCallback(window, windowPositionCallback);
-    glfwSetWindowUserPointer(window, this);
-
-    // Make context current
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(settings->vSync ? 1 : 0);
+//    setWindowIcons("res/logos");
+//    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+//    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
+//    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
+//    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+//    glfwSetWindowPosCallback(window, windowPositionCallback);
+//    glfwSetWindowUserPointer(window, this);
+//
+//    // Make context current
+//    glfwMakeContextCurrent(window);
+//    glfwSwapInterval(settings->vSync ? 1 : 0);
 
     // Initialize glew
     glewExperimental = GL_TRUE;
@@ -779,7 +788,7 @@ IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronous
 #    ifndef __APPLE__
-    glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
+//    glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 #    endif
 #endif
@@ -796,45 +805,6 @@ IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings
     );
 }
 
-void APIENTRY IERenderEngine::
-  glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei, const char *message, const void *) {
-    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
-        return;  // ignore these non-significant error codes
-    std::cout << "---------------" << std::endl;
-    std::cout << "Debug message (" << id << "): " << message << std::endl;
-    switch (source) {
-        case GL_DEBUG_SOURCE_API: std::cout << "Source: API"; break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM: std::cout << "Source: Window System"; break;
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: std::cout << "Source: Shader Compiler"; break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY: std::cout << "Source: Third Party"; break;
-        case GL_DEBUG_SOURCE_APPLICATION: std::cout << "Source: Application"; break;
-        case GL_DEBUG_SOURCE_OTHER: std::cout << "Source: Other"; break;
-        default: std::cout << "Source: Unknown"; break;
-    }
-    std::cout << std::endl;
-    switch (type) {
-        case GL_DEBUG_TYPE_ERROR: std::cout << "Type: Error"; break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: std::cout << "Type: Undefined Behaviour"; break;
-        case GL_DEBUG_TYPE_PORTABILITY: std::cout << "Type: Portability"; break;
-        case GL_DEBUG_TYPE_PERFORMANCE: std::cout << "Type: Performance"; break;
-        case GL_DEBUG_TYPE_MARKER: std::cout << "Type: Marker"; break;
-        case GL_DEBUG_TYPE_PUSH_GROUP: std::cout << "Type: Push Group"; break;
-        case GL_DEBUG_TYPE_POP_GROUP: std::cout << "Type: Pop Group"; break;
-        case GL_DEBUG_TYPE_OTHER: std::cout << "Type: Other"; break;
-        default: std::cout << "Type: Unknown"; break;
-    }
-    std::cout << std::endl;
-    switch (severity) {
-        case GL_DEBUG_SEVERITY_HIGH: std::cout << "Severity: high"; break;
-        case GL_DEBUG_SEVERITY_MEDIUM: std::cout << "Severity: medium"; break;
-        case GL_DEBUG_SEVERITY_LOW: std::cout << "Severity: low"; break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
-        default: std::cout << "Source: Unknown"; break;
-    }
-    std::cout << std::endl;
-    std::cout << std::endl;
-}
 
 void IERenderEngine::destroy() {
     _destroy(*this);
@@ -842,7 +812,7 @@ void IERenderEngine::destroy() {
 
 void IERenderEngine::_openGLDestroy() {
     glFinish();
-    glfwTerminate();
+   // glfwTerminate();
 }
 
 std::function<bool(IERenderEngine &)> IERenderEngine::_update =

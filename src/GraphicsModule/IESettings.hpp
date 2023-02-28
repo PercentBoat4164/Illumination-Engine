@@ -18,26 +18,25 @@
 
 // System dependencies
 #include <array>
-#include <GLFW/glfw3.h>
 #include <string>
 #include <SDL.h>
 
 class IESettings {
 public:
     IESettings() {
-        SDL_Init();
-        glfwInit();
-        primaryMonitor       = glfwGetPrimaryMonitor();
+        SDL_Init(SDL_INIT_EVERYTHING);
+
+        //primaryMonitor       = glfwGetPrimaryMonitor();
         defaultResolution    = {800, 600};
-        fullscreenResolution = {glfwGetVideoMode(primaryMonitor)->width, glfwGetVideoMode(primaryMonitor)->height};
+//        fullscreenResolution = {glfwGetVideoMode(primaryMonitor)->width, glfwGetVideoMode(primaryMonitor)->height};
         windowedResolution   = {defaultResolution};
         currentResolution    = fullscreen ? &fullscreenResolution : &windowedResolution;
-        defaultPosition      = {
-          (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
-          (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
+//        defaultPosition      = {
+//          (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
+//          (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
         fullscreenPosition = {0, 0};
         windowedPosition   = {defaultPosition};
-        currentPosition    = fullscreen ? &fullscreenPosition : &windowedPosition;
+       // currentPosition    = fullscreen ? &fullscreenPosition : &windowedPosition;
     }
 
     IE::Core::Logger    logger{"Graphics Logger"};
@@ -53,7 +52,7 @@ public:
     bool                fullscreen{false};
     int                 refreshRate{60};
     bool                vSync{false};
-    GLFWmonitor        *primaryMonitor;
+    void        *primaryMonitor;
     std::array<int, 2>  defaultResolution{};
     std::array<int, 2>  fullscreenResolution{};
     std::array<int, 2>  windowedResolution{};
@@ -61,7 +60,7 @@ public:
     std::array<int, 2>  defaultPosition{};
     std::array<int, 2>  fullscreenPosition{};
     std::array<int, 2>  windowedPosition{};
-    std::array<int, 2> *currentPosition;
+    int               **currentPosition;
     double              fov{90};
     double              renderDistance{1000000};
     double              mouseSensitivity{0.1};

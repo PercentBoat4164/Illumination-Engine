@@ -6,6 +6,9 @@
 #include "Core/LogModule/IELogger.hpp"
 #include "Core/ThreadingModule/ThreadPool.hpp"
 
+#include <SDL.h>
+#include <SDL_vulkan.h>
+
 #include <mutex>
 #include <unordered_map>
 
@@ -71,6 +74,7 @@ private:
 
     Core(const std::filesystem::path &t_path) {
         m_filesystem.setBaseDirectory(t_path);
+        SDL_Init(SDL_INIT_EVERYTHING);
     }
 };
 }  // namespace IE::Core
