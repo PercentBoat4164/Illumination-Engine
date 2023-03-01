@@ -15,7 +15,7 @@
 #define ILLUMINATION_ENGINE_CORE_LOGGER_NAME  "Illumination Engine"
 #define ILLUMINATION_ENGINE_CORE_LOG_FILENAME "logs/IlluminationEngine.log"
 
-struct GLFWwindow;
+struct SDL_Window;
 
 namespace IE::Core {
 class Core final {
@@ -47,7 +47,7 @@ public:
     static IE::Core::Engine *getEngine(std::string id);
 
     template<typename... Args>
-    static void registerWindow(GLFWwindow *t_window, Args... args) {
+    static void registerWindow(SDL_Window *t_window, Args... args) {
         std::unique_lock<std::mutex> lock(m_windowsMutex);
         if (m_windows.find(t_window) != m_windows.end())
             m_logger.log(
@@ -57,7 +57,7 @@ public:
         m_windows[t_window] = Window(args...);
     }
 
-    static IE::Core::Window *getWindow(GLFWwindow *t_window);
+    static IE::Core::Window *getWindow(SDL_Window *t_window);
 
     static Logger                *getLogger();
     static FileSystem            *getFileSystem();
@@ -68,7 +68,7 @@ private:
     static std::mutex                                          m_enginesMutex;
     static std::unordered_map<std::string, IE::Core::Engine *> m_engines;
     static std::mutex                                          m_windowsMutex;
-    static std::unordered_map<GLFWwindow *, IE::Core::Window>  m_windows;
+    static std::unordered_map<SDL_Window *, IE::Core::Window>  m_windows;
     static Threading::ThreadPool                               m_threadPool;
     static FileSystem                                          m_filesystem;
 

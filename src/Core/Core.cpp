@@ -9,7 +9,7 @@ IE::Core::Logger IE::Core::Core::m_logger{
 std::mutex                                          IE::Core::Core::m_enginesMutex{};
 std::unordered_map<std::string, IE::Core::Engine *> IE::Core::Core::m_engines{};
 std::mutex                                          IE::Core::Core::m_windowsMutex{};
-std::unordered_map<GLFWwindow *, IE::Core::Window>  IE::Core::Core::m_windows{};
+std::unordered_map<SDL_Window *, IE::Core::Window>  IE::Core::Core::m_windows{};
 IE::Core::Threading::ThreadPool                     IE::Core::Core::m_threadPool{};
 IE::Core::FileSystem                                IE::Core::Core::m_filesystem{};
 
@@ -30,7 +30,7 @@ IE::Core::Threading::ThreadPool *IE::Core::Core::getThreadPool() {
     return &m_threadPool;
 }
 
-IE::Core::Window *IE::Core::Core::getWindow(GLFWwindow *t_window) {
+IE::Core::Window *IE::Core::Core::getWindow(SDL_Window *t_window) {
     std::unique_lock<std::mutex> lock(m_windowsMutex);
     auto                         window = m_windows.find(t_window);
     if (window != m_windows.end()) return &window->second;
