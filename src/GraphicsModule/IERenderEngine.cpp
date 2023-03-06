@@ -79,10 +79,10 @@ SDL_Window *IERenderEngine::createWindow(){
         settings->logger.log(
           "Failed to create window! Error: " + std::string(SDL_GetError()) + " ",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
-    int width, height;
+    int width = settings->defaultResolution[0], height = settings->defaultResolution[1];
     *settings->currentResolution = {width, height};
-//    IE::Core::Core::registerWindow(window);
-//    IE::Core::Core::getWindow(window)->graphicsEngine = const_cast<IERenderEngine *>(this);
+    IE::Core::Core::registerWindow(window);
+    IE::Core::Core::getWindow(window)->graphicsEngine = const_cast<IERenderEngine *>(this);
     return window;
 }
 
@@ -193,7 +193,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     } else {
-        // Success! Delete the old swapchain and images and replace them with the new ones.
+        "Success! Delete the old swapchain and images and replace them with the new ones.";
         destroySwapchain();
         swapchain           = thisSwapchain.value();
         swapchainImageViews = swapchain.get_image_views().value();
@@ -482,7 +482,7 @@ bool IERenderEngine::_openGLUpdate() {
     frameTime        = currentTime - previousTime;
     previousTime     = currentTime;
     frameNumber++;
-    return 0;
+    return 0;  //needs to be rewritten SDL quit not same glfwwindowshouldclose
    // return !glfwWindowShouldClose(window);
 }
 
