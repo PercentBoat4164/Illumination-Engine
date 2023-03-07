@@ -224,7 +224,7 @@ public:
     IEAPI                                          API;
     ExtensionAndFeatureInfo                        extensionAndFeatureInfo{};
     //SDL_DisplayMode                                   *monitor{};
-    SDL_Window                                    *window{};
+    SDL_Window                                    *pwindow{};
     vkb::Device                                    device{};
     vkb::Swapchain                                 swapchain{};
     vkb::Instance                                  instance{};

@@ -36,7 +36,7 @@ public:
 //          (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
         fullscreenPosition = {0, 0};
         windowedPosition   = {defaultPosition};
-       // currentPosition    = fullscreen ? &fullscreenPosition : &windowedPosition;
+      // currentPosition    =fullscreen ? &fullscreenPosition : &windowedPosition;
     }
 
     IE::Core::Logger    logger{"Graphics Logger"};

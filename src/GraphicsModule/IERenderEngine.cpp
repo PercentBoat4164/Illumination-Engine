@@ -27,7 +27,7 @@
 #include <filesystem>
 #include <SDL.h>
 #include <SDL_vulkan.h>
-#include <SDL_Video.h>
+#include <SDL_opengl.h>
 
 vkb::Instance IERenderEngine::createVulkanInstance() {
     vkb::InstanceBuilder builder;
@@ -67,7 +67,7 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
 
 SDL_Window *IERenderEngine::createWindow(){
 
-    SDL_Window *window = SDL_CreateWindow(
+    SDL_Window *pwindow = SDL_CreateWindow(
       settings->applicationName.c_str(),
       settings->defaultPosition[0],
       settings->defaultPosition[1],
@@ -75,15 +75,15 @@ SDL_Window *IERenderEngine::createWindow(){
       settings->defaultResolution[1],
       SDL_WINDOW_VULKAN | SDL_WINDOW_OPENGL
       );
-    if(!window)
+    if(!pwindow)
         settings->logger.log(
           "Failed to create window! Error: " + std::string(SDL_GetError()) + " ",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
     int width = settings->defaultResolution[0], height = settings->defaultResolution[1];
     *settings->currentResolution = {width, height};
-    IE::Core::Core::registerWindow(window);
-    IE::Core::Core::getWindow(window)->graphicsEngine = const_cast<IERenderEngine *>(this);
-    return window;
+    IE::Core::Core::registerWindow(pwindow);
+    IE::Core::Core::getWindow(pwindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
+    return pwindow;
 }
 
 void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
@@ -115,7 +115,7 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
-    if (!SDL_Vulkan_CreateSurface(window, instance.instance, &surface))
+    if (!SDL_Vulkan_CreateSurface(pwindow, instance.instance, &surface))
         settings->logger.log("Failed to create Vulkan surface for SDL window. Error:" + std::string(SDL_GetError()), IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL);
     deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_surface(instance.instance, surface); });
     return surface;
@@ -341,17 +341,17 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
 //    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    window = createWindow();
+    pwindow = createWindow();
 //    setWindowIcons("res/logos");
-    SDL_SetWindowMinimumSize(window, 1, 1);
-    SDL_SetWindowPosition(window, (*settings->currentPosition)[0], (*settings->currentPosition)[1]);
+    SDL_SetWindowMinimumSize(pwindow, 1, 1);
+    SDL_SetWindowPosition(pwindow, (*settings->currentPosition)[0], (*settings->currentPosition)[1]);
 //    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
 
 //    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    //SDL_GL_GetDrawableSize(window, settings->*currentResolution, *settings->currentResolution); *need to fix settings
+//    SDL_GL_GetDrawableSize; *needs pointer to width and height
 
 //    glfwSetWindowPosCallback(window, windowPositionCallback);
-    SDL_GetWindowPosition(window, (*settings->currentPosition), (*settings->currentPosition)); //check again later
+    SDL_GetWindowPosition(pwindow, (*settings->currentPosition), (*settings->currentPosition)); //check again later
 //    glfwSetWindowUserPointer(window, this);
 
 
@@ -487,7 +487,7 @@ bool IERenderEngine::_openGLUpdate() {
 }
 
 bool IERenderEngine::_vulkanUpdate() {
-    if (window == nullptr) return false;
+    if (pwindow == nullptr) return false;
     if (renderables.empty())
         SDL_Quit();
     if (framebufferResized) {
@@ -762,7 +762,7 @@ IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings
 //    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 //#endif
 
-    void *window = createWindow();
+    void *pwindow = createWindow();
 
 //    setWindowIcons("res/logos");
 //    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
