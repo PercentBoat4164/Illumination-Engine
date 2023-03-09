@@ -27,6 +27,7 @@ struct SDL_Window;
 #include <vulkan/vulkan.h>
 #include <SDL.h>
 #include <SDL_vulkan.h>
+#include <SDL_opengl.h>
 
 // System dependencies
 #include <algorithm>
@@ -224,7 +225,7 @@ public:
     IEAPI                                          API;
     ExtensionAndFeatureInfo                        extensionAndFeatureInfo{};
     //SDL_DisplayMode                                   *monitor{};
-    SDL_Window                                    *pwindow{};
+    SDL_Window                                    *window{};
     vkb::Device                                    device{};
     vkb::Swapchain                                 swapchain{};
     vkb::Instance                                  instance{};

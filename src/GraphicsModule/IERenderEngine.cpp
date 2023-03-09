@@ -27,6 +27,7 @@
 #include <filesystem>
 #include <SDL.h>
 #include <SDL_vulkan.h>
+#include <gl\glew.h>
 #include <SDL_opengl.h>
 
 vkb::Instance IERenderEngine::createVulkanInstance() {
@@ -73,12 +74,12 @@ SDL_Window *IERenderEngine::createWindow(){
       settings->defaultPosition[1],
       settings->defaultResolution[0],
       settings->defaultResolution[1],
-      SDL_WINDOW_VULKAN | SDL_WINDOW_OPENGL
+      SDL_WINDOW_VULKAN  //Metal for MAC, check info.plist
       );
-    if(!pwindow)
+    if(pwindow == NULL){
         settings->logger.log(
           "Failed to create window! Error: " + std::string(SDL_GetError()) + " ",
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);}
     int width = settings->defaultResolution[0], height = settings->defaultResolution[1];
     *settings->currentResolution = {width, height};
     IE::Core::Core::registerWindow(pwindow);
@@ -115,7 +116,7 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
-    if (!SDL_Vulkan_CreateSurface(pwindow, instance.instance, &surface))
+    if (!SDL_Vulkan_CreateSurface(window, instance.instance, &surface))
         settings->logger.log("Failed to create Vulkan surface for SDL window. Error:" + std::string(SDL_GetError()), IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL);
     deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_surface(instance.instance, surface); });
     return surface;
@@ -341,17 +342,17 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
 //    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    pwindow = createWindow();
+    window = createWindow();
 //    setWindowIcons("res/logos");
-    SDL_SetWindowMinimumSize(pwindow, 1, 1);
-    SDL_SetWindowPosition(pwindow, (*settings->currentPosition)[0], (*settings->currentPosition)[1]);
+    SDL_SetWindowMinimumSize(window, 1, 1);
+    SDL_SetWindowPosition(window, settings->currentPosition[0], settings->currentPosition[1]);
 //    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
 
 //    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 //    SDL_GL_GetDrawableSize; *needs pointer to width and height
 
 //    glfwSetWindowPosCallback(window, windowPositionCallback);
-    SDL_GetWindowPosition(pwindow, (*settings->currentPosition), (*settings->currentPosition)); //check again later
+    SDL_GetWindowPosition(window, &settings->currentPosition[0], &settings->currentPosition[1]); //check again later
 //    glfwSetWindowUserPointer(window, this);
 
 
@@ -482,12 +483,12 @@ bool IERenderEngine::_openGLUpdate() {
     frameTime        = currentTime - previousTime;
     previousTime     = currentTime;
     frameNumber++;
-    return 0;  //needs to be rewritten SDL quit not same glfwwindowshouldclose
+    return 1;  //needs to be rewritten SDL quit not same glfwwindowshouldclose
    // return !glfwWindowShouldClose(window);
 }
 
 bool IERenderEngine::_vulkanUpdate() {
-    if (pwindow == nullptr) return false;
+    if (window == nullptr) return false;
     if (renderables.empty())
         SDL_Quit();
     if (framebufferResized) {
@@ -560,11 +561,12 @@ bool IERenderEngine::_vulkanUpdate() {
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }
-//    auto currentTime = (float) glfwGetTime();
-//    frameTime        = currentTime - previousTime;
-//    previousTime     = currentTime;
-//    frameNumber++;
-//    return glfwWindowShouldClose(window) != 1;
+    auto currentTime = (float) SDL_GetTicks64();
+    frameTime        = currentTime - previousTime;
+    previousTime     = currentTime;
+    frameNumber++;
+    return 1;  //needs to be rewritten SDL quit not same glfwwindowshouldclose **Duplicate Code, ask if needs twice
+
 }
 
 void IERenderEngine::toggleFullscreen() {
@@ -740,7 +742,7 @@ bool IERenderEngine::ExtensionAndFeatureInfo::variableDescriptorCountSupportQuer
     return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount != 0U;
 }
 
-IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings{t_settings}) {
+IERenderEngine::IERenderEngine(IESettings &settings) : settings(new IESettings{settings}) {
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
@@ -762,7 +764,7 @@ IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings
 //    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 //#endif
 
-    void *pwindow = createWindow();
+    window = createWindow();
 
 //    setWindowIcons("res/logos");
 //    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -779,7 +781,7 @@ IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings
     // Initialize glew
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
-        settings->logger.log("Failed to initialize GLEW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+        settings.logger.log("Failed to initialize GLEW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
 
     // Get API Version
     autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);

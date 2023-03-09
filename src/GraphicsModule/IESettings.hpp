@@ -36,7 +36,8 @@ public:
 //          (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
         fullscreenPosition = {0, 0};
         windowedPosition   = {defaultPosition};
-      // currentPosition    =fullscreen ? &fullscreenPosition : &windowedPosition;
+      currentPosition    = {20,20};
+          //fullscreen ? &fullscreenPosition : &windowedPosition;
     }
 
     IE::Core::Logger    logger{"Graphics Logger"};
@@ -60,7 +61,7 @@ public:
     std::array<int, 2>  defaultPosition{};
     std::array<int, 2>  fullscreenPosition{};
     std::array<int, 2>  windowedPosition{};
-    int               **currentPosition;
+    std::array<int, 2>  currentPosition{};
     double              fov{90};
     double              renderDistance{1000000};
     double              mouseSensitivity{0.1};
