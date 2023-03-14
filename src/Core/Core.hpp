@@ -8,6 +8,7 @@
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
+#include <SDL_opengl.h>
 
 #include <mutex>
 #include <unordered_map>

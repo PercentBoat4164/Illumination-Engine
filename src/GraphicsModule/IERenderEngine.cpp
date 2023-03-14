@@ -74,7 +74,8 @@ SDL_Window *IERenderEngine::createWindow(){
       settings->defaultPosition[1],
       settings->defaultResolution[0],
       settings->defaultResolution[1],
-      SDL_WINDOW_VULKAN  //Metal for MAC, check info.plist
+      SDL_WINDOW_OPENGL
+//      SDL_WINDOW_VULKAN  //Metal for MAC, check info.plist
       );
     if(pwindow == NULL){
         settings->logger.log(
@@ -349,8 +350,6 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
 //    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
 
 //    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-//    SDL_GL_GetDrawableSize; *needs pointer to width and height
-
 //    glfwSetWindowPosCallback(window, windowPositionCallback);
     SDL_GetWindowPosition(window, &settings->currentPosition[0], &settings->currentPosition[1]); //check again later
 //    glfwSetWindowUserPointer(window, this);
@@ -767,16 +766,26 @@ IERenderEngine::IERenderEngine(IESettings &settings) : settings(new IESettings{s
     window = createWindow();
 
 //    setWindowIcons("res/logos");
-//    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    SDL_SetWindowMinimumSize(window, 1, 1); //    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
 //    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
 //    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
 //    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-//    glfwSetWindowPosCallback(window, windowPositionCallback);
-//    glfwSetWindowUserPointer(window, this);
+    SDL_SetWindowPosition(window, settings.currentPosition[0], settings.currentPosition[1]);//    glfwSetWindowPosCallback(window, windowPositionCallback);
+      SDL_GetWindowPosition(window, &settings.currentPosition[0], &settings.currentPosition[1]); //check again later
+      //    glfwSetWindowUserPointer(window, this);
 //
 //    // Make context current
+      if(!SDL_GL_CreateContext(window))
+        settings.logger.log(
+          "Failed to create OpenGL Context! Error: " + std::string(SDL_GetError()) + " ",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
+
+
 //    glfwMakeContextCurrent(window);
 //    glfwSwapInterval(settings->vSync ? 1 : 0);
+
+
+
 
     // Initialize glew
     glewExperimental = GL_TRUE;

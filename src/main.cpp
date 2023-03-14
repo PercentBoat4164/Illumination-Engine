@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     }
 
     IESettings settings     = IESettings();
-    auto      *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine", &settings);
+    auto      *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine", settings);
 
 //    IE::Input::InputEngine inputEngine{renderEngine->window};
 //    IE::Input::Keyboard   *keyboard = inputEngine.getAspect("keyboard");
