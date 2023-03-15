@@ -477,6 +477,12 @@ bool IERenderEngine::_openGLUpdate() {
     glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
     for (const std::weak_ptr<IERenderable> &renderable : renderables) renderable.lock()->update(0);
     //glfwSwapBuffers(window);
+#if defined(AppleClang)
+    glBindFramebuffer(0);
+#endif
+    SDL_GL_SwapWindow(window);
+    settings->logger.log(std::string("Frame number: ") + std::to_string(frameNumber));
+      // settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
    // auto currentTime = (float) glfwGetTime(); *prob don't need;keeping anyway
     auto currentTime = (float) SDL_GetTicks64();
     frameTime        = currentTime - previousTime;
@@ -763,7 +769,7 @@ IERenderEngine::IERenderEngine(IESettings &settings) : settings(new IESettings{s
 //    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 //#endif
 
-    window = createWindow();
+window = createWindow();
 
 //    setWindowIcons("res/logos");
     SDL_SetWindowMinimumSize(window, 1, 1); //    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -773,19 +779,17 @@ IERenderEngine::IERenderEngine(IESettings &settings) : settings(new IESettings{s
     SDL_SetWindowPosition(window, settings.currentPosition[0], settings.currentPosition[1]);//    glfwSetWindowPosCallback(window, windowPositionCallback);
       SDL_GetWindowPosition(window, &settings.currentPosition[0], &settings.currentPosition[1]); //check again later
       //    glfwSetWindowUserPointer(window, this);
-//
+
 //    // Make context current
       if(!SDL_GL_CreateContext(window))
         settings.logger.log(
-          "Failed to create OpenGL Context! Error: " + std::string(SDL_GetError()) + " ",
+          "Failed Create OpenGL Context! Error: " + std::string(SDL_GetError()) + " ",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
 
 
 //    glfwMakeContextCurrent(window);
+
 //    glfwSwapInterval(settings->vSync ? 1 : 0);
-
-
-
 
     // Initialize glew
     glewExperimental = GL_TRUE;
@@ -798,8 +802,8 @@ IERenderEngine::IERenderEngine(IESettings &settings) : settings(new IESettings{s
 #ifndef NDEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronous
-#    ifndef __APPLE__
-//    glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
+#    if not defined(AppleClang)
+//    glDebugMessageCallback(&IERenderEngine::GL_DEBUG_OUTPUT, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 #    endif
 #endif
