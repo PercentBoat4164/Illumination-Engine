@@ -67,7 +67,6 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
 }
 
 SDL_Window *IERenderEngine::createWindow(){
-
     SDL_Window *pwindow = SDL_CreateWindow(
       settings->applicationName.c_str(),
       settings->defaultPosition[0],
@@ -85,6 +84,11 @@ SDL_Window *IERenderEngine::createWindow(){
     *settings->currentResolution = {width, height};
     IE::Core::Core::registerWindow(pwindow);
     IE::Core::Core::getWindow(pwindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
+
+    if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+        SDL_GL_SetSwapInterval((settings->vSync ? 1 : 0));
+    }
+
     return pwindow;
 }
 
@@ -477,7 +481,7 @@ bool IERenderEngine::_openGLUpdate() {
     glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
     for (const std::weak_ptr<IERenderable> &renderable : renderables) renderable.lock()->update(0);
     //glfwSwapBuffers(window);
-#if defined(AppleClang)
+#ifdef __APPLE__
     glBindFramebuffer(0);
 #endif
     SDL_GL_SwapWindow(window);
@@ -802,7 +806,7 @@ window = createWindow();
 #ifndef NDEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronous
-#    if not defined(AppleClang)
+#    ifdef __APPLE__
 //    glDebugMessageCallback(&IERenderEngine::GL_DEBUG_OUTPUT, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 #    endif
