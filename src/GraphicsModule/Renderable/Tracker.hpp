@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Buffer/IEBuffer.hpp"
 #include "Core/AssetModule/IEAspect.hpp"
 #include "glm/glm.hpp"

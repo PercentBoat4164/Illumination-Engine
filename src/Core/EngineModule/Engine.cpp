@@ -1,13 +1,10 @@
 #include "Engine.hpp"
 
-#include "Core/Core.hpp"
-
 #include <utility>
 
 IEAspect *IE::Core::Engine::getAspect(const std::string &t_id) {
     auto aspect = m_aspects.find(t_id);
     if (aspect != m_aspects.end()) return aspect->second.get();
-    IE::Core::Core::getLogger()->log("Aspect '" + t_id + "' does not exist!");
     return nullptr;
 }
 

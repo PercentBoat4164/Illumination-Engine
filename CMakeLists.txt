@@ -4,9 +4,6 @@ project(IlluminationEngine VERSION 0.0.0)
 set(CMAKE_CXX_STANDARD 23)
 
 set(BUILD_SHARED_LIBS OFF)
-if (WIN32)
-	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif ()
 
 # Detect compiler and OS
 message("Using ${CMAKE_CXX_COMPILER_ID} on ${CMAKE_SYSTEM_NAME}.")
@@ -37,6 +34,10 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	# Added to prevent known errors from clouding the log.
 	add_compile_options("-Wno-nullability-completeness")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	if (WIN32)
+		set(BUILD_SHARED_LIBS ON)
+	endif ()
+
 	add_compile_definitions("GCC")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_definitions("MSVC")
@@ -49,8 +50,7 @@ elseif ()
 	message(WARNING "Unsupported compiler in use: ${CMAKE_CXX_COMPILER_ID}")
 endif ()
 
-#add_link_options("-fuse-ld=lld") # Use LLVM's lld linker for speed.
-
+#add_link_options("-fuse-ld=lld")  # Use LLVM's lld linker for speed.
 
 add_subdirectory(ext)  # Generate external dependencies from source
 add_subdirectory(src)  # Generate Illumination Engine from source

@@ -3,8 +3,6 @@
 #include "InputModule/InputEngine.hpp"
 #include "InputModule/Keyboard.hpp"
 
-#include <iostream>
-
 int main(int argc, char **argv) {
     if (argc >= 1) {
         auto              programLocation  = std::filesystem::path(argv[0]);
@@ -61,15 +59,21 @@ int main(int argc, char **argv) {
     );
     keyboard->editActions(
       {GLFW_KEY_LEFT_CONTROL, GLFW_PRESS},
-      [&](GLFWwindow *) { renderEngine->camera.speed *= 6.0; }
+      [&](GLFWwindow *) {
+          renderEngine->camera.speed *= 6.0;
+      }
     );
     keyboard->editActions(
       {GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE},
-      [&](GLFWwindow *) { renderEngine->camera.speed /= 6.0; }
+      [&](GLFWwindow *) {
+          renderEngine->camera.speed /= 6.0;
+      }
     );
     keyboard->editActions(
       {GLFW_KEY_F11, GLFW_PRESS},
-      [&](GLFWwindow *) { renderEngine->queueToggleFullscreen(); }
+      [&](GLFWwindow *) {
+          renderEngine->queueToggleFullscreen();
+      }
     );
     keyboard->editActions({GLFW_KEY_ESCAPE, GLFW_REPEAT}, [&](GLFWwindow *) {
         glfwSetWindowShouldClose(renderEngine->window, 1);

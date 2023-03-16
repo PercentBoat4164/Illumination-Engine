@@ -12,7 +12,6 @@ set_target_properties(IECore PROPERTIES LINKER_LANGUAGE CXX)
 # Add internal dependency libraries to the target
 target_link_libraries(IECore PUBLIC IELogModule)
 target_link_libraries(IECore PUBLIC IEAssetModule)
-target_link_libraries(IECore PUBLIC IELogModule)
 target_link_libraries(IECore PUBLIC IEFileSystemModule)
 target_link_libraries(IECore PUBLIC IEThreadingModule)
 target_link_libraries(IECore PUBLIC IEEngineModule)
