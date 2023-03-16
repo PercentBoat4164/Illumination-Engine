@@ -80,11 +80,7 @@ class ThreadPool {
     std::atomic<bool>                m_shutdown{false};
 
 public:
-#if defined(AppleClang)
     explicit ThreadPool(size_t threads = std::thread::hardware_concurrency()) {
-#else
-    explicit ThreadPool(size_t threads = std::thread::hardware_concurrency()) {
-#endif
         m_workers.reserve(threads);
         for (; threads > 0; --threads) m_workers.emplace_back([this] { Worker().start(this); });
     }
@@ -144,7 +140,7 @@ public:
 #if defined(AppleClang)
     friend void ResumeAfter::await_suspend(std::experimental::coroutine_handle<> t_handle);
 #else
-    friend void ResumeAfter::await_suspend(std::coroutine_handle<> t_handle);
+    friend void             ResumeAfter::await_suspend(std::coroutine_handle<> t_handle);
 #endif
 };
 }  // namespace IE::Core::Threading
