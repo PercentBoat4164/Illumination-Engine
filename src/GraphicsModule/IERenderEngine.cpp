@@ -12,9 +12,6 @@
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
 
-
-
-
 #define VMA_IMPLEMENTATION
 
 #include <vk_mem_alloc.h>
@@ -25,10 +22,10 @@
 
 /* Include system dependencies. */
 #include <filesystem>
+#include <GL/glew.h>
 #include <SDL.h>
-#include <SDL_vulkan.h>
-#include <gl\glew.h>
 #include <SDL_opengl.h>
+#include <SDL_vulkan.h>
 
 vkb::Instance IERenderEngine::createVulkanInstance() {
     vkb::InstanceBuilder builder;
@@ -66,65 +63,83 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     return instance;
 }
 
-SDL_Window *IERenderEngine::createWindow(){
-    SDL_Window *pwindow = SDL_CreateWindow(
+SDL_Window *IERenderEngine::createWindow() {
+    SDL_Window *pwindow{SDL_CreateWindow(
       settings->applicationName.c_str(),
       settings->defaultPosition[0],
       settings->defaultPosition[1],
       settings->defaultResolution[0],
       settings->defaultResolution[1],
-      SDL_WINDOW_OPENGL
-//      SDL_WINDOW_VULKAN  //Metal for MAC, check info.plist
-      );
-    if(pwindow == NULL){
+      //@todo Fix this. It works for now, but it should only activate SDL_WINDOW_OPENGL if API.name is
+      //IE_RENDER_ENGINE_API_NAME_OPENGL.
+      (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN ? SDL_WINDOW_VULKAN : SDL_WINDOW_OPENGL) |
+        SDL_WINDOW_ALLOW_HIGHDPI
+    )};
+    if (pwindow == nullptr)
         settings->logger.log(
           "Failed to create window! Error: " + std::string(SDL_GetError()) + " ",
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);}
-    int width = settings->defaultResolution[0], height = settings->defaultResolution[1];
-    *settings->currentResolution = {width, height};
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+        );
     IE::Core::Core::registerWindow(pwindow);
     IE::Core::Core::getWindow(pwindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
 
-    if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
-        SDL_GL_SetSwapInterval((settings->vSync ? 1 : 0));
-    }
+    if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL)
+        SDL_GL_SetSwapInterval((settings->vSync ? 1 : 0));  // 1 Vsync, 0 No Vsync, -1 Adaptive Vsync
 
     return pwindow;
 }
 
 void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
-//    int                    width;
-//    int                    height;
-//    int                    channels;
-//    std::vector<GLFWimage> icons{};
-//
-//    // iterate over all files and directories within path recursively
-//    for (const std::filesystem::directory_entry &file : std::filesystem::recursive_directory_iterator(path)) {
-//        stbi_uc *pixels = stbi_load(
-//          file.path().string().c_str(),
-//          &width,
-//          &height,
-//          &channels,
-//          STBI_rgb_alpha
-//        );  // Load image from disk
-//        if (pixels == nullptr) {
-//            settings->logger.log(
-//
-//              "Failed to load icon " + file.path().generic_string() + ". Is this file an image?",
-//              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
-//            );
-//        }
-//        icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
-//    }
-//    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
-//    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                // Free all pixel data
+    //    int                    width;
+    //    int                    height;
+    //    int                    channels;
+    //    std::vector<GLFWimage> icons{};
+    //
+    //    // iterate over all files and directories within path recursively
+    //    for (const std::filesystem::directory_entry &file : std::filesystem::recursive_directory_iterator(path))
+    //    {
+    //        stbi_uc *pixels = stbi_load(
+    //          file.path().string().c_str(),
+    //          &width,
+    //          &height,
+    //          &channels,
+    //          STBI_rgb_alpha
+    //        );  // Load image from disk
+    //        if (pixels == nullptr) {
+    //            settings->logger.log(
+    //
+    //              "Failed to load icon " + file.path().generic_string() + ". Is this file an image?",
+    //              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+    //            );
+    //        }
+    //        icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
+    //    }
+    //    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
+    //    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                // Free all pixel data
 }
 
-VkSurfaceKHR IERenderEngine::createWindowSurface() {
-    if (!SDL_Vulkan_CreateSurface(window, instance.instance, &surface))
-        settings->logger.log("Failed to create Vulkan surface for SDL window. Error:" + std::string(SDL_GetError()), IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL);
-    deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_surface(instance.instance, surface); });
-    return surface;
+void IERenderEngine::prepareWindow() {
+    int width, height;
+    window = createWindow();
+    if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+        SDL_Vulkan_GetDrawableSize(window, &width, &height);
+        createVulkanInstance();
+        if (!SDL_Vulkan_CreateSurface(window, instance.instance, &surface)) {
+            settings->logger.log(
+              "Failed to create Vulkan surface for SDL window. Error:" + std::string(SDL_GetError()),
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_CRITICAL
+            );
+        }
+        deletionQueue.insert(deletionQueue.begin(), [&] { vkb::destroy_surface(instance.instance, surface); });
+    } else if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
+        SDL_GL_GetDrawableSize(window, &width, &height);
+        if (!SDL_GL_CreateContext(window))
+            settings->logger.log(
+              "Failed Create OpenGL Context! Error: " + std::string(SDL_GetError()) + " ",
+              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
+            );
+    }
+    settings->currentResolution = {width, height};
 }
 
 vkb::Device IERenderEngine::setUpDevice(
@@ -140,9 +155,10 @@ vkb::Device IERenderEngine::setUpDevice(
         selector.add_desired_extensions(*desiredExtensions->data());
 
     selector.prefer_gpu_device_type(vkb::PreferredDeviceType::discrete);
+    selector.set_surface(surface);
 
     // Set surface for physical device.
-    vkb::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.set_surface(surface).select();
+    vkb::Result<vkb::PhysicalDevice> physicalDeviceBuilder = selector.select();
 
     // Prepare to build logical device
     vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
@@ -184,7 +200,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
     vkb::SwapchainBuilder swapchainBuilder{device};
     swapchainBuilder
       .set_desired_present_mode(settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
-      .set_desired_extent((*settings->currentResolution)[0], (*settings->currentResolution)[1])
+      .set_desired_extent(settings->currentResolution[0], settings->currentResolution[1])
       .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}
       )  // This may have to change in the event that HDR is to be supported.
       .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
@@ -340,28 +356,25 @@ void IERenderEngine::destroyCommandPools() {
 }
 
 IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
-    // Create a Vulkan instance
-    createVulkanInstance();
+    API.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
 
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
-//    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    window = createWindow();
-//    setWindowIcons("res/logos");
+    prepareWindow();
+    //    setWindowIcons("res/logos");
     SDL_SetWindowMinimumSize(window, 1, 1);
     SDL_SetWindowPosition(window, settings->currentPosition[0], settings->currentPosition[1]);
-//    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
+    //    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
 
-//    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-//    glfwSetWindowPosCallback(window, windowPositionCallback);
-    SDL_GetWindowPosition(window, &settings->currentPosition[0], &settings->currentPosition[1]); //check again later
-//    glfwSetWindowUserPointer(window, this);
-
-
-
-    // Create surface
-    createWindowSurface();
+    //    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    //    glfwSetWindowPosCallback(window, windowPositionCallback);
+    SDL_GetWindowPosition(
+      window,
+      &settings->currentPosition[0],
+      &settings->currentPosition[1]
+    );  // check again later
+    //    glfwSetWindowUserPointer(window, this);
 
     // Set up the device
     std::vector<std::vector<const char *>> extensions{};
@@ -472,34 +485,34 @@ bool IERenderEngine::_openGLUpdate() {
     if (shouldBeFullscreen) {
         shouldBeFullscreen = false;
         toggleFullscreen();
-//        return glfwWindowShouldClose(window) != 1;
+        //        return glfwWindowShouldClose(window) != 1;
     }
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
-    glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
+    glViewport(0, 0, settings->currentResolution[0], settings->currentResolution[1]);
     for (const std::weak_ptr<IERenderable> &renderable : renderables) renderable.lock()->update(0);
-    //glfwSwapBuffers(window);
+        // glfwSwapBuffers(window);
 #ifdef __APPLE__
-    glBindFramebuffer(0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 #endif
     SDL_GL_SwapWindow(window);
     settings->logger.log(std::string("Frame number: ") + std::to_string(frameNumber));
-      // settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
-   // auto currentTime = (float) glfwGetTime(); *prob don't need;keeping anyway
+    // settings->logger.log(API.name + " v" + API.version.name,
+    // IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
+    // auto currentTime = (float) glfwGetTime(); *prob don't need;keeping anyway
     auto currentTime = (float) SDL_GetTicks64();
     frameTime        = currentTime - previousTime;
     previousTime     = currentTime;
     frameNumber++;
-    return 1;  //needs to be rewritten SDL quit not same glfwwindowshouldclose
-   // return !glfwWindowShouldClose(window);
+    return 1;  // needs to be rewritten SDL quit not same glfwwindowshouldclose
+    // return !glfwWindowShouldClose(window);
 }
 
 bool IERenderEngine::_vulkanUpdate() {
     if (window == nullptr) return false;
-    if (renderables.empty())
-        SDL_Quit();
+    if (renderables.empty()) SDL_Quit();
     if (framebufferResized) {
         framebufferResized = false;
         handleResolutionChange();
@@ -574,61 +587,62 @@ bool IERenderEngine::_vulkanUpdate() {
     frameTime        = currentTime - previousTime;
     previousTime     = currentTime;
     frameNumber++;
-    return 1;  //needs to be rewritten SDL quit not same glfwwindowshouldclose **Duplicate Code, ask if needs twice
-
+    return 1;  // needs to be rewritten SDL quit not same glfwwindowshouldclose **Duplicate Code, ask if needs
+               // twice
 }
 
 void IERenderEngine::toggleFullscreen() {
-//    settings->fullscreen ^= true;
-//    if (settings->fullscreen) {
-//        int                monitorCount{};
-//        int                windowX{};
-//        int                windowY{};
-//        int                windowWidth{};
-//        int                windowHeight{};
-//        int                monitorX{};
-//        int                monitorY{};
-//        int                monitorWidth;
-//        int                monitorHeight;
-//        int                bestMonitorWidth{};
-//        int                bestMonitorHeight{};
-//        int                bestMonitorRefreshRate{};
-//        int                overlap;
-//        int                bestOverlap{0};
-//        GLFWmonitor      **monitors;
-//        const GLFWvidmode *mode;
-//        glfwGetWindowPos(window, &windowX, &windowY);
-//        glfwGetWindowSize(window, &windowWidth, &windowHeight);
-//        monitors = glfwGetMonitors(&monitorCount);
-//        for (int i = 0; i < monitorCount; ++i) {
-//            mode = glfwGetVideoMode(monitors[i]);
-//            glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
-//            monitorWidth  = mode->width;
-//            monitorHeight = mode->height;
-//            overlap =
-//              std::max(0, std::min(windowX + windowWidth, monitorX + monitorWidth) - std::max(windowX, monitorX)) *
-//              std::max(
-//                0,
-//                std::min(windowY + windowHeight, monitorY + monitorHeight) - std::max(windowY, monitorY)
-//              );
-//            if (bestOverlap < overlap) {
-//                bestOverlap            = overlap;
-//                monitor                = monitors[i];
-//                bestMonitorWidth       = monitorWidth;
-//                bestMonitorHeight      = monitorHeight;
-//                bestMonitorRefreshRate = mode->refreshRate;
-//            }
-//        }
-//        settings->refreshRate        = bestMonitorRefreshRate;
-//        settings->currentResolution  = &settings->fullscreenResolution;
-//        *settings->currentResolution = {bestMonitorWidth, bestMonitorHeight};
-//        SDL_GetWindowPosition(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
-//        settings->currentPosition = &settings->fullscreenPosition;
-//    } else {
-//        monitor                     = nullptr;
-//        settings->currentResolution = &settings->windowedResolution;
-//        settings->currentPosition   = &settings->windowedPosition;
-    }
+    //    settings->fullscreen ^= true;
+    //    if (settings->fullscreen) {
+    //        int                monitorCount{};
+    //        int                windowX{};
+    //        int                windowY{};
+    //        int                windowWidth{};
+    //        int                windowHeight{};
+    //        int                monitorX{};
+    //        int                monitorY{};
+    //        int                monitorWidth;
+    //        int                monitorHeight;
+    //        int                bestMonitorWidth{};
+    //        int                bestMonitorHeight{};
+    //        int                bestMonitorRefreshRate{};
+    //        int                overlap;
+    //        int                bestOverlap{0};
+    //        GLFWmonitor      **monitors;
+    //        const GLFWvidmode *mode;
+    //        glfwGetWindowPos(window, &windowX, &windowY);
+    //        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+    //        monitors = glfwGetMonitors(&monitorCount);
+    //        for (int i = 0; i < monitorCount; ++i) {
+    //            mode = glfwGetVideoMode(monitors[i]);
+    //            glfwGetMonitorPos(monitors[i], &monitorX, &monitorY);
+    //            monitorWidth  = mode->width;
+    //            monitorHeight = mode->height;
+    //            overlap =
+    //              std::max(0, std::min(windowX + windowWidth, monitorX + monitorWidth) - std::max(windowX,
+    //              monitorX)) * std::max(
+    //                0,
+    //                std::min(windowY + windowHeight, monitorY + monitorHeight) - std::max(windowY, monitorY)
+    //              );
+    //            if (bestOverlap < overlap) {
+    //                bestOverlap            = overlap;
+    //                monitor                = monitors[i];
+    //                bestMonitorWidth       = monitorWidth;
+    //                bestMonitorHeight      = monitorHeight;
+    //                bestMonitorRefreshRate = mode->refreshRate;
+    //            }
+    //        }
+    //        settings->refreshRate        = bestMonitorRefreshRate;
+    //        settings->currentResolution  = &settings->fullscreenResolution;
+    //        *settings->currentResolution = {bestMonitorWidth, bestMonitorHeight};
+    //        SDL_GetWindowPosition(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
+    //        settings->currentPosition = &settings->fullscreenPosition;
+    //    } else {
+    //        monitor                     = nullptr;
+    //        settings->currentResolution = &settings->windowedResolution;
+    //        settings->currentPosition   = &settings->windowedPosition;
+}
+
 //    glfwSetWindowMonitor(
 //      window,
 //      monitor,
@@ -658,16 +672,16 @@ IERenderEngine::~IERenderEngine() {
     destroy();
 }
 
-//void IERenderEngine::windowPositionCallback(GLFWwindow *window, int x, int y) {
-//    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(window)->graphicsEngine);
-//    *renderEngine->settings->currentPosition = {x, y};
-//}
+// void IERenderEngine::windowPositionCallback(GLFWwindow *window, int x, int y) {
+//     auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(window)->graphicsEngine);
+//     *renderEngine->settings->currentPosition = {x, y};
+// }
 //
-//void IERenderEngine::framebufferResizeCallback(GLFWwindow *window, int width, int height) {
-//    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(window)->graphicsEngine);
-//    *renderEngine->settings->currentResolution = {width, height};
-//    renderEngine->framebufferResized           = true;
-//}
+// void IERenderEngine::framebufferResizeCallback(GLFWwindow *window, int width, int height) {
+//     auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(window)->graphicsEngine);
+//     *renderEngine->settings->currentResolution = {width, height};
+//     renderEngine->framebufferResized           = true;
+// }
 
 std::string IERenderEngine::translateVkResultCodes(VkResult result) {
     switch (result) {
@@ -752,48 +766,43 @@ bool IERenderEngine::ExtensionAndFeatureInfo::variableDescriptorCountSupportQuer
 }
 
 IERenderEngine::IERenderEngine(IESettings &settings) : settings(new IESettings{settings}) {
+    API.name = IE_RENDER_ENGINE_API_NAME_OPENGL;
+
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
-//    if (glfwInit() != GLFW_TRUE)
-//        settings->logger.log("Failed to initialize GLFW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
-//    glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
-//    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-//#ifndef __APPLE__
-//    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-//#else
-//    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-//#endif
-//#ifndef NDEBUG
-//    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-//#endif
-//#ifdef __APPLE__
-//    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy.
-//    glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);    // Use Core Profile by default.
-//    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-//#endif
+    //    if (glfwInit() != GLFW_TRUE)
+    //        settings->logger.log("Failed to initialize GLFW!",
+    //        IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+    //    glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
+    //    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    // #ifndef __APPLE__
+    //    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    // #else
+    //    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    // #endif
+    // #ifndef NDEBUG
+    //    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+    // #endif
+    // #ifdef __APPLE__
+    //    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy.
+    //    glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);    // Use Core Profile by default.
+    //    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // #endif
 
-window = createWindow();
+    prepareWindow();
 
-//    setWindowIcons("res/logos");
-    SDL_SetWindowMinimumSize(window, 1, 1); //    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-//    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
-//    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
-//    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    SDL_SetWindowPosition(window, settings.currentPosition[0], settings.currentPosition[1]);//    glfwSetWindowPosCallback(window, windowPositionCallback);
-      SDL_GetWindowPosition(window, &settings.currentPosition[0], &settings.currentPosition[1]); //check again later
-      //    glfwSetWindowUserPointer(window, this);
-
-//    // Make context current
-      if(!SDL_GL_CreateContext(window))
-        settings.logger.log(
-          "Failed Create OpenGL Context! Error: " + std::string(SDL_GetError()) + " ",
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN);
-
-
-//    glfwMakeContextCurrent(window);
-
-//    glfwSwapInterval(settings->vSync ? 1 : 0);
+    //    setWindowIcons("res/logos");
+    SDL_SetWindowMinimumSize(window, 1, 1);
+    //    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    //    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
+    //    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
+    //    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    SDL_SetWindowPosition(window, settings.currentPosition[0], settings.currentPosition[1]);
+    //    glfwSetWindowPosCallback(window, windowPositionCallback);
+    SDL_GetWindowPosition(window, &settings.currentPosition[0], &settings.currentPosition[1]);  // check again
+                                                                                                // later
+    //    glfwSetWindowUserPointer(window, this);
 
     // Initialize glew
     glewExperimental = GL_TRUE;
@@ -808,7 +817,7 @@ window = createWindow();
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronous
 #    ifdef __APPLE__
 //    glDebugMessageCallback(&IERenderEngine::GL_DEBUG_OUTPUT, nullptr);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+//    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 #    endif
 #endif
 
@@ -824,14 +833,13 @@ window = createWindow();
     );
 }
 
-
 void IERenderEngine::destroy() {
     _destroy(*this);
 }
 
 void IERenderEngine::_openGLDestroy() {
     glFinish();
-   // glfwTerminate();
+    // glfwTerminate();
 }
 
 std::function<bool(IERenderEngine &)> IERenderEngine::_update =

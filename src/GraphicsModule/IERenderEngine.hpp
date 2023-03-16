@@ -7,7 +7,7 @@
 /* Predefine classes used with pointers or as return values for functions. */
 struct SDL_Window;
 
-//SDL_DisplayMode;
+// SDL_DisplayMode;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
@@ -23,11 +23,11 @@ struct SDL_Window;
 #include "Renderable/IERenderable.hpp"
 
 // External dependencies
+#include <SDL.h>
+#include <SDL_opengl.h>
+#include <SDL_vulkan.h>
 #include <VkBootstrap.h>
 #include <vulkan/vulkan.h>
-#include <SDL.h>
-#include <SDL_vulkan.h>
-#include <SDL_opengl.h>
 
 // System dependencies
 #include <algorithm>
@@ -63,7 +63,7 @@ private:
      * @brief Creates a VkSurface for the window.
      * @return The newly created surface.
      */
-    VkSurfaceKHR createWindowSurface();
+    void prepareWindow();
 
     /**
      * @brief Creates a physical and logical device with the extensions and
@@ -224,7 +224,7 @@ public:
     std::shared_ptr<IECommandPool>                 computeCommandPool{};
     IEAPI                                          API;
     ExtensionAndFeatureInfo                        extensionAndFeatureInfo{};
-    //SDL_DisplayMode                                   *monitor{};
+    // SDL_DisplayMode                                   *monitor{};
     SDL_Window                                    *window{};
     vkb::Device                                    device{};
     vkb::Swapchain                                 swapchain{};

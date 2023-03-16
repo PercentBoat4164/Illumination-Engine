@@ -1,25 +1,25 @@
-//#pragma once
+// #pragma once
 //
-//#include "Core/AssetModule/IEAspect.hpp"
+// #include "Core/AssetModule/IEAspect.hpp"
 //
-//#ifndef GLEW_IMPLEMENTATION
-//#    define GLEW_IMPLEMENTATION
-//#    include <GL/glew.h>
-//#endif
+// #ifndef GLEW_IMPLEMENTATION
+// #    define GLEW_IMPLEMENTATION
+// #    include <GL/glew.h>
+// #endif
 //
-//#include <any>
-//#include <cstdint>
-//#include <functional>
-//#include <GLFW/glfw3.h>
-//#include <string>
-//#include <unordered_map>
-//#include <vector>
+// #include <any>
+// #include <cstdint>
+// #include <functional>
+// #include <GLFW/glfw3.h>
+// #include <string>
+// #include <unordered_map>
+// #include <vector>
 //
-//namespace IE::Input::detail {
+// namespace IE::Input::detail {
 ///**
 // * @brief A class that stores the data related to a key press action.
 // */
-//struct KeyPressDescription {
+// struct KeyPressDescription {
 //    uint16_t key;
 //    uint8_t  action;
 //    uint8_t  modifiers;
@@ -53,17 +53,17 @@
 // * @brief The hash method for the IeKeyPressDescription structure.
 // * @return A hash value for an IeKeyPressDescription.
 // */
-//template<>
-//struct [[maybe_unused]] std::hash<IE::Input::detail::KeyPressDescription> {
+// template<>
+// struct [[maybe_unused]] std::hash<IE::Input::detail::KeyPressDescription> {
 //    size_t operator()(const IE::Input::detail::KeyPressDescription &k) const;
 //};
 //
-//namespace IE::Input {
+// namespace IE::Input {
 ///**
 // * @brief The Keyboard class is intended to manage keyboard event handling.
 // */
-//class Keyboard : public IEAspect {
-//public:
+// class Keyboard : public IEAspect {
+// public:
 //    void *attachment;  // pointer to object for access through the window user pointer
 //
 //    /**
@@ -158,7 +158,8 @@
 //    void clearQueue();
 //
 //    /**
-//     * @brief Default key event handler function. Enqueues the key as pressed or released. Does not handle repeats.
+//     * @brief Default key event handler function. Enqueues the key as pressed or released. Does not handle
+//     repeats.
 //     * @param window
 //     * @param key
 //     * @param scancode
@@ -167,10 +168,11 @@
 //     */
 //    static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int modifiers);
 //
-//private:
+// private:
 //    GLFWwindow                                         *window;   // window this keyboard manages
 //    std::vector<IE::Input::detail::KeyPressDescription> queue{};  // queue of key presses
-//    std::unordered_map<IE::Input::detail::KeyPressDescription, std::pair<std::function<void(GLFWwindow *)>, bool>>
+//    std::unordered_map<IE::Input::detail::KeyPressDescription, std::pair<std::function<void(GLFWwindow *)>,
+//    bool>>
 //      actionsOptions{};  // hash table of key press description to function
 //};
 //}  // namespace IE::Input

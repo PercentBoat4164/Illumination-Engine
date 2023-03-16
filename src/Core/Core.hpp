@@ -6,11 +6,9 @@
 #include "Core/LogModule/IELogger.hpp"
 #include "Core/ThreadingModule/ThreadPool.hpp"
 
+#include <mutex>
 #include <SDL.h>
 #include <SDL_vulkan.h>
-
-
-#include <mutex>
 #include <unordered_map>
 
 #define ILLUMINATION_ENGINE_CORE_LOGGER_NAME  "Illumination Engine"
@@ -78,4 +76,4 @@ private:
         SDL_Init(SDL_INIT_EVERYTHING);
     }
 };
-}
+}  // namespace IE::Core

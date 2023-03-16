@@ -186,11 +186,7 @@ void IEMesh::_openglLoadFromRAMToVRAM() {
 
     indexBuffer->uploadToVRAM();
 
-#if defined(__APPLE__)
-    std::string shaderDir{"shaders/OpenGL/macOS/"};
-#else
     std::string shaderDir{"shaders/OpenGL/"};
-#endif
 
     shaders.resize(2);
     shaders[0] = std::make_shared<IEShader>();

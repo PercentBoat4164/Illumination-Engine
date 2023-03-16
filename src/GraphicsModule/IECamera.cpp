@@ -25,8 +25,8 @@ void IECamera::update() {
     viewMatrix       = {glm::lookAt(position, position + front, up)};
     projectionMatrix = {glm::perspective(
       glm::radians(horizontalFOV),
-      double((*linkedRenderEngine->settings->currentResolution)[0]) /
-        (*linkedRenderEngine->settings->currentResolution)[1],
+      double(linkedRenderEngine->settings->currentResolution[0]) /
+        double(linkedRenderEngine->settings->currentResolution[1]),
       0.01,
       linkedRenderEngine->settings->renderDistance
     )};
@@ -34,8 +34,8 @@ void IECamera::update() {
 }
 
 void IECamera::updateSettings() {
-    aspectRatio = double((*linkedRenderEngine->settings->currentResolution)[0]) /
-      (*linkedRenderEngine->settings->currentResolution)[1];
+    aspectRatio = double(linkedRenderEngine->settings->currentResolution[0]) /
+      double(linkedRenderEngine->settings->currentResolution[1]);
     fov = linkedRenderEngine->settings->fov;
     horizontalFOV =
       tanh(tan(linkedRenderEngine->settings->fov * (ILLUMINATION_ENGINE_PI / 360)) * 1 / aspectRatio) *
