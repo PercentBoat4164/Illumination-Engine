@@ -1,6 +1,5 @@
 #include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
-#include "GraphicsModule/Image/ImageVulkan.hpp"
 #include "RenderEngine.hpp"
 
 int main(int argc, char **argv) {

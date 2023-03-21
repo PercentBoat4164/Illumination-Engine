@@ -9,7 +9,7 @@ namespace IE::Core::Threading {
 template<typename T>
 class FunctionTask : public Task<T> {
 public:
-    FunctionTask(std::function<T()> t_baseFunction) : m_wrappedFunction(t_baseFunction) {
+    explicit FunctionTask(std::function<T()> t_baseFunction) : m_wrappedFunction(t_baseFunction) {
     }
 
     void execute() override {
