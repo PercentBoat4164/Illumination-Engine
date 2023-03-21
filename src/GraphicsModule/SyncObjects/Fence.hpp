@@ -23,13 +23,13 @@ public:
     std::shared_ptr<std::mutex> fenceMutex{};
     std::atomic<Status>         status{IE_FENCE_STATUS_INVALID};
 
-    explicit Fence(IE::Graphics::RenderEngine *t_engineLink, bool t_signaled = false);
+    explicit Fence(IE::Graphics::RenderEngine *t_engineLink, bool t_signaled = true);
 
     Fence(const IE::Graphics::Fence &);
 
     Fence() = default;
 
-    void create(IE::Graphics::RenderEngine *t_engineLink, bool t_signaled = false);
+    void create(IE::Graphics::RenderEngine *t_engineLink, bool t_signaled = true);
 
     ~Fence();
 };

@@ -23,14 +23,14 @@ struct ResumeAfter {
     ResumeAfter() = default;
 
     template<typename... Args>
-    ResumeAfter(ThreadPool *t_threadPool, Args... args) :
+    explicit ResumeAfter(ThreadPool *t_threadPool, Args... args) :
             m_ready([args...] { return (... && args->finished()); }),
             m_threadPool(t_threadPool) {
     }
 
-    ResumeAfter(ThreadPool *t_threadPool, std::vector<std::shared_ptr<BaseTask>> t_tasks) :
+    ResumeAfter(ThreadPool *t_threadPool, const std::vector<std::shared_ptr<BaseTask>> &t_tasks) :
             m_ready([t_tasks] {
-                return std::all_of(t_tasks.begin(), t_tasks.end(), [](std::shared_ptr<BaseTask> task) {
+                return std::all_of(t_tasks.begin(), t_tasks.end(), [](const std::shared_ptr<BaseTask> &task) {
                     return task->finished();
                 });
             }),
@@ -56,14 +56,14 @@ struct ResumeAfter {
     }
 
 private:
-    ThreadPool           *m_threadPool;
+    ThreadPool           *m_threadPool{};
     std::function<bool()> m_ready;
 #if defined(AppleClang)
     std::experimental::coroutine_handle<> m_handle;
 #else
     std::coroutine_handle<> m_handle;
 #endif
-};
+} __attribute__((aligned(64)));
 
 class Worker {
 public:
@@ -80,11 +80,7 @@ class ThreadPool {
     std::atomic<bool>                m_shutdown{false};
 
 public:
-#if defined(AppleClang)
     explicit ThreadPool(size_t threads = std::thread::hardware_concurrency()) {
-#else
-    explicit ThreadPool(size_t threads = std::thread::hardware_concurrency()) {
-#endif
         m_workers.reserve(threads);
         for (; threads > 0; --threads) m_workers.emplace_back([this] { Worker().start(this); });
     }
@@ -122,11 +118,13 @@ public:
 
     template<typename... Args>
     ResumeAfter resumeAfter(Args... args) {
-        return {this, args...};
+        std::this_thread::yield();
+        return ResumeAfter{this, args...};
     }
 
-    ResumeAfter resumeAfter(std::vector<std::shared_ptr<BaseTask>> t_tasks) {
-        return {this, t_tasks};
+    ResumeAfter resumeAfter(const std::vector<std::shared_ptr<BaseTask>> &t_tasks) {
+        std::this_thread::yield();
+        return ResumeAfter{this, t_tasks};
     }
 
     ~ThreadPool() {
@@ -144,7 +142,7 @@ public:
 #if defined(AppleClang)
     friend void ResumeAfter::await_suspend(std::experimental::coroutine_handle<> t_handle);
 #else
-    friend void ResumeAfter::await_suspend(std::coroutine_handle<> t_handle);
+    friend void             ResumeAfter::await_suspend(std::coroutine_handle<> t_handle);
 #endif
 };
 }  // namespace IE::Core::Threading

@@ -12,8 +12,16 @@ void IE::Core::Threading::Worker::start(ThreadPool *t_threadPool) {
         });
         if (pool.m_shutdown) break;
         activeJob->execute();
-        while (pool.m_suspendedPool.pop(suspendedJob, [](ResumeAfter it) { return it.await_ready(); }))
+        while (pool.m_suspendedPool.pop(
+          suspendedJob,
+          [](ResumeAfter it) { return it.await_ready(); },
+          0
+        )) {
+            /**@todo Make a way to wake up other threads when suspended jobs are available. */
+            /**@todo Disconnect a dependency from a job when the dependency finishes. When no more dependencies are
+             * connected to a job, move that job back into the active queue and notify a thread. */
             suspendedJob.resume();
+        }
     }
 }
 

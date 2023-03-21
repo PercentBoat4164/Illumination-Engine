@@ -9,5 +9,5 @@ set(IEThreadingModuleSourceFiles  # Gather sources
 
 
 add_library(IEThreadingModule ${IEThreadingModuleSourceFiles})
-set_target_properties(IEThreadingModule PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(IEThreadingModule PUBLIC INT_src)
+set_target_properties(IEThreadingModule PROPERTIES LINKER_LANGUAGE CXX)

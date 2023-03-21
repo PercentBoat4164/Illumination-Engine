@@ -47,7 +47,7 @@ bool IE::Graphics::detail::BufferVulkan::_createBuffer(
         memcpy(pData, t_data, t_dataSize);
         vmaUnmapMemory(m_linkedRenderEngine->getAllocator(), m_allocation);
     }
-    m_linkedRenderEngine->getLogger().log("Created buffer");
+    m_linkedRenderEngine->getLogger().log("Created Buffer");
     return true;
 }
 

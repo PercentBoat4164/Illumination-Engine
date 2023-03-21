@@ -12,7 +12,7 @@ void IE::Graphics::Framebuffer::build(
     m_resolution[0]      = m_linkedRenderEngine->m_currentResolution[0];
     m_resolution[1]      = m_linkedRenderEngine->m_currentResolution[1];
 
-    IE::Core::MultiDimensionalVector<unsigned char> tmp{};
+    std::vector<unsigned char> tmp{};
     attachments.reserve(t_attachmentPresets.size());
     for (size_t i{}; i < t_attachmentPresets.size(); ++i) {
         attachments.push_back(std::make_shared<IE::Graphics::detail::ImageVulkan>(m_linkedRenderEngine));

@@ -25,8 +25,7 @@ public:
     VkImageView   m_view{};
     VmaAllocation m_allocation{};
 
-    bool _createImage(Preset t_preset, uint64_t t_flags, IE::Core::MultiDimensionalVector<unsigned char> &t_data)
-      override;
+    bool _createImage(Preset t_preset, uint64_t t_flags, std::vector<unsigned char> &t_data) override;
 
     bool _destroyImage() override;
 

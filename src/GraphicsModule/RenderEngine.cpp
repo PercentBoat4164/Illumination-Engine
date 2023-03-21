@@ -303,65 +303,41 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
     m_renderPassSeries.build();
 }
 
+void IE::Graphics::RenderEngine::createPrimaryCommandObjects() {
+    m_primaryCommandPool.create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
+    m_primaryCommandBuffers.resize(m_swapchain.image_count);
+    for (int i{}; i < m_swapchain.image_count; ++i)
+        m_primaryCommandBuffers[i] = std::make_shared<IE::Graphics::CommandBuffer>(&m_primaryCommandPool);
+}
+
 IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
     m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
-    auto window{IE::Core::Core::getThreadPool()
-                  ->submit([](IE::Graphics::RenderEngine *engine) { engine->createWindow(); }, this)};
-    auto instance{IE::Core::Core::getThreadPool()
-                    ->submit([](IE::Graphics::RenderEngine *engine) { engine->createInstance(); }, this)};
-    auto device{IE::Core::Core::getThreadPool()->submit(
-      [](
-        IE::Graphics::RenderEngine                      *engine,
-        std::shared_ptr<IE::Core::Threading::Task<void>> window,
-        std::shared_ptr<IE::Core::Threading::Task<void>> instance
-      ) -> IE::Core::Threading::CoroutineTask<void> {
-          co_await IE::Core::Core::getThreadPool()->resumeAfter(window, instance);
-          engine->createSurface();
-          engine->createDevice();
-      },
-      this,
-      window,
-      instance
-    )};
+    auto window{IE::Core::Core::getThreadPool()->submit([this] { createWindow(); })};
+
+    createInstance();
+
+    co_await IE::Core::Core::getThreadPool()->resumeAfter(window);
+
+    createSurface();
+    createDevice();
 
     // Dependency chain
-    auto commandPoolRenderPasses{IE::Core::Core::getThreadPool()->submit(
-      [](IE::Graphics::RenderEngine *engine, std::shared_ptr<IE::Core::Threading::Task<void>> device)
-        -> IE::Core::Threading::CoroutineTask<void> {
-          // Needs the device to create Command Pools
-          co_await IE::Core::Core::getThreadPool()->resumeAfter(device);
-          engine->createCommandPools();
-          engine->createAllocator();
-          engine->createRenderPasses();
-      },
-      this,
-      device
-    )};
+    auto commandPoolRenderPasses{IE::Core::Core::getThreadPool()->submit([this] {
+        createCommandPools();
+        createAllocator();
+        createRenderPasses();
+    })};
 
-    auto swapchainSyncObjects{IE::Core::Core::getThreadPool()->submit(
-      [](IE::Graphics::RenderEngine *engine, std::shared_ptr<IE::Core::Threading::Task<void>> device)
-        -> IE::Core::Threading::CoroutineTask<void> {
-          // Needs the device to allocate a swapchain
-          co_await IE::Core::Core::getThreadPool()->resumeAfter(device);
-          engine->createSyncObjects();
-          engine->createSwapchain();
-      },
-      this,
-      device
-    )};
+    auto swapchainSyncObjects{IE::Core::Core::getThreadPool()->submit([this] {
+        createSwapchain();
+        createSyncObjects();
+    })};
 
-    auto descriptorSet{IE::Core::Core::getThreadPool()->submit(
-      [](IE::Graphics::RenderEngine *engine, std::shared_ptr<IE::Core::Threading::Task<void>> device)
-        -> IE::Core::Threading::CoroutineTask<void> {
-          // Needs the device to allocate descriptor sets
-          co_await IE::Core::Core::getThreadPool()->resumeAfter(device);
-          engine->createDescriptorSets();
-      },
-      this,
-      device
-    )};
-    co_await IE::Core::Core::getThreadPool()
-      ->resumeAfter(descriptorSet, commandPoolRenderPasses, swapchainSyncObjects);
+    createDescriptorSets();
+
+    co_await IE::Core::Core::getThreadPool()->resumeAfter(commandPoolRenderPasses, swapchainSyncObjects);
+
+    createPrimaryCommandObjects();
 }
 
 GLFWwindow *IE::Graphics::RenderEngine::getWindow() {
@@ -497,15 +473,62 @@ std::string IE::Graphics::RenderEngine::makeErrorMessage(
 }
 
 IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
+    uint64_t currentFrame{m_frameNumber % m_swapchain.image_count};
+
+    // Record all command buffers
+    auto commandBufferRecording =
+      IE::Core::Core::getThreadPool()->submit(m_renderPassSeries.execute(m_primaryCommandBuffers[currentFrame]));
+
+    // Acquire an image from the swapchain
+    uint32_t imageIndex{0};
+    vkAcquireNextImageKHR(
+      m_device.device,
+      m_swapchain.swapchain,
+      UINT64_MAX,
+      m_imageAvailableSemaphores[currentFrame]->semaphore,
+      VK_NULL_HANDLE,
+      &imageIndex
+    );
+
+    // Wait for previous frame
+    vkWaitForFences(m_device.device, 1, &m_inFlightFences[currentFrame]->fence, VK_TRUE, UINT64_MAX);
+    vkResetFences(m_device.device, 1, &m_inFlightFences[currentFrame]->fence);
+
+    // Submit the command buffer
+    std::vector<uint32_t> waitStages{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+    VkSubmitInfo submitInfo{
+      .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .waitSemaphoreCount   = 1,
+      .pWaitSemaphores      = &m_imageAvailableSemaphores[0]->semaphore,
+      .pWaitDstStageMask    = waitStages.data(),
+      .commandBufferCount   = 0,
+      .pCommandBuffers      = &m_primaryCommandBuffers[currentFrame]->m_commandBuffer,
+      .signalSemaphoreCount = 1,
+      .pSignalSemaphores    = &m_renderFinishedSemaphores[0]->semaphore};
+
+    co_await IE::Core::Core::getThreadPool()->resumeAfter(commandBufferRecording);
+
+    // @todo Add error checking.
+    vkQueueSubmit(
+      m_device.get_queue(vkb::QueueType::graphics).value(),
+      1,
+      &submitInfo,
+      m_inFlightFences[currentFrame]->fence
+    );
+
+    VkPresentInfoKHR presentInfo{
+      .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      .waitSemaphoreCount = 1,
+      .pWaitSemaphores    = &m_renderFinishedSemaphores[currentFrame]->semaphore,
+      .swapchainCount     = 1,
+      .pSwapchains        = &m_swapchain.swapchain,
+      .pImageIndices      = &imageIndex,
+      .pResults           = nullptr};
+
+    vkQueuePresentKHR(m_device.get_queue(vkb::QueueType::graphics).value(), &presentInfo);
+
     ++m_frameNumber;
-
-    // Render all renderables in all passes
-    std::vector<VkCommandBuffer> commandBuffers;
-    commandBuffers.reserve(m_aspects.size());
-
-    auto job = IE::Core::Core::getThreadPool()->submit(m_renderPassSeries.execute());
-    co_await IE::Core::Core::getThreadPool()->resumeAfter(job);
-    co_return true;
 }
 
 IE::Graphics::RenderEngine::RenderEngine() {

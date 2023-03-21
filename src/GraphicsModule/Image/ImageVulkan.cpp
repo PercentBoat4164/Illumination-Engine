@@ -380,9 +380,9 @@ IE::Graphics::Image::Intent IE::Graphics::detail::ImageVulkan::intentFromPreset(
 }
 
 bool IE::Graphics::detail::ImageVulkan::_createImage(
-  IE::Graphics::Image::Preset                      t_preset,
-  uint64_t                                         t_flags,
-  IE::Core::MultiDimensionalVector<unsigned char> &t_data
+  IE::Graphics::Image::Preset t_preset,
+  uint64_t                    t_flags,
+  std::vector<unsigned char> &t_data
 ) {
     m_preset = t_preset;
 

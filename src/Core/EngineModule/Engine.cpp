@@ -1,7 +1,5 @@
 #include "Engine.hpp"
 
-#include "Core/Core.hpp"
-
 #include <utility>
 
 IE::Core::Engine &IE::Core::Engine::operator=(const IE::Core::Engine &t_other) {

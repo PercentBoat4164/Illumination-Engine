@@ -49,7 +49,7 @@ public:
     RecordFlags                 m_recordFlags{};
     AllocationFlags             m_allocationFlags{};
 
-    CommandBuffer(IE::Graphics::CommandPool *t_parentCommandPool);
+    explicit CommandBuffer(IE::Graphics::CommandPool *t_parentCommandPool);
 
     ~CommandBuffer();
 

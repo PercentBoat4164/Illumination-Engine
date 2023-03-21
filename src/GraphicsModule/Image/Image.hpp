@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Core/MultiDimensionalVector.hpp"
-
 #include <memory>
 #include <mutex>
+#include <vector>
 
 namespace IE::Graphics {
 class RenderEngine;
@@ -40,14 +39,12 @@ public:
     explicit Image(IE::Graphics::RenderEngine *t_engineLink) : m_linkedRenderEngine(t_engineLink) {
     }
 
-    virtual void
-    createImage(Preset t_preset, uint64_t t_flags, IE::Core::MultiDimensionalVector<unsigned char> &t_data);
+    virtual void createImage(Preset t_preset, uint64_t t_flags, std::vector<unsigned char> &t_data);
 
     virtual void destroyImage();
 
 protected:
-    virtual bool
-    _createImage(Preset t_preset, uint64_t t_flags, IE::Core::MultiDimensionalVector<unsigned char> &t_data) = 0;
+    virtual bool _createImage(Preset t_preset, uint64_t t_flags, std::vector<unsigned char> &t_data) = 0;
 
     virtual bool _destroyImage() = 0;
 };

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Core/MultiDimensionalVector.hpp"
-
 #include <GL/glew.h>
 #include <vulkan/vulkan.hpp>
 

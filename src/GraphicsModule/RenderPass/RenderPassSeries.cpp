@@ -257,7 +257,7 @@ auto IE::Graphics::RenderPassSeries::build() -> decltype(*this) {
     return *this;
 }
 
-auto IE::Graphics::RenderPassSeries::addRenderPass(std::shared_ptr<IE::Graphics::RenderPass> t_pass)
+auto IE::Graphics::RenderPassSeries::addRenderPass(const std::shared_ptr<IE::Graphics::RenderPass> &t_pass)
   -> decltype(*this) {
     m_renderPasses.push_back(t_pass);
     for (const auto &subpass : t_pass->m_subpasses) {
@@ -276,8 +276,10 @@ auto IE::Graphics::RenderPassSeries::addRenderPass(std::shared_ptr<IE::Graphics:
     return *this;
 }
 
-IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderPassSeries::execute() {
+IE::Core::Threading::CoroutineTask<void>
+IE::Graphics::RenderPassSeries::execute(std::shared_ptr<CommandBuffer> commandBuffer) {
     std::vector<std::shared_ptr<IE::Core::Threading::BaseTask>> tasks;
+    tasks.reserve(m_renderPasses.size());
     for (std::shared_ptr<RenderPass> renderPass : m_renderPasses)
         tasks.push_back(IE::Core::Core::getThreadPool()->submit([&renderPass] { renderPass->execute(); }));
     co_await IE::Core::Core::getThreadPool()->resumeAfter(tasks);

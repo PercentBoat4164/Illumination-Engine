@@ -71,19 +71,19 @@ public:
 };
 
 #if defined(AppleClang)
-    explicit CoroutineTask(std::experimental::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
+explicit CoroutineTask(std::experimental::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
 #else
     explicit CoroutineTask(std::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
 #endif
-    }
+}
 
 #if defined(AppleClang)
-    operator const std::experimental::coroutine_handle<promise_type>() {
+operator const std::experimental::coroutine_handle<promise_type>() {
 #else
-    operator const std::coroutine_handle<promise_type>() {
+                                        operator const std::coroutine_handle<promise_type>() {
 #endif
-        return m_handle;
-    }
+    return m_handle;
+}
 
 void execute() override {
     m_handle.resume();
@@ -103,7 +103,7 @@ void wait() override {
 
 private:
 #if defined(AppleClang)
-    std::experimental::coroutine_handle<promise_type> m_handle;
+std::experimental::coroutine_handle<promise_type> m_handle;
 #else
     std::coroutine_handle<promise_type> m_handle;
 #endif
@@ -157,7 +157,7 @@ public:
 };
 
 #if defined(AppleClang)
-    CoroutineTask(std::experimental::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
+CoroutineTask(std::experimental::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
 #else
     CoroutineTask(std::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
 #endif
@@ -189,7 +189,7 @@ void wait() override {
 
 private:
 #if defined(AppleClang)
-    std::experimental::coroutine_handle<promise_type> m_handle;
+std::experimental::coroutine_handle<promise_type> m_handle;
 #else
     std::coroutine_handle<promise_type> m_handle;
 #endif

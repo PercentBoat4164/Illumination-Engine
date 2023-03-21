@@ -4,9 +4,9 @@
 #include "RenderEngine.hpp"
 
 void IE::Graphics::Image::createImage(
-  IE::Graphics::Image::Preset                      t_preset,
-  uint64_t                                         t_flags,
-  IE::Core::MultiDimensionalVector<unsigned char> &t_data
+  IE::Graphics::Image::Preset t_preset,
+  uint64_t                    t_flags,
+  std::vector<unsigned char> &t_data
 ) {
     std::lock_guard<std::mutex> lock(*m_mutex);
     if (m_status == IE_IMAGE_STATUS_CREATED) {

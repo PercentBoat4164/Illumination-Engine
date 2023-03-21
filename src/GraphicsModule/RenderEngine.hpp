@@ -56,7 +56,7 @@ private:
     GLFWwindow                                             *m_window{};
     std::array<size_t, 2>                                   m_defaultResolution{800, 600};
     std::array<size_t, 2>                                   m_defaultPosition{10, 10};
-    size_t                                                  m_frameNumber;
+    uint64_t                                                m_frameNumber;
     bool                                                    m_useVsync{false};
     std::vector<VkImageView>                                m_swapchainImageViews;
     std::vector<std::shared_ptr<IE::Graphics::Semaphore>>   m_imageAvailableSemaphores{};
@@ -66,6 +66,8 @@ private:
     std::vector<std::shared_ptr<IE::Graphics::CommandPool>> m_commandPools{};
     IE::Graphics::RenderPassSeries                          m_renderPassSeries{this};
     IE::Graphics::DescriptorSet m_engineDescriptor{IE::Graphics::DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_FRAME};
+    IE::Graphics::CommandPool   m_primaryCommandPool{};
+    std::vector<std::shared_ptr<IE::Graphics::CommandBuffer>> m_primaryCommandBuffers{};
 
 
     static VkBool32 APIDebugMessenger(
@@ -161,5 +163,6 @@ public:
     Settings    &getSettings();
     void         createDescriptorSets();
     CommandPool *getCommandPool();
+    void         createPrimaryCommandObjects();
 };
 }  // namespace IE::Graphics
