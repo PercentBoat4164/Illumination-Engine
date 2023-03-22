@@ -321,8 +321,7 @@ IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
     createSurface();
     createDevice();
 
-    // Dependency chain
-    auto commandPoolRenderPasses{IE::Core::Core::getThreadPool()->submit([this] {
+    auto commandPoolAllocatorRenderPasses{IE::Core::Core::getThreadPool()->submit([this] {
         createCommandPools();
         createAllocator();
         createRenderPasses();
@@ -335,7 +334,7 @@ IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
 
     createDescriptorSets();
 
-    co_await IE::Core::Core::getThreadPool()->resumeAfter(commandPoolRenderPasses, swapchainSyncObjects);
+    co_await IE::Core::Core::getThreadPool()->resumeAfter(commandPoolAllocatorRenderPasses, swapchainSyncObjects);
 
     createPrimaryCommandObjects();
 }

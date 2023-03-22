@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ResumeAfter.hpp"
 #include "Task.hpp"
 
 #if defined(AppleClang)
@@ -39,8 +40,10 @@ public:
 #       if defined(AppleClang)
         std::experimental::suspend_never final_suspend() noexcept {
 #       else
-        std::suspend_never  final_suspend() noexcept {
+        std::suspend_never final_suspend() noexcept {
 #       endif
+            for (ResumeAfter *dependent : parent->m_dependents) dependent->releaseDependency();
+            parent->m_dependents.clear();
             *parent->m_finished = true;
             parent->m_finishedNotifier->notify_all();
             return {};
@@ -59,9 +62,7 @@ public:
             return {};
         }
 
-        void
-        return_value(T t_value) {
-
+        void return_value(T t_value) {
             parent->m_value = t_value;
         }
 
@@ -96,9 +97,9 @@ public:
     }
 
     void wait() override {
+        std::mutex                   mutex;
+        std::unique_lock<std::mutex> lock(mutex);
         if (!*(BaseTask::m_finished)) {
-            std::mutex                   mutex;
-            std::unique_lock<std::mutex> lock(mutex);
             BaseTask::m_finishedNotifier->wait(lock, [&] { return BaseTask::m_finished->operator bool(); });
         }
     }
@@ -136,10 +137,12 @@ public:
         }
 
 #       if defined(AppleClang)
-        std::experimental::suspend_never final_suspend() const noexcept {
+        std::experimental::suspend_never final_suspend() noexcept {
 #       else
-        std::suspend_never final_suspend() const noexcept {
+        std::suspend_never final_suspend() noexcept {
 #       endif
+            for (ResumeAfter *dependent : parent->m_dependents) dependent->releaseDependency();
+            parent->m_dependents.clear();
             *parent->m_finished = true;
             parent->m_finishedNotifier->notify_all();
             return {};

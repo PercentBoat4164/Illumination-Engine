@@ -1,10 +1,11 @@
 set(IEThreadingModuleSourceFiles  # Gather sources
         CoroutineTask.cpp
         FunctionTask.cpp
-        Pool.cpp
         Queue.cpp
+        ResumeAfter.cpp
         Task.cpp
         ThreadPool.cpp
+        Worker.cpp
         )
 
 

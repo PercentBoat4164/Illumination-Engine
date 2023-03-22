@@ -33,7 +33,7 @@ public:
         auto engineCreator = IE::Core::Core::getThreadPool()->submit(engine->create());
         co_await IE::Core::Core::getThreadPool()->resumeAfter(engineCreator);
         m_engines[id] = engine;
-        co_return std::static_pointer_cast<T>(engine);
+        co_return engine;
     }
 
     template<typename T>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ResumeAfter.hpp"
 #include "Task.hpp"
 
 #include <functional>
@@ -15,7 +16,8 @@ public:
     void execute() override {
         if constexpr (std::same_as<T, void>) m_wrappedFunction();
         else Task<T>::m_value = m_wrappedFunction();
-        *(BaseTask::m_finished) = true;
+        for (ResumeAfter *dependent : BaseTask::m_dependents) dependent->releaseDependency();
+        *BaseTask::m_finished = true;
         BaseTask::m_finishedNotifier->notify_all();
     }
 

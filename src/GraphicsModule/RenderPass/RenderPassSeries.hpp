@@ -30,7 +30,7 @@ public:
 
     void destroy() {
         for (auto &renderPass : m_renderPasses) renderPass->destroy();
-        m_masterCommandBuffer->free();
+        if (m_masterCommandBuffer) m_masterCommandBuffer->free();
     }
 
 private:

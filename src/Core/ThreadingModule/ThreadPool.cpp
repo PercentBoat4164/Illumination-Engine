@@ -1,35 +1,22 @@
 #include "ThreadPool.hpp"
 
-void IE::Core::Threading::Worker::start(ThreadPool *t_threadPool) {
-    ThreadPool               &pool = *t_threadPool;
-    std::shared_ptr<BaseTask> activeJob;
-    ResumeAfter               suspendedJob;
-    std::mutex                mutex;
-    while (!pool.m_shutdown) {
-        std::unique_lock<std::mutex> lock(mutex);
-        pool.m_workAssignmentConditionVariable.wait(lock, [&] {
-            return pool.m_activeQueue.pop(activeJob) || pool.m_shutdown;
-        });
-        if (pool.m_shutdown) break;
-        activeJob->execute();
-        while (pool.m_suspendedPool.pop(
-          suspendedJob,
-          [](ResumeAfter it) { return it.await_ready(); },
-          0
-        )) {
-            /**@todo Make a way to wake up other threads when suspended jobs are available. */
-            /**@todo Disconnect a dependency from a job when the dependency finishes. When no more dependencies are
-             * connected to a job, move that job back into the active queue and notify a thread. */
-            suspendedJob.resume();
-        }
-    }
+IE::Core::Threading::ThreadPool::ThreadPool(size_t threads) {
+    m_workers.reserve(threads);
+    for (; threads > 0; --threads) m_workers.emplace_back([this] { IE::Core::Threading::Worker::start(this); });
 }
 
-#if defined(AppleClang)
-void IE::Core::Threading::ResumeAfter::await_suspend(std::experimental::coroutine_handle<> t_handle) {
-#else
-void IE::Core::Threading::ResumeAfter::await_suspend(std::coroutine_handle<> t_handle) {
-#endif
-    m_handle = t_handle;
-    m_threadPool->m_suspendedPool.push(*this);
+IE::Core::Threading::ResumeAfter
+IE::Core::Threading::ThreadPool::resumeAfter(const std::vector<std::shared_ptr<BaseTask>> &t_tasks) {
+    return *new ResumeAfter{this, t_tasks};
+}
+
+IE::Core::Threading::ThreadPool::~ThreadPool() {
+    m_shutdown = true;
+    m_workAssignmentConditionVariable.notify_all();
+    for (std::thread &thread : m_workers)
+        if (thread.joinable()) thread.join();
+}
+
+uint32_t IE::Core::Threading::ThreadPool::getWorkerCount() {
+    return m_workers.size();
 }

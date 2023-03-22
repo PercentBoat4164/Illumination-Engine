@@ -10,18 +10,21 @@
 #include <functional>
 
 namespace IE::Core::Threading {
+class ResumeAfter;
+
 class BaseTask {
 public:
-    bool finished() {
-        return *m_finished;
-    }
+    virtual ~BaseTask() = default;
+
+    [[nodiscard]] bool finished() const;
 
     virtual void execute() = 0;
 
     virtual void wait() = 0;
 
-    std::atomic<bool>       *m_finished{new std::atomic<bool>};
-    std::condition_variable *m_finishedNotifier{new std::condition_variable};
+    std::atomic<bool>         *m_finished{new std::atomic<bool>};
+    std::condition_variable   *m_finishedNotifier{new std::condition_variable};
+    std::vector<ResumeAfter *> m_dependents{};
 };
 
 template<typename T>
