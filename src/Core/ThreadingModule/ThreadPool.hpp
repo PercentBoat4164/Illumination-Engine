@@ -16,6 +16,8 @@
 #include <functional>
 #include <thread>
 
+
+/**@todo Enable waiting on non-thread pool related things. (e.g. sleep(1))*/
 namespace IE::Core::Threading {
 class ThreadPool {
     std::vector<std::thread>         m_workers;
@@ -57,7 +59,7 @@ public:
 
     template<typename... Args>
     ResumeAfter resumeAfter(Args... args) {
-        return *new ResumeAfter{this, args...};
+        return ResumeAfter{this, args...};
     }
 
     ResumeAfter resumeAfter(const std::vector<std::shared_ptr<BaseTask>> &t_tasks);

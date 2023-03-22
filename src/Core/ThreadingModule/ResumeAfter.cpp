@@ -15,7 +15,6 @@ void IE::Core::Threading::ResumeAfter::await_suspend(std::coroutine_handle<> t_h
 }
 
 void IE::Core::Threading::ResumeAfter::await_resume() {
-//    delete this;
 }
 
 void IE::Core::Threading::ResumeAfter::releaseDependency() {

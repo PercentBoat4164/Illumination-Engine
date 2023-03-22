@@ -7,7 +7,7 @@ IE::Core::Threading::ThreadPool::ThreadPool(size_t threads) {
 
 IE::Core::Threading::ResumeAfter
 IE::Core::Threading::ThreadPool::resumeAfter(const std::vector<std::shared_ptr<BaseTask>> &t_tasks) {
-    return *new ResumeAfter{this, t_tasks};
+    return ResumeAfter{this, t_tasks};
 }
 
 IE::Core::Threading::ThreadPool::~ThreadPool() {
