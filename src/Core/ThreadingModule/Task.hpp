@@ -2,12 +2,13 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <functional>
+#include <vector>
 #if defined(AppleClang)
 #    include <experimental/coroutine>
 #else
 #    include <coroutine>
 #endif
-#include <functional>
 
 namespace IE::Core::Threading {
 class ResumeAfter;

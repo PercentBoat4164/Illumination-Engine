@@ -18,5 +18,17 @@ void IE::Core::Threading::ResumeAfter::await_resume() {
 }
 
 void IE::Core::Threading::ResumeAfter::releaseDependency() {
-    if (--*m_dependencyCount == 0) m_threadPool->submit(m_handle->load());
+    // clang-format off
+    if (--*m_dependencyCount == 0) {
+#       if defined(AppleClang)
+        std::experimental::coroutine_handle<> handle{m_handle->load()};
+        m_threadPool->submit([handle] {
+            std::experimental::coroutine_handle<> h{handle};
+            h.resume();
+        });
+#       else
+        m_threadPool->submit(m_handle->load());
+#       endif
+    }
+    // clang-format on
 }

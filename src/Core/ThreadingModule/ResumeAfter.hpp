@@ -59,7 +59,7 @@ private:
     ThreadPool         *m_threadPool{};
     std::atomic<size_t> *m_dependencyCount{new std::atomic<size_t>};
 #   if defined(AppleClang)
-    std::atomic<std::experimental::coroutine_handle<>> *m_handle{std::atomic<std::experimental::coroutine_handle<>>};
+    std::atomic<std::experimental::coroutine_handle<>> *m_handle{new std::atomic<std::experimental::coroutine_handle<>>};
 #   else
     std::atomic<std::coroutine_handle<>> *m_handle{new std::atomic<std::coroutine_handle<>>};
 #   endif

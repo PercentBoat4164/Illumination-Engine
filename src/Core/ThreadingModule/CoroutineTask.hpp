@@ -159,6 +159,8 @@ public:
 #       endif
             return {};
         }
+
+        void return_void() {}
     };
 
     virtual ~CoroutineTask() = default;

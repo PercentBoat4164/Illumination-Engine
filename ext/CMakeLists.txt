@@ -124,7 +124,11 @@ endif ()
 
 # Add all packages
 find_package(OpenGL REQUIRED)
-find_package(Vulkan REQUIRED shaderc_combined)
+if (APPLE)
+    find_package(Vulkan REQUIRED shaderc_combined)
+else ()
+    find_package(Vulkan REQUIRED shaderc_combined)
+endif ()
 
 # GLEW is wierd. Why is it like this?
 set(OpenGL_GL_PREFERENCE "GLVND")
