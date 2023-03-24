@@ -27,7 +27,7 @@ public:
         SDL_Init(SDL_INIT_EVERYTHING);
 
         // primaryMonitor       = glfwGetPrimaryMonitor();
-        defaultResolution  = {800, 600};
+        defaultResolution  = {displayDimensions.w, displayDimensions.h};
         //        fullscreenResolution = {glfwGetVideoMode(primaryMonitor)->width,
         //        glfwGetVideoMode(primaryMonitor)->height};
         windowedResolution = {defaultResolution};
@@ -67,4 +67,7 @@ public:
     double             renderDistance{1000000};
     double             mouseSensitivity{0.1};
     float              movementSpeed{2.5};
+    int                totalDisplays;
+    SDL_Rect           displayDimensions{totalDisplays};
+
 };
