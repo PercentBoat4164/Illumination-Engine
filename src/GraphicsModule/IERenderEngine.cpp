@@ -63,7 +63,15 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     return instance;
 }
 
+
 SDL_Window *IERenderEngine::createWindow() {
+
+
+    int totalDisplays = SDL_GetNumVideoDisplays();
+    for (int i = 0; i < totalDisplays; i++) {
+        SDL_GetDisplayUsableBounds(i, &settings->displayDimensions);
+        }
+
     SDL_Window *pwindow{SDL_CreateWindow(
       settings->applicationName.c_str(),
       settings->defaultPosition[0],

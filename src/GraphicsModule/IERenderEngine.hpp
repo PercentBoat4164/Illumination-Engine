@@ -49,6 +49,9 @@ private:
      * @brief Creates a window using hardcoded hints and settings from settings.
      * @return The window that was just created.
      */
+
+
+
     SDL_Window *createWindow();
 
     /**
