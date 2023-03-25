@@ -26,20 +26,19 @@ public:
     IESettings() {
         SDL_Init(SDL_INIT_EVERYTHING);
 
-        // primaryMonitor       = glfwGetPrimaryMonitor();
-        defaultResolution  = {displayDimensions.w, displayDimensions.h};
+        defaultResolution  = {(displayDimensions.w) /4, (displayDimensions.h) /4};
         //        fullscreenResolution = {glfwGetVideoMode(primaryMonitor)->width,
         //        glfwGetVideoMode(primaryMonitor)->height};
         windowedResolution = {defaultResolution};
         currentResolution  = fullscreen ? fullscreenResolution : windowedResolution;
-        //        defaultPosition      = {
-        //          (glfwGetVideoMode(primaryMonitor)->width - windowedResolution[0]) / 2,
-        //          (glfwGetVideoMode(primaryMonitor)->height - windowedResolution[1]) / 2};
+                defaultPosition      = {SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED};
         fullscreenPosition = {0, 0};
         windowedPosition   = {defaultPosition};
-        currentPosition    = {20, 20};
+        currentPosition    = {defaultPosition};
         // fullscreen ? &fullscreenPosition : &windowedPosition;
     }
+
+    void updateWindowDimensions();
 
     IE::Core::Logger   logger{"Graphics Logger"};
     bool               rayTracing{false};
@@ -54,11 +53,11 @@ public:
     bool               fullscreen{false};
     int                refreshRate{60};
     bool               vSync{false};
-    void              *primaryMonitor;
+    int                primaryMonitor;
     std::array<int, 2> defaultResolution{};
     std::array<int, 2> fullscreenResolution{};
     std::array<int, 2> windowedResolution{};
-    std::array<int, 2> currentResolution;
+    std::array<int, 2> currentResolution{};
     std::array<int, 2> defaultPosition{};
     std::array<int, 2> fullscreenPosition{};
     std::array<int, 2> windowedPosition{};

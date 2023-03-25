@@ -66,22 +66,18 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
 
 SDL_Window *IERenderEngine::createWindow() {
 
-
-    int totalDisplays = SDL_GetNumVideoDisplays();
-    for (int i = 0; i < totalDisplays; i++) {
-        SDL_GetDisplayUsableBounds(i, &settings->displayDimensions);
-        }
+    settings->updateWindowDimensions();
 
     SDL_Window *pwindow{SDL_CreateWindow(
       settings->applicationName.c_str(),
       settings->defaultPosition[0],
       settings->defaultPosition[1],
-      settings->defaultResolution[0],
-      settings->defaultResolution[1],
+      settings->currentResolution[0],
+      settings->currentResolution[1],
       //@todo Fix this. It works for now, but it should only activate SDL_WINDOW_OPENGL if API.name is
       //IE_RENDER_ENGINE_API_NAME_OPENGL.
       (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN ? SDL_WINDOW_VULKAN : SDL_WINDOW_OPENGL) |
-        SDL_WINDOW_ALLOW_HIGHDPI
+        SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE
     )};
     if (pwindow == nullptr)
         settings->logger.log(
@@ -90,6 +86,8 @@ SDL_Window *IERenderEngine::createWindow() {
         );
     IE::Core::Core::registerWindow(pwindow);
     IE::Core::Core::getWindow(pwindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
+
+    settings->primaryMonitor = SDL_GetWindowDisplayIndex(pwindow);
 
     if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL)
         SDL_GL_SetSwapInterval((settings->vSync ? 1 : 0));  // 1 Vsync, 0 No Vsync, -1 Adaptive Vsync
