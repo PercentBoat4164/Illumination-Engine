@@ -23,8 +23,9 @@ public:
 
     virtual void wait() = 0;
 
-    std::atomic<bool>         *m_finished{new std::atomic<bool>};
-    std::condition_variable   *m_finishedNotifier{new std::condition_variable};
+    std::shared_ptr<std::atomic<bool>>         m_finished{std::make_shared<std::atomic<bool>>()};
+    std::shared_ptr<std::condition_variable>   m_finishedNotifier{std::make_shared<std::condition_variable>()};
+    std::shared_ptr<std::mutex> m_dependentsMutex{std::make_shared<std::mutex>()};
     std::vector<ResumeAfter *> m_dependents{};
 };
 

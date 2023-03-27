@@ -16,7 +16,10 @@ public:
     void execute() override {
         if constexpr (std::same_as<T, void>) m_wrappedFunction();
         else Task<T>::m_value = m_wrappedFunction();
-        for (ResumeAfter *dependent : BaseTask::m_dependents) dependent->releaseDependency();
+        {
+            std::lock_guard<std::mutex> lock(*BaseTask::m_dependentsMutex);
+            for (ResumeAfter *dependent : BaseTask::m_dependents) dependent->releaseDependency();
+        }
         *BaseTask::m_finished = true;
         BaseTask::m_finishedNotifier->notify_all();
     }

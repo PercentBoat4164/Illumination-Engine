@@ -16,7 +16,6 @@
 #include <functional>
 #include <thread>
 
-
 /**@todo Enable waiting on non-thread pool related things. (e.g. sleep(1))*/
 namespace IE::Core::Threading {
 class ThreadPool {
@@ -29,28 +28,28 @@ public:
     explicit ThreadPool(size_t threads = std::thread::hardware_concurrency());
 
     template<typename T>
-    auto submit(CoroutineTask<T> &&f) -> std::shared_ptr<Task<T>> {
-        auto job{std::make_shared<CoroutineTask<T>>(f)};
-        job->connectHandle();
-        m_activeQueue.push(std::static_pointer_cast<BaseTask>(job));
+    auto submit(CoroutineTask<T> &&t_coroutine) -> std::shared_ptr<Task<T>> {
+        auto task{std::make_shared<CoroutineTask<T>>(t_coroutine)};
+        task->connectHandle();
+        m_activeQueue.push(std::static_pointer_cast<BaseTask>(task));
         m_workAssignmentConditionVariable.notify_one();
-        return std::static_pointer_cast<Task<T>>(job);
+        return std::static_pointer_cast<Task<T>>(task);
     }
 
     template<typename T, typename... Args>
-        requires requires(T &&f, Args &&...args) { typename decltype(f(args...))::ReturnType; }
-    auto submit(T &&f, Args &&...args) -> std::shared_ptr<Task<typename decltype(f(args...))::ReturnType>> {
-        auto job{std::make_shared<CoroutineTask<typename decltype(f(args...))::ReturnType>>(f(args...))};
-        job->connectHandle();
-        m_activeQueue.push(std::static_pointer_cast<BaseTask>(job));
+        requires requires(T &&t_coroutine, Args &&...args) { typename decltype(t_coroutine(args...))::ReturnType; }
+    auto submit(T &&t_coroutine, Args &&...args) -> std::shared_ptr<Task<typename decltype(t_coroutine(args...))::ReturnType>> {
+        auto task{std::make_shared<CoroutineTask<typename decltype(t_coroutine(args...))::ReturnType>>(t_coroutine(args...))};
+        task->connectHandle();
+        m_activeQueue.push(std::static_pointer_cast<BaseTask>(task));
         m_workAssignmentConditionVariable.notify_one();
-        return job;
+        return task;
     }
 
     template<typename T, typename... Args>
-    auto submit(T &&f, Args &&...args) -> std::shared_ptr<Task<decltype(f(args...))>> {
-        auto job{std::make_shared<FunctionTask<decltype(f(args...))>>([f, ... args = std::forward<Args>(args)] {
-            return f(args...);
+    auto submit(T &&t_function, Args &&...args) -> std::shared_ptr<Task<decltype(t_function(args...))>> {
+        auto job{std::make_shared<FunctionTask<decltype(t_function(args...))>>([t_function, ... args = std::forward<Args>(args)] {
+            return t_function(args...);
         })};
         m_activeQueue.push(std::static_pointer_cast<BaseTask>(job));
         m_workAssignmentConditionVariable.notify_one();

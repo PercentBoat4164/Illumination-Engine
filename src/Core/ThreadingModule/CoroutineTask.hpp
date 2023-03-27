@@ -42,7 +42,10 @@ public:
 #       else
         std::suspend_never final_suspend() noexcept {
 #       endif
-            for (ResumeAfter *dependent : parent->m_dependents) dependent->releaseDependency();
+            {
+                std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
+                for (ResumeAfter *dependent : parent->m_dependents) dependent->releaseDependency();
+            }
             parent->m_dependents.clear();
             *parent->m_finished = true;
             parent->m_finishedNotifier->notify_all();
@@ -141,7 +144,10 @@ public:
 #       else
         std::suspend_never final_suspend() noexcept {
 #       endif
-            for (ResumeAfter *dependent : parent->m_dependents) dependent->releaseDependency();
+            {
+                std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
+                for (ResumeAfter *dependent : parent->m_dependents) dependent->releaseDependency();
+            }
             parent->m_dependents.clear();
             *parent->m_finished = true;
             parent->m_finishedNotifier->notify_all();
