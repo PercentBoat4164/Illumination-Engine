@@ -117,8 +117,12 @@ if (NOT DEFINED USE_CCACHE)
     set(USE_CCACHE ON)
 endif ()
 
-# CCache is only available for Linux
-if (APPLE OR WIN32)
+# CCache is only available for Linux and macOS
+# Linux install:
+# sudo apt install ccache
+# macOS install:
+# brew install ccache
+if (WIN32)
     set(USE_CCACHE OFF)
 endif ()
 

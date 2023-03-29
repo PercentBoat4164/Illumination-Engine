@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Awaitable.hpp"
 #include "Task.hpp"
 
 #include <atomic>
@@ -14,10 +15,10 @@
 namespace IE::Core::Threading {
 class ThreadPool;
 
-class ResumeAfter {
+class ResumeAfter : public Awaitable {
 public:
     template<typename... Args>
-    explicit ResumeAfter(ThreadPool *t_threadPool, Args... args) : m_threadPool(t_threadPool) {
+    explicit ResumeAfter(ThreadPool *t_threadPool, Args... args) : Awaitable(t_threadPool) {
         std::vector<std::shared_ptr<BaseTask>> tasks;
         tasks.reserve(sizeof...(args));
         (..., tasks.push_back(args));
@@ -31,7 +32,7 @@ public:
     }
 
     ResumeAfter(ThreadPool *t_threadPool, const std::vector<std::shared_ptr<BaseTask>> &t_tasks) :
-            m_threadPool(t_threadPool) {
+            Awaitable(t_threadPool) {
         for (const std::shared_ptr<BaseTask> &dependent : t_tasks)
             if (!*dependent->m_finished) {
                 std::lock_guard<std::mutex> lock(*dependent->m_dependentsMutex);
@@ -40,30 +41,27 @@ public:
             }
     }
 
-    // Indicates the readiness of the coroutine to continue. True -> resume, False -> suspend
-    bool await_ready();
+    bool await_ready() override;
 
-#if defined(AppleClang)
-    void await_suspend(std::experimental::coroutine_handle<> t_handle);
-#else
-    // Disabling clang-format because it butchers this line.
-    // clang-format off
-    void await_suspend(std::coroutine_handle<> t_handle);
-    // clang-format on
-#endif
-
-    void await_resume();
+// clang-format off
+#   if defined(AppleClang)
+    void await_suspend(std::experimental::coroutine_handle<> t_handle) override;
+#   else
+    void await_suspend(std::coroutine_handle<> t_handle) override;
+#   endif
+// clang-format on
 
     void releaseDependency();
 
-private:
-    ThreadPool          *m_threadPool{};
-    std::atomic<size_t> *m_dependencyCount{new std::atomic<size_t>};
-#if defined(AppleClang)
-    std::atomic<std::experimental::coroutine_handle<>> *m_handle{
-      new std::atomic<std::experimental::coroutine_handle<>>};
-#else
-    std::atomic<std::coroutine_handle<>> *m_handle{new std::atomic<std::coroutine_handle<>>};
-#endif
-} __attribute__((aligned(32)));
+protected:
+    //clang-format off
+#   if defined(AppleClang)
+    std::shared_ptr<std::atomic<std::experimental::coroutine_handle<>>> m_handle{
+      std::make_shared<std::atomic<std::experimental::coroutine_handle<>>>()};
+#   else
+    std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{std::make_shared<std::atomic<std::coroutine_handle<>>>()};
+#   endif
+    // clang-format on
+    std::shared_ptr<std::atomic<size_t>> m_dependencyCount{std::make_shared<std::atomic<size_t>>()};
+};
 }  // namespace IE::Core::Threading

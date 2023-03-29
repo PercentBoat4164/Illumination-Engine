@@ -14,9 +14,6 @@ void IE::Core::Threading::ResumeAfter::await_suspend(std::coroutine_handle<> t_h
     m_handle->store(t_handle);
 }
 
-void IE::Core::Threading::ResumeAfter::await_resume() {
-}
-
 void IE::Core::Threading::ResumeAfter::releaseDependency() {
     // clang-format off
     if (--*m_dependencyCount == 0) {

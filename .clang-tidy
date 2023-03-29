@@ -235,6 +235,7 @@ Checks: '
   misc-redundant-expression,
   misc-static-assert,
   misc-throw-by-value-catch-by-reference,
+  misc-use-anonymous-namespace,
   misc-unconventional-assign-operator,
   misc-uniqueptr-reset-release,
   misc-unused-alias-decls,

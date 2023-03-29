@@ -11,7 +11,7 @@
 #endif
 
 namespace IE::Core::Threading {
-class ResumeAfter;
+class Awaitable;
 
 class BaseTask {
 public:
@@ -23,10 +23,10 @@ public:
 
     virtual void wait() = 0;
 
-    std::shared_ptr<std::atomic<bool>>         m_finished{std::make_shared<std::atomic<bool>>()};
-    std::shared_ptr<std::condition_variable>   m_finishedNotifier{std::make_shared<std::condition_variable>()};
-    std::shared_ptr<std::mutex> m_dependentsMutex{std::make_shared<std::mutex>()};
-    std::vector<ResumeAfter *> m_dependents{};
+    std::shared_ptr<std::atomic<bool>>       m_finished{std::make_shared<std::atomic<bool>>()};
+    std::shared_ptr<std::condition_variable> m_finishedNotifier{std::make_shared<std::condition_variable>()};
+    std::shared_ptr<std::mutex>              m_dependentsMutex{std::make_shared<std::mutex>()};
+    std::vector<Awaitable *>                 m_dependents{};
 };
 
 template<typename T>
@@ -46,6 +46,6 @@ public:
 template<>
 class Task<void> : public BaseTask {
 public:
-    void value(){};
+    void value();
 };
 }  // namespace IE::Core::Threading

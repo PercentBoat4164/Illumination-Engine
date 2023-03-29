@@ -44,7 +44,7 @@ public:
 #       endif
             {
                 std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
-                for (ResumeAfter *dependent : parent->m_dependents) dependent->releaseDependency();
+                for (Awaitable *dependent : parent->m_dependents) static_cast<ResumeAfter *>(dependent)->releaseDependency();
             }
             parent->m_dependents.clear();
             *parent->m_finished = true;
@@ -146,7 +146,7 @@ public:
 #       endif
             {
                 std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
-                for (ResumeAfter *dependent : parent->m_dependents) dependent->releaseDependency();
+                for (Awaitable *dependent : parent->m_dependents) static_cast<ResumeAfter *>(dependent)->releaseDependency();
             }
             parent->m_dependents.clear();
             *parent->m_finished = true;
