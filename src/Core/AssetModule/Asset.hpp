@@ -23,7 +23,7 @@ public:
     IE::Core::File                      *m_file;
     std::vector<std::shared_ptr<Aspect>> m_aspects{};
 
-    Asset(IE::Core::File *t_file);
+    explicit Asset(IE::Core::File *t_file);
 
     void addAspect(std::shared_ptr<Aspect> t_aspect);
 };

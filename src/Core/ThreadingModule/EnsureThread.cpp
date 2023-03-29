@@ -5,7 +5,10 @@
 IE::Core::Threading::EnsureThread::EnsureThread(
   IE::Core::Threading::ThreadPool *t_threadPool,
   IE::Core::Threading::ThreadType  t_type
-) : m_type(t_type), Awaitable(t_threadPool) {}
+) :
+        m_type(t_type),
+        Awaitable(t_threadPool) {
+}
 
 bool IE::Core::Threading::EnsureThread::await_ready() {
     return false;
@@ -16,5 +19,6 @@ void IE::Core::Threading::EnsureThread::await_suspend(std::experimental::corouti
 #else
 void IE::Core::Threading::EnsureThread::await_suspend(std::coroutine_handle<> t_handle) {
 #endif
-//    m_threadPool->submit(t_handle, m_type);
+    if (m_type == IE_THREADPOOL_MAIN_THREAD) m_threadPool->submitToMainThread(t_handle);
+    else if (m_type == IE_THREADPOOL_WORKER_THREAD) m_threadPool->submit(t_handle);
 }

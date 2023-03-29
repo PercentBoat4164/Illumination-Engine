@@ -1,7 +1,7 @@
 #include "Pipeline.hpp"
 
-#include "Renderable/Vertex.hpp"
 #include "RenderEngine.hpp"
+#include "Renderable/Vertex.hpp"
 #include "Subpass.hpp"
 
 void IE::Graphics::Pipeline::build(
@@ -288,15 +288,15 @@ void IE::Graphics::Pipeline::build(
 }
 
 void IE::Graphics::Pipeline::destroy() {
-    if (m_layout) {
+    if (m_layout != VK_NULL_HANDLE) {
         vkDestroyPipelineLayout(m_linkedRenderEngine->m_device.device, m_layout, nullptr);
         m_layout = VK_NULL_HANDLE;
     }
-    if (m_cache) {
+    if (m_cache != VK_NULL_HANDLE) {
         vkDestroyPipelineCache(m_linkedRenderEngine->m_device.device, m_cache, nullptr);
         m_cache = VK_NULL_HANDLE;
     }
-    if (m_pipeline) {
+    if (m_pipeline != VK_NULL_HANDLE) {
         vkDestroyPipeline(m_linkedRenderEngine->m_device.device, m_pipeline, nullptr);
         m_pipeline = VK_NULL_HANDLE;
     }

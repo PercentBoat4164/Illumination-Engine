@@ -70,7 +70,7 @@ private:
     static IE::Core::Threading::ThreadPool *const                             m_threadPool;
     static IE::Core::FileSystem *const                                        m_filesystem;
 
-    Core(const std::filesystem::path &t_path) {
+    explicit Core(const std::filesystem::path &t_path) {
         m_filesystem->setBaseDirectory(t_path);
     }
 

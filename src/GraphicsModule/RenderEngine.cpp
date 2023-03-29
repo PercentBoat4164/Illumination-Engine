@@ -312,7 +312,7 @@ void IE::Graphics::RenderEngine::createPrimaryCommandObjects() {
 
 IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
     m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
-    auto window{IE::Core::Core::getThreadPool()->submit([this] { createWindow(); })};
+    auto window{IE::Core::Core::getThreadPool()->submitToMainThread([this] { createWindow(); })};
 
     createInstance();
 
@@ -530,5 +530,4 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
     ++m_frameNumber;
 }
 
-IE::Graphics::RenderEngine::RenderEngine() {
-}
+IE::Graphics::RenderEngine::RenderEngine() = default;

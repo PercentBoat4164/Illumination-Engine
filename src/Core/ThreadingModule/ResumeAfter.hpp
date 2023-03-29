@@ -49,18 +49,19 @@ public:
 #   else
     void await_suspend(std::coroutine_handle<> t_handle) override;
 #   endif
-// clang-format on
+    // clang-format on
 
     void releaseDependency();
 
 protected:
     //clang-format off
-#   if defined(AppleClang)
+#if defined(AppleClang)
     std::shared_ptr<std::atomic<std::experimental::coroutine_handle<>>> m_handle{
       std::make_shared<std::atomic<std::experimental::coroutine_handle<>>>()};
-#   else
-    std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{std::make_shared<std::atomic<std::coroutine_handle<>>>()};
-#   endif
+#else
+    std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{
+      std::make_shared<std::atomic<std::coroutine_handle<>>>()};
+#endif
     // clang-format on
     std::shared_ptr<std::atomic<size_t>> m_dependencyCount{std::make_shared<std::atomic<size_t>>()};
 };

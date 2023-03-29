@@ -18,7 +18,8 @@ public:
         else Task<T>::m_value = m_wrappedFunction();
         {
             std::lock_guard<std::mutex> lock(*BaseTask::m_dependentsMutex);
-            for (Awaitable *dependent : BaseTask::m_dependents) static_cast<ResumeAfter *>(dependent)->releaseDependency();
+            for (Awaitable *dependent : BaseTask::m_dependents)
+                static_cast<ResumeAfter *>(dependent)->releaseDependency();
         }
         *BaseTask::m_finished = true;
         BaseTask::m_finishedNotifier->notify_all();
