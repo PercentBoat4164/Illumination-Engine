@@ -77,7 +77,7 @@ private:
       void                                       *pUserData
     );
 
-    GLFWwindow *createWindow();
+    IE::Core::Threading::CoroutineTask<GLFWwindow *> createWindow();
 
     vkb::Instance createInstance();
 

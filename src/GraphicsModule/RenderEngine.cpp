@@ -19,7 +19,7 @@ VkBool32 IE::Graphics::RenderEngine::APIDebugMessenger(
     return VK_TRUE;
 }
 
-GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
+IE::Core::Threading::CoroutineTask<GLFWwindow *> IE::Graphics::RenderEngine::createWindow() {
     // Initialize GLFW
     if (glfwInit() != GLFW_TRUE) {
         const char *description{};
@@ -48,6 +48,10 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
     }
 
     // Create window
+    // On macOS the window must be created from the main thread.
+#ifdef __APPLE__
+    co_await IE::Core::Core::getThreadPool()->ensureThread(IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD);
+#endif
     m_window = glfwCreateWindow(
       (int) m_defaultResolution[0],
       (int) m_defaultResolution[1],
@@ -55,6 +59,9 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
       nullptr,
       nullptr
     );
+#ifdef __APPLE__
+    co_await IE::Core::Core::getThreadPool()->ensureThread(IE::Core::Threading::ThreadType::IE_THREAD_TYPE_WORKER_THREAD);
+#endif
     if (m_window == nullptr) {
         const char *description{};
         int         code = glfwGetError(&description);
@@ -99,7 +106,7 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
             );
         else m_graphicsAPICallbackLog.log("Initialized GLEW");
     }
-    return m_window;
+    co_return m_window;
 }
 
 vkb::Instance IE::Graphics::RenderEngine::createInstance() {
@@ -312,7 +319,7 @@ void IE::Graphics::RenderEngine::createPrimaryCommandObjects() {
 
 IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
     m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
-    auto window{IE::Core::Core::getThreadPool()->submitToMainThread([this] { createWindow(); })};
+    auto window{IE::Core::Core::getThreadPool()->submit(createWindow())};
 
     createInstance();
 
