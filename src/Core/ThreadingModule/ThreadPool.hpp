@@ -27,6 +27,7 @@ class ThreadPool {
     std::condition_variable_any      m_workAssignedNotifier;
     std::condition_variable_any      m_mainWorkAssignedNotifier;
     std::atomic<bool>                m_shutdown{false};
+    std::thread::id mainThreadID;
 
 public:
     explicit ThreadPool(size_t threads = std::thread::hardware_concurrency());
@@ -112,5 +113,6 @@ public:
     uint32_t getWorkerCount();
 
     friend void Worker::start(ThreadPool *t_threadPool);
+    friend bool EnsureThread::await_ready();
 };
 }  // namespace IE::Core::Threading

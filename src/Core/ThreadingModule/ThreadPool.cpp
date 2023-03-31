@@ -1,6 +1,7 @@
 #include "ThreadPool.hpp"
 
 #include "ResumeAfter.hpp"
+#include <thread>
 
 IE::Core::Threading::ThreadPool::ThreadPool(size_t threads) {
     m_workers.reserve(threads);
@@ -11,6 +12,7 @@ void IE::Core::Threading::ThreadPool::startMainThreadLoop() {
     ThreadPool               &pool = *this;
     std::shared_ptr<BaseTask> task;
     std::mutex                mutex;
+    pool.mainThreadID = std::this_thread::get_id();
     while (!pool.m_shutdown) {
         std::unique_lock<std::mutex> lock(mutex);
         if (!pool.m_mainQueue.pop(task))
