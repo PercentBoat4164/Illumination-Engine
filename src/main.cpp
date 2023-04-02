@@ -111,7 +111,21 @@ int main(int argc, char **argv) {
         //@todo Add proper object destruction handling in the destructor of the RenderEngine (window, SDL_quit(),
         //etc...)
         while (SDL_PollEvent(&e))
-            if (e.type == SDL_QUIT) return 0;
+            if (e.type == SDL_QUIT) co_return;
     }
+}
+
+int main(int argc, char **argv) {
+    IE::Core::Core::getLogger()->log(std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())));
+
+    if (argc >= 1)
+        IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
+
+    auto job = IE::Core::Core::getThreadPool()->submit(illuminationEngine);
+
+    IE::Core::Core::getThreadPool()->startMainThreadLoop();
+
+    job->wait();
+
     return 0;
 }

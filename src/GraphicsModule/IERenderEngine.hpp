@@ -127,6 +127,7 @@ private:
      */
     void destroyCommandPools();
 
+
 public:
     struct ExtensionAndFeatureInfo {
         // Extension Features
@@ -227,7 +228,7 @@ public:
     std::shared_ptr<IECommandPool>                 computeCommandPool{};
     IEAPI                                          API;
     ExtensionAndFeatureInfo                        extensionAndFeatureInfo{};
-    // SDL_DisplayMode                                   *monitor{};
+//     SDL_DisplayMode                                   *monitor{};
     SDL_Window                                    *window{};
     vkb::Device                                    device{};
     vkb::Swapchain                                 swapchain{};
@@ -294,6 +295,7 @@ private:
     void createRenderPass();
 
     void handleResolutionChange();
+
 
 public:
     static void setAPI(const IEAPI &API);

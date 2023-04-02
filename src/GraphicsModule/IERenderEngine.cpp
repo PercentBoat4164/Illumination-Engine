@@ -195,7 +195,7 @@ VmaAllocator IERenderEngine::setUpGPUMemoryAllocator() {
       .instance       = instance.instance,
     };
     if (settings->rayTracing) allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
-    //    allocatorInfo.vulkanApiVersion = api.version.number;
+        allocatorInfo.vulkanApiVersion = API.version.number;
     vmaCreateAllocator(&allocatorInfo, &allocator);
     deletionQueue.insert(deletionQueue.begin(), [&] { vmaDestroyAllocator(allocator); });
     return allocator;
@@ -372,7 +372,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     SDL_SetWindowMinimumSize(window, 1, 1);
     SDL_SetWindowPosition(window, settings->currentPosition[0], settings->currentPosition[1]);
     //    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
-
+    SDL_Vulkan_GetDrawableSize(window, &settings->currentResolution[0], &settings->currentResolution[1]);
     //    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     //    glfwSetWindowPosCallback(window, windowPositionCallback);
     SDL_GetWindowPosition(
@@ -515,7 +515,7 @@ bool IERenderEngine::_openGLUpdate() {
     return 1;  // needs to be rewritten SDL quit not same glfwwindowshouldclose
     // return !glfwWindowShouldClose(window);
 }
-
+//Lines below are problem
 bool IERenderEngine::_vulkanUpdate() {
     if (window == nullptr) return false;
     if (renderables.empty()) SDL_Quit();
@@ -678,15 +678,16 @@ IERenderEngine::~IERenderEngine() {
     destroy();
 }
 
-// void IERenderEngine::windowPositionCallback(GLFWwindow *window, int x, int y) {
-//     auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(window)->graphicsEngine);
-//     *renderEngine->settings->currentPosition = {x, y};
-// }
+//void IERenderEngine::windowPositionCallback(SDL_Window *window, int x, int y) {
+//    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(window)->graphicsEngine);
+//    *renderEngine->settings->currentPosition = {x, y};
+//}
 //
-// void IERenderEngine::framebufferResizeCallback(GLFWwindow *window, int width, int height) {
+// void IERenderEngine::framebufferResizeCallback(SDL_Window *window, int width, int height) {
 //     auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(window)->graphicsEngine);
 //     *renderEngine->settings->currentResolution = {width, height};
 //     renderEngine->framebufferResized           = true;
+//
 // }
 
 std::string IERenderEngine::translateVkResultCodes(VkResult result) {
@@ -871,3 +872,4 @@ IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<IEAsset> 
 void IERenderEngine::queueToggleFullscreen() {
     shouldBeFullscreen = !shouldBeFullscreen;
 }
+

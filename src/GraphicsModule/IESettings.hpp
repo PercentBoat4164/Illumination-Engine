@@ -26,12 +26,12 @@ public:
     IESettings() {
         SDL_Init(SDL_INIT_EVERYTHING);
 
-        defaultResolution  = {(displayDimensions.w) /4, (displayDimensions.h) /4};
+        defaultResolution  = {(displayDimensions.w), (displayDimensions.h)};
         //        fullscreenResolution = {glfwGetVideoMode(primaryMonitor)->width,
         //        glfwGetVideoMode(primaryMonitor)->height};
         windowedResolution = {defaultResolution};
         currentResolution  = fullscreen ? fullscreenResolution : windowedResolution;
-                defaultPosition      = {SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED};
+        defaultPosition      = {SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED};
         fullscreenPosition = {0, 0};
         windowedPosition   = {defaultPosition};
         currentPosition    = {defaultPosition};

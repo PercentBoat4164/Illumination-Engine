@@ -6,7 +6,8 @@
 #include <queue>
 
 namespace IE::Core::Threading {
-/** A lock-free thread-safe FIFO queue for use in the thread pool. */
+/** A thread-safe FIFO queue for use in the thread pool. */
+/**@todo Develop a lock-free variant of this. */
 template<typename T>
 class Queue {
     std::vector<T> m_queue;
