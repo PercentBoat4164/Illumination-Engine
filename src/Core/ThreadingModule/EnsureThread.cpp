@@ -12,7 +12,7 @@ IE::Core::Threading::EnsureThread::EnsureThread(
 }
 
 bool IE::Core::Threading::EnsureThread::await_ready() {
-    return std::this_thread::get_id() == m_threadPool->mainThreadID ^ (m_type == IE_THREAD_TYPE_MAIN_THREAD);
+    return std::this_thread::get_id() == m_threadPool->mainThreadID ^ (m_type != IE_THREAD_TYPE_MAIN_THREAD);
 }
 
 #if defined(AppleClang)
