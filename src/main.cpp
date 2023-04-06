@@ -26,11 +26,8 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
 }
 
 int main(int argc, char **argv) {
-    if (argc >= 1) {
-        std::string programLocation  = std::string(argv[0]);
-        std::string resourceLocation = programLocation.substr(0, programLocation.find_last_of('/'));
-        IE::Core::Core::getInst(resourceLocation);
-    }
+    if (argc >= 1)
+        IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
 
     auto job = IE::Core::Core::getThreadPool()->submit(illuminationEngine);
 
