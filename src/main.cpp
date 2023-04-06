@@ -7,7 +7,9 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
       IE::Core::Core::createEngine<IE::Graphics::RenderEngine>,
       "render engine"
     );
+
     co_await IE::Core::Core::getThreadPool()->resumeAfter(renderEngineCreator);
+
     std::shared_ptr<IE::Graphics::RenderEngine> renderEngine = renderEngineCreator->value();
 
     IE::Core::Asset asset(IE::Core::Core::getFileSystem()->getFile("res/assets/AncientStatue"));
