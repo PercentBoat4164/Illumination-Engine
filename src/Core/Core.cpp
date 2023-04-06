@@ -1,12 +1,7 @@
 #include "Core.hpp"
 
-#include <concepts>
-
-IE::Core::Logger IE::Core::Core::m_logger{
-  ILLUMINATION_ENGINE_CORE_LOGGER_NAME,
-  ILLUMINATION_ENGINE_CORE_LOG_FILENAME,
-  IE::Core::Logger::ILLUMINATION_ENGINE_LOG_TO_FILE | IE::Core::Logger::ILLUMINATION_ENGINE_LOG_TO_STDOUT};
-std::mutex                                                         IE::Core::Core::m_enginesMutex{};
+IE::Core::Logger IE::Core::Core::m_logger{ILLUMINATION_ENGINE_CORE_LOGGER_NAME};
+std::mutex       IE::Core::Core::m_enginesMutex{};
 std::unordered_map<std::string, std::shared_ptr<IE::Core::Engine>> IE::Core::Core::m_engines{};
 std::mutex                                                         IE::Core::Core::m_windowsMutex{};
 std::unordered_map<GLFWwindow *, IE::Core::Window>                 IE::Core::Core::m_windows{};

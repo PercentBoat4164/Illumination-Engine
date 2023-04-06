@@ -9,8 +9,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#define ILLUMINATION_ENGINE_CORE_LOGGER_NAME  "Illumination Engine"
-#define ILLUMINATION_ENGINE_CORE_LOG_FILENAME "logs/IlluminationEngine.log"
+#define ILLUMINATION_ENGINE_CORE_LOGGER_NAME "Illumination Engine"
 
 struct GLFWwindow;
 

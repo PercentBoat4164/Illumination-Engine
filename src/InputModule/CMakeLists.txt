@@ -1,6 +1,6 @@
 set(IEInputModuleSourceFiles  # Gather sources
-  Keyboard.cpp
-  InputEngine.cpp)
+        Keyboard.cpp
+        InputEngine.cpp)
 
 # Create and define properties for the library
 add_library(IEInputModule ${IEInputModuleSourceFiles})

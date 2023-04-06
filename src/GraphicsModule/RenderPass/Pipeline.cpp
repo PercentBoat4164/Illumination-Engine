@@ -1,7 +1,7 @@
 #include "Pipeline.hpp"
 
-#include "RenderEngine.hpp"
 #include "Renderable/Vertex.hpp"
+#include "RenderEngine.hpp"
 #include "Subpass.hpp"
 
 void IE::Graphics::Pipeline::build(

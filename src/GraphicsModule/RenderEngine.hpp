@@ -27,9 +27,8 @@
 #define ILLUMINATION_ENGINE_VERSION_PATCH 0
 #define ILLUMINATION_ENGINE_NAME          "Illumination Engine"
 
-#define ILLUMINATION_ENGINE_ICON_PATH                "res/logos/IlluminationEngineLogo.png"
-#define ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME     "Graphics API"
-#define ILLUMINATION_ENGINE_GRAPHICS_LOGGER_FILENAME "logs/GraphicsAPI.log"
+#define ILLUMINATION_ENGINE_ICON_PATH            "res/logos/IlluminationEngineLogo.png"
+#define ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME "Render Engine"
 
 namespace IE::Graphics {
 class RenderEngine : public IE::Core::Engine {
@@ -42,23 +41,21 @@ private:
       ILLUMINATION_ENGINE_VERSION_MAJOR,
       ILLUMINATION_ENGINE_VERSION_MINOR,
       ILLUMINATION_ENGINE_VERSION_PATCH};
-    IE::Graphics::Version  m_minimumVulkanVersion{1, 0, 0};
-    IE::Graphics::Version  m_desiredVulkanVersion{1, 3, 0};
-    IE::Graphics::API      m_api;
-    IE::Graphics::Settings m_settings;
-    vkb::Instance          m_instance;
-    vkb::Swapchain         m_swapchain;
-    VkSurfaceKHR           m_surface{};
-    VmaAllocator           m_allocator{};
-    IE::Core::Logger       m_graphicsAPICallbackLog{
-      ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME,
-      ILLUMINATION_ENGINE_GRAPHICS_LOGGER_FILENAME};
-    GLFWwindow                                             *m_window{};
-    std::array<size_t, 2>                                   m_defaultResolution{800, 600};
-    std::array<size_t, 2>                                   m_defaultPosition{10, 10};
-    uint64_t                                                m_frameNumber;
-    bool                                                    m_useVsync{false};
-    std::vector<VkImageView>                                m_swapchainImageViews;
+    IE::Graphics::Version    m_minimumVulkanVersion{1, 0, 0};
+    IE::Graphics::Version    m_desiredVulkanVersion{1, 3, 0};
+    IE::Graphics::API        m_api;
+    IE::Graphics::Settings   m_settings;
+    vkb::Instance            m_instance;
+    vkb::Swapchain           m_swapchain;
+    VkSurfaceKHR             m_surface{};
+    VmaAllocator             m_allocator{};
+    IE::Core::Logger         m_graphicsAPICallbackLog{ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME};
+    GLFWwindow              *m_window{};
+    std::array<size_t, 2>    m_defaultResolution{800, 600};
+    std::array<size_t, 2>    m_defaultPosition{10, 10};
+    uint64_t                 m_frameNumber;
+    bool                     m_useVsync{false};
+    std::vector<VkImageView> m_swapchainImageViews;
     std::vector<std::shared_ptr<IE::Graphics::Semaphore>>   m_imageAvailableSemaphores{};
     std::vector<std::shared_ptr<IE::Graphics::Semaphore>>   m_renderFinishedSemaphores{};
     std::vector<std::shared_ptr<IE::Graphics::Fence>>       m_inFlightFences{};

@@ -13,9 +13,7 @@ void IE::Core::Threading::Worker::start(ThreadPool *t_threadPool) {
     while (!pool.m_shutdown) {
         std::unique_lock<std::mutex> lock(mutex);
         if (!pool.m_queue.pop(task))
-            pool.m_workAssignedNotifier.wait(lock, [&] {
-                return pool.m_queue.pop(task) || pool.m_shutdown;
-            });
+            pool.m_workAssignedNotifier.wait(lock, [&] { return pool.m_queue.pop(task) || pool.m_shutdown; });
         if (pool.m_shutdown) break;
         task->execute();
     }
