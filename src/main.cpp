@@ -18,16 +18,17 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
 
     IE::Core::Core::getLogger()->log("Initialization finished successfully. Starting main loop.");
 
-    while (glfwWindowShouldClose(renderEngine->getWindow()) == 0) {
-        auto job = IE::Core::Core::getThreadPool()->submit(renderEngine->update());
-        glfwPollEvents();
-        job->wait();
-    }
+    //    while (glfwWindowShouldClose(renderEngine->getWindow()) == 0) {
+    //        auto job = IE::Core::Core::getThreadPool()->submit(renderEngine->update());
+    //        glfwPollEvents();
+    //        job->wait();
+    //    }
+
+    IE::Core::Core::getThreadPool()->shutdown();
 }
 
 int main(int argc, char **argv) {
-    if (argc >= 1)
-        IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
+    if (argc >= 1) IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
 
     auto job = IE::Core::Core::getThreadPool()->submit(illuminationEngine);
 
