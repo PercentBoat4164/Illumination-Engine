@@ -1,5 +1,7 @@
+#include "CommandBuffer/CommandPool.hpp"
 #include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
+#include "Core/FileSystemModule/FileSystem.hpp"
 #include "RenderEngine.hpp"
 
 IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
@@ -26,8 +28,7 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
 }
 
 int main(int argc, char **argv) {
-    if (argc >= 1)
-        IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
+    if (argc >= 1) IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
 
     auto job = IE::Core::Core::getThreadPool()->submit(illuminationEngine);
 

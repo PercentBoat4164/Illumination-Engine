@@ -2,6 +2,7 @@
 
 #include "../contrib/stb/stb_image.h"
 #include "Core/Core.hpp"
+#include "Core/FileSystemModule/FileSystem.hpp"
 
 void IE::Graphics::Material::load(const aiScene *scene, aiMaterial *material, IE::Core::File *file) {
     // find all textures in scene including embedded textures

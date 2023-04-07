@@ -27,7 +27,7 @@ class ThreadPool {
     std::condition_variable_any      m_workAssignedNotifier;
     std::condition_variable_any      m_mainWorkAssignedNotifier;
     std::atomic<bool>                m_shutdown{false};
-    std::thread::id mainThreadID;
+    std::thread::id                  mainThreadID;
 
 public:
     explicit ThreadPool(size_t threads = std::thread::hardware_concurrency());

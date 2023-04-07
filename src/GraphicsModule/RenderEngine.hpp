@@ -4,6 +4,7 @@
 #include "API/Version.hpp"
 #include "CommandBuffer/CommandPool.hpp"
 #include "Core/Core.hpp"
+#include "Core/EngineModule/Engine.hpp"
 #include "Core/LogModule/Logger.hpp"
 #include "RenderPass/RenderPassSeries.hpp"
 #include "Settings.hpp"
@@ -99,7 +100,7 @@ public:
     std::array<size_t, 2> m_currentResolution{m_defaultResolution};
     vkb::Device           m_device;
 
-    RenderEngine();
+    explicit RenderEngine(const std::string &t_ID);
 
     Core::Threading::CoroutineTask<bool> update() override;
 

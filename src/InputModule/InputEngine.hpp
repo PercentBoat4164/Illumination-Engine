@@ -12,7 +12,7 @@ public:
 
     GLFWwindow *m_window;
 
-    InputEngine(GLFWwindow *t_window);
+    InputEngine(GLFWwindow *t_window, const std::string &t_ID);
 
     std::shared_ptr<AspectType> createAspect(const std::string &t_id);
 

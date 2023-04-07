@@ -1,6 +1,7 @@
 #include "ThreadPool.hpp"
 
 #include "ResumeAfter.hpp"
+
 #include <thread>
 
 IE::Core::Threading::ThreadPool::ThreadPool(size_t threads) {
@@ -16,7 +17,7 @@ void IE::Core::Threading::ThreadPool::startMainThreadLoop() {
     while (!pool.m_shutdown) {
         std::unique_lock<std::mutex> lock(mutex);
         if (!pool.m_mainQueue.pop(task))
-            pool.m_mainWorkAssignedNotifier.wait(lock, [&] () -> bool {
+            pool.m_mainWorkAssignedNotifier.wait(lock, [&]() -> bool {
                 return pool.m_mainQueue.pop(task) || pool.m_shutdown;
             });
         if (pool.m_shutdown) break;

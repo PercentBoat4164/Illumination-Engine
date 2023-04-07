@@ -1,6 +1,7 @@
 #include "EnsureThread.hpp"
 
 #include "ThreadPool.hpp"
+
 #include <thread>
 
 IE::Core::Threading::EnsureThread::EnsureThread(

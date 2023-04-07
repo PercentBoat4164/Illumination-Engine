@@ -50,7 +50,9 @@ IE::Core::Threading::CoroutineTask<GLFWwindow *> IE::Graphics::RenderEngine::cre
     // Create window
     // On macOS the window must be created from the main thread.
 #ifdef __APPLE__
-    co_await IE::Core::Core::getThreadPool()->ensureThread(IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD);
+    co_await IE::Core::Core::getThreadPool()->ensureThread(
+      IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD
+    );
 #endif
     m_window = glfwCreateWindow(
       (int) m_defaultResolution[0],
@@ -60,7 +62,9 @@ IE::Core::Threading::CoroutineTask<GLFWwindow *> IE::Graphics::RenderEngine::cre
       nullptr
     );
 #ifdef __APPLE__
-    co_await IE::Core::Core::getThreadPool()->ensureThread(IE::Core::Threading::ThreadType::IE_THREAD_TYPE_WORKER_THREAD);
+    co_await IE::Core::Core::getThreadPool()->ensureThread(
+      IE::Core::Threading::ThreadType::IE_THREAD_TYPE_WORKER_THREAD
+    );
 #endif
     if (m_window == nullptr) {
         const char *description{};
@@ -537,4 +541,4 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
     ++m_frameNumber;
 }
 
-IE::Graphics::RenderEngine::RenderEngine() = default;
+IE::Graphics::RenderEngine::RenderEngine(const std::string &t_ID) : Engine(t_ID){};

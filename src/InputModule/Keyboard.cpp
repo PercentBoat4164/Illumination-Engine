@@ -3,6 +3,7 @@
 #include "Core/Core.hpp"
 #include "InputEngine.hpp"
 
+#include <GLFW/glfw3.h>
 #include <memory>
 
 IE::Input::detail::KeyPressDescription::KeyPressDescription(
@@ -135,8 +136,8 @@ void IE::Input::Keyboard::clearQueue() {
 }
 
 void IE::Input::Keyboard::keyCallback(GLFWwindow *window, int key, int scancode, int action, int modifiers) {
-    auto keyboard = static_cast<IE::Input::InputEngine *>(IE::Core::Core::getWindow(window)->inputEngine)
-                      ->getAspect("keyboard");  // keyboard connected to the window
+    auto keyboard =
+      static_cast<IE::Input::Keyboard *>(glfwGetWindowUserPointer(window));  // keyboard connected to the window
     if (action == GLFW_REPEAT) {
         keyboard->queue.emplace_back(key, action);
         return;
