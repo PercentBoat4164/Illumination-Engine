@@ -27,10 +27,11 @@ class ThreadPool {
     std::condition_variable_any      m_workAssignedNotifier;
     std::condition_variable_any      m_mainWorkAssignedNotifier;
     std::atomic<bool>                m_shutdown{false};
+    std::atomic<bool>                m_mainShutdown{false};
     std::thread::id                  mainThreadID;
 
 public:
-    explicit ThreadPool(size_t threads = std::thread::hardware_concurrency());
+    explicit ThreadPool(size_t t_threads = std::thread::hardware_concurrency());
 
     void startMainThreadLoop();
 
@@ -111,6 +112,10 @@ public:
     ~ThreadPool();
 
     uint32_t getWorkerCount();
+
+    void shutdown();
+
+    void setWorkerCount(size_t t_threads = std::thread::hardware_concurrency());
 
     friend void Worker::start(ThreadPool *t_threadPool);
     friend bool EnsureThread::await_ready();

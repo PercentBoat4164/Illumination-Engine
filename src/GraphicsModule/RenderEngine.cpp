@@ -1,7 +1,10 @@
 #include "RenderEngine.hpp"
 
+#include "CommandBuffer/CommandPool.hpp"
 #include "Core/AssetModule/Asset.hpp"
 #include "Image/Image.hpp"
+
+#include <type_traits>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <../contrib/stb/stb_image.h>
@@ -315,10 +318,11 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
 }
 
 void IE::Graphics::RenderEngine::createPrimaryCommandObjects() {
-    m_primaryCommandPool.create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
+    m_primaryCommandPool = std::make_shared<CommandPool>();
+    m_primaryCommandPool->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
     m_primaryCommandBuffers.resize(m_swapchain.image_count);
     for (int i{}; i < m_swapchain.image_count; ++i)
-        m_primaryCommandBuffers[i] = std::make_shared<IE::Graphics::CommandBuffer>(&m_primaryCommandPool);
+        m_primaryCommandBuffers[i] = std::make_shared<IE::Graphics::CommandBuffer>(m_primaryCommandPool.get());
 }
 
 IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
@@ -420,9 +424,9 @@ IE::Graphics::RenderEngine::~RenderEngine() {
     // Destroy all aspects before the other stuff.
     m_aspects.clear();
 
-    // Destroy the render pass series
+    // Destroy all engine objects
+    m_primaryCommandPool->destroy();
     m_renderPassSeries.destroy();
-
     m_imageAvailableSemaphores.clear();
     m_renderFinishedSemaphores.clear();
     m_inFlightFences.clear();
@@ -435,6 +439,7 @@ IE::Graphics::RenderEngine::~RenderEngine() {
     if ((m_instance != nullptr) && (m_surface != nullptr)) vkb::destroy_surface(m_instance, m_surface);
     m_engineDescriptor.destroy();
 
+    // Destroy the device then instance last
     if (m_device != nullptr) vkb::destroy_device(m_device);
     if (m_instance != nullptr) vkb::destroy_instance(m_instance);
 }
