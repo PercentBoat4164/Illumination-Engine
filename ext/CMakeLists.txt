@@ -155,7 +155,6 @@ else ()
     find_package(Vulkan REQUIRED shaderc_combined)
 endif ()
 
-# GLEW is wierd. Why is it like this?
 set(OpenGL_GL_PREFERENCE "GLVND")
 CPMAddPackage(
         NAME glew
@@ -173,11 +172,11 @@ CPMAddPackage("gh:charles-lunarg/vk-bootstrap@0.7")
 CPMAddPackage("gh:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@3.0.1")
 CPMAddPackage("gh:KhronosGroup/SPIRV-Cross#main")  # This should be main. The latest guaranteed working version is kept there. All tags are for older versions.
 
-add_library(EXT_AssImp main.cpp)
-add_library(EXT_SpdLog main.cpp)
-add_library(EXT_OpenGL main.cpp)
-add_library(EXT_Vulkan main.cpp)
-add_library(INT_src main.cpp)
+add_library(EXT_AssImp dummy.cpp)
+add_library(EXT_SpdLog dummy.cpp)
+add_library(EXT_OpenGL dummy.cpp)
+add_library(EXT_Vulkan dummy.cpp)
+add_library(INT_src dummy.cpp)
 target_link_libraries(EXT_AssImp PUBLIC assimp)
 target_link_libraries(EXT_SpdLog PUBLIC spdlog)
 target_link_libraries(EXT_OpenGL PUBLIC OpenGL::GL glew_s glfw glm::glm)

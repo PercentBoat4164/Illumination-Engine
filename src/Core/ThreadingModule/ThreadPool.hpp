@@ -5,6 +5,8 @@
 #include "EnsureThread.hpp"
 #include "FunctionTask.hpp"
 #include "Queue.hpp"
+#include "ResumeAfter.hpp"
+#include "ResumeOnMainThreadAfter.hpp"
 #include "Task.hpp"
 #include "Worker.hpp"
 
@@ -26,10 +28,12 @@ class ThreadPool {
     Queue<std::shared_ptr<BaseTask>> m_mainQueue;
     std::condition_variable_any      m_workAssignedNotifier;
     std::condition_variable_any      m_mainWorkAssignedNotifier;
-    std::atomic<bool>                m_shutdown{false};
+    std::atomic<bool>                m_mainShutdown{false};
+    std::thread::id                  mainThreadID;
+    std::atomic<uint32_t>            m_threadShutdownCount{0};
 
 public:
-    explicit ThreadPool(size_t threads = std::thread::hardware_concurrency());
+    explicit ThreadPool(uint32_t t_threads = std::thread::hardware_concurrency());
 
     void startMainThreadLoop();
 
@@ -103,6 +107,11 @@ public:
         return ResumeAfter{this, args...};
     }
 
+    template<typename... Args>
+    ResumeOnMainThreadAfter resumeOnMainThreadAfter(Args... args) {
+        return ResumeOnMainThreadAfter{this, args...};
+    }
+
     EnsureThread ensureThread(ThreadType t_type) {
         return {this, t_type};
     }
@@ -111,6 +120,11 @@ public:
 
     uint32_t getWorkerCount();
 
+    void shutdown();
+
+    void setWorkerCount(uint32_t t_threads = std::thread::hardware_concurrency());
+
     friend void Worker::start(ThreadPool *t_threadPool);
+    friend bool EnsureThread::await_ready();
 };
 }  // namespace IE::Core::Threading

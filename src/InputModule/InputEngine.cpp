@@ -12,9 +12,11 @@ std::shared_ptr<IE::Input::InputEngine::AspectType> IE::Input::InputEngine::getA
     return IE::Core::Engine::_getAspect<AspectType>(t_id);
 }
 
-IE::Input::InputEngine::InputEngine(GLFWwindow *t_window) : m_window(t_window) {
-    IE::Core::Core::getWindow(t_window)->inputEngine = const_cast<IE::Input::InputEngine *>(this);
-    std::shared_ptr<IE::Input::Keyboard> keyboard    = std::make_shared<IE::Input::Keyboard>(this, nullptr);
+IE::Input::InputEngine::InputEngine(GLFWwindow *t_window, const std::string &t_ID) :
+        Engine(t_ID),
+        m_window(t_window) {
+    std::shared_ptr<IE::Input::Keyboard> keyboard = std::make_shared<IE::Input::Keyboard>(this, nullptr);
+    glfwSetWindowUserPointer(t_window, keyboard.get());
     keyboard->setWindow(m_window);
     m_aspects["keyboard"] = keyboard;
 }

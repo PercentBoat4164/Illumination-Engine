@@ -1,7 +1,10 @@
 #include "RenderEngine.hpp"
 
+#include "CommandBuffer/CommandPool.hpp"
 #include "Core/AssetModule/Asset.hpp"
 #include "Image/Image.hpp"
+
+#include <type_traits>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <../contrib/stb/stb_image.h>
@@ -19,7 +22,7 @@ unsigned int IE::Graphics::RenderEngine::APIDebugMessenger(
     return 0;
 }
 
-GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
+IE::Core::Threading::CoroutineTask<GLFWwindow *> IE::Graphics::RenderEngine::createWindow() {
     // Initialize GLFW
     if (glfwInit() != GLFW_TRUE) {
         const char *description{};
@@ -48,6 +51,12 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
     }
 
     // Create window
+    // On macOS the window must be created from the main thread.
+#ifdef __APPLE__
+    co_await IE::Core::Core::getThreadPool()->ensureThread(
+      IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD
+    );
+#endif
     m_window = glfwCreateWindow(
       (int) m_defaultResolution[0],
       (int) m_defaultResolution[1],
@@ -55,6 +64,11 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
       nullptr,
       nullptr
     );
+#ifdef __APPLE__
+    co_await IE::Core::Core::getThreadPool()->ensureThread(
+      IE::Core::Threading::ThreadType::IE_THREAD_TYPE_WORKER_THREAD
+    );
+#endif
     if (m_window == nullptr) {
         const char *description{};
         int         code = glfwGetError(&description);
@@ -99,7 +113,7 @@ GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
             );
         else m_graphicsAPICallbackLog.log("Initialized GLEW");
     }
-    return m_window;
+    co_return m_window;
 }
 
 vkb::Instance IE::Graphics::RenderEngine::createInstance() {
@@ -304,15 +318,16 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
 }
 
 void IE::Graphics::RenderEngine::createPrimaryCommandObjects() {
-    m_primaryCommandPool.create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
+    m_primaryCommandPool = std::make_shared<CommandPool>();
+    m_primaryCommandPool->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
     m_primaryCommandBuffers.resize(m_swapchain.image_count);
     for (uint32_t i{}; i < m_swapchain.image_count; ++i)
-        m_primaryCommandBuffers[i] = std::make_shared<IE::Graphics::CommandBuffer>(&m_primaryCommandPool);
+        m_primaryCommandBuffers[i] = std::make_shared<IE::Graphics::CommandBuffer>(m_primaryCommandPool.get());
 }
 
 IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
     m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
-    auto window{IE::Core::Core::getThreadPool()->submitToMainThread([this] { createWindow(); })};
+    auto window{IE::Core::Core::getThreadPool()->submit(createWindow())};
 
     createInstance();
 
@@ -409,9 +424,9 @@ IE::Graphics::RenderEngine::~RenderEngine() {
     // Destroy all aspects before the other stuff.
     m_aspects.clear();
 
-    // Destroy the render pass series
+    // Destroy all engine objects
+    m_primaryCommandPool->destroy();
     m_renderPassSeries.destroy();
-
     m_imageAvailableSemaphores.clear();
     m_renderFinishedSemaphores.clear();
     m_inFlightFences.clear();
@@ -424,6 +439,7 @@ IE::Graphics::RenderEngine::~RenderEngine() {
     if ((m_instance != VK_NULL_HANDLE) && (m_surface != VK_NULL_HANDLE)) vkb::destroy_surface(m_instance, m_surface);
     m_engineDescriptor.destroy();
 
+    // Destroy the device then instance last
     if (m_device != VK_NULL_HANDLE) vkb::destroy_device(m_device);
     if (m_instance != VK_NULL_HANDLE) vkb::destroy_instance(m_instance);
 }
@@ -531,4 +547,4 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
     co_return true;
 }
 
-IE::Graphics::RenderEngine::RenderEngine() = default;
+IE::Graphics::RenderEngine::RenderEngine(const std::string &t_ID) : Engine(t_ID){};

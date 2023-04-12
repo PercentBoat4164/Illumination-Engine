@@ -1,5 +1,6 @@
 #include "Renderable.hpp"
 
+#include "Core/FileSystemModule/FileSystem.hpp"
 #include "RenderEngine.hpp"
 
 #include <assimp/Importer.hpp>

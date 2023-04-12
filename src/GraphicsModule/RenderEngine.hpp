@@ -4,6 +4,7 @@
 #include "API/Version.hpp"
 #include "CommandBuffer/CommandPool.hpp"
 #include "Core/Core.hpp"
+#include "Core/EngineModule/Engine.hpp"
 #include "Core/LogModule/Logger.hpp"
 #include "RenderPass/RenderPassSeries.hpp"
 #include "Settings.hpp"
@@ -27,9 +28,8 @@
 #define ILLUMINATION_ENGINE_VERSION_PATCH 0
 #define ILLUMINATION_ENGINE_NAME          "Illumination Engine"
 
-#define ILLUMINATION_ENGINE_ICON_PATH                "res/logos/IlluminationEngineLogo.png"
-#define ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME     "Graphics API"
-#define ILLUMINATION_ENGINE_GRAPHICS_LOGGER_FILENAME "logs/GraphicsAPI.log"
+#define ILLUMINATION_ENGINE_ICON_PATH            "res/logos/IlluminationEngineLogo.png"
+#define ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME "Render Engine"
 
 namespace IE::Graphics {
 class RenderEngine : public IE::Core::Engine {
@@ -42,23 +42,21 @@ private:
       ILLUMINATION_ENGINE_VERSION_MAJOR,
       ILLUMINATION_ENGINE_VERSION_MINOR,
       ILLUMINATION_ENGINE_VERSION_PATCH};
-    IE::Graphics::Version  m_minimumVulkanVersion{1, 0, 0};
-    IE::Graphics::Version  m_desiredVulkanVersion{1, 3, 0};
-    IE::Graphics::API      m_api;
-    IE::Graphics::Settings m_settings;
-    vkb::Instance          m_instance;
-    vkb::Swapchain         m_swapchain;
-    VkSurfaceKHR           m_surface{};
-    VmaAllocator           m_allocator{};
-    IE::Core::Logger       m_graphicsAPICallbackLog{
-      ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME,
-      ILLUMINATION_ENGINE_GRAPHICS_LOGGER_FILENAME};
-    GLFWwindow                                             *m_window{};
-    std::array<size_t, 2>                                   m_defaultResolution{800, 600};
-    std::array<size_t, 2>                                   m_defaultPosition{10, 10};
-    uint64_t                                                m_frameNumber;
-    bool                                                    m_useVsync{false};
-    std::vector<VkImageView>                                m_swapchainImageViews;
+    IE::Graphics::Version    m_minimumVulkanVersion{1, 0, 0};
+    IE::Graphics::Version    m_desiredVulkanVersion{1, 3, 0};
+    IE::Graphics::API        m_api;
+    IE::Graphics::Settings   m_settings;
+    vkb::Instance            m_instance;
+    vkb::Swapchain           m_swapchain;
+    VkSurfaceKHR             m_surface{};
+    VmaAllocator             m_allocator{};
+    IE::Core::Logger         m_graphicsAPICallbackLog{ILLUMINATION_ENGINE_GRAPHICS_LOGGER_NAME};
+    GLFWwindow              *m_window{};
+    std::array<size_t, 2>    m_defaultResolution{800, 600};
+    std::array<size_t, 2>    m_defaultPosition{10, 10};
+    uint64_t                 m_frameNumber{};
+    bool                     m_useVsync{false};
+    std::vector<VkImageView> m_swapchainImageViews;
     std::vector<std::shared_ptr<IE::Graphics::Semaphore>>   m_imageAvailableSemaphores{};
     std::vector<std::shared_ptr<IE::Graphics::Semaphore>>   m_renderFinishedSemaphores{};
     std::vector<std::shared_ptr<IE::Graphics::Fence>>       m_inFlightFences{};
@@ -66,12 +64,12 @@ private:
     std::vector<std::shared_ptr<IE::Graphics::CommandPool>> m_commandPools{};
     IE::Graphics::RenderPassSeries                          m_renderPassSeries{this};
     IE::Graphics::DescriptorSet m_engineDescriptor{IE::Graphics::DescriptorSet::IE_DESCRIPTOR_SET_TYPE_PER_FRAME};
-    IE::Graphics::CommandPool   m_primaryCommandPool{};
+    std::shared_ptr<IE::Graphics::CommandPool>                m_primaryCommandPool{};
     std::vector<std::shared_ptr<IE::Graphics::CommandBuffer>> m_primaryCommandBuffers{};
 
     static std::remove_pointer_t<PFN_vkDebugUtilsMessengerCallbackEXT> APIDebugMessenger;
 
-    GLFWwindow *createWindow();
+    IE::Core::Threading::CoroutineTask<GLFWwindow *> createWindow();
 
     vkb::Instance createInstance();
 
@@ -93,7 +91,7 @@ public:
     std::array<size_t, 2> m_currentResolution{m_defaultResolution};
     vkb::Device           m_device;
 
-    RenderEngine();
+    explicit RenderEngine(const std::string &t_ID);
 
     Core::Threading::CoroutineTask<bool> update() override;
 

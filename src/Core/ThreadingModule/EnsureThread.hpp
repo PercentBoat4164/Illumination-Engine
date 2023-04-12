@@ -4,8 +4,8 @@
 
 namespace IE::Core::Threading {
 enum ThreadType {
-    IE_THREADPOOL_MAIN_THREAD,
-    IE_THREADPOOL_WORKER_THREAD,
+    IE_THREAD_TYPE_MAIN_THREAD,
+    IE_THREAD_TYPE_WORKER_THREAD,
 };
 
 class ThreadPool;

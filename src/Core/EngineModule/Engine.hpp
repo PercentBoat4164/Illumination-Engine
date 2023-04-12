@@ -18,9 +18,9 @@ protected:
     std::unordered_map<std::string, std::shared_ptr<Aspect>> m_aspects;
     std::mutex                                               m_jobsMutex;
     std::vector<std::future<void>>                           m_jobs;
+    std::string                                              m_ID;
 
     template<typename T>
-
         requires std::derived_from<T, IE::Core::Aspect>
     std::shared_ptr<T>
     _createAspect(const std::string &t_id, IE::Core::File *t_resource, IE::Core::Engine *downCastedSelf) {
@@ -34,7 +34,6 @@ protected:
     }
 
     template<typename T>
-
         requires std::derived_from<T, IE::Core::Aspect>
     std::shared_ptr<T> _getAspect(const std::string &t_id) {
         std::lock_guard<std::mutex> lock(m_aspectsMutex);
@@ -44,16 +43,23 @@ protected:
     }
 
 public:
-    Engine() = default;
-
-    Engine &operator=(const IE::Core::Engine &t_other);
-
-    Engine &operator=(IE::Core::Engine &&t_other) noexcept;
+    explicit Engine(const std::string &t_id);
 
     virtual ~Engine() = default;
 
     virtual IE::Core::Threading::CoroutineTask<bool> update() = 0;
 
     virtual IE::Core::Threading::CoroutineTask<void> create() = 0;
+
+    std::string getID() {
+        return m_ID;
+    }
+
+    template<typename T>
+    std::function<void()> bindFunction(const std::function<void(T *)> &t_func) {
+        return [this, t_func] {
+            return t_func(static_cast<T *>(this));
+        };
+    }
 };
 }  // namespace IE::Core
