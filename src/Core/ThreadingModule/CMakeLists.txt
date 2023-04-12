@@ -1,10 +1,14 @@
 set(IEThreadingModuleSourceFiles  # Gather sources
+        Awaitable.cpp
         CoroutineTask.cpp
+        EnsureThread.cpp
         FunctionTask.cpp
-        Pool.cpp
         Queue.cpp
+        ResumeAfter.cpp
+        ResumeOnMainThreadAfter.cpp
         Task.cpp
         ThreadPool.cpp
+        Worker.cpp
         )
 
 

@@ -31,8 +31,6 @@ set(IE_PREFER_LOCAL_LIBS ON)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_compile_definitions("Clang")
 
-    add_link_options("-fuse-ld=lld")  # Use LLVM's lld linker for speed.
-
     # Added to prevent known errors from clouding the log.
     add_compile_options("-Wno-nullability-completeness")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

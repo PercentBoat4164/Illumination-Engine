@@ -1,27 +1,71 @@
 #include "ThreadPool.hpp"
 
-void IE::Core::Threading::Worker::start(ThreadPool *t_threadPool) {
-    ThreadPool               &pool = *t_threadPool;
-    std::shared_ptr<BaseTask> activeJob;
-    ResumeAfter               suspendedJob;
+#include "ResumeAfter.hpp"
+
+#include <mutex>
+#include <thread>
+
+IE::Core::Threading::ThreadPool::ThreadPool(uint32_t t_threads) {
+    m_workers.reserve(t_threads);
+    for (; t_threads > 0; --t_threads)
+        m_workers.emplace_back([this] { IE::Core::Threading::Worker::start(this); });
+}
+
+void IE::Core::Threading::ThreadPool::startMainThreadLoop() {
+    ThreadPool               &pool = *this;
+    std::shared_ptr<BaseTask> task;
     std::mutex                mutex;
-    while (!pool.m_shutdown) {
+    pool.mainThreadID = std::this_thread::get_id();
+    while (!pool.m_mainShutdown) {
         std::unique_lock<std::mutex> lock(mutex);
-        pool.m_workAssignmentConditionVariable.wait(lock, [&] {
-            return pool.m_activeQueue.pop(activeJob) || pool.m_shutdown;
-        });
-        if (pool.m_shutdown) break;
-        activeJob->execute();
-        while (pool.m_suspendedPool.pop(suspendedJob, [](ResumeAfter it) { return it.await_ready(); }))
-            suspendedJob.resume();
+        if (!pool.m_mainQueue.pop(task))
+            pool.m_mainWorkAssignedNotifier.wait(lock, [&]() -> bool {
+                return pool.m_mainQueue.pop(task) || pool.m_mainShutdown;
+            });
+        if (pool.m_mainShutdown) break;
+        task->execute();
+        task = nullptr;
+    }
+
+    // Release any unfinished task to the queue, and notify the remaining worker threads of its existence.
+    if (task) {
+        pool.m_queue.push(task);
+        pool.m_workAssignedNotifier.notify_one();
     }
 }
 
-#if defined(AppleClang)
-void IE::Core::Threading::ResumeAfter::await_suspend(std::experimental::coroutine_handle<> t_handle) {
-#else
-void IE::Core::Threading::ResumeAfter::await_suspend(std::coroutine_handle<> t_handle) {
-#endif
-    m_handle = t_handle;
-    m_threadPool->m_suspendedPool.push(*this);
+IE::Core::Threading::ThreadPool::~ThreadPool() {
+    shutdown();
+    for (std::thread &thread : m_workers)
+        if (thread.joinable()) thread.join();
+}
+
+uint32_t IE::Core::Threading::ThreadPool::getWorkerCount() {
+    return m_workers.size();
+}
+
+void IE::Core::Threading::ThreadPool::shutdown() {
+    m_mainShutdown = true;
+    m_mainWorkAssignedNotifier.notify_one();
+    m_threadShutdownCount = getWorkerCount();
+    m_workAssignedNotifier.notify_all();
+}
+
+void IE::Core::Threading::ThreadPool::setWorkerCount(uint32_t t_threads) {
+    static std::mutex           mutex;
+    // Ensure no other thread is trying to set the worker count. This would result in a deadlock.
+    std::lock_guard<std::mutex> lock(mutex);
+
+    int64_t dThreads = t_threads - (int64_t) getWorkerCount();
+    if (dThreads == 0) return shutdown();
+    if (dThreads < 0) {
+        // Shutdown dThreads threads.
+        m_threadShutdownCount = std::abs(dThreads);
+        return m_workAssignedNotifier.notify_all();
+    }
+
+    // Add in the number of threads needed to bring the population up to the requested number.
+    m_workers.reserve(t_threads);
+    for (; dThreads > 0; --dThreads)
+        m_workers.emplace_back([this] { IE::Core::Threading::Worker::start(this); });
 }

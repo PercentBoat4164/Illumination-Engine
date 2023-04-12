@@ -8,6 +8,7 @@
 #include "Core/AssetModule/IEAsset.hpp"
 #include "Core/Core.hpp"
 #include "Core/LogModule/IELogger.hpp"
+#include <vulkan/vulkan_core.h>
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
@@ -51,7 +52,6 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     vkb::Result<vkb::Instance> instanceBuilder = builder.build();
     if (!instanceBuilder) {
         settings->logger.log(
-
           "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -395,7 +395,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
 
     IEImage::CreateInfo depthImageCreateInfo{
       .format          = VK_FORMAT_D32_SFLOAT_S8_UINT,
-      .layout          = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+      .layout          = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
       .usage           = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
       .aspect          = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
       .allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY,
@@ -437,7 +437,7 @@ void IERenderEngine::handleResolutionChange() {
         createSwapchain();
         IEImage::CreateInfo depthImageCreateInfo{
           .format          = VK_FORMAT_D32_SFLOAT_S8_UINT,
-          .layout          = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+          .layout          = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
           .usage           = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
           .aspect          = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
           .allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY,
@@ -464,7 +464,7 @@ bool IERenderEngine::_openGLUpdate() {
     if (shouldBeFullscreen) {
         shouldBeFullscreen = false;
         toggleFullscreen();
-        return glfwWindowShouldClose(window) != 1;
+        return glfwWindowShouldClose(window) == 0;
     }
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
@@ -477,12 +477,12 @@ bool IERenderEngine::_openGLUpdate() {
     frameTime        = currentTime - previousTime;
     previousTime     = currentTime;
     frameNumber++;
-    return !glfwWindowShouldClose(window);
+    return glfwWindowShouldClose(window) == 0;
 }
 
 bool IERenderEngine::_vulkanUpdate() {
     if (window == nullptr) return false;
-    if (renderables.empty()) return glfwWindowShouldClose(window) != 1;
+    if (renderables.empty()) return glfwWindowShouldClose(window) == 0;
     if (framebufferResized) {
         framebufferResized = false;
         handleResolutionChange();
@@ -557,7 +557,7 @@ bool IERenderEngine::_vulkanUpdate() {
     frameTime        = currentTime - previousTime;
     previousTime     = currentTime;
     frameNumber++;
-    return glfwWindowShouldClose(window) != 1;
+    return glfwWindowShouldClose(window) == 0;
 }
 
 void IERenderEngine::toggleFullscreen() {
