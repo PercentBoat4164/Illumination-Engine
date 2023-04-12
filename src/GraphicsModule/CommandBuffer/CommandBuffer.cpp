@@ -193,12 +193,12 @@ void IE::Graphics::CommandBuffer::execute(VkSemaphore input, VkSemaphore output,
 
     VkSubmitInfo submitInfo{
       .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-      .waitSemaphoreCount   = static_cast<uint32_t>(input != nullptr),
+      .waitSemaphoreCount   = static_cast<uint32_t>(input != VK_NULL_HANDLE),
       .pWaitSemaphores      = &input,
       .pWaitDstStageMask    = &dstStageMask,
       .commandBufferCount   = 1,
       .pCommandBuffers      = &m_commandBuffer,
-      .signalSemaphoreCount = static_cast<uint32_t>(output != nullptr),
+      .signalSemaphoreCount = static_cast<uint32_t>(output != VK_NULL_HANDLE),
       .pSignalSemaphores    = &output,
     };
 

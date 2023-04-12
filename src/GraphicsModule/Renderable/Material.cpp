@@ -24,7 +24,9 @@ void IE::Graphics::Material::load(const aiScene *scene, aiMaterial *material, IE
         texture = const_cast<aiTexture *>(scene->GetEmbeddedTexture(texturePath.C_Str()));
         if (texture == nullptr || texture->mHeight != 0) {  // is the texture not an embedded texture?
             tempData = stbi_load(
-              (file->path.parent_path().parent_path() / "textures" / texturePath.C_Str()).c_str(),
+              reinterpret_cast<const char *>(
+                (file->path.parent_path().parent_path() / "textures" / texturePath.C_Str()).c_str()
+              ),
               reinterpret_cast<int *>(&width),
               reinterpret_cast<int *>(&height),
               reinterpret_cast<int *>(&channels),

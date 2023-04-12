@@ -9,14 +9,14 @@
 #include <iostream>
 #include <vk_mem_alloc.h>
 
-VkBool32 IE::Graphics::RenderEngine::APIDebugMessenger(
-  VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
-  VkDebugUtilsMessageTypeFlagsEXT             messageType,
-  const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-  void                                       *pUserData
+unsigned int IE::Graphics::RenderEngine::APIDebugMessenger(
+  VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+  unsigned int messageType,
+  const VkDebugUtilsMessengerCallbackDataEXT * pCallbackData,
+  void *pUserData
 ) {
     reinterpret_cast<IE::Core::Logger *>(pUserData)->log(messageSeverity, pCallbackData->pMessage);
-    return VK_TRUE;
+    return 0;
 }
 
 GLFWwindow *IE::Graphics::RenderEngine::createWindow() {
@@ -223,7 +223,7 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
     if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
         // Create swapchain builder
         vkb::SwapchainBuilder swapchainBuilder{m_device, m_surface};
-        if (m_swapchain != nullptr)  // Use the old swapchain if it exists.
+        if (m_swapchain != VK_NULL_HANDLE)  // Use the old swapchain if it exists.
             swapchainBuilder.set_old_swapchain(m_swapchain);
         swapchainBuilder.set_desired_extent(m_currentResolution[0], m_currentResolution[1])
           .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR})
@@ -247,16 +247,16 @@ vkb::Swapchain IE::Graphics::RenderEngine::createSwapchain() {
 
 void IE::Graphics::RenderEngine::createSyncObjects() {
     m_imageAvailableSemaphores.resize(m_swapchain.image_count);
-    for (int i = 0; i < m_swapchain.image_count; ++i)
+    for (uint32_t i{}; i < m_swapchain.image_count; ++i)
         m_imageAvailableSemaphores[i] = std::make_shared<IE::Graphics::Semaphore>(this);
     m_renderFinishedSemaphores.resize(m_swapchain.image_count);
-    for (int i = 0; i < m_swapchain.image_count; ++i)
+    for (uint32_t i{}; i < m_swapchain.image_count; ++i)
         m_renderFinishedSemaphores[i] = std::make_shared<IE::Graphics::Semaphore>(this);
     m_inFlightFences.resize(m_swapchain.image_count);
-    for (int i = 0; i < m_swapchain.image_count; ++i)
+    for (uint32_t i{}; i < m_swapchain.image_count; ++i)
         m_inFlightFences[i] = std::make_shared<IE::Graphics::Fence>(this);
     m_imagesInFlight.resize(m_swapchain.image_count);
-    for (int i = 0; i < m_swapchain.image_count; ++i)
+    for (uint32_t i{}; i < m_swapchain.image_count; ++i)
         m_imagesInFlight[i] = std::make_shared<IE::Graphics::Fence>(this);
 }
 
@@ -306,7 +306,7 @@ void IE::Graphics::RenderEngine::createRenderPasses() {
 void IE::Graphics::RenderEngine::createPrimaryCommandObjects() {
     m_primaryCommandPool.create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
     m_primaryCommandBuffers.resize(m_swapchain.image_count);
-    for (int i{}; i < m_swapchain.image_count; ++i)
+    for (uint32_t i{}; i < m_swapchain.image_count; ++i)
         m_primaryCommandBuffers[i] = std::make_shared<IE::Graphics::CommandBuffer>(&m_primaryCommandPool);
 }
 
@@ -417,15 +417,15 @@ IE::Graphics::RenderEngine::~RenderEngine() {
     m_inFlightFences.clear();
     m_imagesInFlight.clear();
     for (VkImageView swapchainImageView : m_swapchainImageViews)
-        if (swapchainImageView != nullptr) vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
+        if (swapchainImageView != VK_NULL_HANDLE) vkDestroyImageView(m_device.device, swapchainImageView, nullptr);
     m_commandPools.clear();
-    if (m_allocator != nullptr) vmaDestroyAllocator(m_allocator);
-    if (m_swapchain != nullptr) vkb::destroy_swapchain(m_swapchain);
-    if ((m_instance != nullptr) && (m_surface != nullptr)) vkb::destroy_surface(m_instance, m_surface);
+    if (m_allocator != VK_NULL_HANDLE) vmaDestroyAllocator(m_allocator);
+    if (m_swapchain != VK_NULL_HANDLE) vkb::destroy_swapchain(m_swapchain);
+    if ((m_instance != VK_NULL_HANDLE) && (m_surface != VK_NULL_HANDLE)) vkb::destroy_surface(m_instance, m_surface);
     m_engineDescriptor.destroy();
 
-    if (m_device != nullptr) vkb::destroy_device(m_device);
-    if (m_instance != nullptr) vkb::destroy_instance(m_instance);
+    if (m_device != VK_NULL_HANDLE) vkb::destroy_device(m_device);
+    if (m_instance != VK_NULL_HANDLE) vkb::destroy_instance(m_instance);
 }
 
 void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int x, int y) {
@@ -472,7 +472,7 @@ std::string IE::Graphics::RenderEngine::makeErrorMessage(
 }
 
 IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
-    uint64_t currentFrame{m_frameNumber % m_swapchain.image_count};
+    uint32_t currentFrame{static_cast<uint32_t>(m_frameNumber % m_swapchain.image_count)};
 
     // Record all command buffers
     auto commandBufferRecording =
@@ -528,6 +528,7 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
     vkQueuePresentKHR(m_device.get_queue(vkb::QueueType::graphics).value(), &presentInfo);
 
     ++m_frameNumber;
+    co_return true;
 }
 
 IE::Graphics::RenderEngine::RenderEngine() = default;

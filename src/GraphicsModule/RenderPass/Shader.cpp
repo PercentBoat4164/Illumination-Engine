@@ -3,7 +3,7 @@
 #include "Core/FileSystemModule/FileSystem.hpp"
 #include "RenderEngine.hpp"
 
-#include <spirv_cross/spirv_cpp.hpp>
+#include <spirv_cpp.hpp>
 
 void IE::Graphics::Shader::compile() {
     // Compile
@@ -206,7 +206,7 @@ VkShaderStageFlagBits IE::Graphics::Shader::stageFromExecutionModel(spv::Executi
 }
 
 void IE::Graphics::Shader::destroy() {
-    if (m_module != nullptr) {
+    if (m_module != VK_NULL_HANDLE) {
         vkDestroyShaderModule(m_linkedRenderEngine->m_device.device, m_module, nullptr);
         m_module = VK_NULL_HANDLE;
     }

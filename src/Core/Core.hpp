@@ -74,5 +74,5 @@ private:
         m_filesystem->setBaseDirectory(t_path);
     }
 
-} __attribute__((aligned(128)));
+};
 }  // namespace IE::Core

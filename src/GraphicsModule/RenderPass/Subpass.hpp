@@ -43,7 +43,7 @@ public:
     struct AttachmentDescription {
         AttachmentConsumption       m_consumption;
         IE::Graphics::Image::Preset m_preset;
-    } __attribute__((aligned(8)));
+    };
 
     enum Preset {
         IE_SUBPASS_PRESET_CUSTOM = 0x0,

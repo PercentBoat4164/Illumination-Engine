@@ -69,13 +69,7 @@ private:
     IE::Graphics::CommandPool   m_primaryCommandPool{};
     std::vector<std::shared_ptr<IE::Graphics::CommandBuffer>> m_primaryCommandBuffers{};
 
-
-    static VkBool32 APIDebugMessenger(
-      VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
-      VkDebugUtilsMessageTypeFlagsEXT             messageType,
-      const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-      void                                       *pUserData
-    );
+    static std::remove_pointer_t<PFN_vkDebugUtilsMessengerCallbackEXT> APIDebugMessenger;
 
     GLFWwindow *createWindow();
 

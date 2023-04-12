@@ -44,10 +44,6 @@ std::vector<VkVertexInputAttributeDescription> IE::Graphics::Vertex::getAttribut
     };
 }
 
-// This clang-tidy diagnostic is being ignored because it should not apply to this function.
-#pragma clang diagnostic push
-#pragma ide diagnostic   ignored "performance-no-int-to-ptr"
-
 void IE::Graphics::Vertex::useVertexAttributesWithProgram(GLint program) {
     int attributeLocation = glGetAttribLocation(program, "vertexPosition");
     if (attributeLocation >= 0) {
@@ -122,8 +118,6 @@ void IE::Graphics::Vertex::useVertexAttributesWithProgram(GLint program) {
         );
     }
 }
-
-#pragma clang diagnostic pop
 
 bool IE::Graphics::Vertex::operator==(Vertex &other) const {
     return position == other.position && color == other.color && textureCoordinates == other.textureCoordinates &&

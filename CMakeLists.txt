@@ -40,6 +40,10 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_definitions("GCC")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_definitions("MSVC")
+
+    # Eliminate the unnecessary warnings.
+    string(REGEX REPLACE " /W[3|4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "" FORCE)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     add_compile_definitions("AppleClang")
 

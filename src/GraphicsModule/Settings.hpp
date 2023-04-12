@@ -32,17 +32,17 @@ public:
 
     /**
      * Format is given by:
-     * 4x single byte specifying bits per channel.
-     * 1x single byte specifying the ordering of channels.
+     * 4x bytes specifying bits per channel.
+     * 1x byte specifying the ordering of channels.
      *      Every two bits is another channel specification. The two bits index an array of RGBA.
      *      e.x. RGBA = 0x1B
      *           BRGA = 0x87
-     * 1x single byte specifying the data type.
+     * 1x byte specifying the data type.
      *      The byte indexes an array of: INT, UINT, FLOAT
      */
-    enum ImageFormat {
-        IE_GRAPHICS_IMAGE_FORMAT_RGBA8888_INT = 0x080808081B00,
-        IE_GRAPHICS_IMAGE_FORMAT_A24_FLOAT    = 0x000000181B02,
+    enum ImageFormat : uint64_t {
+        IE_GRAPHICS_IMAGE_FORMAT_RGBA8888_INT = 0x0000080808081B00U,
+        IE_GRAPHICS_IMAGE_FORMAT_A24_FLOAT    = 0x0000000000181B02U,
     };
 
     ShadowMethods shadowMethod{IE_GRAPHICS_SETTINGS_SHADOW_METHOD_NONE};

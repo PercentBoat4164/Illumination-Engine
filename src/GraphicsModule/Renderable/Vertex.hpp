@@ -34,5 +34,5 @@ struct Vertex {
     static void useVertexAttributesWithProgram(GLint program);
 
     bool operator==(Vertex &other) const;
-} __attribute__((aligned(128)));
+};
 }  // namespace IE::Graphics

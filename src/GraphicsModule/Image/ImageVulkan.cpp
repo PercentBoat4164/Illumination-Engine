@@ -404,8 +404,8 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(
       .arrayLayers = 0x1,
       .samples     = VK_SAMPLE_COUNT_1_BIT,
       .tiling      = VK_IMAGE_TILING_OPTIMAL,
-      .usage       = intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT :
-                                                                           VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+      .usage       = static_cast<VkImageUsageFlags>(intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT :
+                                                                           VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
       .queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size()),
       .pQueueFamilyIndices   = queueFamilyIndices.data(),
@@ -453,8 +453,8 @@ bool IE::Graphics::detail::ImageVulkan::_createImage(
                            .b = VK_COMPONENT_SWIZZLE_B,
                            .a = VK_COMPONENT_SWIZZLE_A},
       .subresourceRange = VkImageSubresourceRange{
-                           .aspectMask     = intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_IMAGE_ASPECT_COLOR_BIT :
-                                                                                VK_IMAGE_ASPECT_DEPTH_BIT, .baseMipLevel   = 0,
+                           .aspectMask     = static_cast<VkImageAspectFlags>(intentFromPreset(m_preset) == IE_IMAGE_INTENT_COLOR ? VK_IMAGE_ASPECT_COLOR_BIT :
+                                                                                VK_IMAGE_ASPECT_DEPTH_BIT), .baseMipLevel   = 0,
                            .levelCount     = VK_REMAINING_MIP_LEVELS,
                            .baseArrayLayer = 0,
                            .layerCount     = VK_REMAINING_ARRAY_LAYERS}

@@ -5,7 +5,7 @@
 
 #include <vector>
 
-class aiScene;
+struct aiScene;
 
 namespace IE::Graphics {
 class RenderEngine;
