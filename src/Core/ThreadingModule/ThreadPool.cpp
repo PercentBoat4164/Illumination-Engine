@@ -2,11 +2,10 @@
 
 #include "ResumeAfter.hpp"
 
-#include <cassert>
 #include <mutex>
 #include <thread>
 
-IE::Core::Threading::ThreadPool::ThreadPool(size_t t_threads) {
+IE::Core::Threading::ThreadPool::ThreadPool(uint32_t t_threads) {
     m_workers.reserve(t_threads);
     for (; t_threads > 0; --t_threads)
         m_workers.emplace_back([this] { IE::Core::Threading::Worker::start(this); });
@@ -25,16 +24,20 @@ void IE::Core::Threading::ThreadPool::startMainThreadLoop() {
             });
         if (pool.m_mainShutdown) break;
         task->execute();
+        task = nullptr;
+    }
+
+    // Release any unfinished task to the queue, and notify the remaining worker threads of its existence.
+    if (task) {
+        pool.m_queue.push(task);
+        pool.m_workAssignedNotifier.notify_one();
     }
 }
 
 IE::Core::Threading::ThreadPool::~ThreadPool() {
-    m_shutdown = true;
-    m_workAssignedNotifier.notify_all();
+    shutdown();
     for (std::thread &thread : m_workers)
         if (thread.joinable()) thread.join();
-    m_mainShutdown = false;
-    m_mainWorkAssignedNotifier.notify_one();
 }
 
 uint32_t IE::Core::Threading::ThreadPool::getWorkerCount() {
@@ -44,30 +47,25 @@ uint32_t IE::Core::Threading::ThreadPool::getWorkerCount() {
 void IE::Core::Threading::ThreadPool::shutdown() {
     m_mainShutdown = true;
     m_mainWorkAssignedNotifier.notify_one();
-    m_shutdown = true;
+    m_threadShutdownCount = getWorkerCount();
     m_workAssignedNotifier.notify_all();
 }
 
-void IE::Core::Threading::ThreadPool::setWorkerCount(size_t t_threads) {
+void IE::Core::Threading::ThreadPool::setWorkerCount(uint32_t t_threads) {
     static std::mutex           mutex;
     // Ensure no other thread is trying to set the worker count. This would result in a deadlock.
     std::lock_guard<std::mutex> lock(mutex);
 
-    assert(t_threads > 0);  // The number of threads must be at least 1.
-
-    // Join all threads except for this one if it is a worker.
-    m_shutdown = true;
-    m_workAssignedNotifier.notify_all();
-    std::thread::id thisThreadID{std::this_thread::get_id()};
-    for (std::thread &thread : m_workers)
-        if (thread.joinable() && thread.get_id() != thisThreadID) thread.join();
-    erase_if(m_workers, [](std::thread &thread) { return !thread.joinable(); });
-    m_shutdown = false;
+    int64_t dThreads = t_threads - (int64_t) getWorkerCount();
+    if (dThreads == 0) return shutdown();
+    if (dThreads < 0) {
+        // Shutdown dThreads threads.
+        m_threadShutdownCount = std::abs(dThreads);
+        return m_workAssignedNotifier.notify_all();
+    }
 
     // Add in the number of threads needed to bring the population up to the requested number.
     m_workers.reserve(t_threads);
-    t_threads -= m_workers.size();
-    for (; t_threads > 0; --t_threads)
+    for (; dThreads > 0; --dThreads)
         m_workers.emplace_back([this] { IE::Core::Threading::Worker::start(this); });
-    m_workers.shrink_to_fit();
 }
