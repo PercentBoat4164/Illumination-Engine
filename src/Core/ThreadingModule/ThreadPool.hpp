@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/ThreadingModule/ResumeAfter.hpp"
 #include "CoroutineTask.hpp"
 #include "EnsureThread.hpp"
 #include "FunctionTask.hpp"

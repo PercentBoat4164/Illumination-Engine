@@ -7,7 +7,7 @@
 /* Include dependencies from Core. */
 #include "Core/AssetModule/IEAsset.hpp"
 #include "Core/Core.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include <vulkan/vulkan_core.h>
 
 /* Include external dependencies. */

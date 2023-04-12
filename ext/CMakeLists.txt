@@ -105,24 +105,42 @@ set(VMA_DEBUG_INITIALIZE_ALLOCATIONS)
 set(VMA_DEBUG_GLOBAL_MUTEX)
 set(VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT)
 
+# Shaderc Options
+set(SHADERC_ENABLE_WGSL_OUTPUT OFF)
+set(SHADERC_SKIP_TESTS ON)
+set(SHADERC_SKIP_EXAMPLES ON)
+set(SHADERC_SKIP_COPYRIGHT_CHECK OFF)
+set(SHADERC_SKIP_INSTALL ON)
+
 # CCache Options
 if (NOT DEFINED USE_CCACHE)
     set(USE_CCACHE ON)
 endif ()
 
-# CCache is only available for Linux
-if (APPLE OR WIN32)
+# CCache is only available for Linux and macOS
+# Linux install:
+# sudo apt install ccache
+# macOS install:
+# brew install ccache
+if (WIN32)
     set(USE_CCACHE OFF)
 endif ()
 
 # Add all packages
-# GLEW is wierd. Why is it like this?
+find_package(OpenGL REQUIRED)
+if (APPLE)
+    find_package(Vulkan REQUIRED shaderc_combined)
+else ()
+    find_package(Vulkan REQUIRED shaderc_combined)
+endif ()
+
+set(OpenGL_GL_PREFERENCE "GLVND")
 CPMAddPackage(
         NAME glew
         URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
         VERSION 2.2.0
+        SOURCE_SUBDIR build/cmake
 )
-add_subdirectory(${glew_SOURCE_DIR}/build/cmake)
 
 CPMAddPackage(NAME Ccache.cmake GITHUB_REPOSITORY TheLartians/Ccache.cmake VERSION 1.2.4)
 CPMAddPackage("gh:assimp/assimp@5.2.5")
@@ -131,17 +149,16 @@ CPMAddPackage("gh:glfw/glfw#3.3.8")
 CPMAddPackage("gh:gabime/spdlog@1.11.0")
 CPMAddPackage("gh:charles-lunarg/vk-bootstrap@0.7")
 CPMAddPackage("gh:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@3.0.1")
-find_package(OpenGL REQUIRED)
-find_package(Vulkan REQUIRED)
+CPMAddPackage("gh:KhronosGroup/SPIRV-Cross#main")  # This should be main. The latest guaranteed working version is kept there. All tags are for older versions.
 
-add_library(EXT_AssImp main.cpp)
-add_library(EXT_SpdLog main.cpp)
-add_library(EXT_OpenGL main.cpp)
-add_library(EXT_Vulkan main.cpp)
-add_library(INT_src main.cpp)
+add_library(EXT_AssImp dummy.cpp)
+add_library(EXT_SpdLog dummy.cpp)
+add_library(EXT_OpenGL dummy.cpp)
+add_library(EXT_Vulkan dummy.cpp)
+add_library(INT_src dummy.cpp)
 target_link_libraries(EXT_AssImp PUBLIC assimp)
 target_link_libraries(EXT_SpdLog PUBLIC spdlog)
 target_link_libraries(EXT_OpenGL PUBLIC OpenGL::GL glew_s glfw glm::glm)
 target_include_directories(EXT_OpenGL PUBLIC ${glew_SOURCE_DIR}/include)
-target_link_libraries(EXT_Vulkan PUBLIC Vulkan::Vulkan vk-bootstrap VulkanMemoryAllocator glfw glm::glm)
+target_link_libraries(EXT_Vulkan PUBLIC Vulkan::Vulkan Vulkan::shaderc_combined vk-bootstrap VulkanMemoryAllocator glfw glm::glm ${Vulkan_shaderc_combined_LIBRARY} spirv-cross-reflect spirv-cross-cpp)
 target_include_directories(INT_src PUBLIC ${IE_BASE_DIR}/src)

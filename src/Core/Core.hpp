@@ -3,7 +3,7 @@
 #include "Core/EngineModule/Engine.hpp"
 #include "Core/EngineModule/Window.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "Core/ThreadingModule/ThreadPool.hpp"
 
 #include <mutex>

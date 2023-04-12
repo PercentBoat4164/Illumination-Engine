@@ -8,7 +8,7 @@
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "IEVersion.hpp"
 
 // External dependencies
