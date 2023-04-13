@@ -23,7 +23,7 @@ public:
     template<typename T, typename... Args>
         requires std::derived_from<T, IE::Core::Engine>
 
-    static std::shared_ptr<T> createEngine(std::string id, Args... args) {
+    static std::shared_ptr<T> createEngine(const std::string &id, Args... args) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
         if (m_engines.find(id) != m_engines.end())
             m_logger.log(

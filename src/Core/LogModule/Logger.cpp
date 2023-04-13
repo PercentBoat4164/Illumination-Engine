@@ -10,9 +10,11 @@
 
 bool                                               IE::Core::Logger::m_init{false};
 std::shared_ptr<spdlog::sinks::basic_file_sink_st> IE::Core::Logger::m_logFileSink{};
-std::mutex                                         IE::Core::Logger::m_logMutex{};
+// This does not get constructed before the Logger() constructor is called on some Windows compilers. This making it a pointer then having it point to a mutex that is created in the constructor solves that problem. There is no need to delete this pointer as the pointer and the object it is pointing to should last for the entire duration of the program.
+std::mutex                                        *IE::Core::Logger::m_logMutex{};
 
 IE::Core::Logger::Logger(const std::string &t_name) {
+    m_logMutex = new std::mutex();
     if (!m_init)
         m_logFileSink = std::make_shared<spdlog::sinks::basic_file_sink_st>("logs/IlluminationEngine.log");
     std::vector<spdlog::sink_ptr> sinks{m_logFileSink, std::make_shared<spdlog::sinks::stdout_color_sink_st>()};
@@ -30,12 +32,12 @@ IE::Core::Logger::Logger(const std::string &t_name) {
 }
 
 void IE::Core::Logger::log(const std::string &t_msg, IE::Core::Logger::Level t_level) const {
-    std::lock_guard<std::mutex> lock(m_logMutex);
+    std::lock_guard<std::mutex> lock(*m_logMutex);
     m_logger->log((spdlog::level::level_enum) t_level, t_msg);
 }
 
 void IE::Core::Logger::log(VkDebugUtilsMessageSeverityFlagBitsEXT t_level, const std::string &t_msg) const {
-    std::lock_guard<std::mutex> lock(m_logMutex);
+    std::lock_guard<std::mutex> lock(*m_logMutex);
     switch (t_level) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: m_logger->log(spdlog::level::trace, t_msg); break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: m_logger->log(spdlog::level::info, t_msg); break;
