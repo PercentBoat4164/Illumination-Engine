@@ -206,7 +206,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
     vkb::SwapchainBuilder swapchainBuilder{device};
     swapchainBuilder
       .set_desired_present_mode(settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
-      .set_desired_extent(settings->currentResolution[0], settings->currentResolution[1])
+      .set_desired_extent(settings->windowedResolution[0], settings->windowedResolution[1])
       .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}
       )  // This may have to change in the event that HDR is to be supported.
       .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
@@ -461,6 +461,7 @@ void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
 
 void IERenderEngine::handleResolutionChange() {
     if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) {
+//        SDL_Vulkan_GetDrawableSize(window, &settings->currentResolution[0], &settings->currentResolution[1]);
         createSwapchain();
         IEImage::CreateInfo depthImageCreateInfo{
           .format          = VK_FORMAT_D32_SFLOAT_S8_UINT,
@@ -519,10 +520,14 @@ bool IERenderEngine::_openGLUpdate() {
 bool IERenderEngine::_vulkanUpdate() {
     if (window == nullptr) return false;
     if (renderables.empty()) SDL_Quit();
-    if (framebufferResized) {
-        framebufferResized = false;
+    if (frameNumber > 100) {
+        settings->updateWindowDimensions();
         handleResolutionChange();
-    }
+}
+//    if (framebufferResized) {
+//        framebufferResized = false;
+//        handleResolutionChange();
+//    }
     if (shouldBeFullscreen) {
         shouldBeFullscreen = false;
         toggleFullscreen();
@@ -585,7 +590,7 @@ bool IERenderEngine::_vulkanUpdate() {
     currentFrame = (currentFrame + 1) % (int) swapchain.image_count;
     if (frameTime > 1.0 / 30.0) {
         settings->logger.log(
-          "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime * 1000) + "ms to compute.",
+          "Frame #" + std::to_string(frameNumber) + " took " + std::to_string(frameTime) + "ms to compute.",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
     }

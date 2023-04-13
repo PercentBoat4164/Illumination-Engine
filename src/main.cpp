@@ -12,12 +12,12 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     auto      *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine", &settings);
 
     IE::Core::Core::getLogger()->log(std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())));
-
-    co_await IE::Core::Core::getThreadPool()->ensureThread(IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD);
-    IE::Core::Core::getLogger()->log(std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())));
-    // NOW EXECUTING ON THE MAIN THREAD.
-    co_await IE::Core::Core::getThreadPool()->ensureThread(IE::Core::Threading::ThreadType::IE_THREAD_TYPE_WORKER_THREAD);
-    IE::Core::Core::getLogger()->log(std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())));
+//
+//    co_await IE::Core::Core::getThreadPool()->ensureThread(IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD);
+//    IE::Core::Core::getLogger()->log(std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())));
+//    // NOW EXECUTING ON THE MAIN THREAD.
+//    co_await IE::Core::Core::getThreadPool()->ensureThread(IE::Core::Threading::ThreadType::IE_THREAD_TYPE_WORKER_THREAD);
+//    IE::Core::Core::getLogger()->log(std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())));
     // NOW EXECUTING ON A THREAD POOL MANAGED THREAD. Note that this thread is not *necessarily* the same as the worker thread before.
 
     // To submit an entire job use: `auto job = IE::Core::Core::getThreadPool()->submitToMainThread(illuminationEngine);`

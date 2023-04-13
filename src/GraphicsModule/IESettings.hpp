@@ -14,12 +14,14 @@
 // External dependencies
 #define GLEW_IMPLEMENTATION
 #include <GL/glew.h>
+#include <iostream>
 
 
 // System dependencies
 #include <array>
 #include <SDL.h>
 #include <string>
+#include <vector>
 
 class IESettings {
 public:
@@ -29,7 +31,7 @@ public:
         defaultResolution  = {(displayDimensions.w), (displayDimensions.h)};
         //        fullscreenResolution = {glfwGetVideoMode(primaryMonitor)->width,
         //        glfwGetVideoMode(primaryMonitor)->height};
-        windowedResolution = {defaultResolution};
+        windowedResolution = {currentResolution};
         currentResolution  = fullscreen ? fullscreenResolution : windowedResolution;
         defaultPosition      = {SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED};
         fullscreenPosition = {0, 0};

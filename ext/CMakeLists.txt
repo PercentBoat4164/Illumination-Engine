@@ -130,7 +130,7 @@ CPMAddPackage("gh:g-truc/glm#master")
 CPMAddPackage("gh:gabime/spdlog@1.11.0")
 CPMAddPackage("gh:charles-lunarg/vk-bootstrap@0.7")
 CPMAddPackage("gh:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@3.0.1")
-CPMAddPackage("gh:libsdl-org/SDL#release-2.26.3")
+CPMAddPackage("gh:libsdl-org/SDL#release-2.26.5")
 find_package(OpenGL REQUIRED)
 find_package(Vulkan REQUIRED)
 
