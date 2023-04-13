@@ -17,7 +17,7 @@ class IECamera;
 #include "Image/IETexture.hpp"
 
 // Modular dependencies
-#include "Core/AssetModule/IEAspect.hpp"
+#include "Core/AssetModule/Aspect.hpp"
 #include "IEMesh.hpp"
 
 // External dependencies
@@ -36,7 +36,7 @@ enum IERenderableStatus {
     IE_RENDERABLE_STATE_IN_VRAM  = 0x4
 };
 
-class IERenderable : public IEAspect {
+class IERenderable : public IE::Core::Aspect {
 public:
     std::string           modelName{};
     std::vector<IEMesh>   meshes{};
@@ -51,20 +51,16 @@ public:
     glm::mat4             modelMatrix{};
     IERenderableStatus    status{IE_RENDERABLE_STATE_UNKNOWN};
 
-    IERenderable() = default;
-
-    IERenderable(IERenderEngine *, const std::string &);
+    IERenderable(IERenderEngine *, IE::Core::File *);
 
     static void setAPI(const IEAPI &);
 
     /* API dependent functions */
-    static std::function<void(IERenderable &, IERenderEngine *, const std::string &)> _create;
+    static std::function<void(IERenderable &)> _create;
 
-    void create(IERenderEngine *, const std::string &);
+    void _openglCreate();
 
-    void _openglCreate(IERenderEngine *, const std::string &);
-
-    void _vulkanCreate(IERenderEngine *, const std::string &);
+    void _vulkanCreate();
 
 
     static std::function<void(IERenderable &)> _loadFromDiskToRAM;

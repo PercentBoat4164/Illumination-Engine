@@ -2,18 +2,10 @@
 
 #include <utility>
 
-IEAspect *IE::Core::Engine::getAspect(const std::string &t_id) {
-    auto aspect = m_aspects.find(t_id);
-    if (aspect != m_aspects.end()) return aspect->second.get();
-    return nullptr;
+IE::Core::Engine::Engine(const std::string &t_id) {
+    m_ID = t_id;
 }
 
-IE::Core::Engine &IE::Core::Engine::operator=(const IE::Core::Engine &t_other) {
-    if (this == &t_other) m_aspects = t_other.m_aspects;
-    return *this;
-}
-
-IE::Core::Engine &IE::Core::Engine::operator=(IE::Core::Engine &&t_other) noexcept {
-    if (this == &t_other) m_aspects = std::exchange(t_other.m_aspects, {});
-    return *this;
+std::string IE::Core::Engine::getID() {
+    return m_ID;
 }

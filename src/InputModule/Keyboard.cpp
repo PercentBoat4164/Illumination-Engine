@@ -129,18 +129,16 @@ void IE::Input::Keyboard::clearQueue() {
 }
 
 void IE::Input::Keyboard::keyCallback(GLFWwindow *window, int key, int scancode, int action, int modifiers) {
-    auto keyboard = static_cast<IE::Input::Keyboard *>(
-      static_cast<IE::Input::InputEngine *>(IE::Core::Core::getWindow(window)->inputEngine)->getAspect("keyboard")
-    );  // keyboard connected to the window
+    IE::Input::Keyboard keyboard = static_cast<IE::Input::InputEngine *>(glfwGetWindowUserPointer(window))->m_keyboard;
     if (action == GLFW_REPEAT) {
-        keyboard->queue.emplace_back(key, action);
+        keyboard.queue.emplace_back(key, action);
         return;
     }
     IE::Input::detail::KeyPressDescription thisKeyPress{key, action};
     IE::Input::detail::KeyPressDescription oppositeKeyPress{
       key,
       thisKeyPress.action == GLFW_PRESS ? GLFW_RELEASE : GLFW_PRESS};
-    auto oppositeKeyPressIterator = std::find(keyboard->queue.begin(), keyboard->queue.end(), oppositeKeyPress);
-    if (oppositeKeyPressIterator != keyboard->queue.end()) keyboard->queue.erase(oppositeKeyPressIterator);
-    keyboard->queue.push_back(thisKeyPress);
+    auto oppositeKeyPressIterator = std::find(keyboard.queue.begin(), keyboard.queue.end(), oppositeKeyPress);
+    if (oppositeKeyPressIterator != keyboard.queue.end()) keyboard.queue.erase(oppositeKeyPressIterator);
+    keyboard.queue.push_back(thisKeyPress);
 }

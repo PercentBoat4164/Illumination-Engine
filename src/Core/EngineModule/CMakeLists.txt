@@ -1,9 +1,9 @@
 set(IEEngineModuleSourceFiles  # Gather sources
         Engine.cpp
-        Window.cpp
+        EventActionMapping.cpp
         )
 
 # Create and define properties for the library
 add_library(IEEngineModule ${IEEngineModuleSourceFiles})
-target_link_libraries(IEEngineModule PUBLIC INT_src IEAssetModule)
+target_link_libraries(IEEngineModule PUBLIC INT_src IEAssetModule IELogModule)
 set_target_properties(IEEngineModule PROPERTIES LINKER_LANGUAGE CXX)

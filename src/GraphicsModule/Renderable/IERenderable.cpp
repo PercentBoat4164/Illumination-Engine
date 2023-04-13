@@ -14,8 +14,12 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
-    create(engineLink, filePath);
+IERenderable::IERenderable(IERenderEngine *t_engineLink, IE::Core::File *t_file) :
+        IE::Core::Aspect(t_engineLink, t_file), linkedRenderEngine(t_engineLink), status(IE_RENDERABLE_STATE_UNLOADED) {
+    std::string path = t_file->path;
+    directory          = path.substr(0, path.find_last_of('/'));
+    modelName          = path.substr(path.find_last_of('/'));
+    _create(*this);
 }
 
 void IERenderable::setAPI(const IEAPI &API) {
@@ -36,18 +40,9 @@ void IERenderable::setAPI(const IEAPI &API) {
     }
 }
 
-std::function<void(IERenderable &, IERenderEngine *, const std::string &)> IERenderable::_create{nullptr};
+std::function<void(IERenderable &)> IERenderable::_create{nullptr};
 
-void IERenderable::create(IERenderEngine *engineLink, const std::string &filePath) {
-    linkedRenderEngine = engineLink;
-    directory          = filePath.substr(0, filePath.find_last_of('/'));
-    modelName          = filePath.substr(filePath.find_last_of('/'));
-    _create(*this, engineLink, filePath);
-    status = IE_RENDERABLE_STATE_UNLOADED;
-}
-
-void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &filePath) {
-    linkedRenderEngine = engineLink;
+void IERenderable::_openglCreate() {
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
     IEBuffer::CreateInfo modelBufferCreateInfo{
@@ -57,8 +52,7 @@ void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &
     modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
 }
 
-void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &filePath) {
-    linkedRenderEngine = engineLink;
+void IERenderable::_vulkanCreate() {
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
     IEBuffer::CreateInfo modelBufferCreateInfo{
@@ -168,11 +162,10 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 }
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto &associatedAsset : associatedAssets) {
-        IEAsset   thisAsset  = *associatedAsset.lock();
-        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
+    for (IE::Core::Asset *associatedAsset : m_associatedAssets) {
+        glm::quat quaternion = glm::yawPitchRoll(associatedAsset->m_rotation.x, associatedAsset->m_rotation.y, associatedAsset->m_rotation.z);
         modelMatrix          = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), associatedAsset->m_scale), associatedAsset->m_position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );
@@ -191,11 +184,10 @@ void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t re
 }
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto &associatedAsset : associatedAssets) {
-        IEAsset   thisAsset  = *associatedAsset.lock();
-        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
+    for (auto &associatedAsset : m_associatedAssets) {
+        glm::quat quaternion = glm::yawPitchRoll(associatedAsset->m_rotation.x, associatedAsset->m_rotation.y, associatedAsset->m_rotation.z);
         modelMatrix          = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), associatedAsset->m_scale), associatedAsset->m_position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );
