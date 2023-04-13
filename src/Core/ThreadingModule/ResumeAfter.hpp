@@ -51,7 +51,7 @@ public:
 #   endif
     // clang-format on
 
-    void releaseDependency();
+    virtual void releaseDependency();
 
 protected:
     //clang-format off

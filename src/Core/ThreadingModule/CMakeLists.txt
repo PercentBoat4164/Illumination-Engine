@@ -5,7 +5,8 @@ set(IEThreadingModuleSourceFiles  # Gather sources
   FunctionTask.cpp
   Queue.cpp
   ResumeAfter.cpp
-  Task.cpp
+  ResumeAfter.cpp
+        ResumeOnMainThreadAfter.cppTask.cpp
   ThreadPool.cpp
   Worker.cpp
   )

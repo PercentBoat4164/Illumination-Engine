@@ -5,9 +5,10 @@
 #include "GraphicsModule/Renderable/IERenderable.hpp"
 
 /* Include dependencies from Core. */
-#include "Core/AssetModule/IEAsset.hpp"
+#include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
+#include <vulkan/vulkan_core.h>
 
 /* Include external dependencies. */
 #define GLEW_IMPLEMENTATION
@@ -53,7 +54,6 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     vkb::Result<vkb::Instance> instanceBuilder = builder.build();
     if (!instanceBuilder) {
         settings->logger.log(
-
           "Failed to create Vulkan instance. Error: " + instanceBuilder.error().message(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -361,7 +361,7 @@ void IERenderEngine::destroyCommandPools() {
     computeCommandPool->destroy();
 }
 
-IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
+IERenderEngine::IERenderEngine(const std::string &t_id, IESettings *settings) : settings(settings), IE::Core::Engine(t_id) {
     API.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
 
     // Initialize GLFW then create and setup window
@@ -422,7 +422,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
 
     IEImage::CreateInfo depthImageCreateInfo{
       .format          = VK_FORMAT_D32_SFLOAT_S8_UINT,
-      .layout          = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+      .layout          = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
       .usage           = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
       .aspect          = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
       .allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY,
@@ -446,12 +446,11 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
 
-void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
-    for (std::shared_ptr<IEAspect> &aspect : asset->aspects) {
+void IERenderEngine::addAsset(const IE::Core::Asset &asset) {
+    for (const std::shared_ptr<IE::Core::Aspect> &aspect : asset.m_aspects) {
         // If aspect is downcast-able to a renderable
         if (dynamic_cast<IERenderable *>(aspect.get())) {
             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
-            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->filename);
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
         }
@@ -465,7 +464,7 @@ void IERenderEngine::handleResolutionChange() {
         createSwapchain();
         IEImage::CreateInfo depthImageCreateInfo{
           .format          = VK_FORMAT_D32_SFLOAT_S8_UINT,
-          .layout          = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+          .layout          = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
           .usage           = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
           .aspect          = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
           .allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY,
@@ -492,7 +491,7 @@ bool IERenderEngine::_openGLUpdate() {
     if (shouldBeFullscreen) {
         shouldBeFullscreen = false;
         toggleFullscreen();
-        //        return glfwWindowShouldClose(window) != 1;
+        //        return glfwWindowShouldClose(window) == 0;
     }
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
@@ -514,7 +513,7 @@ bool IERenderEngine::_openGLUpdate() {
     previousTime     = currentTime;
     frameNumber++;
     return 1;  // needs to be rewritten SDL quit not same glfwwindowshouldclose
-    // return !glfwWindowShouldClose(window);
+    // return glfwWindowShouldClose(window) == 0;
 }
 //Lines below are problem
 bool IERenderEngine::_vulkanUpdate() {
@@ -777,12 +776,11 @@ bool IERenderEngine::ExtensionAndFeatureInfo::variableDescriptorCountSupportQuer
     return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount != 0U;
 }
 
-IERenderEngine::IERenderEngine(IESettings &settings) : settings(new IESettings{settings}) {
-    API.name = IE_RENDER_ENGINE_API_NAME_OPENGL;
-
+IERenderEngine::IERenderEngine(const std::string &t_id, IESettings &t_settings) : settings(new IESettings{t_settings}), IE::Core::Engine(t_id) {
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
+    API.name = IE_RENDER_ENGINE_API_NAME_OPENGL;
     //    if (glfwInit() != GLFW_TRUE)
     //        settings->logger.log("Failed to initialize GLFW!",
     //        IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
@@ -863,15 +861,15 @@ std::function<void(IERenderEngine &)> IERenderEngine::_destroy =
       return;
   }};
 
-IERenderEngine::AspectType *IERenderEngine::getAspect(const std::string &t_id) {
-    return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
+std::shared_ptr<IERenderEngine::AspectType> IERenderEngine::getAspect(const std::string &t_id) {
+    return IE::Core::Engine::getAspect<IERenderEngine::AspectType>(t_id);
 }
 
-IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
-    AspectType *aspect = getAspect(t_id);
-    if (!aspect) aspect = new AspectType();
-    t_asset.lock()->addAspect(aspect);
-    return aspect;
+std::shared_ptr<IERenderEngine::AspectType> IERenderEngine::createAspect(
+  const std::string &t_id,
+  IE::Core::File    *t_resource
+) {
+    return IE::Core::Engine::createAspect<IERenderEngine::AspectType>(t_id, t_resource, this);
 }
 
 void IERenderEngine::queueToggleFullscreen() {

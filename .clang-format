@@ -50,7 +50,7 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakAfterJavaFieldAnnotations: true
 BreakBeforeBinaryOperators: None
-# BreakBeforeConceptDeclarations: Always  # Disabled for old versions.
+# BreakBeforeConceptDeclarations: Always  # Not available in clang-format 14
 BreakBeforeBraces: Attach
 BreakBeforeInheritanceComma: false
 BreakInheritanceList: AfterColon
@@ -114,10 +114,10 @@ IndentCaseBlocks: false
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
 IndentExternBlock: Indent
-#IndentRequiresClause: false  # Disabled for old versions.
+# IndentRequiresClause: false  # Not available in clang-format 14
 IndentWidth: 4
 IndentWrappedFunctionNames: false
-#InsertBraces: false  # Disabled for old versions.
+# InsertBraces: false  # Not available in clang-format 14
 KeepEmptyLinesAtTheStartOfBlocks: true
 LambdaBodyIndentation: Signature
 MacroBlockBegin: ''

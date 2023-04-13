@@ -8,7 +8,7 @@
 #include "IERenderEngine.hpp"
 
 /* Include dependencies from Core. */
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 
 void IERenderPass::create(IERenderEngine *engineLink, IERenderPass::CreateInfo *createInfo) {
     createdWith        = *createInfo;

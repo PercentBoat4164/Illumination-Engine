@@ -11,7 +11,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
 set(ASSIMP_HUNTER_ENABLED OFF)
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 if (APPLE)
-	set(ASSIMP_BUILD_FRAMEWORK OFF)
+    set(ASSIMP_BUILD_FRAMEWORK OFF)
 endif ()
 set(ASSIMP_DOUBLE_PRECISION OFF)
 set(ASSIMP_OPT_BUILD_PACKAGES OFF)
@@ -35,7 +35,7 @@ set(ASSIMP_INSTALL_PDB OFF)
 set(USE_STATIC_CRT OFF)
 set(ASSIMP_BUILD_DRACO OFF)  # Fails as of AssImp v5.2.5
 if (WINDOWS)
-	set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
+    set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
 endif ()
 
 # GLM Options
@@ -84,11 +84,11 @@ set(GLFW_INSTALL OFF)
 set(GLFW_BUILD_EXAMPLES OFF)
 set(GLFW_VULKAN_STATIC OFF)
 if (WINDOWS)
-	set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF)
-	set(GLFW_USE_HYBRID_HPG OFF)
+    set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF)
+    set(GLFW_USE_HYBRID_HPG OFF)
 endif ()
 if (LINUX)
-	set(GLFW_USE_WAYLAND OFF)
+    set(GLFW_USE_WAYLAND OFF)
 endif ()
 
 # SpdLog Options
@@ -105,24 +105,42 @@ set(VMA_DEBUG_INITIALIZE_ALLOCATIONS)
 set(VMA_DEBUG_GLOBAL_MUTEX)
 set(VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT)
 
+# Shaderc Options
+set(SHADERC_ENABLE_WGSL_OUTPUT OFF)
+set(SHADERC_SKIP_TESTS ON)
+set(SHADERC_SKIP_EXAMPLES ON)
+set(SHADERC_SKIP_COPYRIGHT_CHECK OFF)
+set(SHADERC_SKIP_INSTALL ON)
+
 # CCache Options
 if (NOT DEFINED USE_CCACHE)
-	set(USE_CCACHE ON)
+    set(USE_CCACHE ON)
 endif ()
 
-# CCache is only available for Linux
-if (APPLE OR WIN32)
-	set(USE_CCACHE OFF)
+# CCache is only available for Linux and macOS
+# Linux install:
+# sudo apt install ccache
+# macOS install:
+# brew install ccache
+if (WIN32)
+    set(USE_CCACHE OFF)
 endif ()
 
 # Add all packages
-# GLEW is wierd. Why is it like this?
+find_package(OpenGL REQUIRED)
+if (APPLE)
+    find_package(Vulkan REQUIRED shaderc_combined)
+else ()
+    find_package(Vulkan REQUIRED shaderc_combined)
+endif ()
+
+set(OpenGL_GL_PREFERENCE "GLVND")
 CPMAddPackage(
-  NAME glew
-  URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
-  VERSION 2.2.0
+        NAME glew
+        URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
+        VERSION 2.2.0
+        SOURCE_SUBDIR build/cmake
 )
-add_subdirectory(${glew_SOURCE_DIR}/build/cmake)
 
 CPMAddPackage(NAME Ccache.cmake GITHUB_REPOSITORY TheLartians/Ccache.cmake VERSION 1.2.4)
 CPMAddPackage("gh:assimp/assimp@5.2.5")
@@ -134,14 +152,14 @@ CPMAddPackage("gh:libsdl-org/SDL#release-2.26.5")
 find_package(OpenGL REQUIRED)
 find_package(Vulkan REQUIRED)
 
-add_library(EXT_AssImp main.cpp)
-add_library(EXT_SpdLog main.cpp)
-add_library(EXT_OpenGL main.cpp)
-add_library(EXT_Vulkan main.cpp)
-add_library(INT_src main.cpp)
+add_library(EXT_AssImp dummy.cpp)
+add_library(EXT_SpdLog dummy.cpp)
+add_library(EXT_OpenGL dummy.cpp)
+add_library(EXT_Vulkan dummy.cpp)
+add_library(INT_src dummy.cpp)
 target_link_libraries(EXT_AssImp PUBLIC assimp)
 target_link_libraries(EXT_SpdLog PUBLIC spdlog)
-target_link_libraries(EXT_OpenGL PUBLIC OpenGL::GL glew SDL2main SDL2-static glm::glm)
+target_link_libraries(EXT_OpenGL PUBLIC OpenGL::GL glew_s SDL2main SDL2-static glm::glm)
 target_include_directories(EXT_OpenGL PUBLIC ${glew_SOURCE_DIR}/include ${sdl_SOURCE_DIR}/include)
 target_link_libraries(EXT_Vulkan PUBLIC Vulkan::Vulkan vk-bootstrap VulkanMemoryAllocator SDL2main SDL2-static glm::glm)
 target_include_directories(INT_src PUBLIC ${IE_BASE_DIR}/src ${sdl_SOURCE_DIR}/include)

@@ -7,7 +7,7 @@
 
 /* Include dependencies from Core. */
 #include "assimp/texture.h"
-#include "Core/LogModule/IELogger.hpp"
+#include "Core/LogModule/Logger.hpp"
 
 IETexture::IETexture(IERenderEngine *engineLink, IETexture::CreateInfo *createInfo) {
     create(engineLink, createInfo);

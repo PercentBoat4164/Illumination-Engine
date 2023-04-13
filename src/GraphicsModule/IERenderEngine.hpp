@@ -12,7 +12,7 @@ struct SDL_Window;
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "CommandBuffer/IECommandPool.hpp"
-#include "Core/AssetModule/IEAsset.hpp"
+#include "Core/AssetModule/Asset.hpp"
 #include "Core/EngineModule/Engine.hpp"
 #include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
 #include "GraphicsModule/RenderPass/IERenderPass.hpp"
@@ -211,7 +211,7 @@ public:
         bool variableDescriptorCountSupportQuery() const;
     };
 
-    explicit IERenderEngine(IESettings *settings = new IESettings{});
+    explicit IERenderEngine(const std::string &t_id, IESettings *settings = new IESettings{});
 
     void toggleFullscreen();
 
@@ -255,9 +255,9 @@ public:
     // global depth image used by all framebuffers. Should this be here?
     std::shared_ptr<IEImage>                       depthImage{};
 
-    void addAsset(const std::shared_ptr<IEAsset> &asset);
+    void addAsset(const IE::Core::Asset &asset);
 
-    explicit IERenderEngine(IESettings &settings);
+    explicit IERenderEngine(const std::string &t_id, IESettings &settings);
 
     bool update();
 
@@ -291,7 +291,6 @@ private:
 
     void destroy();
 
-
     void createRenderPass();
 
     void handleResolutionChange();
@@ -300,7 +299,9 @@ private:
 public:
     static void setAPI(const IEAPI &API);
 
-    AspectType *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
-    AspectType *getAspect(const std::string &t_id) override;
-    void        queueToggleFullscreen();
+    std::shared_ptr<AspectType> createAspect(const std::string &t_id, IE::Core::File *t_resource);
+
+    std::shared_ptr<AspectType> getAspect(const std::string &t_id);
+
+    void queueToggleFullscreen();
 };

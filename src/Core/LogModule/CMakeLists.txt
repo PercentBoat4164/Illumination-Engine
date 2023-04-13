@@ -1,5 +1,5 @@
 set(IELogModuleSourceFiles  # Gather sources
-        IELogger.cpp
+        Logger.cpp
         )
 
 # Create and define properties for the library
