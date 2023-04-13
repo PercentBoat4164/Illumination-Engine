@@ -40,9 +40,8 @@ std::hash<IE::Input::detail::KeyPressDescription>::operator()(const IE::Input::d
       std::hash<int>()(k.modifiers);
 }
 
-IE::Input::Keyboard::Keyboard(GLFWwindow *initialWindow, void *initialAttachment) {
+IE::Input::Keyboard::Keyboard(GLFWwindow *initialWindow) {
     window     = initialWindow;
-    attachment = initialAttachment;
     glfwSetKeyCallback(window, keyCallback);
 }
 
@@ -51,12 +50,13 @@ void IE::Input::Keyboard::setEnqueueMethod(GLFWkeyfun function) {
 }
 
 void IE::Input::Keyboard::handleQueue() {
-    for (const IE::Input::detail::KeyPressDescription &i : queue) {
-        auto element = actionsOptions.find(i);
+    for (size_t i{0}; i < queue.size(); ++i) {
+        auto &press = queue[i];
+        auto element = actionsOptions.find(press);
         if (element != actionsOptions.end()) {  // for each element that has a correlating action
             element->second.first(window);
-            if (static_cast<int>((!element->second.second) | static_cast<int>(i.action == GLFW_RELEASE)) != 0)  // remove elements labeled to not repeat or release
-                queue.erase(std::find(queue.begin(), queue.end(), i));
+            if (static_cast<int>((!element->second.second) | static_cast<int>(press.action == GLFW_RELEASE)) != 0)  // remove elements labeled to not repeat or release
+                queue.erase(std::find(queue.begin(), queue.end(), press));
         }
     }
 }

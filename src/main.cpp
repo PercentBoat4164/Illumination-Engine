@@ -77,7 +77,7 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     glfwSetTime(0.0);
     while (renderEngine->update()) {
         glfwPollEvents();
-        IE::Core::Core::getThreadPool()->submit([&] { keyboard->handleQueue(); });
+        keyboard->handleQueue();
     }
 
     IE::Core::Core::getThreadPool()->shutdown();

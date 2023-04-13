@@ -64,8 +64,6 @@ namespace IE::Input {
  */
 class Keyboard : public IEAspect {
 public:
-    void *attachment;  // pointer to object for access through the window user pointer
-
     /**
      * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the
      * IeKeyboard object.
@@ -73,7 +71,7 @@ public:
      * @param initialAttachment=nullptr
      * @return IeKeyboard
      */
-    explicit Keyboard(GLFWwindow *initialWindow, void *initialAttachment = nullptr);
+    explicit Keyboard(GLFWwindow *initialWindow);
 
     /**
      * @brief Sets the queue method. Pass one of the two pre-created key event handler functions.
