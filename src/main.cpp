@@ -3,8 +3,8 @@
 #include "IERenderEngine.hpp"
 #include "InputModule/InputEngine.hpp"
 #include "InputModule/Keyboard.hpp"
-#include <GLFW/glfw3.h>
 
+#include <GLFW/glfw3.h>
 
 IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     IESettings settings     = IESettings();
@@ -86,8 +86,7 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
 }
 
 int main(int argc, char **argv) {
-    if (argc >= 1)
-        IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
+    if (argc >= 1) IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
 
     auto main = IE::Core::Core::getThreadPool()->submitToMainThread(illuminationEngine);
     IE::Core::Core::getThreadPool()->startMainThreadLoop();

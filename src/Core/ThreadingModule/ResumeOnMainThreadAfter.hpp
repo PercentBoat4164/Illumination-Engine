@@ -8,6 +8,7 @@
 namespace IE::Core::Threading {
 class BaseTask;
 class ThreadPool;
+
 class ResumeOnMainThreadAfter : public ResumeAfter {
 public:
     template<typename... Args>
@@ -22,4 +23,4 @@ public:
 
     ~ResumeOnMainThreadAfter() = default;
 };
-}
+}  // namespace IE::Core::Threading

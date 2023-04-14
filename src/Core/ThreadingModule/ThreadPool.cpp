@@ -66,6 +66,5 @@ void IE::Core::Threading::ThreadPool::setWorkerCount(uint32_t t_threads) {
 
     // Add in the number of threads needed to bring the population up to the requested number.
     m_workers.reserve(t_threads);
-    for (; dThreads > 0; --dThreads)
-        m_workers.emplace_back([this] { IE::Core::Threading::Worker::start(this); });
+    for (; dThreads > 0; --dThreads) m_workers.emplace_back([this] { IE::Core::Threading::Worker::start(this); });
 }

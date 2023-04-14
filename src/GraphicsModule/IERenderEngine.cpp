@@ -8,6 +8,7 @@
 #include "Core/AssetModule/IEAsset.hpp"
 #include "Core/Core.hpp"
 #include "Core/LogModule/Logger.hpp"
+
 #include <vulkan/vulkan_core.h>
 
 /* Include external dependencies. */
@@ -109,8 +110,8 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
         }
         icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
     }
-    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
-    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                // Free all pixel data
+    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());             // Set icons
+    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                           // Free all pixel data
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
@@ -182,7 +183,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
       .set_desired_present_mode(settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
       .set_desired_extent((*settings->currentResolution)[0], (*settings->currentResolution)[1])
       .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}
-      )  // This may have to change in the event that HDR is to be supported.
+      )                   // This may have to change in the event that HDR is to be supported.
       .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     if (useOldSwapchain)  // Use the old swapchain if it exists and its usage was requested.
         swapchainBuilder.set_old_swapchain(swapchain);
