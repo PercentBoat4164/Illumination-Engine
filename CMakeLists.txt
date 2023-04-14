@@ -6,9 +6,14 @@ set(CMAKE_CXX_STANDARD 23)
 set(BUILD_SHARED_LIBS OFF)
 
 # Detect compiler and OS
-message("Using ${CMAKE_CXX_COMPILER_ID} on ${CMAKE_SYSTEM_NAME}.")
+if (${CMAKE_CXX_COMPILER_FRONTEND_VARIANT})
+    message("Using ${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} ${CMAKE_CXX_COMPILER_ID} v${CMAKE_CXX_COMPILER_VERSION} on ${CMAKE_SYSTEM_NAME}.")
+else ()
+    message("Using ${CMAKE_CXX_COMPILER_ID} v${CMAKE_CXX_COMPILER_VERSION} on ${CMAKE_SYSTEM_NAME}.")
+endif ()
 add_compile_definitions("COMPILER=${CMAKE_CXX_COMPILER_ID}")
 add_compile_definitions("OS=${CMAKE_SYSTEM_NAME}")
+add_compile_definitions("COMPILER_FRONTEND=${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}")
 
 
 set(IE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})  # Directory Illumination Engine is being built in
@@ -54,10 +59,11 @@ elseif ()
     message(WARNING "Unsupported compiler in use: ${CMAKE_CXX_COMPILER_ID}")
 endif ()
 
-if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    add_compile_options("-Og")
+# Compilation Options for similar interface compilers
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    add_compile_options("/Zi" "/Od")  # Complete debugging information with no optimization
 else ()
-    add_compile_options("-g")
+    add_compile_options("-g" "-O0")  # Debugging information with no optimization
 endif ()
 
 add_subdirectory(ext)  # Generate external dependencies from source

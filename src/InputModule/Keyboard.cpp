@@ -47,23 +47,19 @@ auto IE::Input::Keyboard::setWindow(GLFWwindow *t_window) -> decltype(*this) {
     return *this;
 }
 
-auto IE::Input::Keyboard::setAttachment(void *t_attachment) -> decltype(*this) {
-    attachment = t_attachment;
-    return *this;
-}
-
 void IE::Input::Keyboard::setEnqueueMethod(GLFWkeyfun t_function) {
     m_function = t_function;
     glfwSetKeyCallback(window, m_function);
 }
 
 void IE::Input::Keyboard::handleQueue() {
-    for (const IE::Input::detail::KeyPressDescription &i : queue) {
-        auto element = actionsOptions.find(i);
+    for (size_t i{0}; i < queue.size(); ++i) {
+        auto &press   = queue[i];
+        auto  element = actionsOptions.find(press);
         if (element != actionsOptions.end()) {  // for each element that has a correlating action
             element->second.first(window);
-            if (static_cast<int>((!element->second.second) | static_cast<int>(i.action == GLFW_RELEASE)) != 0)  // remove elements labeled to not repeat or release
-                queue.erase(std::find(queue.begin(), queue.end(), i));
+            if (static_cast<int>((!element->second.second) | static_cast<int>(press.action == GLFW_RELEASE)) != 0)  // remove elements labeled to not repeat or release
+                queue.erase(std::find(queue.begin(), queue.end(), press));
         }
     }
 }
@@ -149,7 +145,4 @@ void IE::Input::Keyboard::keyCallback(GLFWwindow *window, int key, int scancode,
     auto oppositeKeyPressIterator = std::find(keyboard->queue.begin(), keyboard->queue.end(), oppositeKeyPress);
     if (oppositeKeyPressIterator != keyboard->queue.end()) keyboard->queue.erase(oppositeKeyPressIterator);
     keyboard->queue.push_back(thisKeyPress);
-}
-
-IE::Input::Keyboard::Keyboard(IE::Core::Engine *t_engine, IE::Core::File *) : IE::Core::Aspect(t_engine, nullptr) {
 }

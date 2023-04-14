@@ -3,7 +3,6 @@
 #include "Core/Core.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
 #include "RenderEngine.hpp"
-
 IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     auto renderEngineCreator = IE::Core::Core::getThreadPool()->submit(
       IE::Core::Core::createEngine<IE::Graphics::RenderEngine>,
