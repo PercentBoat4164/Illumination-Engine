@@ -84,8 +84,8 @@ SDL_Window *IERenderEngine::createWindow() {
           "Failed to create window! Error: " + std::string(SDL_GetError()) + " ",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
-    IE::Core::Core::registerWindow(pwindow);
-    IE::Core::Core::getWindow(pwindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
+//    IE::Core::Core::registerWindow(pwindow);
+//    IE::Core::Core::getWindow(pwindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
 
     settings->primaryMonitor = SDL_GetWindowDisplayIndex(pwindow);
 
@@ -597,7 +597,7 @@ bool IERenderEngine::_vulkanUpdate() {
     frameTime        = currentTime - previousTime;
     previousTime     = currentTime;
     frameNumber++;
-    return 1;  // needs to be rewritten SDL quit not same glfwwindowshouldclose **Duplicate Code, ask if needs
+    return 1;  // needs to be rewritten SDL quit not same glfwwindowshouldclose **Duplicate Code, ask if it needs
                // twice
 }
 
@@ -808,16 +808,16 @@ IERenderEngine::IERenderEngine(const std::string &t_id, IESettings &t_settings) 
     //    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
     //    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
     //    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    SDL_SetWindowPosition(window, settings.currentPosition[0], settings.currentPosition[1]);
+    SDL_SetWindowPosition(window, settings->currentPosition[0], settings->currentPosition[1]);
     //    glfwSetWindowPosCallback(window, windowPositionCallback);
-    SDL_GetWindowPosition(window, &settings.currentPosition[0], &settings.currentPosition[1]);  // check again
+    SDL_GetWindowPosition(window, &settings->currentPosition[0], &settings->currentPosition[1]);  // check again
                                                                                                 // later
     //    glfwSetWindowUserPointer(window, this);
 
     // Initialize glew
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
-        settings.logger.log("Failed to initialize GLEW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+        settings->logger.log("Failed to initialize GLEW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
 
     // Get API Version
     autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);
