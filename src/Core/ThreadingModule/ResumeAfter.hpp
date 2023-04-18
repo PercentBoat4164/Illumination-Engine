@@ -8,6 +8,11 @@
 #include <vector>
 #if defined(AppleClang)
 #    include <experimental/coroutine>
+namespace std {
+    using std::experimental::coroutine_handle;
+    using std::experimental::suspend_always;
+    using std::experimental::suspend_never;
+}
 #else
 #    include <coroutine>
 #endif
@@ -43,25 +48,14 @@ public:
 
     bool await_ready() override;
 
-// clang-format off
-#   if defined(AppleClang)
-    void await_suspend(std::experimental::coroutine_handle<> t_handle) override;
-#   else
+
     void await_suspend(std::coroutine_handle<> t_handle) override;
-#   endif
-    // clang-format on
 
     virtual void releaseDependency();
 
 protected:
-    //clang-format off
-#if defined(AppleClang)
-    std::shared_ptr<std::atomic<std::experimental::coroutine_handle<>>> m_handle{
-      std::make_shared<std::atomic<std::experimental::coroutine_handle<>>>()};
-#else
     std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{
       std::make_shared<std::atomic<std::coroutine_handle<>>>()};
-#endif
     // clang-format on
     std::shared_ptr<std::atomic<size_t>> m_dependencyCount{std::make_shared<std::atomic<size_t>>()};
 };
