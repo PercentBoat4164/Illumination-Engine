@@ -23,7 +23,7 @@ void IE::Core::Threading::EnsureThread::await_suspend(std::coroutine_handle<> t_
         handle.resume();
     };
 #else
-    auto func = t_handle
+    auto func = t_handle;
 #endif
     if (m_type == IE_THREAD_TYPE_MAIN_THREAD) m_threadPool->submitToMainThread(func);
     else if (m_type == IE_THREAD_TYPE_WORKER_THREAD) m_threadPool->submit(func);
