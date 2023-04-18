@@ -27,7 +27,7 @@ Illumination Engine is a game engine written in C++. It is currently under devel
 - [ ] GUI
     - [ ] Take inspiration from CLion and Blender
     - [ ] 3D viewport synced with game
-    - [ ] Multi-window, modular workspaces
+    - [ ] Multi-m_window, modular workspaces
     - [ ] Panels that can display information and receive input from the user
 - [ ] File structure management
     - [ ] Create files and directories

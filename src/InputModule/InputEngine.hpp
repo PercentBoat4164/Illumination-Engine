@@ -8,14 +8,13 @@ struct GLFWwindow;
 namespace IE::Input {
 class InputEngine : public IE::Core::Engine {
 public:
-    using AspectType = Keyboard;
-
     GLFWwindow *m_window;
+    Keyboard    m_keyboard;
 
-    InputEngine(GLFWwindow *t_window, const std::string &t_ID);
+    InputEngine(const std::string &t_ID, GLFWwindow *t_window);
 
-    std::shared_ptr<AspectType> createAspect(const std::string &t_id);
+    std::shared_ptr<IE::Core::Aspect> createAspect(const std::string &t_id);
 
-    std::shared_ptr<AspectType> getAspect(const std::string &t_id);
+    std::shared_ptr<IE::Core::Aspect> getAspect(const std::string &t_id);
 };
 }  // namespace IE::Input

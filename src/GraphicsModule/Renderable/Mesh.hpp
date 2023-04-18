@@ -16,8 +16,10 @@ public:
     std::vector<uint32_t>       m_indices;
     std::shared_ptr<Buffer>     m_vertexBuffer;
     std::shared_ptr<Buffer>     m_indexBuffer;
-    IE::Graphics::RenderEngine *m_linkedRenderEngine;
-    unsigned                    m_triangleCount;
+    IE::Graphics::RenderEngine *m_linkedRenderEngine{};
+    uint32_t                    m_triangleCount{};
+
+    explicit Mesh(IE::Graphics::RenderEngine *t_renderEngine);
 
     void load(const aiScene *t_scene);
 };

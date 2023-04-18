@@ -1,10 +1,7 @@
 #include "RenderEngine.hpp"
 
 #include "CommandBuffer/CommandPool.hpp"
-#include "Core/AssetModule/Asset.hpp"
 #include "Image/Image.hpp"
-
-#include <type_traits>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <../contrib/stb/stb_image.h>
@@ -33,7 +30,7 @@ IE::Core::Threading::CoroutineTask<GLFWwindow *> IE::Graphics::RenderEngine::cre
         );
     } else m_graphicsAPICallbackLog.log("Initialized GLFW");
 
-    // Set GLFW window hints
+    // Set GLFW m_window hints
     /// IF USING VULKAN
     if (m_api.name == IE_RENDER_ENGINE_API_NAME_VULKAN) glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
@@ -50,8 +47,8 @@ IE::Core::Threading::CoroutineTask<GLFWwindow *> IE::Graphics::RenderEngine::cre
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     }
 
-    // Create window
-    // On macOS the window must be created from the main thread.
+    // Create m_window
+    // On macOS the m_window must be created from the main thread.
 #ifdef __APPLE__
     co_await IE::Core::Core::getThreadPool()->ensureThread(
       IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD
@@ -73,19 +70,19 @@ IE::Core::Threading::CoroutineTask<GLFWwindow *> IE::Graphics::RenderEngine::cre
         const char *description{};
         int         code = glfwGetError(&description);
         m_graphicsAPICallbackLog.log(
-          "Failed to create window! Error: " + std::to_string(code) + " " + description,
+          "Failed to create m_window! Error: " + std::to_string(code) + " " + description,
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     } else
         m_graphicsAPICallbackLog.log(
-          "Created window (" + std::to_string(m_defaultResolution[0]) + ", " +
+          "Created m_window (" + std::to_string(m_defaultResolution[0]) + ", " +
           std::to_string(m_defaultResolution[1]) + ")"
         );
 
     /// IF USING OPENGL
     if (m_api.name == IE_RENDER_ENGINE_API_NAME_OPENGL) glfwMakeContextCurrent(m_window);
 
-    // Set up window
+    // Set up m_window
     glfwSetWindowSizeLimits(m_window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwSetWindowPos(m_window, static_cast<int>(m_defaultPosition[0]), static_cast<int>(m_defaultPosition[1]));
     glfwSetWindowAttrib(m_window, GLFW_AUTO_ICONIFY, 0);
@@ -164,10 +161,10 @@ VkSurfaceKHR IE::Graphics::RenderEngine::createSurface() {
             const char *description{};
             int         code = glfwGetError(&description);
             m_graphicsAPICallbackLog.log(
-              "Failed to create window surface! Error: " + std::to_string(code) + " " + description,
+              "Failed to create m_window surface! Error: " + std::to_string(code) + " " + description,
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
-        } else m_graphicsAPICallbackLog.log("Created window surface");
+        } else m_graphicsAPICallbackLog.log("Created m_window surface");
         return m_surface;
     }
     return {};
@@ -276,7 +273,7 @@ void IE::Graphics::RenderEngine::createSyncObjects() {
 
 void IE::Graphics::RenderEngine::createCommandPools() {
     // Each thread is given a command pool to record buffers to.
-    m_commandPools.resize(IE::Core::Core::getThreadPool()->getWorkerCount());
+    m_commandPools.resize(IE::Core::Core::getThreadPool().getWorkerCount());
     for (size_t i{}; i < m_commandPools.size(); ++i) {
         m_commandPools[i] = std::make_shared<IE::Graphics::CommandPool>();
         m_commandPools[i]->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
@@ -327,29 +324,29 @@ void IE::Graphics::RenderEngine::createPrimaryCommandObjects() {
 
 IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
     m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
-    auto window{IE::Core::Core::getThreadPool()->submit(createWindow())};
+    auto window{IE::Core::Core::getThreadPool().submit(createWindow())};
 
     createInstance();
 
-    co_await IE::Core::Core::getThreadPool()->resumeAfter(window);
+    co_await IE::Core::Core::getThreadPool().resumeAfter(window);
 
     createSurface();
     createDevice();
 
-    auto commandPoolAllocatorRenderPasses{IE::Core::Core::getThreadPool()->submit([this] {
+    auto commandPoolAllocatorRenderPasses{IE::Core::Core::getThreadPool().submit([this] {
         createCommandPools();
         createAllocator();
         createRenderPasses();
     })};
 
-    auto swapchainSyncObjects{IE::Core::Core::getThreadPool()->submit([this] {
+    auto swapchainSyncObjects{IE::Core::Core::getThreadPool().submit([this] {
         createSwapchain();
         createSyncObjects();
     })};
 
     createDescriptorSets();
 
-    co_await IE::Core::Core::getThreadPool()->resumeAfter(commandPoolAllocatorRenderPasses, swapchainSyncObjects);
+    co_await IE::Core::Core::getThreadPool().resumeAfter(commandPoolAllocatorRenderPasses, swapchainSyncObjects);
 
     createPrimaryCommandObjects();
 }
@@ -447,7 +444,7 @@ IE::Graphics::RenderEngine::~RenderEngine() {
 void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int x, int y) {
     auto *renderEngine = static_cast<IE::Graphics::RenderEngine *>(glfwGetWindowUserPointer(pWindow));
     renderEngine->m_graphicsAPICallbackLog.log(
-      "Changing window size to (" + std::to_string(x) + ", " + std::to_string(y) + ")"
+      "Changing m_window size to (" + std::to_string(x) + ", " + std::to_string(y) + ")"
     );
     renderEngine->m_currentResolution = {static_cast<size_t>(x), static_cast<size_t>(y)};
 }
@@ -492,7 +489,7 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
 
     // Record all command buffers
     auto commandBufferRecording =
-      IE::Core::Core::getThreadPool()->submit(m_renderPassSeries.execute(m_primaryCommandBuffers[currentFrame]));
+      IE::Core::Core::getThreadPool().submit(m_renderPassSeries.execute(m_primaryCommandBuffers[currentFrame]));
 
     // Acquire an image from the swapchain
     uint32_t imageIndex{0};
@@ -522,7 +519,7 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
       .signalSemaphoreCount = 1,
       .pSignalSemaphores    = &m_renderFinishedSemaphores[0]->semaphore};
 
-    co_await IE::Core::Core::getThreadPool()->resumeAfter(commandBufferRecording);
+    co_await IE::Core::Core::getThreadPool().resumeAfter(commandBufferRecording);
 
     // @todo Add error checking.
     vkQueueSubmit(
@@ -547,4 +544,6 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
     co_return true;
 }
 
-IE::Graphics::RenderEngine::RenderEngine(const std::string &t_ID) : Engine(t_ID){};
+IE::Graphics::RenderEngine::RenderEngine(const std::string &t_ID) : Engine(t_ID) {
+    create()();
+}

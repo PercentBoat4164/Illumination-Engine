@@ -41,15 +41,9 @@ std::hash<IE::Input::detail::KeyPressDescription>::operator()(const IE::Input::d
       std::hash<int>()(k.modifiers);
 }
 
-auto IE::Input::Keyboard::setWindow(GLFWwindow *t_window) -> decltype(*this) {
-    window = t_window;
-    glfwSetKeyCallback(window, m_function);
-    return *this;
-}
-
 void IE::Input::Keyboard::setEnqueueMethod(GLFWkeyfun t_function) {
     m_function = t_function;
-    glfwSetKeyCallback(window, m_function);
+    glfwSetKeyCallback(m_window, m_function);
 }
 
 void IE::Input::Keyboard::handleQueue() {
@@ -57,7 +51,7 @@ void IE::Input::Keyboard::handleQueue() {
         auto &press   = queue[i];
         auto  element = actionsOptions.find(press);
         if (element != actionsOptions.end()) {  // for each element that has a correlating action
-            element->second.first(window);
+            element->second.first(m_window);
             if (static_cast<int>((!element->second.second) | static_cast<int>(press.action == GLFW_RELEASE)) != 0)  // remove elements labeled to not repeat or release
                 queue.erase(std::find(queue.begin(), queue.end(), press));
         }
@@ -133,7 +127,7 @@ void IE::Input::Keyboard::clearQueue() {
 
 void IE::Input::Keyboard::keyCallback(GLFWwindow *window, int key, int scancode, int action, int modifiers) {
     auto keyboard =
-      static_cast<IE::Input::Keyboard *>(glfwGetWindowUserPointer(window));  // keyboard connected to the window
+      static_cast<IE::Input::Keyboard *>(glfwGetWindowUserPointer(window));  // keyboard connected to the m_window
     if (action == GLFW_REPEAT) {
         keyboard->queue.emplace_back(key, action);
         return;
@@ -145,4 +139,8 @@ void IE::Input::Keyboard::keyCallback(GLFWwindow *window, int key, int scancode,
     auto oppositeKeyPressIterator = std::find(keyboard->queue.begin(), keyboard->queue.end(), oppositeKeyPress);
     if (oppositeKeyPressIterator != keyboard->queue.end()) keyboard->queue.erase(oppositeKeyPressIterator);
     keyboard->queue.push_back(thisKeyPress);
+}
+
+IE::Input::Keyboard::Keyboard(GLFWwindow *t_window) : m_window(t_window) {
+    glfwSetKeyCallback(m_window, m_function);
 }

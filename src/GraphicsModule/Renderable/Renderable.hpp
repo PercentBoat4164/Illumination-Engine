@@ -29,6 +29,6 @@ public:
 
     void load();
 
-    ~Renderable() = default;
+    ~Renderable() override = default;
 };
 }  // namespace IE::Graphics

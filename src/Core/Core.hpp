@@ -23,15 +23,16 @@ public:
     template<typename T, typename... Args>
         requires std::derived_from<T, IE::Core::Engine>
 
-    static T *createEngine(const std::string &id, Args... args) {
+    static std::shared_ptr<T> createEngine(const std::string &id, Args... args) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
         if (m_engines.find(id) != m_engines.end())
             m_logger.log(
               "Engine '" + id + "' already exists!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
-        m_engines[id] = std::make_shared<T>(id, args...);
-        return static_cast<T *>(m_engines[id]);
+        std::shared_ptr<T> engine = std::make_shared<T>(id, args...);
+        m_engines[id]             = engine;
+        return engine;
     }
 
     template<typename T>
@@ -42,19 +43,19 @@ public:
         return std::static_pointer_cast<T>(m_engines.at(id));
     }
 
-    static IE::Core::Logger                *getLogger();
-    static IE::Core::FileSystem            *getFileSystem();
-    static IE::Core::Threading::ThreadPool *getThreadPool();
-    static IE::Core::EventActionMapping    *getEventActionMapping();
+    static IE::Core::Logger                &getLogger();
+    static IE::Core::FileSystem            &getFileSystem();
+    static IE::Core::Threading::ThreadPool &getThreadPool();
+    static IE::Core::EventActionMapping    &getEventActionMapping();
 
 private:
-    static IE::Core::Logger                                    m_logger;
-    static std::mutex                                          m_enginesMutex;
-    static std::unordered_map<std::string, IE::Core::Engine *> m_engines;
-    static std::mutex                                          m_windowsMutex;
-    static Threading::ThreadPool                               m_threadPool;
-    static IE::Core::EventActionMapping m_eventActionMapping;
-    static FileSystem                                          m_filesystem;
+    static IE::Core::Logger                                                   m_logger;
+    static std::mutex                                                         m_enginesMutex;
+    static std::unordered_map<std::string, std::shared_ptr<IE::Core::Engine>> m_engines;
+    static std::mutex                                                         m_windowsMutex;
+    static Threading::ThreadPool                                              m_threadPool;
+    static IE::Core::EventActionMapping                                       m_eventActionMapping;
+    static FileSystem                                                         m_filesystem;
 
     explicit Core(const std::filesystem::path &t_path);
 };

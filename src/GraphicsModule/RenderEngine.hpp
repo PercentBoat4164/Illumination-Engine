@@ -93,7 +93,7 @@ public:
 
     explicit RenderEngine(const std::string &t_ID);
 
-    Core::Threading::CoroutineTask<bool> update() override;
+    Core::Threading::CoroutineTask<bool> update();
 
     GLFWwindow *getWindow();
 
@@ -103,7 +103,7 @@ public:
 
     IE::Graphics::API getAPI();
 
-    Core::Threading::CoroutineTask<void> create() override;
+    Core::Threading::CoroutineTask<void> create();
 
     static std::string translateVkResultCodes(VkResult t_result);
 

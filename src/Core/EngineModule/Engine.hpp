@@ -47,10 +47,6 @@ public:
 
     virtual ~Engine() = default;
 
-    virtual IE::Core::Threading::CoroutineTask<bool> update() = 0;
-
-    virtual IE::Core::Threading::CoroutineTask<void> create() = 0;
-
     std::string getID() {
         return m_ID;
     }

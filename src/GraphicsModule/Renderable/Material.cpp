@@ -46,7 +46,7 @@ void IE::Graphics::Material::load(const aiScene *scene, aiMaterial *material, IE
         std::vector<char> data{(char *) tempData, (char *) ((uint64_t) tempData + width * height * channels)};
         stbi_image_free(tempData);
         if (data.empty()) {
-            IE::Core::Core::getLogger()->log(
+            IE::Core::Core::getLogger().log(
               std::string{"Failed to load image data from file: '"} + texture->mFilename.C_Str() + "' due to " +
                 stbi_failure_reason(),
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN

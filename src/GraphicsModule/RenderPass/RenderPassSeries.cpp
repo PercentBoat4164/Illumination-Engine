@@ -281,6 +281,6 @@ IE::Graphics::RenderPassSeries::execute(std::shared_ptr<CommandBuffer> commandBu
     std::vector<std::shared_ptr<IE::Core::Threading::BaseTask>> tasks;
     tasks.reserve(m_renderPasses.size());
     for (std::shared_ptr<RenderPass> renderPass : m_renderPasses)
-        tasks.push_back(IE::Core::Core::getThreadPool()->submit([&renderPass] { renderPass->execute(); }));
-    co_await IE::Core::Core::getThreadPool()->resumeAfter(tasks);
+        tasks.push_back(IE::Core::Core::getThreadPool().submit([&renderPass] { renderPass->execute(); }));
+    co_await IE::Core::Core::getThreadPool().resumeAfter(tasks);
 }
