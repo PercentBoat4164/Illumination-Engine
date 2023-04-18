@@ -5,13 +5,18 @@
 
 #if defined(AppleClang)
 #    include <experimental/coroutine>
+
+namespace std {
+using std::experimental::coroutine_handle;
+using std::experimental::suspend_always;
+using std::experimental::suspend_never;
+}  // namespace std
 #else
 #    include <coroutine>
 #endif
 #include <functional>
 #include <mutex>
 
-// clang-format off
 namespace IE::Core::Threading {
 template<typename T>
 class CoroutineTask : public Task<T> {
@@ -22,29 +27,18 @@ public:
         CoroutineTask<T> *parent;
 
         CoroutineTask<T> get_return_object() {
-#           if defined(AppleClang)
-            return CoroutineTask<T>{std::experimental::coroutine_handle<promise_type>::from_promise(*this)};
-#           else
             return CoroutineTask<T>{std::coroutine_handle<promise_type>::from_promise(*this)};
-#           endif
         }
 
-#       if defined(AppleClang)
-        std::experimental::suspend_always initial_suspend() noexcept {
-#       else
         std::suspend_always initial_suspend() noexcept {
-#       endif
             return {};
         }
 
-#       if defined(AppleClang)
-        std::experimental::suspend_never final_suspend() noexcept {
-#       else
         std::suspend_never final_suspend() noexcept {
-#       endif
             {
                 std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
-                for (Awaitable *dependent : parent->m_dependents) static_cast<ResumeAfter *>(dependent)->releaseDependency();
+                for (Awaitable *dependent : parent->m_dependents)
+                    static_cast<ResumeAfter *>(dependent)->releaseDependency();
             }
             parent->m_dependents.clear();
             *parent->m_finished = true;
@@ -56,11 +50,7 @@ public:
             std::rethrow_exception(std::current_exception());
         }
 
-#       if defined(AppleClang)
-        std::experimental::suspend_always yield_value(T t_value){
-#       else
         std::suspend_always yield_value(T t_value) {
-#       endif
             parent->m_value = t_value;
             return {};
         }
@@ -76,18 +66,10 @@ public:
 
     virtual ~CoroutineTask() = default;
 
-#   if defined(AppleClang)
-    explicit CoroutineTask(std::experimental::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
-#   else
     explicit CoroutineTask(std::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
-#   endif
-}
+    }
 
-#   if defined(AppleClang)
-    explicit operator std::experimental::coroutine_handle<promise_type>() {
-#   else
     explicit operator std::coroutine_handle<promise_type>() {
-#   endif
         return m_handle;
     }
 
@@ -102,17 +84,12 @@ public:
     void wait() override {
         std::mutex                   mutex;
         std::unique_lock<std::mutex> lock(mutex);
-        if (!*(BaseTask::m_finished)) {
+        if (!*(BaseTask::m_finished))
             BaseTask::m_finishedNotifier->wait(lock, [&] { return BaseTask::m_finished->operator bool(); });
-        }
     }
 
 private:
-#   if defined(AppleClang)
-    std::experimental::coroutine_handle<promise_type> m_handle;
-#   else
     std::coroutine_handle<promise_type> m_handle;
-#   endif
 };  // namespace IE::Core::Threading
 
 template<>
@@ -124,29 +101,18 @@ public:
         CoroutineTask<void> *parent;
 
         CoroutineTask<void> get_return_object() {
-#           if defined(AppleClang)
-            return CoroutineTask<void>{std::experimental::coroutine_handle<promise_type>::from_promise(*this)};
-#           else
             return CoroutineTask<void>{std::coroutine_handle<promise_type>::from_promise(*this)};
-#           endif
         }
 
-#       if defined(AppleClang)
-        std::experimental::suspend_always initial_suspend() noexcept {
-#       else
         std::suspend_always initial_suspend() noexcept {
-#       endif
             return {};
         }
 
-#       if defined(AppleClang)
-        std::experimental::suspend_never final_suspend() noexcept {
-#       else
         std::suspend_never final_suspend() noexcept {
-#       endif
             {
                 std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
-                for (Awaitable *dependent : parent->m_dependents) static_cast<ResumeAfter *>(dependent)->releaseDependency();
+                for (Awaitable *dependent : parent->m_dependents)
+                    static_cast<ResumeAfter *>(dependent)->releaseDependency();
             }
             parent->m_dependents.clear();
             *parent->m_finished = true;
@@ -158,31 +124,20 @@ public:
             std::rethrow_exception(std::current_exception());
         }
 
-#       if defined(AppleClang)
-        std::experimental::suspend_always yield_value(){
-#       else
         std::suspend_always yield_value() {
-#       endif
             return {};
         }
 
-        void return_void() {}
+        void return_void() {
+        }
     };
 
     virtual ~CoroutineTask() = default;
 
-#   if defined(AppleClang)
-    explicit CoroutineTask(std::experimental::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
-#   else
     explicit CoroutineTask(std::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
-#   endif
     }
 
-#   if defined(AppleClang)
-    explicit operator std::experimental::coroutine_handle<promise_type>() {
-#   else
     explicit operator std::coroutine_handle<promise_type>() {
-#   endif
         return m_handle;
     }
 
@@ -203,12 +158,6 @@ public:
     }
 
 private:
-#   if defined(AppleClang)
-    std::experimental::coroutine_handle<promise_type> m_handle;
-#   else
     std::coroutine_handle<promise_type> m_handle;
-#   endif
 };
 }  // namespace IE::Core::Threading
-
-// clang-format on

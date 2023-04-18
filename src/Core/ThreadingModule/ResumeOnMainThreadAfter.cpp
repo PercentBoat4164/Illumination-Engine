@@ -8,7 +8,7 @@ void IE::Core::Threading::ResumeOnMainThreadAfter::releaseDependency() {
 #       if defined(AppleClang)
         std::experimental::coroutine_handle<> handle{m_handle->load()};
         m_threadPool->submitToMainThread([handle] {
-            std::experimental::coroutine_handle<> h{handle};
+            std::coroutine_handle<> h{handle};
             h.resume();
         });
 #       else

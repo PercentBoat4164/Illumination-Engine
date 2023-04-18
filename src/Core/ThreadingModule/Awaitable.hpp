@@ -2,6 +2,12 @@
 
 #if defined(AppleClang)
 #    include <experimental/coroutine>
+
+namespace std {
+using std::experimental::coroutine_handle;
+using std::experimental::suspend_always;
+using std::experimental::suspend_never;
+}  // namespace std
 #else
 #    include <coroutine>
 #endif
@@ -14,13 +20,7 @@ public:
     // Indicates the readiness of the coroutine to continue. True -> resume, False -> suspend
     virtual bool await_ready() = 0;
 
-// clang-format off
-#   if defined(AppleClang)
-    virtual void await_suspend(std::experimental::coroutine_handle<> t_handle) = 0;
-#   else
     virtual void await_suspend(std::coroutine_handle<> t_handle) = 0;
-#   endif
-    // clang-format on
 
     virtual void await_resume();
 
