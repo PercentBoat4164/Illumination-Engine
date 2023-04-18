@@ -18,7 +18,7 @@ void IE::Core::Threading::ResumeAfter::releaseDependency() {
     // clang-format off
     if (--*m_dependencyCount == 0) {
 #       if defined(AppleClang)
-        std::experimental::coroutine_handle<> handle{m_handle->load()};
+        std::coroutine_handle<> handle{m_handle->load()};
         m_threadPool->submit([handle] {
             std::experimental::coroutine_handle<> h{handle};
             h.resume();

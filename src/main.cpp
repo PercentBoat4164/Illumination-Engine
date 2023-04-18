@@ -8,7 +8,7 @@
 
 IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     IESettings settings     = IESettings();
-    auto      *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine", &settings);
+    auto      *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine", settings);
 
     IE::Input::InputEngine inputEngine{renderEngine->window};
     IE::Input::Keyboard   *keyboard = inputEngine.getAspect("keyboard");
