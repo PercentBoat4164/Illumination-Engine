@@ -8,3 +8,6 @@ IE::Core::Threading::Awaitable::Awaitable(IE::Core::Threading::ThreadPool *t_thr
 
 void IE::Core::Threading::Awaitable::await_resume() {
 }
+
+void IE::Core::Threading::Awaitable::releaseDependency() {
+}

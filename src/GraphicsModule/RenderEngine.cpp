@@ -10,10 +10,10 @@
 #include <vk_mem_alloc.h>
 
 unsigned int IE::Graphics::RenderEngine::APIDebugMessenger(
-  VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-  unsigned int messageType,
-  const VkDebugUtilsMessengerCallbackDataEXT * pCallbackData,
-  void *pUserData
+  VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
+  unsigned int                                messageType,
+  const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+  void                                       *pUserData
 ) {
     reinterpret_cast<IE::Core::Logger *>(pUserData)->log(messageSeverity, pCallbackData->pMessage);
     return 0;
@@ -433,7 +433,8 @@ IE::Graphics::RenderEngine::~RenderEngine() {
     m_commandPools.clear();
     if (m_allocator != VK_NULL_HANDLE) vmaDestroyAllocator(m_allocator);
     if (m_swapchain != VK_NULL_HANDLE) vkb::destroy_swapchain(m_swapchain);
-    if ((m_instance != VK_NULL_HANDLE) && (m_surface != VK_NULL_HANDLE)) vkb::destroy_surface(m_instance, m_surface);
+    if ((m_instance != VK_NULL_HANDLE) && (m_surface != VK_NULL_HANDLE))
+        vkb::destroy_surface(m_instance, m_surface);
     m_engineDescriptor.destroy();
 
     // Destroy the device then instance last
