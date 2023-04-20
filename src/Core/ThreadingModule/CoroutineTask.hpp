@@ -121,7 +121,8 @@ public:
             std::rethrow_exception(std::current_exception());
         }
 
-        void return_void() {}
+        void return_void() {
+        }
     };
 
     virtual ~CoroutineTask() = default;
