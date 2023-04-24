@@ -2,7 +2,7 @@
 
 #include <utility>
 
-IEAspect *IE::Core::Engine::getAspect(const std::string &t_id) {
+Aspect *IE::Core::Engine::getAspect(const std::string &t_id) {
     auto aspect = m_aspects.find(t_id);
     if (aspect != m_aspects.end()) return aspect->second.get();
     return nullptr;

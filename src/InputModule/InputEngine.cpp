@@ -1,11 +1,11 @@
 #include "InputEngine.hpp"
 
-#include "Core/AssetModule/IEAsset.hpp"
+#include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
 #include "Keyboard.hpp"
 
 IE::Input::InputEngine::AspectType *
-IE::Input::InputEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
+IE::Input::InputEngine::createAspect(std::weak_ptr<Asset> t_asset, const std::string &t_id) {
     AspectType *aspect = getAspect(t_id);
     if (!aspect) aspect = new AspectType(m_window);
     t_asset.lock()->addAspect(aspect);

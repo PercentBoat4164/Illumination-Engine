@@ -5,7 +5,7 @@
 #include "GraphicsModule/Renderable/IERenderable.hpp"
 
 /* Include dependencies from Core. */
-#include "Core/AssetModule/IEAsset.hpp"
+#include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
 #include "Core/LogModule/Logger.hpp"
 
@@ -420,8 +420,8 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
 
-void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
-    for (std::shared_ptr<IEAspect> &aspect : asset->aspects) {
+void IERenderEngine::addAsset(const std::shared_ptr<Asset> &asset) {
+    for (std::shared_ptr<Aspect> &aspect : asset->aspects) {
         // If aspect is downcast-able to a renderable
         if (dynamic_cast<IERenderable *>(aspect.get())) {
             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
@@ -861,7 +861,7 @@ IERenderEngine::AspectType *IERenderEngine::getAspect(const std::string &t_id) {
     return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
 }
 
-IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
+IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<Asset> t_asset, const std::string &t_id) {
     AspectType *aspect = getAspect(t_id);
     if (!aspect) aspect = new AspectType();
     t_asset.lock()->addAspect(aspect);

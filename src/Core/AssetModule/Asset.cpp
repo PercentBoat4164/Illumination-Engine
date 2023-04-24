@@ -1,6 +1,6 @@
-#include "IEAsset.hpp"
+#include "Asset.hpp"
 
-void IEAsset::addAspect(IEAspect *aspect) {
+void Asset::addAspect(Aspect *aspect) {
     aspects.emplace_back(aspect);
     aspect->associatedAssets.push_back(weak_from_this());
 }

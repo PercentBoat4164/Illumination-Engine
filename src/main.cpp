@@ -49,22 +49,22 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
         glfwSetWindowShouldClose(renderEngine->window, 1);
     });
 
-    std::shared_ptr<IEAsset> fbx{std::make_shared<IEAsset>()};
+    std::shared_ptr<Asset> fbx{std::make_shared<Asset>()};
     fbx->filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
     fbx->position = {2, 1, 0};
     fbx->addAspect(new IERenderable{});
     renderEngine->addAsset(fbx);
-    std::shared_ptr<IEAsset> obj{std::make_shared<IEAsset>()};
+    std::shared_ptr<Asset> obj{std::make_shared<Asset>()};
     obj->filename = "res/assets/AncientStatue/models/ancientStatue.obj";
     obj->addAspect(new IERenderable{});
     obj->position = {0, 1, 0};
     renderEngine->addAsset(obj);
-    std::shared_ptr<IEAsset> glb{std::make_shared<IEAsset>()};
+    std::shared_ptr<Asset> glb{std::make_shared<Asset>()};
     glb->filename = "res/assets/AncientStatue/models/ancientStatue.glb";
     glb->addAspect(new IERenderable{});
     glb->position = {-2, 1, 0};
     renderEngine->addAsset(glb);
-    std::shared_ptr<IEAsset> floor{std::make_shared<IEAsset>()};
+    std::shared_ptr<Asset> floor{std::make_shared<Asset>()};
     floor->filename = "res/assets/DeepslateFloor/models/DeepslateFloor.fbx";
     floor->addAspect(new IERenderable{});
     renderEngine->addAsset(floor);
