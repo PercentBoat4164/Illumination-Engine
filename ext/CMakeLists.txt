@@ -2,12 +2,15 @@
 set(CPM_SOURCE_CACHE ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 set(CPM_USE_LOCAL_PACKAGES ${IE_PREFER_LOCAL_LIBS})
 
-function(download_with_cache ARG_DOWNLOAD_URL ARG_OUTPUT_FILE)
+function(download_with_cache ARG_DOWNLOAD_URL ARG_OUTPUT_FILE ARG_OUTPUT)
+    set(ARG_OUTPUT ON)
     file(DOWNLOAD ${ARG_DOWNLOAD_URL} STATUS _DOWNLOAD_RESULTS)
     list(GET _DOWNLOAD_RESULTS 0 _ERROR_CODE)
     if (_ERROR_CODE GREATER 0)
         list(GET _DOWNLOAD_RESULTS 1 _ERROR_MESSAGE)
-        message(WARNING "Could not get CPM.cmake because: ${_ERROR_MESSAGE}")
+        if (NOT EXISTS ARG_OUTPUT_FILE)
+            set(ARG_OUTPUT ON)
+        endif ()
     else ()
         file(DOWNLOAD ${ARG_DOWNLOAD_URL} ${ARG_OUTPUT_FILE})
     endif ()
@@ -15,7 +18,7 @@ endfunction()
 
 # Download the latest CPM.cmake file
 
-download_with_cache(https://github.com/cpm-cmake/CPM.cmake/releases/latest/download/CPM.cmake ${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
+download_with_cache(https://github.com/cpm-cmake/CPM.cmake/releases/latest/download/CPM.cmake ${CMAKE_SOURCE_DIR}/cmake/CPM.cmake DOWNLOAD_SUCCESS)
 include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
 
 # All options for Dependencies should go here
