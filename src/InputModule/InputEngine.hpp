@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/AssetModule/Aspect.hpp"
 #include "Core/EngineModule/Engine.hpp"
 #include "Keyboard.hpp"
 
@@ -14,7 +15,7 @@ public:
 
     InputEngine(GLFWwindow *t_window);
 
-    AspectType *createAspect(std::weak_ptr<Asset> t_asset, const std::string &t_id) override;
+    AspectType *createAspect(std::weak_ptr<Core::Asset> t_asset, const std::string &t_id) override;
 
     AspectType *getAspect(const std::string &t_id) override;
 };

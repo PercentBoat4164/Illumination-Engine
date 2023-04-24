@@ -8,10 +8,10 @@
 class IERenderable;
 
 namespace IE::Graphics {
-struct Tracker : public Aspect {
+struct Tracker : public IE::Core::Aspect {
 public:
     glm::mat4                     modelMatrix{};
     std::shared_ptr<IERenderable> renderable{};
-    std::weak_ptr<Asset>        asset{};
+    std::weak_ptr<Core::Asset>        asset{};
 };
 }  // namespace IE::Graphics

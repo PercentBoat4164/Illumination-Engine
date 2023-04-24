@@ -62,7 +62,7 @@ namespace IE::Input {
 /**
  * @brief The Keyboard class is intended to manage keyboard event handling.
  */
-class Keyboard : public Aspect {
+class Keyboard : public IE::Core::Aspect {
 public:
     /**
      * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the

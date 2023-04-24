@@ -36,7 +36,7 @@ enum IERenderableStatus {
     IE_RENDERABLE_STATE_IN_VRAM  = 0x4
 };
 
-class IERenderable : public Aspect {
+class IERenderable : public IE::Core::Aspect {
 public:
     std::string           modelName{};
     std::vector<IEMesh>   meshes{};

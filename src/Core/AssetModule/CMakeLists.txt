@@ -1,6 +1,7 @@
 set(IEAssetModuleSourceFiles  # Gather sources
         Aspect.cpp
         Asset.cpp
+        AssetManager.cpp
         )
 
 # Create and define properties for the executable target

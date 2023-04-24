@@ -11,6 +11,7 @@ struct GLFWmonitor;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
+#include "Core/AssetModule/Aspect.hpp"
 #include "CommandBuffer/IECommandPool.hpp"
 #include "Core/AssetModule/Asset.hpp"
 #include "Core/EngineModule/Engine.hpp"
@@ -248,7 +249,7 @@ public:
     // global depth image used by all framebuffers. Should this be here?
     std::shared_ptr<IEImage>                       depthImage{};
 
-    void addAsset(const std::shared_ptr<Asset> &asset);
+    void addAsset(const std::shared_ptr<IE::Core::Asset> &asset);
 
     explicit IERenderEngine(IESettings &settings);
 
@@ -306,7 +307,7 @@ public:
 
     static void setAPI(const IEAPI &API);
 
-    AspectType *createAspect(std::weak_ptr<Asset> t_asset, const std::string &t_id) override;
+    AspectType *createAspect(std::weak_ptr<IE::Core::Asset> t_asset, const std::string &t_id) override;
     AspectType *getAspect(const std::string &t_id) override;
     void        queueToggleFullscreen();
 };
