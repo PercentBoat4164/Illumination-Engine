@@ -472,7 +472,7 @@ bool IERenderEngine::_openGLUpdate() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
     glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
-    for (IERenderable * renderable : renderables) renderable->update(0);
+    for (IERenderable *renderable : renderables) renderable->update(0);
     glfwSwapBuffers(window);
     auto currentTime = (float) glfwGetTime();
     frameTime        = currentTime - previousTime;
@@ -861,7 +861,8 @@ IERenderEngine::AspectType *IERenderEngine::getAspect(const std::string &t_id) {
     return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
 }
 
-IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<IE::Core::Asset> t_asset, const std::string &t_id) {
+IERenderEngine::AspectType *
+IERenderEngine::createAspect(std::weak_ptr<IE::Core::Asset> t_asset, const std::string &t_id) {
     AspectType *aspect = getAspect(t_id);
     if (!aspect) aspect = new AspectType();
     t_asset.lock()->addAspect(aspect);

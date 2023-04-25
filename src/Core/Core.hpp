@@ -10,11 +10,12 @@
 #include <unordered_map>
 
 #define ILLUMINATION_ENGINE_CORE_LOGGER_NAME  "Illumination Engine"
-#define ILLUMINATION_ENGINE_CORE_LOG_FILENAME "logs/IlluminationEngine.log"
 
 struct GLFWwindow;
 
 namespace IE::Core {
+class AssetManager;
+
 class Core final {
 public:
     static IE::Core::Core &getInst(const std::filesystem::path &t_path = "");
@@ -56,11 +57,13 @@ public:
 
     static IE::Core::Window *getWindow(GLFWwindow *t_window);
 
-    static Logger                *getLogger();
-    static FileSystem            *getFileSystem();
-    static Threading::ThreadPool *getThreadPool();
+    static AssetManager          &getAssetManager();
+    static Logger                &getLogger();
+    static FileSystem            &getFileSystem();
+    static Threading::ThreadPool &getThreadPool();
 
 private:
+    static IE::Core::AssetManager                              m_assetManager;
     static IE::Core::Logger                                    m_logger;
     static std::mutex                                          m_enginesMutex;
     static std::unordered_map<std::string, IE::Core::Engine *> m_engines;

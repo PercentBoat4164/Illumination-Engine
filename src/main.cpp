@@ -51,7 +51,7 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
 
     std::shared_ptr<IE::Core::Asset> fbx{std::make_shared<IE::Core::Asset>()};
     fbx->m_filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
-    fbx->position = {2, 1, 0};
+    fbx->position   = {2, 1, 0};
     fbx->addAspect(new IERenderable{});
     renderEngine->addAsset(fbx);
     std::shared_ptr<IE::Core::Asset> obj{std::make_shared<IE::Core::Asset>()};
@@ -80,7 +80,7 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
         keyboard->handleQueue();
     }
 
-    IE::Core::Core::getThreadPool()->shutdown();
+    IE::Core::Core::getThreadPool().shutdown();
 
     co_return;
 }
@@ -88,7 +88,7 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
 int main(int argc, char **argv) {
     if (argc >= 1) IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
 
-    auto main = IE::Core::Core::getThreadPool()->submitToMainThread(illuminationEngine);
-    IE::Core::Core::getThreadPool()->startMainThreadLoop();
+    auto main = IE::Core::Core::getThreadPool().submitToMainThread(illuminationEngine);
+    IE::Core::Core::getThreadPool().startMainThreadLoop();
     main->wait();
 }

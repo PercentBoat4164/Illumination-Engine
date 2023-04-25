@@ -1,17 +1,17 @@
 #pragma once
 
-//#include "File.hpp"
+// #include "File.hpp"
 //
-//#include <assimp/Importer.hpp>
+// #include <assimp/Importer.hpp>
 //
-//class IETexture;
+// class IETexture;
 //
 ///*
 // * A class used to import files into a program. One per filesystem.
 // */
-//namespace IE::Core {
-//class Importer {
-//public:
+// namespace IE::Core {
+// class Importer {
+// public:
 //    Assimp::Importer importer{};
 //
 //    void import(const aiScene **, File &, uint32_t);

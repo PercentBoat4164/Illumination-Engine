@@ -20,6 +20,7 @@ class Aspect {
 public:
     virtual ~Aspect() = default;
 
-    std::vector<std::weak_ptr<IE::Core::Asset>> associatedAssets{};  // A vector of assets that this aspect belongs to
+    std::vector<std::weak_ptr<IE::Core::Asset>>
+      associatedAssets{};  // A vector of assets that this aspect belongs to
 };
 }  // namespace IE::Core

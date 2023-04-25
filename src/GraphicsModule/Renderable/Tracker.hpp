@@ -12,6 +12,6 @@ struct Tracker : public IE::Core::Aspect {
 public:
     glm::mat4                     modelMatrix{};
     std::shared_ptr<IERenderable> renderable{};
-    std::weak_ptr<Core::Asset>        asset{};
+    std::weak_ptr<Core::Asset>    asset{};
 };
 }  // namespace IE::Graphics

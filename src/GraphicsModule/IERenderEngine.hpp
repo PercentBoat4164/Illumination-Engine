@@ -11,8 +11,8 @@ struct GLFWmonitor;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "Core/AssetModule/Aspect.hpp"
 #include "CommandBuffer/IECommandPool.hpp"
+#include "Core/AssetModule/Aspect.hpp"
 #include "Core/AssetModule/Asset.hpp"
 #include "Core/EngineModule/Engine.hpp"
 #include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
@@ -243,7 +243,7 @@ public:
     PFN_vkAcquireNextImageKHR                      vkAcquireNextImageKhr{};
     std::vector<std::shared_ptr<IETexture>>        textures{};
     std::vector<VkImageView>                       swapchainImageViews{};
-    std::vector<IERenderable *>       renderables{};
+    std::vector<IERenderable *>                    renderables{};
     float                                          frameTime{};
     int                                            frameNumber{};
     // global depth image used by all framebuffers. Should this be here?
