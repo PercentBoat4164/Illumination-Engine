@@ -37,19 +37,19 @@ public:
 
     std::filesystem::path &makePathAbsolute(std::filesystem::path &filePath);
 
-    template<class T>
-    void importFile(T *data, File &file, unsigned int flags = 0) {
-        m_importer.import(data, file, flags);
-    }
-
-    template<class T>
-    void importFile(T *data, std::string filePath, unsigned int flags = 0) {
-        m_importer.import(data, getFile(filePath), flags);
-    };
+//    template<class T>
+//    void importFile(T *data, File &file, unsigned int flags = 0) {
+//        m_importer.import(data, file, flags);
+//    }
+//
+//    template<class T>
+//    void importFile(T *data, std::string filePath, unsigned int flags = 0) {
+//        m_importer.import(data, getFile(filePath), flags);
+//    };
 
 private:
     std::filesystem::path                 m_path;
-    Importer                              m_importer{};
+//    Importer                              m_importer{};
     std::unordered_map<std::string, File> m_files;
 };
 }  // namespace IE::Core

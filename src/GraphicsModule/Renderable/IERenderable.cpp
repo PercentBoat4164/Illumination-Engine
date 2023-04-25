@@ -173,7 +173,7 @@ void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t re
         IE::Core::Asset     thisAsset  = *associatedAsset.lock();
         glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
         modelMatrix          = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.m_scale), thisAsset.position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );
@@ -196,7 +196,7 @@ void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t re
         IE::Core::Asset     thisAsset  = *associatedAsset.lock();
         glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
         modelMatrix          = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.scale), thisAsset.position),
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.m_scale), thisAsset.position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );

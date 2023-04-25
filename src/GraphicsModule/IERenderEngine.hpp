@@ -243,7 +243,7 @@ public:
     PFN_vkAcquireNextImageKHR                      vkAcquireNextImageKhr{};
     std::vector<std::shared_ptr<IETexture>>        textures{};
     std::vector<VkImageView>                       swapchainImageViews{};
-    std::vector<std::weak_ptr<IERenderable>>       renderables{};
+    std::vector<IERenderable *>       renderables{};
     float                                          frameTime{};
     int                                            frameNumber{};
     // global depth image used by all framebuffers. Should this be here?

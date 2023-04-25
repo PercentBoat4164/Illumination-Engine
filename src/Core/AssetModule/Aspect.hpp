@@ -13,8 +13,8 @@ class Asset;
  * The pre-designed aspect classes are:
  *  - Renderable
  *  - More to be added
- * The user is free to add aspects as they see fit.
- * @brief An interface class used to create aspects of an Asset.
+ * The user is free to add m_aspects as they see fit.
+ * @brief An interface class used to create m_aspects of an Asset.
  */
 class Aspect {
 public:

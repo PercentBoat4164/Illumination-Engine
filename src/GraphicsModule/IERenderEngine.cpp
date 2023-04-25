@@ -422,13 +422,12 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
 }
 
 void IERenderEngine::addAsset(const std::shared_ptr<IE::Core::Asset> &asset) {
-    for (std::shared_ptr<IE::Core::Aspect> &aspect : asset->aspects) {
-        // If aspect is downcast-able to a renderable
-        if (dynamic_cast<IERenderable *>(aspect.get())) {
-            renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
-            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->filename);
-            std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
-            std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
+    for (IE::Core::Aspect *aspect : asset->m_aspects) {
+        if (auto renderable = dynamic_cast<IERenderable *>(aspect)) {
+            renderables.push_back(renderable);
+            renderable->create(this, asset->m_filename);
+            renderable->loadFromDiskToRAM();
+            renderable->loadFromRAMToVRAM();
         }
     }
     if (API.name == IE_RENDER_ENGINE_API_NAME_VULKAN) graphicsCommandPool->index(0)->execute();
@@ -473,7 +472,7 @@ bool IERenderEngine::_openGLUpdate() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
     glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
-    for (const std::weak_ptr<IERenderable> &renderable : renderables) renderable.lock()->update(0);
+    for (IERenderable * renderable : renderables) renderable->update(0);
     glfwSwapBuffers(window);
     auto currentTime = (float) glfwGetTime();
     frameTime        = currentTime - previousTime;
@@ -524,7 +523,7 @@ bool IERenderEngine::_vulkanUpdate() {
     graphicsCommandPool->index(imageIndex)
       ->recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     camera.update();
-    for (const std::weak_ptr<IERenderable> &renderable : renderables) renderable.lock()->update(imageIndex);
+    for (IERenderable *renderable : renderables) renderable->update(imageIndex);
     graphicsCommandPool->index(imageIndex)->recordEndRenderPass();
     graphicsCommandPool->index(imageIndex)
       ->execute(
