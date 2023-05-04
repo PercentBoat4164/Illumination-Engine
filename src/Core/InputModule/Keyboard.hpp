@@ -15,7 +15,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace IE::Input::detail {
+namespace IE::Core::detail {
 /**
  * @brief A class that stores the data related to a key press action.
  */
@@ -45,24 +45,24 @@ struct KeyPressDescription {
      * @param other
      * @return true if the values of the object and argument are the same, false if not.
      */
-    bool operator==(const IE::Input::detail::KeyPressDescription &other) const;
+    bool operator==(const IE::Core::detail::KeyPressDescription &other) const;
 };
-}  // namespace IE::Input::detail
+}  // namespace IE::Core::detail
 
 /**
  * @brief The hash method for the IeKeyPressDescription structure.
  * @return A hash value for an IeKeyPressDescription.
  */
 template<>
-struct [[maybe_unused]] std::hash<IE::Input::detail::KeyPressDescription> {
-    size_t operator()(const IE::Input::detail::KeyPressDescription &k) const;
+struct [[maybe_unused]] std::hash<IE::Core::detail::KeyPressDescription> {
+    size_t operator()(const IE::Core::detail::KeyPressDescription &k) const;
 };
 
-namespace IE::Input {
+namespace IE::Core {
 /**
  * @brief The Keyboard class is intended to manage keyboard event handling.
  */
-class Keyboard : public IE::Core::Aspect {
+class Keyboard {
 public:
     /**
      * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the
@@ -90,7 +90,7 @@ public:
      * @param action
      */
     void editActions(
-      const IE::Input::detail::KeyPressDescription             &keyPressDescription,
+      const IE::Core::detail::KeyPressDescription              &keyPressDescription,
       const std::pair<std::function<void(GLFWwindow *)>, bool> &action
     );
 
@@ -122,8 +122,8 @@ public:
      * @param repeat
      */
     void editActions(
-      const IE::Input::detail::KeyPressDescription &keyPressDescription,
-      const std::function<void(GLFWwindow *)>      &action
+      const IE::Core::detail::KeyPressDescription &keyPressDescription,
+      const std::function<void(GLFWwindow *)>     &action
     );
 
     /**
@@ -166,9 +166,9 @@ public:
     static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int modifiers);
 
 private:
-    GLFWwindow                                         *window;   // window this keyboard manages
-    std::vector<IE::Input::detail::KeyPressDescription> queue{};  // queue of key presses
-    std::unordered_map<IE::Input::detail::KeyPressDescription, std::pair<std::function<void(GLFWwindow *)>, bool>>
-      actionsOptions{};  // hash table of key press description to function
+    GLFWwindow                                        *window;   // window this keyboard manages
+    std::vector<IE::Core::detail::KeyPressDescription> queue{};  // queue of key presses
+    std::unordered_map<IE::Core::detail::KeyPressDescription, std::pair<std::function<void(GLFWwindow *)>, bool>>
+      actionsOptions{};                                          // hash table of key press description to function
 };
-}  // namespace IE::Input
+}  // namespace IE::Core

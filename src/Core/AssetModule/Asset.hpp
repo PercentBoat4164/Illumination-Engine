@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Instance.hpp"
+
 #include <string>
 #include <vector>
 
@@ -11,24 +13,43 @@
 
 namespace IE::Core {
 class Aspect;
+class File;
 
-class Asset : public std::enable_shared_from_this<Asset> {
-public:
-    // Things that are shared among all m_aspects of an asset
-    glm::vec3             position{0.0, 0.0, 0.0};
-    glm::vec3             rotation{0.0, 0.0, 0.0};
-    glm::vec3             m_scale{1.0, 1.0, 1.0};
-    std::string           m_filename{};
-    std::vector<Aspect *> m_aspects{};
-
-    void addAspect(Aspect *aspect);
+class Asset {
+private:
+    template<typename... Args>
+    void fillInstances(IE::Core::Aspect *t_aspect, Args... args) {
+        m_instances.push_back(new Instance(this, t_aspect));
+        if constexpr (sizeof...(args) > 0) fillInstances(args...);
+    }
 
     template<typename... Args>
-    Asset(Args... args) {
-        (m_aspects.push_back(args), ...);
+    void fillInstances(IE::Core::Instance *t_instance, Args... args) {
+        m_instances.push_back(t_instance);
+        if constexpr (sizeof...(args) > 0) fillInstances(args...);
     }
 
-    Asset(std::vector<IE::Core::Aspect *> t_aspects) : m_aspects(t_aspects) {
+public:
+    // Things that are shared among all m_instances of an asset
+    glm::vec3                         m_position{0.0, 0.0, 0.0};
+    glm::vec3                         m_rotation{0.0, 0.0, 0.0};
+    glm::vec3                         m_scale{1.0, 1.0, 1.0};
+    IE::Core::File                   *m_resourceFile{};
+    std::vector<IE::Core::Instance *> m_instances;
+
+    void addInstance(IE::Core::Instance *t_instance);
+
+    void addInstance(IE::Core::Aspect *t_instance);
+
+    template<typename... Args>
+    Asset(IE::Core::File *t_resourceFile, Args... args) : m_resourceFile(t_resourceFile) {
+        if constexpr (sizeof...(args) > 0) fillInstances(args...);
     }
+
+    Asset(IE::Core::File *t_resourceFile, std::vector<IE::Core::Instance *> t_instances);
+
+    Asset(IE::Core::File *t_resourceFile, std::vector<IE::Core::Aspect *> t_aspects);
+
+    ~Asset();
 };
 }  // namespace IE::Core

@@ -19,6 +19,9 @@ IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePa
     create(engineLink, filePath);
 }
 
+IERenderable::IERenderable(const std::string &t_id, IE::Core::File *t_file) : IE::Core::Aspect(t_id, t_file) {
+}
+
 void IERenderable::setAPI(const IEAPI &API) {
     if (API.name == IE_RENDER_ENGINE_API_NAME_OPENGL) {
         _create            = &IERenderable::_openglCreate;
@@ -169,11 +172,12 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 }
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto &associatedAsset : associatedAssets) {
+    for (auto &associatedAsset : m_associatedAssets) {
         IE::Core::Asset thisAsset = *associatedAsset.lock();
-        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
-        modelMatrix          = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.m_scale), thisAsset.position),
+        glm::quat       quaternion =
+          glm::yawPitchRoll(thisAsset.m_rotation.x, thisAsset.m_rotation.y, thisAsset.m_rotation.z);
+        modelMatrix = glm::rotate(
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.m_scale), thisAsset.m_position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );
@@ -192,11 +196,12 @@ void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t re
 }
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto &associatedAsset : associatedAssets) {
+    for (auto &associatedAsset : m_associatedAssets) {
         IE::Core::Asset thisAsset = *associatedAsset.lock();
-        glm::quat quaternion = glm::yawPitchRoll(thisAsset.rotation.x, thisAsset.rotation.y, thisAsset.rotation.z);
-        modelMatrix          = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.m_scale), thisAsset.position),
+        glm::quat       quaternion =
+          glm::yawPitchRoll(thisAsset.m_rotation.x, thisAsset.m_rotation.y, thisAsset.m_rotation.z);
+        modelMatrix = glm::rotate(
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.m_scale), thisAsset.m_position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );

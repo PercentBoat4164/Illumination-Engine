@@ -1,15 +1,17 @@
 #pragma once
 
+#include "Core/AssetModule/AssetManager.hpp"
 #include "Core/EngineModule/Engine.hpp"
 #include "Core/EngineModule/Window.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
+#include "Core/InputModule/InputHandler.hpp"
 #include "Core/LogModule/Logger.hpp"
 #include "Core/ThreadingModule/ThreadPool.hpp"
 
 #include <mutex>
 #include <unordered_map>
 
-#define ILLUMINATION_ENGINE_CORE_LOGGER_NAME  "Illumination Engine"
+#define ILLUMINATION_ENGINE_CORE_LOGGER_NAME "Illumination Engine"
 
 struct GLFWwindow;
 
@@ -44,26 +46,13 @@ public:
 
     static IE::Core::Engine *getEngine(std::string id);
 
-    template<typename... Args>
-    static void registerWindow(GLFWwindow *t_window, Args... args) {
-        std::unique_lock<std::mutex> lock(m_windowsMutex);
-        if (m_windows.find(t_window) != m_windows.end())
-            m_logger.log(
-              "Window '" + std::to_string((uint64_t) t_window) + "' already exists!",
-              IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
-            );
-        m_windows[t_window] = Window(args...);
-    }
-
-    static IE::Core::Window *getWindow(GLFWwindow *t_window);
-
-    static AssetManager          &getAssetManager();
     static Logger                &getLogger();
     static FileSystem            &getFileSystem();
     static Threading::ThreadPool &getThreadPool();
+    static AssetManager          &getAssetManager();
+    static InputHandler          &getInputHandler();
 
 private:
-    static IE::Core::AssetManager                              m_assetManager;
     static IE::Core::Logger                                    m_logger;
     static std::mutex                                          m_enginesMutex;
     static std::unordered_map<std::string, IE::Core::Engine *> m_engines;
@@ -71,6 +60,8 @@ private:
     static std::unordered_map<GLFWwindow *, IE::Core::Window>  m_windows;
     static Threading::ThreadPool                               m_threadPool;
     static FileSystem                                          m_filesystem;
+    static IE::Core::AssetManager                              m_assetManager;
+    static IE::Core::InputHandler                              m_inputHandler;
 
     Core(const std::filesystem::path &t_path) {
         m_filesystem.setBaseDirectory(t_path);

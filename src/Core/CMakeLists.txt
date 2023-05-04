@@ -4,6 +4,7 @@ add_subdirectory(AssetModule)
 add_subdirectory(FileSystemModule)
 add_subdirectory(EngineModule)
 add_subdirectory(ThreadingModule)
+add_subdirectory(InputModule)
 
 # Create and define properties for the library
 add_library(IECore Core.cpp)

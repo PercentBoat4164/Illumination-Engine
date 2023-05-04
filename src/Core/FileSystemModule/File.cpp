@@ -63,10 +63,10 @@ void IE::Core::File::write(const std::vector<char> &data) {
 
 void IE::Core::File::overwrite(const std::vector<char> &data, std::streamsize startPosition) {
     open();
-    if (startPosition == -1)             // If no starting position
+    if (startPosition == -1)             // If no starting m_position
         startPosition = fileIO.tellg();  // Start here
 
-    // Go to starting position
+    // Go to starting m_position
     fileIO.seekg(startPosition);
 
     // Write to file

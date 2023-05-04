@@ -11,7 +11,7 @@ void IEUniformBufferObject::openglUploadUniform(GLint program) {
     );
     glUniformMatrix4fv(glGetUniformLocation(program, "modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(program, "normalMatrix"), 1, GL_FALSE, &normalMatrix[0][0]);
-    glUniform3fv(glGetUniformLocation(program, "position"), 1, &position[0]);
+    glUniform3fv(glGetUniformLocation(program, "m_position"), 1, &position[0]);
     glUniform1f(glGetUniformLocation(program, "time"), time);
     glUseProgram(0);
 }

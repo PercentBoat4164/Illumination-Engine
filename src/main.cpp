@@ -1,3 +1,4 @@
+#include "Core/AssetModule/Aspect.hpp"
 #include "Core/Core.hpp"
 #include "Core/ThreadingModule/CoroutineTask.hpp"
 #include "IERenderEngine.hpp"
@@ -49,26 +50,33 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
         glfwSetWindowShouldClose(renderEngine->window, 1);
     });
 
+    auto &am       = IE::Core::Core::getAssetManager();
+    auto *fbxModel = am.createAspect<IERenderable>(
+      "ancientStatue FBX",
+      std::filesystem::path("res") / "assets" / "AncientStatue" / "models" / "ancientStatue.fbx"
+    );
+    am.createAsset("ancientStatues", fbxModel);
+
     std::shared_ptr<IE::Core::Asset> fbx{std::make_shared<IE::Core::Asset>()};
     fbx->m_filename = "res/assets/AncientStatue/models/ancientStatue.fbx";
-    fbx->position   = {2, 1, 0};
-    fbx->addAspect(new IERenderable{});
+    fbx->m_position = {2, 1, 0};
+    fbx->addInstance(new IERenderable{});
     renderEngine->addAsset(fbx);
     std::shared_ptr<IE::Core::Asset> obj{std::make_shared<IE::Core::Asset>()};
     obj->m_filename = "res/assets/AncientStatue/models/ancientStatue.obj";
-    obj->addAspect(new IERenderable{});
-    obj->position = {0, 1, 0};
+    obj->addInstance(new IERenderable{});
+    obj->m_position = {0, 1, 0};
     renderEngine->addAsset(obj);
     std::shared_ptr<IE::Core::Asset> glb{std::make_shared<IE::Core::Asset>()};
     glb->m_filename = "res/assets/AncientStatue/models/ancientStatue.glb";
-    glb->addAspect(new IERenderable{});
-    glb->position = {-2, 1, 0};
+    glb->addInstance(new IERenderable{});
+    glb->m_position = {-2, 1, 0};
     renderEngine->addAsset(glb);
     std::shared_ptr<IE::Core::Asset> floor{std::make_shared<IE::Core::Asset>()};
     floor->m_filename = "res/assets/DeepslateFloor/models/DeepslateFloor.fbx";
-    floor->addAspect(new IERenderable{});
+    floor->addInstance(new IERenderable{});
     renderEngine->addAsset(floor);
-    floor->position = {0, 0, -1};
+    floor->m_position = {0, 0, -1};
 
     renderEngine->camera.position = {0.0F, -2.0F, 1.0F};
 

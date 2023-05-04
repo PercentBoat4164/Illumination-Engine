@@ -422,7 +422,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
 }
 
 void IERenderEngine::addAsset(const std::shared_ptr<IE::Core::Asset> &asset) {
-    for (IE::Core::Aspect *aspect : asset->m_aspects) {
+    for (IE::Core::Aspect *aspect : asset->m_instances) {
         if (auto renderable = dynamic_cast<IERenderable *>(aspect)) {
             renderables.push_back(renderable);
             renderable->create(this, asset->m_filename);
@@ -865,7 +865,7 @@ IERenderEngine::AspectType *
 IERenderEngine::createAspect(std::weak_ptr<IE::Core::Asset> t_asset, const std::string &t_id) {
     AspectType *aspect = getAspect(t_id);
     if (!aspect) aspect = new AspectType();
-    t_asset.lock()->addAspect(aspect);
+    t_asset.lock()->addInstance(aspect);
     return aspect;
 }
 

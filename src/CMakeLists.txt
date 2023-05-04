@@ -1,6 +1,5 @@
 # Add all subdirectories
 add_subdirectory(Core)
-add_subdirectory(InputModule)
 add_subdirectory(GraphicsModule)
 
 # Create and define properties for the executable target
