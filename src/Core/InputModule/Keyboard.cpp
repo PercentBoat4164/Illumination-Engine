@@ -38,13 +38,8 @@ size_t std::hash<IE::Core::detail::KeyPressDescription>::operator()(const IE::Co
       std::hash<int>()(k.modifiers);
 }
 
-IE::Core::Keyboard::Keyboard(GLFWwindow *initialWindow) {
-    window = initialWindow;
-    glfwSetKeyCallback(window, keyCallback);
-}
-
-void IE::Core::Keyboard::setEnqueueMethod(GLFWkeyfun function) {
-    glfwSetKeyCallback(window, function);
+void IE::Core::Keyboard::addWindow(GLFWwindow *t_window) {
+    glfwSetKeyCallback(t_window, keyCallback);
 }
 
 void IE::Core::Keyboard::handleQueue() {

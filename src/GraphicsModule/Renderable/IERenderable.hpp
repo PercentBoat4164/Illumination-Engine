@@ -38,7 +38,8 @@ enum IERenderableStatus {
 
 class IERenderable : public IE::Core::Aspect {
 public:
-    IERenderable(const std::string &t_id, IE::Core::File *t_file);
+    IERenderable(IE::Core::File *t_file);
+
     std::string           modelName{};
     std::vector<IEMesh>   meshes{};
     IEBuffer              modelBuffer{};
@@ -51,10 +52,6 @@ public:
     std::string           directory{};
     glm::mat4             modelMatrix{};
     IERenderableStatus    status{IE_RENDERABLE_STATE_UNKNOWN};
-
-    IERenderable() = default;
-
-    IERenderable(IERenderEngine *, const std::string &);
 
     static void setAPI(const IEAPI &);
 

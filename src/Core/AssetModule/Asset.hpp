@@ -18,14 +18,20 @@ class File;
 class Asset {
 private:
     template<typename... Args>
-    void fillInstances(IE::Core::Aspect *t_aspect, Args... args) {
-        m_instances.push_back(new Instance(this, t_aspect));
+    void fillInstances(IE::Core::Instance *t_instance, Args... args) {
+        addInstance(t_instance);
         if constexpr (sizeof...(args) > 0) fillInstances(args...);
     }
 
     template<typename... Args>
-    void fillInstances(IE::Core::Instance *t_instance, Args... args) {
-        m_instances.push_back(t_instance);
+    void fillInstances(IE::Core::Aspect *t_aspect, Args... args) {
+        addInstance(t_aspect);
+        if constexpr (sizeof...(args) > 0) fillInstances(args...);
+    }
+
+    template <typename... Args>
+    void fillInstances(std::string t_aspectID, Args... args) {
+        addInstance(t_aspectID);
         if constexpr (sizeof...(args) > 0) fillInstances(args...);
     }
 
@@ -39,7 +45,9 @@ public:
 
     void addInstance(IE::Core::Instance *t_instance);
 
-    void addInstance(IE::Core::Aspect *t_instance);
+    void addInstance(IE::Core::Aspect *t_aspect);
+
+    void addInstance(std::string t_aspectID);
 
     template<typename... Args>
     Asset(IE::Core::File *t_resourceFile, Args... args) : m_resourceFile(t_resourceFile) {

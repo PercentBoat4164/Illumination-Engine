@@ -2,7 +2,6 @@
 
 #include "Core/AssetModule/AssetManager.hpp"
 #include "Core/EngineModule/Engine.hpp"
-#include "Core/EngineModule/Window.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
 #include "Core/InputModule/InputHandler.hpp"
 #include "Core/LogModule/Logger.hpp"
@@ -56,8 +55,6 @@ private:
     static IE::Core::Logger                                    m_logger;
     static std::mutex                                          m_enginesMutex;
     static std::unordered_map<std::string, IE::Core::Engine *> m_engines;
-    static std::mutex                                          m_windowsMutex;
-    static std::unordered_map<GLFWwindow *, IE::Core::Window>  m_windows;
     static Threading::ThreadPool                               m_threadPool;
     static FileSystem                                          m_filesystem;
     static IE::Core::AssetManager                              m_assetManager;

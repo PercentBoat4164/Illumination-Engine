@@ -65,19 +65,11 @@ namespace IE::Core {
 class Keyboard {
 public:
     /**
-     * @brief Constructs a keyboard from a initialWindow. The initialWindow's user pointer will be set to the
-     * IeKeyboard object.
-     * @param initialWindow
-     * @param initialAttachment=nullptr
-     * @return IeKeyboard
+     * @brief Adds the key callback function for this keyboard to this window.
+     * @param t_window
+     * @return None
      */
-    explicit Keyboard(GLFWwindow *initialWindow);
-
-    /**
-     * @brief Sets the queue method. Pass one of the two pre-created key event handler functions.
-     * @param function
-     */
-    void setEnqueueMethod(GLFWkeyfun function = keyCallback);
+    void addWindow(GLFWwindow *t_window);
 
     /**
      * @brief Handles all the actions indicated by the key presses logged in the queue.

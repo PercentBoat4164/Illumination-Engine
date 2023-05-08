@@ -15,11 +15,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
-    create(engineLink, filePath);
-}
-
-IERenderable::IERenderable(const std::string &t_id, IE::Core::File *t_file) : IE::Core::Aspect(t_id, t_file) {
+IERenderable::IERenderable(IE::Core::File *t_file) : IE::Core::Aspect(t_file) {
 }
 
 void IERenderable::setAPI(const IEAPI &API) {
@@ -172,12 +168,11 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 }
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto &associatedAsset : m_associatedAssets) {
-        IE::Core::Asset thisAsset = *associatedAsset.lock();
+    for (auto *instance : m_instances) {
         glm::quat       quaternion =
-          glm::yawPitchRoll(thisAsset.m_rotation.x, thisAsset.m_rotation.y, thisAsset.m_rotation.z);
+          glm::yawPitchRoll(instance->m_rotation.x, instance->m_rotation.y, instance->m_rotation.z);
         modelMatrix = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.m_scale), thisAsset.m_position),
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), instance->m_scale), instance->m_position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );
@@ -196,12 +191,11 @@ void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t re
 }
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto &associatedAsset : m_associatedAssets) {
-        IE::Core::Asset thisAsset = *associatedAsset.lock();
+    for (auto *instance : m_instances) {
         glm::quat       quaternion =
-          glm::yawPitchRoll(thisAsset.m_rotation.x, thisAsset.m_rotation.y, thisAsset.m_rotation.z);
+          glm::yawPitchRoll(instance->m_rotation.x, instance->m_rotation.y, instance->m_rotation.z);
         modelMatrix = glm::rotate(
-          glm::translate(glm::scale(glm::identity<glm::mat4>(), thisAsset.m_scale), thisAsset.m_position),
+          glm::translate(glm::scale(glm::identity<glm::mat4>(), instance->m_scale), instance->m_position),
           glm::angle(quaternion),
           glm::axis(quaternion)
         );

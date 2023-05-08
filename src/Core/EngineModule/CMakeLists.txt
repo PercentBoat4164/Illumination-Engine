@@ -1,6 +1,5 @@
 set(IEEngineModuleSourceFiles  # Gather sources
         Engine.cpp
-        Window.cpp
         )
 
 # Create and define properties for the library

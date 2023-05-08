@@ -82,8 +82,6 @@ GLFWwindow *IERenderEngine::createWindow() const {
     int width, height;
     glfwGetFramebufferSize(pWindow, &width, &height);
     *settings->currentResolution = {width, height};
-    IE::Core::Core::registerWindow(pWindow);
-    IE::Core::Core::getWindow(pWindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
     return pWindow;
 }
 
@@ -298,21 +296,6 @@ void IERenderEngine::buildFunctionPointers() {
     vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(
       vkGetDeviceProcAddr(device.device, "vkGetBufferDeviceAddressKHR")
     );
-    vkCmdBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkCmdBuildAccelerationStructuresKHR>(
-      vkGetDeviceProcAddr(device.device, "vkCmdBuildAccelerationStructuresKHR")
-    );
-    vkCreateAccelerationStructureKHR = reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(
-      vkGetDeviceProcAddr(device.device, "vkCreateAccelerationStructureKHR")
-    );
-    vkDestroyAccelerationStructureKHR = reinterpret_cast<PFN_vkDestroyAccelerationStructureKHR>(
-      vkGetDeviceProcAddr(device.device, "vkDestroyAccelerationStructureKHR")
-    );
-    vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(
-      vkGetDeviceProcAddr(device.device, "vkGetAccelerationStructureBuildSizesKHR")
-    );
-    vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(
-      vkGetDeviceProcAddr(device.device, "vkGetAccelerationStructureDeviceAddressKHR")
-    );
     vkAcquireNextImageKhr =
       reinterpret_cast<PFN_vkAcquireNextImageKHR>(vkGetDeviceProcAddr(device.device, "vkAcquireNextImageKHR"));
 }
@@ -421,11 +404,11 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
 
-void IERenderEngine::addAsset(const std::shared_ptr<IE::Core::Asset> &asset) {
-    for (IE::Core::Aspect *aspect : asset->m_instances) {
-        if (auto renderable = dynamic_cast<IERenderable *>(aspect)) {
-            renderables.push_back(renderable);
-            renderable->create(this, asset->m_filename);
+void IERenderEngine::addAsset(IE::Core::Asset *asset) {
+    for (IE::Core::Instance *const instance : asset->m_instances) {
+        if (auto renderable = dynamic_cast<IERenderable *>(instance->m_aspect)) {
+            renderables.push_back(instance);
+            renderable->create(this, renderable->m_resourceFile->path);
             renderable->loadFromDiskToRAM();
             renderable->loadFromRAMToVRAM();
         }
@@ -472,7 +455,7 @@ bool IERenderEngine::_openGLUpdate() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
     glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
-    for (IERenderable *renderable : renderables) renderable->update(0);
+    for (IE::Core::Instance *instance : renderables) static_cast<IERenderable *>(instance->m_aspect)->update(0);
     glfwSwapBuffers(window);
     auto currentTime = (float) glfwGetTime();
     frameTime        = currentTime - previousTime;
@@ -523,7 +506,7 @@ bool IERenderEngine::_vulkanUpdate() {
     graphicsCommandPool->index(imageIndex)
       ->recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     camera.update();
-    for (IERenderable *renderable : renderables) renderable->update(imageIndex);
+    for (IE::Core::Instance *instance : renderables) static_cast<IERenderable *>(instance->m_aspect)->update(imageIndex);
     graphicsCommandPool->index(imageIndex)->recordEndRenderPass();
     graphicsCommandPool->index(imageIndex)
       ->execute(
@@ -642,12 +625,11 @@ IERenderEngine::~IERenderEngine() {
 }
 
 void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
-    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
-    *renderEngine->settings->currentPosition = {x, y};
+    *IE::Core::Core::getEngine<IERenderEngine>("render engine")->settings->currentPosition = {x, y};
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
+    auto renderEngine = IE::Core::Core::getEngine<IERenderEngine>("render engine");
     *renderEngine->settings->currentResolution = {width, height};
     renderEngine->framebufferResized           = true;
 }
@@ -856,18 +838,6 @@ std::function<void(IERenderEngine &)> IERenderEngine::_destroy =
   std::function<void(IERenderEngine &)>{[](IERenderEngine &) {
       return;
   }};
-
-IERenderEngine::AspectType *IERenderEngine::getAspect(const std::string &t_id) {
-    return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
-}
-
-IERenderEngine::AspectType *
-IERenderEngine::createAspect(std::weak_ptr<IE::Core::Asset> t_asset, const std::string &t_id) {
-    AspectType *aspect = getAspect(t_id);
-    if (!aspect) aspect = new AspectType();
-    t_asset.lock()->addInstance(aspect);
-    return aspect;
-}
 
 void IERenderEngine::queueToggleFullscreen() {
     shouldBeFullscreen = !shouldBeFullscreen;

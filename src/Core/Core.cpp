@@ -5,11 +5,10 @@
 IE::Core::Logger                                    IE::Core::Core::m_logger{ILLUMINATION_ENGINE_CORE_LOGGER_NAME};
 std::mutex                                          IE::Core::Core::m_enginesMutex{};
 std::unordered_map<std::string, IE::Core::Engine *> IE::Core::Core::m_engines{};
-std::mutex                                          IE::Core::Core::m_windowsMutex{};
-std::unordered_map<GLFWwindow *, IE::Core::Window>  IE::Core::Core::m_windows{};
 IE::Core::Threading::ThreadPool                     IE::Core::Core::m_threadPool{};
 IE::Core::FileSystem                                IE::Core::Core::m_filesystem{};
 IE::Core::AssetManager                              IE::Core::Core::m_assetManager{m_filesystem};
+IE::Core::InputHandler IE::Core::Core::m_inputHandler{};
 
 IE::Core::Core &IE::Core::Core::getInst(const std::filesystem::path &t_path) {
     static IE::Core::Core inst{t_path};

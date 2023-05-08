@@ -235,21 +235,16 @@ public:
     VkQueue                                        transferQueue{};
     VkQueue                                        computeQueue{};
     PFN_vkGetBufferDeviceAddress                   vkGetBufferDeviceAddressKHR{};
-    PFN_vkCmdBuildAccelerationStructuresKHR        vkCmdBuildAccelerationStructuresKHR{};
-    PFN_vkCreateAccelerationStructureKHR           vkCreateAccelerationStructureKHR{};
-    PFN_vkDestroyAccelerationStructureKHR          vkDestroyAccelerationStructureKHR{};
-    PFN_vkGetAccelerationStructureBuildSizesKHR    vkGetAccelerationStructureBuildSizesKHR{};
-    PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR{};
     PFN_vkAcquireNextImageKHR                      vkAcquireNextImageKhr{};
     std::vector<std::shared_ptr<IETexture>>        textures{};
     std::vector<VkImageView>                       swapchainImageViews{};
-    std::vector<IERenderable *>                    renderables{};
+    std::vector<IE::Core::Instance *>              renderables{};
     float                                          frameTime{};
     int                                            frameNumber{};
     // global depth image used by all framebuffers. Should this be here?
     std::shared_ptr<IEImage>                       depthImage{};
 
-    void addAsset(const std::shared_ptr<IE::Core::Asset> &asset);
+    void addAsset(IE::Core::Asset *asset);
 
     explicit IERenderEngine(IESettings &settings);
 
@@ -307,7 +302,5 @@ public:
 
     static void setAPI(const IEAPI &API);
 
-    AspectType *createAspect(std::weak_ptr<IE::Core::Asset> t_asset, const std::string &t_id) override;
-    AspectType *getAspect(const std::string &t_id) override;
     void        queueToggleFullscreen();
 };
