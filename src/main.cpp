@@ -5,14 +5,11 @@
 #include "RenderEngine.hpp"
 
 IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
-    auto renderEngineCreator = IE::Core::Core::getThreadPool().submit(
-      IE::Core::Core::createEngine<IE::Graphics::RenderEngine>,
-      "render engine"
-    );
+    std::shared_ptr<IE::Graphics::RenderEngine> renderEngine = IE::Core::Core::createEngine<IE::Graphics::RenderEngine>("render engine");
+
+    auto renderEngineCreator = IE::Core::Core::getThreadPool().submit(renderEngine->create());
 
     co_await IE::Core::Core::getThreadPool().resumeAfter(renderEngineCreator);
-
-    std::shared_ptr<IE::Graphics::RenderEngine> renderEngine = renderEngineCreator->value();
 
     IE::Core::Asset asset(IE::Core::Core::getFileSystem().getFile("res/assets/AncientStatue"));
     asset.addAspect(renderEngine->createAspect(

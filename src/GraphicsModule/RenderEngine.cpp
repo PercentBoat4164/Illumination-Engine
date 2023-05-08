@@ -546,5 +546,4 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
 }
 
 IE::Graphics::RenderEngine::RenderEngine(const std::string &t_ID) : Engine(t_ID) {
-    create()();
 }
