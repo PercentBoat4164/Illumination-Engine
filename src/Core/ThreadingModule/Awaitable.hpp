@@ -2,12 +2,11 @@
 
 #if defined(AppleClang)
 #    include <experimental/coroutine>
-
 namespace std {
-using std::experimental::coroutine_handle;
-using std::experimental::suspend_always;
-using std::experimental::suspend_never;
-}  // namespace std
+    using std::experimental::coroutine_handle;
+    using std::experimental::suspend_always;
+    using std::experimental::suspend_never;
+}
 #else
 #    include <coroutine>
 #endif
@@ -23,8 +22,6 @@ public:
     virtual void await_suspend(std::coroutine_handle<> t_handle) = 0;
 
     virtual void await_resume();
-
-    virtual void releaseDependency();
 
 protected:
     explicit Awaitable(ThreadPool *t_threadPool);

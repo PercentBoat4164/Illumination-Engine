@@ -8,12 +8,11 @@
 #include <vector>
 #if defined(AppleClang)
 #    include <experimental/coroutine>
-
 namespace std {
-using std::experimental::coroutine_handle;
-using std::experimental::suspend_always;
-using std::experimental::suspend_never;
-}  // namespace std
+    using std::experimental::coroutine_handle;
+    using std::experimental::suspend_always;
+    using std::experimental::suspend_never;
+}
 #else
 #    include <coroutine>
 #endif
@@ -49,9 +48,10 @@ public:
 
     bool await_ready() override;
 
+
     void await_suspend(std::coroutine_handle<> t_handle) override;
 
-    virtual void releaseDependency() override;
+    virtual void releaseDependency();
 
 protected:
     std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{

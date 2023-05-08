@@ -1,7 +1,9 @@
 #pragma once
 
+#include "Core/ThreadingModule/ResumeAfter.hpp"
 #include "CoroutineTask.hpp"
 #include "EnsureThread.hpp"
+#include "FunctionTask.hpp"
 #include "Queue.hpp"
 #include "ResumeAfter.hpp"
 #include "ResumeOnMainThreadAfter.hpp"
@@ -10,12 +12,11 @@
 
 #if defined(AppleClang)
 #    include <experimental/coroutine>
-
 namespace std {
-using std::experimental::coroutine_handle;
-using std::experimental::suspend_always;
-using std::experimental::suspend_never;
-}  // namespace std
+    using std::experimental::coroutine_handle;
+    using std::experimental::suspend_always;
+    using std::experimental::suspend_never;
+}
 #else
 #    include <coroutine>
 #endif
@@ -36,11 +37,6 @@ class ThreadPool {
     std::thread::id                  mainThreadID;
     std::atomic<uint32_t>            m_threadShutdownCount{0};
 
-    template<typename T, typename... Args>
-    static auto make_coroutine(T &&t_function, Args &&...args) -> CoroutineTask<decltype(t_function(args...))> {
-        co_return t_function(args...);
-    }
-
 public:
     explicit ThreadPool(uint32_t t_threads = std::thread::hardware_concurrency());
 
@@ -55,24 +51,27 @@ public:
         return std::static_pointer_cast<Task<T>>(task);
     }
 
-    auto submit(std::coroutine_handle<> t_handle) {
-        auto task{std::make_shared<CoroutineTask<void>>([t_handle] -> CoroutineTask<void> {
-            co_return t_handle();
-        }())};
+    template<typename T, typename... Args>
+        requires requires(T &&t_coroutine, Args &&...args) { typename decltype(t_coroutine(args...))::ReturnType; }
+    auto submit(T &&t_coroutine, Args &&...args)
+      -> std::shared_ptr<Task<typename decltype(t_coroutine(args...))::ReturnType>> {
+        auto task{
+          std::make_shared<CoroutineTask<typename decltype(t_coroutine(args...))::ReturnType>>(t_coroutine(args...)
+          )};
         task->connectHandle();
         m_queue.push(std::static_pointer_cast<BaseTask>(task));
         m_workAssignedNotifier.notify_one();
-        return std::static_pointer_cast<Task<void>>(task);
+        return task;
     }
 
     template<typename T, typename... Args>
     auto submit(T &&t_function, Args &&...args) -> std::shared_ptr<Task<decltype(t_function(args...))>> {
-        auto coroutine{make_coroutine(t_function, args...)};
-        auto task{std::make_shared<CoroutineTask<decltype(t_function(args...))>>(coroutine)};
-        task->connectHandle();
+        auto task{std::make_shared<FunctionTask<decltype(t_function(args...))>>(
+          [t_function, ... args = std::forward<Args>(args)] { return t_function(args...); }
+        )};
         m_queue.push(std::static_pointer_cast<BaseTask>(task));
         m_workAssignedNotifier.notify_one();
-        return std::static_pointer_cast<Task<decltype(t_function(args...))>>(task);
+        return task;
     }
 
     template<typename T>
@@ -84,25 +83,28 @@ public:
         return std::static_pointer_cast<Task<T>>(task);
     }
 
-    auto submitToMainThread(std::coroutine_handle<> t_handle) {
-        auto task{std::make_shared<CoroutineTask<void>>([t_handle] -> CoroutineTask<void> {
-            co_return t_handle();
-        }())};
+    template<typename T, typename... Args>
+        requires requires(T &&t_coroutine, Args &&...args) { typename decltype(t_coroutine(args...))::ReturnType; }
+    auto submitToMainThread(T &&t_coroutine, Args &&...args)
+      -> std::shared_ptr<Task<typename decltype(t_coroutine(args...))::ReturnType>> {
+        auto task{
+          std::make_shared<CoroutineTask<typename decltype(t_coroutine(args...))::ReturnType>>(t_coroutine(args...)
+          )};
         task->connectHandle();
         m_mainQueue.push(std::static_pointer_cast<BaseTask>(task));
         m_mainWorkAssignedNotifier.notify_one();
-        return std::static_pointer_cast<Task<void>>(task);
+        return task;
     }
 
     template<typename T, typename... Args>
     auto submitToMainThread(T &&t_function, Args &&...args)
       -> std::shared_ptr<Task<decltype(t_function(args...))>> {
-        auto coroutine{make_coroutine(t_function, args...)};
-        auto task{std::make_shared<CoroutineTask<decltype(t_function(args...))>>(coroutine)};
-        task->connectHandle();
+        auto task{std::make_shared<FunctionTask<decltype(t_function(args...))>>(
+          [t_function, ... args = std::forward<Args>(args)] { return t_function(args...); }
+        )};
         m_mainQueue.push(std::static_pointer_cast<BaseTask>(task));
         m_mainWorkAssignedNotifier.notify_one();
-        return std::static_pointer_cast<Task<decltype(t_function(args...))>>(task);
+        return task;
     }
 
     template<typename... Args>

@@ -18,8 +18,11 @@ public:
 
     bool await_ready() override;
 
+#if defined(AppleClang)
+    void await_suspend(std::experimental::coroutine_handle<> t_handle) override;
+#else
     void await_suspend(std::coroutine_handle<> t_handle) override;
-
+#endif
 
 protected:
     ThreadType m_type;

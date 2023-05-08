@@ -3,7 +3,6 @@
 #include "Core/Core.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
 #include "RenderEngine.hpp"
-
 IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     std::shared_ptr<IE::Graphics::RenderEngine> renderEngine = IE::Core::Core::createEngine<IE::Graphics::RenderEngine>("render engine");
 
