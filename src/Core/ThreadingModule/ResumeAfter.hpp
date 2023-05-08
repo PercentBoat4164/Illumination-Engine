@@ -8,11 +8,12 @@
 #include <vector>
 #if defined(AppleClang)
 #    include <experimental/coroutine>
+
 namespace std {
-    using std::experimental::coroutine_handle;
-    using std::experimental::suspend_always;
-    using std::experimental::suspend_never;
-}
+using std::experimental::coroutine_handle;
+using std::experimental::suspend_always;
+using std::experimental::suspend_never;
+}  // namespace std
 #else
 #    include <coroutine>
 #endif

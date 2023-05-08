@@ -5,11 +5,12 @@
 
 #if defined(AppleClang)
 #    include <experimental/coroutine>
+
 namespace std {
-    using std::experimental::coroutine_handle;
-    using std::experimental::suspend_always;
-    using std::experimental::suspend_never;
-}
+using std::experimental::coroutine_handle;
+using std::experimental::suspend_always;
+using std::experimental::suspend_never;
+}  // namespace std
 #else
 #    include <coroutine>
 #endif
@@ -36,7 +37,8 @@ public:
         std::suspend_never final_suspend() noexcept {
             {
                 std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
-                for (Awaitable *dependent : parent->m_dependents) static_cast<ResumeAfter *>(dependent)->releaseDependency();
+                for (Awaitable *dependent : parent->m_dependents)
+                    static_cast<ResumeAfter *>(dependent)->releaseDependency();
             }
             parent->m_dependents.clear();
             *parent->m_finished = true;
@@ -65,7 +67,7 @@ public:
     virtual ~CoroutineTask() = default;
 
     explicit CoroutineTask(std::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
-}
+    }
 
     explicit operator std::coroutine_handle<promise_type>() {
         return m_handle;
@@ -82,9 +84,8 @@ public:
     void wait() override {
         std::mutex                   mutex;
         std::unique_lock<std::mutex> lock(mutex);
-        if (!*(BaseTask::m_finished)) {
+        if (!*(BaseTask::m_finished))
             BaseTask::m_finishedNotifier->wait(lock, [&] { return BaseTask::m_finished->operator bool(); });
-        }
     }
 
 private:
@@ -110,7 +111,8 @@ public:
         std::suspend_never final_suspend() noexcept {
             {
                 std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
-                for (Awaitable *dependent : parent->m_dependents) static_cast<ResumeAfter *>(dependent)->releaseDependency();
+                for (Awaitable *dependent : parent->m_dependents)
+                    static_cast<ResumeAfter *>(dependent)->releaseDependency();
             }
             parent->m_dependents.clear();
             *parent->m_finished = true;
