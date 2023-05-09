@@ -122,7 +122,7 @@ void IE::Core::Keyboard::clearQueue() {
 }
 
 void IE::Core::Keyboard::keyCallback(GLFWwindow *window, int key, int scancode, int action, int modifiers) {
-    auto keyboard = IE::Core::Core::getInputHandler().m_keyboard;
+    auto &keyboard = IE::Core::Core::getInputHandler().m_keyboard;
     if (action == GLFW_REPEAT) {
         keyboard.queue.emplace_back(key, action);
         return;

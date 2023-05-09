@@ -36,17 +36,14 @@ void IERenderable::setAPI(const IEAPI &API) {
     }
 }
 
-std::function<void(IERenderable &, IERenderEngine *, const std::string &)> IERenderable::_create{nullptr};
+std::function<void(IERenderable &, IERenderEngine *)> IERenderable::_create{nullptr};
 
-void IERenderable::create(IERenderEngine *engineLink, const std::string &filePath) {
-    linkedRenderEngine = engineLink;
-    directory          = filePath.substr(0, filePath.find_last_of('/'));
-    modelName          = filePath.substr(filePath.find_last_of('/'));
-    _create(*this, engineLink, filePath);
+void IERenderable::create(IERenderEngine *engineLink) {
+    _create(*this, engineLink);
     status = IE_RENDERABLE_STATE_UNLOADED;
 }
 
-void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &filePath) {
+void IERenderable::_openglCreate(IERenderEngine *engineLink) {
     linkedRenderEngine = engineLink;
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
@@ -57,7 +54,7 @@ void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &
     modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
 }
 
-void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &filePath) {
+void IERenderable::_vulkanCreate(IERenderEngine *engineLink) {
     linkedRenderEngine = engineLink;
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
@@ -84,7 +81,7 @@ void IERenderable::loadFromDiskToRAM() {
 void IERenderable::_openglLoadFromDiskToRAM() {
     // Read input file
     const aiScene *scene = importer.ReadFile(
-      directory + modelName,
+      m_resourceFile->path,
       aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_RemoveRedundantMaterials |
         aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_SortByPType |
         aiProcess_GenUVCoords | aiProcess_GenNormals | aiProcess_ValidateDataStructure |
@@ -93,7 +90,7 @@ void IERenderable::_openglLoadFromDiskToRAM() {
     );
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         linkedRenderEngine->settings->logger.log(
-          "Failed to prepare scene from file: " + std::string(directory + modelName) +
+          "Failed to prepare scene from file: " + m_resourceFile->path.string() +
             "\t\tError: " + importer.GetErrorString(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -105,7 +102,7 @@ void IERenderable::_openglLoadFromDiskToRAM() {
     // import all meshes
     for (IEMesh &mesh : meshes) {
         mesh.create(linkedRenderEngine);
-        mesh.loadFromDiskToRAM(directory, scene, scene->mMeshes[meshIndex++]);
+        mesh.loadFromDiskToRAM(m_resourceFile->path.parent_path(), scene, scene->mMeshes[meshIndex++]);
     }
 
     modelBuffer.uploadToRAM(std::vector<char>{sizeof(glm::mat4)});
@@ -114,7 +111,7 @@ void IERenderable::_openglLoadFromDiskToRAM() {
 void IERenderable::_vulkanLoadFromDiskToRAM() {
     // Read input file
     const aiScene *scene = importer.ReadFile(
-      directory + modelName,
+      m_resourceFile->path,
       aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_RemoveRedundantMaterials |
         aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_SortByPType |
         aiProcess_GenUVCoords | aiProcess_GenNormals | aiProcess_ValidateDataStructure |
@@ -123,7 +120,7 @@ void IERenderable::_vulkanLoadFromDiskToRAM() {
     );
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         linkedRenderEngine->settings->logger.log(
-          "Failed to prepare scene from file: " + std::string(directory + modelName) +
+          "Failed to prepare scene from file: " + m_resourceFile->path.string() +
             "\t\tError: " + importer.GetErrorString(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -135,7 +132,7 @@ void IERenderable::_vulkanLoadFromDiskToRAM() {
     // import all meshes
     for (IEMesh &mesh : meshes) {
         mesh.create(linkedRenderEngine);
-        mesh.loadFromDiskToRAM(directory, scene, scene->mMeshes[meshIndex++]);
+        mesh.loadFromDiskToRAM(m_resourceFile->path.parent_path(), scene, scene->mMeshes[meshIndex++]);
     }
 
     modelBuffer.uploadToRAM(std::vector<char>{sizeof(glm::mat4)});
@@ -169,7 +166,7 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
     for (auto *instance : m_instances) {
-        glm::quat       quaternion =
+        glm::quat quaternion =
           glm::yawPitchRoll(instance->m_rotation.x, instance->m_rotation.y, instance->m_rotation.z);
         modelMatrix = glm::rotate(
           glm::translate(glm::scale(glm::identity<glm::mat4>(), instance->m_scale), instance->m_position),
@@ -192,7 +189,7 @@ void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t re
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
     for (auto *instance : m_instances) {
-        glm::quat       quaternion =
+        glm::quat quaternion =
           glm::yawPitchRoll(instance->m_rotation.x, instance->m_rotation.y, instance->m_rotation.z);
         modelMatrix = glm::rotate(
           glm::translate(glm::scale(glm::identity<glm::mat4>(), instance->m_scale), instance->m_position),

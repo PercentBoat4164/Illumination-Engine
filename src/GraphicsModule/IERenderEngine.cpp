@@ -407,8 +407,8 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
 void IERenderEngine::addAsset(IE::Core::Asset *asset) {
     for (IE::Core::Instance *const instance : asset->m_instances) {
         if (auto renderable = dynamic_cast<IERenderable *>(instance->m_aspect)) {
-            renderables.push_back(instance);
-            renderable->create(this, renderable->m_resourceFile->path);
+            m_instances.push_back(instance);
+            renderable->create(this);
             renderable->loadFromDiskToRAM();
             renderable->loadFromRAMToVRAM();
         }
@@ -455,7 +455,7 @@ bool IERenderEngine::_openGLUpdate() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
     glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
-    for (IE::Core::Instance *instance : renderables) static_cast<IERenderable *>(instance->m_aspect)->update(0);
+    for (IE::Core::Instance *instance : m_instances) static_cast<IERenderable *>(instance->m_aspect)->update(0);
     glfwSwapBuffers(window);
     auto currentTime = (float) glfwGetTime();
     frameTime        = currentTime - previousTime;
@@ -466,7 +466,7 @@ bool IERenderEngine::_openGLUpdate() {
 
 bool IERenderEngine::_vulkanUpdate() {
     if (window == nullptr) return false;
-    if (renderables.empty()) return glfwWindowShouldClose(window) == 0;
+    if (m_instances.empty()) return glfwWindowShouldClose(window) == 0;
     if (framebufferResized) {
         framebufferResized = false;
         handleResolutionChange();
@@ -506,7 +506,8 @@ bool IERenderEngine::_vulkanUpdate() {
     graphicsCommandPool->index(imageIndex)
       ->recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     camera.update();
-    for (IE::Core::Instance *instance : renderables) static_cast<IERenderable *>(instance->m_aspect)->update(imageIndex);
+    for (IE::Core::Instance *instance : m_instances)
+        static_cast<IERenderable *>(instance->m_aspect)->update(imageIndex);
     graphicsCommandPool->index(imageIndex)->recordEndRenderPass();
     graphicsCommandPool->index(imageIndex)
       ->execute(
@@ -629,7 +630,7 @@ void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-    auto renderEngine = IE::Core::Core::getEngine<IERenderEngine>("render engine");
+    auto renderEngine                          = IE::Core::Core::getEngine<IERenderEngine>("render engine");
     *renderEngine->settings->currentResolution = {width, height};
     renderEngine->framebufferResized           = true;
 }
