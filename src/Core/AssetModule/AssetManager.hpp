@@ -11,7 +11,7 @@ class File;
 
 class AssetManager {
 private:
-    IE::Core::FileSystem                             &m_filesystem;
+    IE::Core::FileSystem                               &m_filesystem;
     std::unordered_map<std::string, IE::Core::Asset *>  m_assets;
     std::unordered_map<std::string, IE::Core::Aspect *> m_aspects;
 
@@ -21,20 +21,20 @@ public:
 
     template<typename T>
     T &createAspect(const std::string &t_id, const std::filesystem::path &t_path) {
-        return createAspect<T>(t_id, m_filesystem.getFile(t_path));
+        return createAspect<T>(t_id, m_filesystem.addFile(t_path));
     }
 
     template<typename T>
     T &createAspect(const std::string &t_id, IE::Core::File *t_file) {
-        return *dynamic_cast<T *>(m_aspects.insert({t_id, new Aspect(t_file)}).first->second);
+        return *dynamic_cast<T *>(m_aspects.insert({t_id, static_cast<Aspect *>(new T(t_file))}).first->second);
     }
 
-    template <typename... Args>
+    template<typename... Args>
     IE::Core::Asset &createAsset(const std::string &t_id, const std::filesystem::path &t_path, Args... args) {
-        return createAsset(t_id, m_filesystem.getFile(t_path), args...);
+        return createAsset(t_id, m_filesystem.addFile(t_path), args...);
     }
 
-    template <typename... Args>
+    template<typename... Args>
     IE::Core::Asset &createAsset(const std::string &t_id, IE::Core::File *t_resourceFile, Args... args) {
         return *m_assets.insert({t_id, new Asset(t_resourceFile, args...)}).first->second;
     }

@@ -29,7 +29,7 @@ private:
         if constexpr (sizeof...(args) > 0) fillInstances(args...);
     }
 
-    template <typename... Args>
+    template<typename... Args>
     void fillInstances(std::string t_aspectID, Args... args) {
         addInstance(t_aspectID);
         if constexpr (sizeof...(args) > 0) fillInstances(args...);
