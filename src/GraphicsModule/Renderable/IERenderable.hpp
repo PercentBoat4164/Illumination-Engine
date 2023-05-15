@@ -38,7 +38,7 @@ enum IERenderableStatus {
 
 class IERenderable : public IE::Core::Aspect {
 public:
-    IERenderable(IE::Core::File *t_file);
+    IERenderable(const std::string &t_id, IE::Core::File *t_file);
 
     std::vector<IEMesh>   meshes{};
     IEBuffer              modelBuffer{};

@@ -48,13 +48,13 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     });
 
     auto &am       = IE::Core::Core::getAssetManager();
-    auto &fbxModel = am.createAspect<IERenderable>(
+    auto fbxModel = am.createAspect<IERenderable>(
       "ancientStatue FBX",
       std::filesystem::path("res") / "assets" / "AncientStatue" / "models" / "ancientStatue.fbx"
     );
     auto ancientStatue =
-      am.createAsset("ancientStatues", std::filesystem::path("res") / "assets" / "AncientStatue", &fbxModel);
-    renderEngine->addAsset(&ancientStatue);
+      am.createAsset("ancientStatues", std::filesystem::path("res") / "assets" / "AncientStatue", fbxModel);
+    renderEngine->addAsset(ancientStatue);
 
     renderEngine->camera.position = {0.0F, -2.0F, 1.0F};
 

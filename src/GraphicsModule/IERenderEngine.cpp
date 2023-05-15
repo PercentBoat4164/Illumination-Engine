@@ -404,9 +404,9 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
 
-void IERenderEngine::addAsset(IE::Core::Asset *asset) {
-    for (IE::Core::Instance *const instance : asset->m_instances) {
-        if (auto renderable = dynamic_cast<IERenderable *>(instance->m_aspect)) {
+void IERenderEngine::addAsset(std::shared_ptr<IE::Core::Asset> asset) {
+    for (std::shared_ptr<IE::Core::Instance> &instance : asset->m_instances) {
+        if (auto renderable = std::dynamic_pointer_cast<IERenderable>(instance->m_aspect)) {
             m_instances.push_back(instance);
             renderable->create(this);
             renderable->loadFromDiskToRAM();
@@ -455,7 +455,7 @@ bool IERenderEngine::_openGLUpdate() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.update();
     glViewport(0, 0, (*settings->currentResolution)[0], (*settings->currentResolution)[1]);
-    for (IE::Core::Instance *instance : m_instances) static_cast<IERenderable *>(instance->m_aspect)->update(0);
+    for (std::shared_ptr<IE::Core::Instance> &instance : m_instances) std::static_pointer_cast<IERenderable>(instance->m_aspect)->update(0);
     glfwSwapBuffers(window);
     auto currentTime = (float) glfwGetTime();
     frameTime        = currentTime - previousTime;
@@ -506,8 +506,8 @@ bool IERenderEngine::_vulkanUpdate() {
     graphicsCommandPool->index(imageIndex)
       ->recordBeginRenderPass(&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     camera.update();
-    for (IE::Core::Instance *instance : m_instances)
-        static_cast<IERenderable *>(instance->m_aspect)->update(imageIndex);
+    for (std::shared_ptr<IE::Core::Instance> &instance : m_instances)
+        std::static_pointer_cast<IERenderable>(instance->m_aspect)->update(imageIndex);
     graphicsCommandPool->index(imageIndex)->recordEndRenderPass();
     graphicsCommandPool->index(imageIndex)
       ->execute(

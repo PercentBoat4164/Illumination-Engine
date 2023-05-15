@@ -15,7 +15,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-IERenderable::IERenderable(IE::Core::File *t_file) : IE::Core::Aspect(t_file) {
+IERenderable::IERenderable(const std::string &t_id, IE::Core::File *t_file) : IE::Core::Aspect(t_id, t_file) {
 }
 
 void IERenderable::setAPI(const IEAPI &API) {
@@ -165,7 +165,7 @@ void IERenderable::update(uint32_t renderCommandBufferIndex) {
 }
 
 void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto *instance : m_instances) {
+    for (std::shared_ptr<IE::Core::Instance> &instance : m_instances) {
         glm::quat quaternion =
           glm::yawPitchRoll(instance->m_rotation.x, instance->m_rotation.y, instance->m_rotation.z);
         modelMatrix = glm::rotate(
@@ -188,7 +188,7 @@ void IERenderable::_openglUpdate(const IECamera &camera, float time, uint32_t re
 }
 
 void IERenderable::_vulkanUpdate(const IECamera &camera, float time, uint32_t renderCommandBufferIndex) {
-    for (auto *instance : m_instances) {
+    for (std::shared_ptr<IE::Core::Instance> &instance : m_instances) {
         glm::quat quaternion =
           glm::yawPitchRoll(instance->m_rotation.x, instance->m_rotation.y, instance->m_rotation.z);
         modelMatrix = glm::rotate(

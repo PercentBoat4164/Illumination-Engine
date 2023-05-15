@@ -15,25 +15,21 @@ namespace IE::Core {
 class Aspect;
 class File;
 
-class Asset {
+class Asset : public std::enable_shared_from_this<Asset> {
 private:
     template<typename... Args>
-    void fillInstances(IE::Core::Instance *t_instance, Args... args) {
-        addInstance(t_instance);
-        if constexpr (sizeof...(args) > 0) fillInstances(args...);
-    }
-
-    template<typename... Args>
-    void fillInstances(IE::Core::Aspect *t_aspect, Args... args) {
+    void fillInstances(std::shared_ptr<IE::Core::Aspect> t_aspect, Args... args) {
         addInstance(t_aspect);
-        if constexpr (sizeof...(args) > 0) fillInstances(args...);
+        if constexpr (sizeof...(args) > 0) return fillInstances(args...);
     }
 
     template<typename... Args>
-    void fillInstances(std::string t_aspectID, Args... args) {
+    void fillInstances(const std::string &t_aspectID, Args... args) {
         addInstance(t_aspectID);
-        if constexpr (sizeof...(args) > 0) fillInstances(args...);
+        if constexpr (sizeof...(args) > 0) return fillInstances(args...);
     }
+
+    explicit Asset(const std::string &t_id, IE::Core::File *t_resourceFile);
 
 public:
     // Things that are shared among all m_instances of an asset
@@ -41,23 +37,21 @@ public:
     glm::vec3                         m_rotation{0.0, 0.0, 0.0};
     glm::vec3                         m_scale{1.0, 1.0, 1.0};
     IE::Core::File                   *m_resourceFile{};
-    std::vector<IE::Core::Instance *> m_instances;
+    std::string m_id;
+    std::vector<std::shared_ptr<IE::Core::Instance>> m_instances;
+    std::mutex m_instancesMutex;
 
-    void addInstance(IE::Core::Instance *t_instance);
+    void addInstance(std::shared_ptr<IE::Core::Aspect> t_aspect);
 
-    void addInstance(IE::Core::Aspect *t_aspect);
-
-    void addInstance(std::string t_aspectID);
+    void addInstance(const std::string &t_aspectID);
 
     template<typename... Args>
-    Asset(IE::Core::File *t_resourceFile, Args... args) : m_resourceFile(t_resourceFile) {
-        if constexpr (sizeof...(args) > 0) fillInstances(args...);
+    static std::shared_ptr<Asset> Factory(const std::string &t_id, IE::Core::File *t_resourceFile, Args... t_args) {
+        auto asset = std::shared_ptr<Asset>(new Asset(t_id, t_resourceFile));
+        if constexpr (sizeof...(t_args) > 0) asset->fillInstances(t_args...);
+        return asset;
     }
 
-    Asset(IE::Core::File *t_resourceFile, std::vector<IE::Core::Instance *> t_instances);
-
-    Asset(IE::Core::File *t_resourceFile, std::vector<IE::Core::Aspect *> t_aspects);
-
-    ~Asset();
+    static std::shared_ptr<Asset> Factory(const std::string &t_id, IE::Core::File *t_resourceFile, const std::vector<std::shared_ptr<IE::Core::Aspect>> &t_aspects);
 };
 }  // namespace IE::Core

@@ -238,13 +238,13 @@ public:
     PFN_vkAcquireNextImageKHR               vkAcquireNextImageKhr{};
     std::vector<std::shared_ptr<IETexture>> textures{};
     std::vector<VkImageView>                swapchainImageViews{};
-    std::vector<IE::Core::Instance *>       m_instances{};
+    std::vector<std::shared_ptr<IE::Core::Instance>>       m_instances{};
     float                                   frameTime{};
     int                                     frameNumber{};
     // global depth image used by all framebuffers. Should this be here?
     std::shared_ptr<IEImage>                depthImage{};
 
-    void addAsset(IE::Core::Asset *asset);
+    void addAsset(std::shared_ptr<IE::Core::Asset> asset);
 
     explicit IERenderEngine(IESettings &settings);
 
