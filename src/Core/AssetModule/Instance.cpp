@@ -21,4 +21,5 @@ IE::Core::Instance::Factory(const std::shared_ptr<IE::Core::Asset> &t_asset, con
         std::lock_guard<std::mutex> lock(t_aspect->m_instancesMutex);
         t_aspect->m_instances.push_back(instance);
     }
+    return instance;
 }
