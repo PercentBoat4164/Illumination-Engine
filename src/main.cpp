@@ -48,7 +48,7 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     });
 
     auto &am       = IE::Core::Core::getAssetManager();
-    auto fbxModel = am.createAspect<IERenderable>(
+    auto  fbxModel = am.createAspect<IERenderable>(
       "ancientStatue FBX",
       std::filesystem::path("res") / "assets" / "AncientStatue" / "models" / "ancientStatue.fbx"
     );

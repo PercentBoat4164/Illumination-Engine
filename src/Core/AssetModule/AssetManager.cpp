@@ -25,14 +25,14 @@ void IE::Core::AssetManager::removeAspect(IE::Core::Aspect &t_aspect) {
 
 std::shared_ptr<IE::Core::Aspect> IE::Core::AssetManager::getAspect(const std::string &t_id) {
     std::lock_guard<std::mutex> lock(m_aspectsMutex);
-    auto iterator = m_aspects.find(t_id);
+    auto                        iterator = m_aspects.find(t_id);
     if (iterator == m_aspects.end()) return nullptr;
     return iterator->second;
 }
 
 std::shared_ptr<IE::Core::Asset> IE::Core::AssetManager::getAsset(const std::string &t_id) {
     std::lock_guard<std::mutex> lock(m_assetsMutex);
-    auto iterator = m_assets.find(t_id);
+    auto                        iterator = m_assets.find(t_id);
     if (iterator == m_assets.end()) return nullptr;
     return iterator->second;
 }

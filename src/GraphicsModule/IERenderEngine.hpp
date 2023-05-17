@@ -213,36 +213,36 @@ public:
 
     ~IERenderEngine();
 
-    IECamera                                camera{};
-    std::shared_ptr<IERenderPass>           renderPass{};
-    IESettings                             *settings;
-    std::shared_ptr<IECommandPool>          graphicsCommandPool{};
-    std::shared_ptr<IECommandPool>          presentCommandPool{};
-    std::shared_ptr<IECommandPool>          transferCommandPool{};
-    std::shared_ptr<IECommandPool>          computeCommandPool{};
-    IEAPI                                   API;
-    ExtensionAndFeatureInfo                 extensionAndFeatureInfo{};
-    GLFWmonitor                            *monitor{};
-    GLFWwindow                             *window{};
-    vkb::Device                             device{};
-    vkb::Swapchain                          swapchain{};
-    vkb::Instance                           instance{};
-    vkb::Result<vkb::SystemInfo>            systemInfo{vkb::SystemInfo::get_system_info()};
-    VkSurfaceKHR                            surface{};
-    VmaAllocator                            allocator{};
-    VkQueue                                 graphicsQueue{};
-    VkQueue                                 presentQueue{};
-    VkQueue                                 transferQueue{};
-    VkQueue                                 computeQueue{};
-    PFN_vkGetBufferDeviceAddress            vkGetBufferDeviceAddressKHR{};
-    PFN_vkAcquireNextImageKHR               vkAcquireNextImageKhr{};
-    std::vector<std::shared_ptr<IETexture>> textures{};
-    std::vector<VkImageView>                swapchainImageViews{};
-    std::vector<std::shared_ptr<IE::Core::Instance>>       m_instances{};
-    float                                   frameTime{};
-    int                                     frameNumber{};
+    IECamera                                         camera{};
+    std::shared_ptr<IERenderPass>                    renderPass{};
+    IESettings                                      *settings;
+    std::shared_ptr<IECommandPool>                   graphicsCommandPool{};
+    std::shared_ptr<IECommandPool>                   presentCommandPool{};
+    std::shared_ptr<IECommandPool>                   transferCommandPool{};
+    std::shared_ptr<IECommandPool>                   computeCommandPool{};
+    IEAPI                                            API;
+    ExtensionAndFeatureInfo                          extensionAndFeatureInfo{};
+    GLFWmonitor                                     *monitor{};
+    GLFWwindow                                      *window{};
+    vkb::Device                                      device{};
+    vkb::Swapchain                                   swapchain{};
+    vkb::Instance                                    instance{};
+    vkb::Result<vkb::SystemInfo>                     systemInfo{vkb::SystemInfo::get_system_info()};
+    VkSurfaceKHR                                     surface{};
+    VmaAllocator                                     allocator{};
+    VkQueue                                          graphicsQueue{};
+    VkQueue                                          presentQueue{};
+    VkQueue                                          transferQueue{};
+    VkQueue                                          computeQueue{};
+    PFN_vkGetBufferDeviceAddress                     vkGetBufferDeviceAddressKHR{};
+    PFN_vkAcquireNextImageKHR                        vkAcquireNextImageKhr{};
+    std::vector<std::shared_ptr<IETexture>>          textures{};
+    std::vector<VkImageView>                         swapchainImageViews{};
+    std::vector<std::shared_ptr<IE::Core::Instance>> m_instances{};
+    float                                            frameTime{};
+    int                                              frameNumber{};
     // global depth image used by all framebuffers. Should this be here?
-    std::shared_ptr<IEImage>                depthImage{};
+    std::shared_ptr<IEImage>                         depthImage{};
 
     void addAsset(std::shared_ptr<IE::Core::Asset> asset);
 

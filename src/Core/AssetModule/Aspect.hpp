@@ -21,9 +21,9 @@ public:
     virtual ~Aspect() = default;
 
     std::vector<std::shared_ptr<IE::Core::Instance>> m_instances;
-    std::mutex m_instancesMutex;
-    IE::Core::File                   *m_resourceFile;
-    std::string m_id;
+    std::mutex                                       m_instancesMutex;
+    IE::Core::File                                  *m_resourceFile;
+    std::string                                      m_id;
 
     explicit Aspect(const std::string &t_id, IE::Core::File *t_resourceFile);
 };

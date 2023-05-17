@@ -33,25 +33,30 @@ private:
 
 public:
     // Things that are shared among all m_instances of an asset
-    glm::vec3                         m_position{0.0, 0.0, 0.0};
-    glm::vec3                         m_rotation{0.0, 0.0, 0.0};
-    glm::vec3                         m_scale{1.0, 1.0, 1.0};
-    IE::Core::File                   *m_resourceFile{};
-    std::string m_id;
+    glm::vec3                                        m_position{0.0, 0.0, 0.0};
+    glm::vec3                                        m_rotation{0.0, 0.0, 0.0};
+    glm::vec3                                        m_scale{1.0, 1.0, 1.0};
+    IE::Core::File                                  *m_resourceFile{};
+    std::string                                      m_id;
     std::vector<std::shared_ptr<IE::Core::Instance>> m_instances;
-    std::mutex m_instancesMutex;
+    std::mutex                                       m_instancesMutex;
 
     void addInstance(std::shared_ptr<IE::Core::Aspect> t_aspect);
 
     void addInstance(const std::string &t_aspectID);
 
     template<typename... Args>
-    static std::shared_ptr<Asset> Factory(const std::string &t_id, IE::Core::File *t_resourceFile, Args... t_args) {
+    static std::shared_ptr<Asset>
+    Factory(const std::string &t_id, IE::Core::File *t_resourceFile, Args... t_args) {
         auto asset = std::shared_ptr<Asset>(new Asset(t_id, t_resourceFile));
         if constexpr (sizeof...(t_args) > 0) asset->fillInstances(t_args...);
         return asset;
     }
 
-    static std::shared_ptr<Asset> Factory(const std::string &t_id, IE::Core::File *t_resourceFile, const std::vector<std::shared_ptr<IE::Core::Aspect>> &t_aspects);
+    static std::shared_ptr<Asset> Factory(
+      const std::string                                    &t_id,
+      IE::Core::File                                       *t_resourceFile,
+      const std::vector<std::shared_ptr<IE::Core::Aspect>> &t_aspects
+    );
 };
 }  // namespace IE::Core

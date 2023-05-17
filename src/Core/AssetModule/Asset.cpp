@@ -10,7 +10,9 @@ void IE::Core::Asset::addInstance(const std::string &t_aspectID) {
     Instance::Factory(shared_from_this(), IE::Core::Core::getAssetManager().getAspect(t_aspectID));
 }
 
-IE::Core::Asset::Asset(const std::string &t_id, IE::Core::File *t_resourceFile) : m_resourceFile(t_resourceFile), m_id(t_id) {
+IE::Core::Asset::Asset(const std::string &t_id, IE::Core::File *t_resourceFile) :
+        m_resourceFile(t_resourceFile),
+        m_id(t_id) {
 }
 
 std::shared_ptr<IE::Core::Asset> IE::Core::Asset::Factory(
