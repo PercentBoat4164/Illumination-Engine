@@ -262,7 +262,7 @@ void IE::Graphics::Pipeline::build(
       .renderPass          = m_subpass->m_renderPass->m_renderPass,
       .subpass             = subpassNumber,
       .basePipelineHandle  = VK_NULL_HANDLE,
-    };
+      .basePipelineIndex   = 0};
 
     VkResult result{vkCreateGraphicsPipelines(
       m_linkedRenderEngine->m_device.device,

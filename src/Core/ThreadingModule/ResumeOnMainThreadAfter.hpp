@@ -21,6 +21,6 @@ public:
 
     void releaseDependency() override;
 
-    ~ResumeOnMainThreadAfter() = default;
+    virtual ~ResumeOnMainThreadAfter() = default;
 };
 }  // namespace IE::Core::Threading

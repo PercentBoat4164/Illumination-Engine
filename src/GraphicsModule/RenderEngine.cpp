@@ -176,7 +176,9 @@ vkb::Device IE::Graphics::RenderEngine::createDevice() {
         // Use a list of lists of required extensions for a given feature to get a master list of all required
         // extensions. Check if those extensions are supported by this GPU, then label the unsupported features as
         // such.
-        selector.prefer_gpu_device_type(vkb::PreferredDeviceType::discrete).set_surface(m_surface);
+        selector.prefer_gpu_device_type(vkb::PreferredDeviceType::discrete);
+        selector.allow_any_gpu_device_type(false);
+        selector.set_surface(m_surface);
         selector.add_required_extensions({VK_KHR_MAINTENANCE2_EXTENSION_NAME});
         auto physicalDeviceBuilder = selector.select();
         if (!physicalDeviceBuilder)
@@ -546,5 +548,8 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
 }
 
 IE::Graphics::RenderEngine::RenderEngine(const std::string &t_ID) : Engine(t_ID) {
-    create()();
+    //    IE::Core::Core::getThreadPool().executeInPlace(create());
+    auto task = create();
+    task.connectHandle();
+    while (!task.finished()) task.execute();
 }

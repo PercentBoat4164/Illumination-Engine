@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/ThreadingModule/Awaitable.hpp"
 #include "CoroutineTask.hpp"
 #include "EnsureThread.hpp"
 #include "Queue.hpp"
@@ -7,6 +8,9 @@
 #include "ResumeOnMainThreadAfter.hpp"
 #include "Task.hpp"
 #include "Worker.hpp"
+
+#include <memory>
+#include <shared_mutex>
 
 #if defined(AppleClang)
 #    include <experimental/coroutine>
@@ -36,11 +40,6 @@ class ThreadPool {
     std::thread::id                  mainThreadID;
     std::atomic<uint32_t>            m_threadShutdownCount{0};
 
-    template<typename T, typename... Args>
-    static auto make_coroutine(T &&t_function, Args &&...args) -> CoroutineTask<decltype(t_function(args...))> {
-        co_return t_function(args...);
-    }
-
 public:
     explicit ThreadPool(uint32_t t_threads = std::thread::hardware_concurrency());
 
@@ -55,20 +54,11 @@ public:
         return std::static_pointer_cast<Task<T>>(task);
     }
 
-    auto submit(std::coroutine_handle<> t_handle) {
-        auto task{std::make_shared<CoroutineTask<void>>([t_handle] -> CoroutineTask<void> {
-            co_return t_handle();
-        }())};
-        task->connectHandle();
-        m_queue.push(std::static_pointer_cast<BaseTask>(task));
-        m_workAssignedNotifier.notify_one();
-        return std::static_pointer_cast<Task<void>>(task);
-    }
-
     template<typename T, typename... Args>
     auto submit(T &&t_function, Args &&...args) -> std::shared_ptr<Task<decltype(t_function(args...))>> {
-        auto coroutine{make_coroutine(t_function, args...)};
-        auto task{std::make_shared<CoroutineTask<decltype(t_function(args...))>>(coroutine)};
+        auto task{std::make_shared<CoroutineTask<decltype(t_function(args...))>>(
+          [&t_function, &args...]->CoroutineTask<decltype(t_function(args...))> {co_return t_function(args...);}()
+        )};
         task->connectHandle();
         m_queue.push(std::static_pointer_cast<BaseTask>(task));
         m_workAssignedNotifier.notify_one();
@@ -84,25 +74,26 @@ public:
         return std::static_pointer_cast<Task<T>>(task);
     }
 
-    auto submitToMainThread(std::coroutine_handle<> t_handle) {
-        auto task{std::make_shared<CoroutineTask<void>>([t_handle] -> CoroutineTask<void> {
-            co_return t_handle();
-        }())};
-        task->connectHandle();
-        m_mainQueue.push(std::static_pointer_cast<BaseTask>(task));
-        m_mainWorkAssignedNotifier.notify_one();
-        return std::static_pointer_cast<Task<void>>(task);
-    }
-
     template<typename T, typename... Args>
     auto submitToMainThread(T &&t_function, Args &&...args)
       -> std::shared_ptr<Task<decltype(t_function(args...))>> {
-        auto coroutine{make_coroutine(t_function, args...)};
-        auto task{std::make_shared<CoroutineTask<decltype(t_function(args...))>>(coroutine)};
+        auto task{std::make_shared<CoroutineTask<decltype(t_function(args...))>>(
+          [t_function, args...]->CoroutineTask<decltype(t_function(args...))> {co_return t_function(args...);}()
+        )};
         task->connectHandle();
         m_mainQueue.push(std::static_pointer_cast<BaseTask>(task));
         m_mainWorkAssignedNotifier.notify_one();
         return std::static_pointer_cast<Task<decltype(t_function(args...))>>(task);
+    }
+
+    template<typename T>
+    T executeInPlace(CoroutineTask<T> &&t_coroutine) {
+        auto task{std::make_shared<CoroutineTask<T>>(t_coroutine)};
+        task->connectHandle();
+        m_queue.push(std::static_pointer_cast<BaseTask>(task));
+        m_workAssignedNotifier.notify_one();
+        Worker::loopUntilTaskFinished(this, &t_coroutine);
+        return t_coroutine.value();
     }
 
     template<typename... Args>
@@ -127,7 +118,8 @@ public:
 
     void setWorkerCount(uint32_t t_threads = std::thread::hardware_concurrency());
 
-    friend void Worker::start(ThreadPool *t_threadPool);
+    friend void Worker::start(IE::Core::Threading::ThreadPool *t_threadPool);
+    friend void Worker::loopUntilTaskFinished(ThreadPool *t_threadPool, BaseTask *t_stopTask);
     friend bool EnsureThread::await_ready();
 };
 }  // namespace IE::Core::Threading

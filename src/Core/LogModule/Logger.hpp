@@ -17,7 +17,7 @@ private:
     std::shared_ptr<spdlog::logger>                           m_logger;
     static bool                                               m_init;
     static std::shared_ptr<spdlog::sinks::basic_file_sink_st> m_logFileSink;
-    static std::mutex                                        *m_logMutex;
+    static std::shared_ptr<std::mutex> m_logMutex;
 
 public:
     enum Level {
