@@ -24,10 +24,10 @@ public:
     using ReturnType = T;
 
     struct promise_type {
-        CoroutineTask<ReturnType> *parent;
+        CoroutineTask<T> *parent;
 
-        CoroutineTask<ReturnType> get_return_object() {
-            return CoroutineTask<ReturnType>{std::coroutine_handle<promise_type>::from_promise(*this)};
+        CoroutineTask<T> get_return_object() {
+            return CoroutineTask<T>{std::coroutine_handle<promise_type>::from_promise(*this)};
         }
 
         std::suspend_always initial_suspend() noexcept {
@@ -35,20 +35,24 @@ public:
         }
 
         std::suspend_never final_suspend() noexcept {
-            CoroutineTask<ReturnType> &p = *parent;
             {
-                std::lock_guard<std::mutex> lock(*p.m_dependentsMutex);
-                for (Awaitable *dependent : p.m_dependents)
+                std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
+                for (Awaitable *dependent : parent->m_dependents)
                     static_cast<ResumeAfter *>(dependent)->releaseDependency();
             }
-            p.m_dependents.clear();
-            *p.m_finished = true;
-            p.m_finishedNotifier->notify_all();
+            parent->m_dependents.clear();
+            *parent->m_finished = true;
+            parent->m_finishedNotifier->notify_all();
             return {};
         }
 
         void unhandled_exception() {
             std::rethrow_exception(std::current_exception());
+        }
+
+        std::suspend_always yield_value(T t_value) {
+            parent->m_value = t_value;
+            return {};
         }
 
         void return_value(T t_value) {
@@ -80,13 +84,13 @@ public:
     void wait() override {
         std::mutex                   mutex;
         std::unique_lock<std::mutex> lock(mutex);
-        if (!*BaseTask::m_finished)
-            BaseTask::m_finishedNotifier->wait(lock, [&] -> bool { return *BaseTask::m_finished; });
+        if (!*(BaseTask::m_finished))
+            BaseTask::m_finishedNotifier->wait(lock, [&] { return BaseTask::m_finished->operator bool(); });
     }
 
 private:
     std::coroutine_handle<promise_type> m_handle;
-};
+};  // namespace IE::Core::Threading
 
 template<>
 class CoroutineTask<void> : public Task<void> {
@@ -94,10 +98,10 @@ public:
     using ReturnType = void;
 
     struct promise_type {
-        CoroutineTask<ReturnType> *parent;
+        CoroutineTask<void> *parent;
 
-        CoroutineTask<ReturnType> get_return_object() {
-            return CoroutineTask<ReturnType>{std::coroutine_handle<promise_type>::from_promise(*this)};
+        CoroutineTask<void> get_return_object() {
+            return CoroutineTask<void>{std::coroutine_handle<promise_type>::from_promise(*this)};
         }
 
         std::suspend_always initial_suspend() noexcept {
@@ -105,20 +109,23 @@ public:
         }
 
         std::suspend_never final_suspend() noexcept {
-            CoroutineTask<void> &p = *parent;
             {
-                std::lock_guard<std::mutex> lock(*p.m_dependentsMutex);
-                for (Awaitable *dependent : p.m_dependents)
+                std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
+                for (Awaitable *dependent : parent->m_dependents)
                     static_cast<ResumeAfter *>(dependent)->releaseDependency();
             }
-            p.m_dependents.clear();
-            *p.m_finished = true;
-            p.m_finishedNotifier->notify_all();
+            parent->m_dependents.clear();
+            *parent->m_finished = true;
+            parent->m_finishedNotifier->notify_all();
             return {};
         }
 
         void unhandled_exception() {
             std::rethrow_exception(std::current_exception());
+        }
+
+        std::suspend_always yield_value() {
+            return {};
         }
 
         void return_void() {
@@ -143,10 +150,11 @@ public:
     }
 
     void wait() override {
-        std::mutex                   mutex;
-        std::unique_lock<std::mutex> lock(mutex);
-        if (!*BaseTask::m_finished)
-            BaseTask::m_finishedNotifier->wait(lock, [&] -> bool { return *BaseTask::m_finished; });
+        if (!*m_finished) {
+            std::mutex                   mutex;
+            std::unique_lock<std::mutex> lock(mutex);
+            m_finishedNotifier->wait(lock, [&] { return m_finished->operator bool(); });
+        }
     }
 
 private:

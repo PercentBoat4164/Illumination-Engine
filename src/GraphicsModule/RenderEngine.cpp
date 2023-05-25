@@ -548,8 +548,4 @@ IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
 }
 
 IE::Graphics::RenderEngine::RenderEngine(const std::string &t_ID) : Engine(t_ID) {
-    //    IE::Core::Core::getThreadPool().executeInPlace(create());
-    auto task = create();
-    task.connectHandle();
-    while (!task.finished()) task.execute();
 }

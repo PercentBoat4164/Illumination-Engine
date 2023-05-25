@@ -3,14 +3,12 @@
 #include "Core/ThreadingModule/Awaitable.hpp"
 #include "CoroutineTask.hpp"
 #include "EnsureThread.hpp"
+#include "FunctionTask.hpp"
 #include "Queue.hpp"
 #include "ResumeAfter.hpp"
 #include "ResumeOnMainThreadAfter.hpp"
 #include "Task.hpp"
 #include "Worker.hpp"
-
-#include <memory>
-#include <shared_mutex>
 
 #if defined(AppleClang)
 #    include <experimental/coroutine>
@@ -62,7 +60,7 @@ public:
         task->connectHandle();
         m_queue.push(std::static_pointer_cast<BaseTask>(task));
         m_workAssignedNotifier.notify_one();
-        return std::static_pointer_cast<Task<decltype(t_function(args...))>>(task);
+        return task;
     }
 
     template<typename T>
@@ -83,7 +81,7 @@ public:
         task->connectHandle();
         m_mainQueue.push(std::static_pointer_cast<BaseTask>(task));
         m_mainWorkAssignedNotifier.notify_one();
-        return std::static_pointer_cast<Task<decltype(t_function(args...))>>(task);
+        return task;
     }
 
     template<typename T>

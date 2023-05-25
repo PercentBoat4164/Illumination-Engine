@@ -49,13 +49,10 @@ public:
 
     bool await_ready() override;
 
+
     void await_suspend(std::coroutine_handle<> t_handle) override;
 
-    void releaseDependency() override;
-
-    std::shared_ptr<std::atomic<std::coroutine_handle<>>> getHandle() {
-        return m_handle;
-    }
+    void releaseDependency();
 
 protected:
     std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{std::make_shared<std::atomic<std::coroutine_handle<>>>()};

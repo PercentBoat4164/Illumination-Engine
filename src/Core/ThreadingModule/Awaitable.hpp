@@ -24,8 +24,6 @@ public:
 
     virtual void await_resume();
 
-    virtual void releaseDependency();
-
 protected:
     explicit Awaitable(ThreadPool *t_threadPool);
 
