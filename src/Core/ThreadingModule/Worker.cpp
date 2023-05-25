@@ -42,33 +42,3 @@ void IE::Core::Threading::Worker::start(ThreadPool *t_threadPool) {
         }
     }
 }
-
-void IE::Core::Threading::Worker::loopUntilTaskFinished(ThreadPool *t_threadPool, BaseTask *t_stopTask) {
-    ThreadPool                  &pool = *t_threadPool;
-    std::shared_ptr<BaseTask>    task;
-    std::mutex                   mutex;
-    std::unique_lock<std::mutex> lock(mutex);
-
-    while (true) {
-        // If the stop task has finished, stop the loop.
-        if (t_stopTask->finished()) return;
-        // Wait until this thread is requested to awaken.
-        if (!pool.m_queue.pop(task))
-            pool.m_workAssignedNotifier.wait(lock, [&] {
-                return pool.m_queue.pop(task) || t_stopTask->finished();
-            });
-        // If the stop task has finished, stop the loop.
-        if (t_stopTask->finished()) {
-            if (task) {
-                pool.m_queue.push(task);
-                pool.m_workAssignedNotifier.notify_one();
-            }
-            return;
-        }
-        // Execute the task, then nullify it
-        if (task) {
-            task->execute();
-            task = nullptr;
-        }
-    }
-}

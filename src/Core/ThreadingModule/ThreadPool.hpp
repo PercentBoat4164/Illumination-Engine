@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/ThreadingModule/Awaitable.hpp"
+#include "Core/ThreadingModule/ResumeAfter.hpp"
 #include "CoroutineTask.hpp"
 #include "EnsureThread.hpp"
 #include "FunctionTask.hpp"
@@ -53,11 +53,23 @@ public:
     }
 
     template<typename T, typename... Args>
-    auto submit(T &&t_function, Args &&...args) -> std::shared_ptr<Task<decltype(t_function(args...))>> {
-        auto task{std::make_shared<CoroutineTask<decltype(t_function(args...))>>(
-          [&t_function, &args...]->CoroutineTask<decltype(t_function(args...))> {co_return t_function(args...);}()
-        )};
+        requires requires(T &&t_coroutine, Args &&...args) { typename decltype(t_coroutine(args...))::ReturnType; }
+    auto submit(T &&t_coroutine, Args &&...args)
+      -> std::shared_ptr<Task<typename decltype(t_coroutine(args...))::ReturnType>> {
+        auto task{
+          std::make_shared<CoroutineTask<typename decltype(t_coroutine(args...))::ReturnType>>(t_coroutine(args...)
+          )};
         task->connectHandle();
+        m_queue.push(std::static_pointer_cast<BaseTask>(task));
+        m_workAssignedNotifier.notify_one();
+        return task;
+    }
+
+    template<typename T, typename... Args>
+    auto submit(T &&t_function, Args &&...args) -> std::shared_ptr<Task<decltype(t_function(args...))>> {
+        auto task{std::make_shared<FunctionTask<decltype(t_function(args...))>>(
+          [t_function, ... args = std::forward<Args>(args)] { return t_function(args...); }
+        )};
         m_queue.push(std::static_pointer_cast<BaseTask>(task));
         m_workAssignedNotifier.notify_one();
         return task;
@@ -73,25 +85,27 @@ public:
     }
 
     template<typename T, typename... Args>
-    auto submitToMainThread(T &&t_function, Args &&...args)
-      -> std::shared_ptr<Task<decltype(t_function(args...))>> {
-        auto task{std::make_shared<CoroutineTask<decltype(t_function(args...))>>(
-          [t_function, args...]->CoroutineTask<decltype(t_function(args...))> {co_return t_function(args...);}()
-        )};
+        requires requires(T &&t_coroutine, Args &&...args) { typename decltype(t_coroutine(args...))::ReturnType; }
+    auto submitToMainThread(T &&t_coroutine, Args &&...args)
+      -> std::shared_ptr<Task<typename decltype(t_coroutine(args...))::ReturnType>> {
+        auto task{
+          std::make_shared<CoroutineTask<typename decltype(t_coroutine(args...))::ReturnType>>(t_coroutine(args...)
+          )};
         task->connectHandle();
         m_mainQueue.push(std::static_pointer_cast<BaseTask>(task));
         m_mainWorkAssignedNotifier.notify_one();
         return task;
     }
 
-    template<typename T>
-    T executeInPlace(CoroutineTask<T> &&t_coroutine) {
-        auto task{std::make_shared<CoroutineTask<T>>(t_coroutine)};
-        task->connectHandle();
-        m_queue.push(std::static_pointer_cast<BaseTask>(task));
-        m_workAssignedNotifier.notify_one();
-        Worker::loopUntilTaskFinished(this, &t_coroutine);
-        return t_coroutine.value();
+    template<typename T, typename... Args>
+    auto submitToMainThread(T &&t_function, Args &&...args)
+      -> std::shared_ptr<Task<decltype(t_function(args...))>> {
+        auto task{std::make_shared<FunctionTask<decltype(t_function(args...))>>(
+          [t_function, ... args = std::forward<Args>(args)] { return t_function(args...); }
+        )};
+        m_mainQueue.push(std::static_pointer_cast<BaseTask>(task));
+        m_mainWorkAssignedNotifier.notify_one();
+        return task;
     }
 
     template<typename... Args>
@@ -116,8 +130,7 @@ public:
 
     void setWorkerCount(uint32_t t_threads = std::thread::hardware_concurrency());
 
-    friend void Worker::start(IE::Core::Threading::ThreadPool *t_threadPool);
-    friend void Worker::loopUntilTaskFinished(ThreadPool *t_threadPool, BaseTask *t_stopTask);
+    friend void Worker::start(ThreadPool *t_threadPool);
     friend bool EnsureThread::await_ready();
 };
 }  // namespace IE::Core::Threading

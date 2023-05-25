@@ -52,10 +52,12 @@ public:
 
     void await_suspend(std::coroutine_handle<> t_handle) override;
 
-    void releaseDependency();
+    virtual void releaseDependency();
 
 protected:
-    std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{std::make_shared<std::atomic<std::coroutine_handle<>>>()};
+    std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{
+      std::make_shared<std::atomic<std::coroutine_handle<>>>()};
+    // clang-format on
     std::shared_ptr<std::atomic<size_t>> m_dependencyCount{std::make_shared<std::atomic<size_t>>()};
 };
 }  // namespace IE::Core::Threading

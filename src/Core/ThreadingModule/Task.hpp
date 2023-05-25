@@ -52,6 +52,6 @@ public:
 template<>
 class Task<void> : public BaseTask {
 public:
-    void value(){};
+    void value() {};
 };
 }  // namespace IE::Core::Threading
