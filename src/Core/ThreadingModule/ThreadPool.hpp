@@ -131,6 +131,8 @@ public:
     void setWorkerCount(uint32_t t_threads = std::thread::hardware_concurrency());
 
     friend void Worker::start(ThreadPool *t_threadPool);
+    friend void Worker::waitForTask(ThreadPool *t_threadPool, BaseTask &t_task);
+
     friend bool EnsureThread::await_ready();
 };
 }  // namespace IE::Core::Threading
