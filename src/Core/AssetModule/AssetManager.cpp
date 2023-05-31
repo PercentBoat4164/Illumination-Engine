@@ -1,5 +1,11 @@
 #include "AssetManager.hpp"
 
+#include "Core/Core.hpp"
+
+#include <sys/file.h>
+
+IE::Core::AssetManager::AssetManager() : m_filesystem(IE::Core::Core::getFileSystem()) {}
+
 IE::Core::AssetManager::AssetManager(IE::Core::FileSystem &t_filesystem) : m_filesystem(t_filesystem) {
 }
 
