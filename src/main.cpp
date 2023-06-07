@@ -2,15 +2,18 @@
 #include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
+#include "Core/ThreadingModule/CoroutineTask.hpp"
+#include "Core/ThreadingModule/EnsureThread.hpp"
 #include "RenderEngine.hpp"
 
 IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     std::shared_ptr<IE::Graphics::RenderEngine> renderEngine =
       IE::Core::Core::createEngine<IE::Graphics::RenderEngine>("render engine");
 
-    auto renderEngineCreator = IE::Core::Core::getThreadPool().submit(renderEngine->create());
+    //    auto renderEngineCreator = IE::Core::Core::getThreadPool().submit(renderEngine->create());
+    //    co_await IE::Core::Core::getThreadPool().resumeAfter(renderEngineCreator);
 
-    co_await IE::Core::Core::getThreadPool().resumeAfter(renderEngineCreator);
+    IE::Core::Core::getThreadPool().executeInPlace(renderEngine->create());
 
     IE::Core::Asset asset(IE::Core::Core::getFileSystem().getFile("res/assets/AncientStatue"));
     asset.addAspect(renderEngine->createAspect(
@@ -27,6 +30,8 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     //    }
 
     IE::Core::Core::getThreadPool().shutdown();
+
+    co_return;
 }
 
 int main(int argc, char **argv) {
@@ -35,6 +40,4 @@ int main(int argc, char **argv) {
     auto job = IE::Core::Core::getThreadPool().submit(illuminationEngine());
 
     IE::Core::Core::getThreadPool().startMainThreadLoop();
-
-    job->wait();
 }

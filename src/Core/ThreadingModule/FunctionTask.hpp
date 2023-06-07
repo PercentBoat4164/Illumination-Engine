@@ -25,14 +25,6 @@ public:
         BaseTask::m_finishedNotifier->notify_all();
     }
 
-    void wait() override {
-        if (!*BaseTask::m_finished) {
-            std::mutex                   mutex;
-            std::unique_lock<std::mutex> lock(mutex);
-            BaseTask::m_finishedNotifier->wait(lock);
-        }
-    }
-
     std::function<T()> m_wrappedFunction;
 };
 }  // namespace IE::Core::Threading

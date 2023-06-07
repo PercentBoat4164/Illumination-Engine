@@ -1,7 +1,7 @@
 set(IEEngineModuleSourceFiles  # Gather sources
-        Engine.cpp
-        EventActionMapping.cpp
-        )
+  Engine.cpp
+  EventActionMapping.cpp
+  )
 
 # Create and define properties for the library
 add_library(IEEngineModule ${IEEngineModuleSourceFiles})

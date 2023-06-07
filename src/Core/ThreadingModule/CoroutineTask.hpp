@@ -81,15 +81,9 @@ public:
         m_handle.promise().parent = this;
     }
 
-    void wait() override {
-        std::mutex                   mutex;
-        std::unique_lock<std::mutex> lock(mutex);
-        if (!*(BaseTask::m_finished))
-            BaseTask::m_finishedNotifier->wait(lock, [&] { return BaseTask::m_finished->operator bool(); });
-    }
-
 private:
     std::coroutine_handle<promise_type> m_handle;
+    IE::Core::Threading::ThreadPool    *m_threadPool;
 };  // namespace IE::Core::Threading
 
 template<>
@@ -147,14 +141,6 @@ public:
 
     void connectHandle() {
         m_handle.promise().parent = this;
-    }
-
-    void wait() override {
-        if (!*m_finished) {
-            std::mutex                   mutex;
-            std::unique_lock<std::mutex> lock(mutex);
-            m_finishedNotifier->wait(lock, [&] { return m_finished->operator bool(); });
-        }
     }
 
 private:

@@ -14,7 +14,7 @@ std::shared_ptr<spdlog::sinks::basic_file_sink_st> IE::Core::Logger::m_logFileSi
 // it a pointer then having it point to a mutex that is created in the constructor solves that problem. There is no
 // need to delete this pointer as the pointer and the object it is pointing to should last for the entire duration
 // of the program.
-std::shared_ptr<std::mutex> IE::Core::Logger::m_logMutex{};
+std::shared_ptr<std::mutex>                        IE::Core::Logger::m_logMutex{};
 
 IE::Core::Logger::Logger(const std::string &t_name) {
     if (!m_init) {

@@ -2,32 +2,32 @@
 add_subdirectory(DefaultShaders)
 
 set(IEGraphicsModuleSourceFiles  # Gather sources
-        API/API.cpp
-        API/Version.cpp
-        Buffer/Buffer.cpp
-        Buffer/Buffer.cpp
-        Buffer/BufferOpenGL.cpp
-        Buffer/BufferVulkan.cpp
-        CommandBuffer/CommandBuffer.cpp
-        CommandBuffer/CommandPool.cpp
-        Image/Image.cpp
-        Image/ImageVulkan.cpp
-        RenderEngine.cpp
-        DescriptorSet/DescriptorSet.cpp
-        RenderPass/Framebuffer.cpp
-        RenderPass/Pipeline.cpp
-        RenderPass/RenderPass.cpp
-        RenderPass/RenderPassSeries.cpp
-        RenderPass/Shader.cpp
-        RenderPass/Subpass.cpp
-        Renderable/Vertex.cpp
-        SyncObjects/Fence.cpp
-        SyncObjects/Semaphore.cpp
-        Renderable/Material.cpp
-        Renderable/Mesh.cpp
-        Renderable/Instance.cpp
-        Renderable/Renderable.cpp
-        )
+  API/API.cpp
+  API/Version.cpp
+  Buffer/Buffer.cpp
+  Buffer/Buffer.cpp
+  Buffer/BufferOpenGL.cpp
+  Buffer/BufferVulkan.cpp
+  CommandBuffer/CommandBuffer.cpp
+  CommandBuffer/CommandPool.cpp
+  Image/Image.cpp
+  Image/ImageVulkan.cpp
+  RenderEngine.cpp
+  DescriptorSet/DescriptorSet.cpp
+  RenderPass/Framebuffer.cpp
+  RenderPass/Pipeline.cpp
+  RenderPass/RenderPass.cpp
+  RenderPass/RenderPassSeries.cpp
+  RenderPass/Shader.cpp
+  RenderPass/Subpass.cpp
+  Renderable/Vertex.cpp
+  SyncObjects/Fence.cpp
+  SyncObjects/Semaphore.cpp
+  Renderable/Material.cpp
+  Renderable/Mesh.cpp
+  Renderable/Instance.cpp
+  Renderable/Renderable.cpp
+  )
 
 # Create and define properties for the library
 add_library(IEGraphicsModule ${IEGraphicsModuleSourceFiles})

@@ -10,6 +10,8 @@
 #include "Task.hpp"
 #include "Worker.hpp"
 
+#include <memory>
+
 #if defined(AppleClang)
 #    include <experimental/coroutine>
 
@@ -44,7 +46,7 @@ public:
     void startMainThreadLoop();
 
     template<typename T>
-    auto submit(CoroutineTask<T> &&t_coroutine) -> std::shared_ptr<Task<T>> {
+    auto submit(CoroutineTask<T> t_coroutine) -> std::shared_ptr<Task<T>> {
         auto task{std::make_shared<CoroutineTask<T>>(t_coroutine)};
         task->connectHandle();
         m_queue.push(std::static_pointer_cast<BaseTask>(task));
@@ -106,6 +108,23 @@ public:
         m_mainQueue.push(std::static_pointer_cast<BaseTask>(task));
         m_mainWorkAssignedNotifier.notify_one();
         return task;
+    }
+
+    template<typename T>
+    auto executeInPlace(CoroutineTask<T> t_coroutine) -> T {
+        auto coroutine{submit(t_coroutine)};
+        Worker::waitForTask(this, *std::static_pointer_cast<BaseTask>(coroutine));
+        if constexpr (std::is_void_v<T>) return;
+        return coroutine->value();
+    }
+
+    template<typename T, typename... Args>
+        requires requires(T &&t_coroutine, Args &&...args) { typename decltype(t_coroutine(args...))::ReturnType; }
+    auto executeInPlace(T &&t_coroutine, Args &&...args) -> typename decltype(t_coroutine(args...))::ReturnType {
+        auto coroutine{submit(t_coroutine, args...)};
+        Worker::waitForTask(this, *std::static_pointer_cast<BaseTask>(coroutine));
+        if constexpr (std::is_void_v<typename decltype(t_coroutine(args...))::ReturnType>) return;
+        return coroutine->value();
     }
 
     template<typename... Args>
