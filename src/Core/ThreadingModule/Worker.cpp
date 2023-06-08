@@ -52,19 +52,9 @@ void IE::Core::Threading::Worker::waitForTask(IE::Core::Threading::ThreadPool *t
     std::unique_lock<std::mutex> lock(mutex);
 
     while (true) {
-        if (t_task.finished()) {
-            if (task) {
-                pool.m_queue.push(task);
-                pool.m_workAssignedNotifier.notify_one();
-            }
-            return;
-        }
-        if (!pool.m_queue.pop(task)) t_task.m_finishedNotifier->wait(lock, [&] { return t_task.finished(); });
-        if (t_task.finished()) {
-            if (task) {
-                pool.m_queue.push(task);
-                pool.m_workAssignedNotifier.notify_one();
-            }
+        if (t_task.finished()) return;
+        if (!pool.m_queue.pop(task)) {
+            t_task.m_finishedNotifier->wait(lock, [&] { return t_task.finished(); });
             return;
         }
         if (task) {
