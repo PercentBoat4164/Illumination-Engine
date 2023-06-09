@@ -276,7 +276,7 @@ auto IE::Graphics::RenderPassSeries::addRenderPass(const std::shared_ptr<IE::Gra
     return *this;
 }
 
-IE::Core::Threading::CoroutineTask<void>
+IE::Core::Threading::Task<void>
 IE::Graphics::RenderPassSeries::execute(std::shared_ptr<CommandBuffer> commandBuffer) {
     std::vector<std::shared_ptr<IE::Core::Threading::BaseTask>> tasks;
     tasks.reserve(m_renderPasses.size());

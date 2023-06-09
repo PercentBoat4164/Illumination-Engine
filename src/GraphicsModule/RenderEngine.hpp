@@ -69,7 +69,7 @@ private:
 
     static std::remove_pointer_t<PFN_vkDebugUtilsMessengerCallbackEXT> APIDebugMessenger;
 
-    IE::Core::Threading::CoroutineTask<GLFWwindow *> createWindow();
+    IE::Core::Threading::Task<GLFWwindow *> createWindow();
 
     vkb::Instance createInstance();
 
@@ -93,7 +93,7 @@ public:
 
     explicit RenderEngine(const std::string &t_ID);
 
-    Core::Threading::CoroutineTask<bool> update();
+    Core::Threading::Task<bool> update();
 
     GLFWwindow *getWindow();
 
@@ -103,7 +103,7 @@ public:
 
     IE::Graphics::API getAPI();
 
-    Core::Threading::CoroutineTask<void> create();
+    Core::Threading::Task<void> create();
 
     static std::string translateVkResultCodes(VkResult t_result);
 

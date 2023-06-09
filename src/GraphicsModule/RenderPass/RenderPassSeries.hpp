@@ -26,7 +26,7 @@ public:
     IE::Graphics::RenderEngine                            *m_linkedRenderEngine;
     std::shared_ptr<IE::Graphics::CommandBuffer>           m_masterCommandBuffer;
 
-    Core::Threading::CoroutineTask<void> execute(std::shared_ptr<CommandBuffer> commandBuffer);
+    Core::Threading::Task<void> execute(std::shared_ptr<CommandBuffer> commandBuffer);
 
     void destroy() {
         for (auto &renderPass : m_renderPasses) renderPass->destroy();

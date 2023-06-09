@@ -220,7 +220,7 @@ void IE::Graphics::CommandBuffer::execute(VkSemaphore input, VkSemaphore output,
     vkWaitForFences(m_linkedRenderEngine->m_device.device, 1, &fence, VK_TRUE, UINT64_MAX);
     if (result != VK_SUCCESS) {
         m_linkedRenderEngine->getLogger().log(
-          "Failed to submit command buffer! Error: " + RenderEngine::translateVkResultCodes(result),
+          "Failed to prepareAndSubmit command buffer! Error: " + RenderEngine::translateVkResultCodes(result),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     }

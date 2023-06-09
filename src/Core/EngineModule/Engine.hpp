@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/AssetModule/Aspect.hpp"
-#include "Core/ThreadingModule/CoroutineTask.hpp"
+#include "Core/ThreadingModule/Task.hpp"
 
 #include <future>
 #include <memory>

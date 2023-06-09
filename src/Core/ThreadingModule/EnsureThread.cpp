@@ -6,10 +6,9 @@
 
 IE::Core::Threading::EnsureThread::EnsureThread(
   IE::Core::Threading::ThreadPool *t_threadPool,
-  IE::Core::Threading::ThreadType  t_type
+  IE::Core::Threading::ThreadType  t_threadType
 ) :
-        m_type(t_type),
-        Awaitable(t_threadPool) {
+        Awaitable(t_threadPool, t_threadType) {
 }
 
 bool IE::Core::Threading::EnsureThread::await_ready() {
@@ -17,14 +16,8 @@ bool IE::Core::Threading::EnsureThread::await_ready() {
 }
 
 void IE::Core::Threading::EnsureThread::await_suspend(std::coroutine_handle<> t_handle) {
-#if defined(AppleClang)
-    auto func = [t_handle] {
-        std::experimental::coroutine_handle<> handle{t_handle};
-        handle.resume();
-    };
-#else
-    auto func = t_handle;
-#endif
-    if (m_type == IE_THREAD_TYPE_MAIN_THREAD) m_threadPool->submitToMainThread(func);
-    else if (m_type == IE_THREAD_TYPE_WORKER_THREAD) m_threadPool->submit(func);
+    m_threadPool->submit(m_type, t_handle);
+}
+
+void IE::Core::Threading::EnsureThread::releaseDependency() {
 }

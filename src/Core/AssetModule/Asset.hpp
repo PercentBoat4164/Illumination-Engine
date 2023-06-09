@@ -29,28 +29,28 @@ public:
 };
 }  // namespace IE::Core
 
-/*
- * AssetName
- * |--models
- * |  |--model1
- * |  |--model2
- * |
- * |--textures
- * |  |--texture1
- * |  |--texture2
- * |
- * |--sounds
- * |  |--scarySounds!
- * |  |  |--sound1
- * |  |
- * |  |--normalSounds
- * |     |--sound2
- * |
- * AssetName
- * |--models
- * |  |--model1
- * |  |--model3
- */
+   /*
+    * AssetName
+    * |--models
+    * |  |--model1
+    * |  |--model2
+    * |
+    * |--textures
+    * |  |--texture1
+    * |  |--texture2
+    * |
+    * |--sounds
+    * |  |--scarySounds!
+    * |  |  |--sound1
+    * |  |
+    * |  |--normalSounds
+    * |     |--sound2
+    * |
+    * AssetName
+    * |--models
+    * |  |--model1
+    * |  |--model3
+    */
 
 /*
  * ExampleAsset

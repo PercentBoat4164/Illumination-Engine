@@ -1,6 +1,7 @@
 #include "RenderEngine.hpp"
 
 #include "CommandBuffer/CommandPool.hpp"
+#include "Core/ThreadingModule/Awaitable.hpp"
 #include "Image/Image.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -19,7 +20,7 @@ unsigned int IE::Graphics::RenderEngine::APIDebugMessenger(
     return 0;
 }
 
-IE::Core::Threading::CoroutineTask<GLFWwindow *> IE::Graphics::RenderEngine::createWindow() {
+IE::Core::Threading::Task<GLFWwindow *> IE::Graphics::RenderEngine::createWindow() {
     // Initialize GLFW
     if (glfwInit() != GLFW_TRUE) {
         const char *description{};
@@ -324,7 +325,7 @@ void IE::Graphics::RenderEngine::createPrimaryCommandObjects() {
         m_primaryCommandBuffers[i] = std::make_shared<IE::Graphics::CommandBuffer>(m_primaryCommandPool.get());
 }
 
-IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
+IE::Core::Threading::Task<void> IE::Graphics::RenderEngine::create() {
     m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
     auto window{IE::Core::Core::getThreadPool().submit(createWindow())};
 
@@ -335,13 +336,13 @@ IE::Core::Threading::CoroutineTask<void> IE::Graphics::RenderEngine::create() {
     createSurface();
     createDevice();
 
-    auto commandPoolAllocatorRenderPasses{IE::Core::Core::getThreadPool().submit([this] {
+    auto commandPoolAllocatorRenderPasses{IE::Core::Core::getThreadPool().submit([&] {
         createCommandPools();
         createAllocator();
         createRenderPasses();
     })};
 
-    auto swapchainSyncObjects{IE::Core::Core::getThreadPool().submit([this] {
+    auto swapchainSyncObjects{IE::Core::Core::getThreadPool().submit([&] {
         createSwapchain();
         createSyncObjects();
     })};
@@ -487,7 +488,7 @@ std::string IE::Graphics::RenderEngine::makeErrorMessage(
     return error;
 }
 
-IE::Core::Threading::CoroutineTask<bool> IE::Graphics::RenderEngine::update() {
+IE::Core::Threading::Task<bool> IE::Graphics::RenderEngine::update() {
     uint32_t currentFrame{static_cast<uint32_t>(m_frameNumber % m_swapchain.image_count)};
 
     // Record all command buffers

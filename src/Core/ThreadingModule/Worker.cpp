@@ -1,7 +1,6 @@
 #include "Worker.hpp"
 
-#include "MultiConditionVariable.hpp"
-#include "Task.hpp"
+#include "BaseTask.hpp"
 #include "ThreadPool.hpp"
 
 #include <atomic>
@@ -53,9 +52,11 @@ void IE::Core::Threading::Worker::waitForTask(IE::Core::Threading::ThreadPool *t
 
     while (true) {
         if (t_task.finished()) return;
-        if (!pool.m_queue.pop(task)) {
-            t_task.m_finishedNotifier->wait(lock, [&] { return t_task.finished(); });
-            return;
+        if (!pool.m_queue.pop(task))
+            t_task.m_finishedNotifier->wait(lock, [&] { return pool.m_queue.pop(task) || t_task.finished(); });
+        if (t_task.finished()) {
+            pool.m_queue.push(task);
+            pool.m_workAssignedNotifier.notify_one();
         }
         if (task) {
             task->execute();

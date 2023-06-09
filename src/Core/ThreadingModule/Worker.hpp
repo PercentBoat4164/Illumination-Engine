@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Task.hpp"
+#include "BaseTask.hpp"
 
 namespace IE::Core::Threading {
 class ThreadPool;
