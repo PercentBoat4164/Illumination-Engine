@@ -58,6 +58,8 @@ public:
 
     void releaseDependency() override;
 
+    virtual ~ResumeAfter() = default;
+
 protected:
     std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{
       std::make_shared<std::atomic<std::coroutine_handle<>>>()};

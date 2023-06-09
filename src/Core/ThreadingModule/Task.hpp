@@ -3,6 +3,8 @@
 #include "Awaitable.hpp"
 #include "BaseTask.hpp"
 
+#include <type_traits>
+
 #if defined(AppleClang)
 #    include <experimental/coroutine>
 
@@ -19,51 +21,62 @@ using std::experimental::suspend_never;
 
 namespace IE::Core::Threading {
 template<typename T>
-class Task : public BaseTask {
+class Task;
+
+namespace detail {
+template<typename T, bool B>
+struct ConditionalInheritance : T {};
+
+template<typename T>
+struct ConditionalInheritance<T, false> {};
+
+template<typename T0, typename T1, bool B>
+struct Choose : ConditionalInheritance<T0, B>, ConditionalInheritance<T1, not B> {};
+
+template<typename T>
+struct Member {
+    T m_value;
+};
+
+template<typename T>
+struct promise_type {
+    Task<T> *parent;
+
+    Task<T> get_return_object();
+
+    std::suspend_always initial_suspend() noexcept {
+        return {};
+    }
+
+    std::suspend_never final_suspend() noexcept;
+
+    void unhandled_exception() {
+        std::rethrow_exception(std::current_exception());
+    }
+
+    operator T();
+};
+
+template<typename T, bool B>
+struct return_promise_type : promise_type<T> {
+    void return_value(T t_value);
+};
+
+template<typename T>
+struct return_promise_type<T, false> : promise_type<T> {
+    void return_void() {
+    }
+};
+}  // namespace detail
+
+template<typename T>
+class Task : detail::ConditionalInheritance<detail::Member<T>, not std::is_void_v<T>>, public BaseTask {
 public:
     using ReturnType = T;
 
-    struct promise_type {
-        Task<T> *parent;
+    using promise_type = detail::return_promise_type<ReturnType, not std::is_void_v<ReturnType>>;
 
-        Task<T> get_return_object() {
-            return Task<T>{std::coroutine_handle<promise_type>::from_promise(*this)};
-        }
-
-        std::suspend_always initial_suspend() noexcept {
-            return {};
-        }
-
-        std::suspend_never final_suspend() noexcept {
-            {
-                std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
-                for (Awaitable *dependent : parent->m_dependents) dependent->releaseDependency();
-            }
-            parent->m_dependents.clear();
-            *parent->m_finished = true;
-            parent->m_finishedNotifier->notify_all();
-            return {};
-        }
-
-        void unhandled_exception() {
-            std::rethrow_exception(std::current_exception());
-        }
-
-        std::suspend_always yield_value(T t_value) {
-            parent->m_value = t_value;
-            return {};
-        }
-
-        void return_value(T t_value) {
-            parent->m_value = t_value;
-        }
-
-        explicit operator T() {
-            return parent->m_value;
-        }
-    };
-
-    Task(std::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
+    explicit Task(std::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
     }
 
     explicit operator std::coroutine_handle<promise_type>() {
@@ -78,76 +91,47 @@ public:
         m_handle.promise().parent = this;
     }
 
-    T value() {
-        return m_value;
+    ReturnType value() {
+        if constexpr (not std::is_void_v<ReturnType>)
+            return detail::ConditionalInheritance<detail::Member<T>, not std::is_void_v<T>>::m_value;
     }
 
-    operator T() {
-        return m_value;
+    operator ReturnType() {
+        return value();
     }
 
 private:
     std::coroutine_handle<promise_type> m_handle;
-    T                                   m_value;
+
+    friend detail::return_promise_type<ReturnType, true>;
 };  // namespace IE::Core::Threading
 
-template<>
-class Task<void> : public BaseTask {
-public:
-    using ReturnType = void;
+template<typename T>
+Task<T> detail::promise_type<T>::get_return_object() {
+    return Task<T>{std::coroutine_handle<typename Task<T>::promise_type>::from_promise(
+      *static_cast<typename Task<T>::promise_type *>(this)
+    )};
+}
 
-    struct promise_type {
-        Task<void> *parent;
-
-        Task<void> get_return_object() {
-            return Task<void>{std::coroutine_handle<promise_type>::from_promise(*this)};
-        }
-
-        std::suspend_always initial_suspend() noexcept {
-            return {};
-        }
-
-        std::suspend_never final_suspend() noexcept {
-            {
-                std::lock_guard<std::mutex> lock(*parent->m_dependentsMutex);
-                for (Awaitable *dependent : parent->m_dependents) dependent->releaseDependency();
-            }
-            parent->m_dependents.clear();
-            *parent->m_finished = true;
-            parent->m_finishedNotifier->notify_all();
-            return {};
-        }
-
-        void unhandled_exception() {
-            std::rethrow_exception(std::current_exception());
-        }
-
-        std::suspend_always yield_value() {
-            return {};
-        }
-
-        void return_void() {
-        }
-    };
-
-    Task(std::coroutine_handle<promise_type> t_handle) : m_handle(t_handle) {
+template<typename T>
+std::suspend_never detail::promise_type<T>::final_suspend() noexcept {
+    {
+        std::lock_guard<std::mutex> lock{*parent->m_dependentsMutex};
+        for (Awaitable *dependent : parent->m_dependents) dependent->releaseDependency();
     }
+    parent->m_dependents.clear();
+    *parent->m_finished = true;
+    parent->m_finishedNotifier->notify_all();
+    return {};
+}
 
-    explicit operator std::coroutine_handle<promise_type>() {
-        return m_handle;
-    }
+template<typename T, bool B>
+void detail::return_promise_type<T, B>::return_value(T t_value) {
+    promise_type<T>::parent->m_value = t_value;
+}
 
-    void execute() override {
-        m_handle.resume();
-    }
-
-    void connectHandle() {
-        m_handle.promise().parent = this;
-    }
-
-    void value(){};
-
-private:
-    std::coroutine_handle<promise_type> m_handle;
-};
+template<typename T>
+detail::promise_type<T>::operator T() {
+    if constexpr (not std::is_void_v<T>) return parent->m_value;
+}
 }  // namespace IE::Core::Threading
