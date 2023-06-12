@@ -10,7 +10,7 @@ std::future<void> IE::Graphics::Semaphore::wait() {
     std::packaged_task<void()> wait{[&] {
         blocking_wait();
     }};
-    IE::Core::Core::getInst().getThreadPool().submit([&] { wait(); });
+    IE::Core::getThreadPool().submit([&] { wait(); });
     return wait.get_future();
 }
 

@@ -65,9 +65,9 @@ void IE::Graphics::Shader::compile() {
 }
 
 IE::Graphics::Shader::Shader(const std::filesystem::path &t_filename) :
-        m_file(IE::Core::Core::getFileSystem().getFile(t_filename)) {
+        m_file(IE::Core::getFileSystem().getFile(t_filename)) {
     if (m_file == nullptr) {
-        IE::Core::Core::getLogger().log(
+        IE::Core::getLogger().log(
           "File: " + t_filename.string() + " does not exist!",
           Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );

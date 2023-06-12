@@ -20,7 +20,7 @@ std::vector<VkCommandBuffer> IE::Graphics::Renderable::getCommands() {
 
 void IE::Graphics::Renderable::load() {
     const aiScene *scene;
-    IE::Core::Core::getFileSystem().importFile(&scene, m_resourceFile);
+    IE::Core::getFileSystem().importFile(&scene, m_resourceFile);
     // load all meshes in file into one mesh.
     m_mesh.load(scene);
     // load materials

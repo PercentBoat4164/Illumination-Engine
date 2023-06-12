@@ -276,7 +276,7 @@ void IE::Graphics::RenderEngine::createSyncObjects() {
 
 void IE::Graphics::RenderEngine::createCommandPools() {
     // Each thread is given a command pool to record buffers to.
-    m_commandPools.resize(IE::Core::Core::getThreadPool().getWorkerCount());
+    m_commandPools.resize(IE::Core::getThreadPool().getWorkerCount());
     for (size_t i{}; i < m_commandPools.size(); ++i) {
         m_commandPools[i] = std::make_shared<IE::Graphics::CommandPool>();
         m_commandPools[i]->create(this, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vkb::QueueType::graphics);
@@ -327,29 +327,29 @@ void IE::Graphics::RenderEngine::createPrimaryCommandObjects() {
 
 IE::Core::Threading::Task<void> IE::Graphics::RenderEngine::create() {
     m_api.name = IE_RENDER_ENGINE_API_NAME_VULKAN;
-    auto window{IE::Core::Core::getThreadPool().submit(createWindow())};
+    auto window{IE::Core::getThreadPool().submit(createWindow())};
 
     createInstance();
 
-    co_await IE::Core::Core::getThreadPool().resumeAfter(window);
+    co_await IE::Core::getThreadPool().resumeAfter(window);
 
     createSurface();
     createDevice();
 
-    auto commandPoolAllocatorRenderPasses{IE::Core::Core::getThreadPool().submit([&] {
+    auto commandPoolAllocatorRenderPasses{IE::Core::getThreadPool().submit([&] {
         createCommandPools();
         createAllocator();
         createRenderPasses();
     })};
 
-    auto swapchainSyncObjects{IE::Core::Core::getThreadPool().submit([&] {
+    auto swapchainSyncObjects{IE::Core::getThreadPool().submit([&] {
         createSwapchain();
         createSyncObjects();
     })};
 
     createDescriptorSets();
 
-    co_await IE::Core::Core::getThreadPool().resumeAfter(commandPoolAllocatorRenderPasses, swapchainSyncObjects);
+    co_await IE::Core::getThreadPool().resumeAfter(commandPoolAllocatorRenderPasses, swapchainSyncObjects);
 
     createPrimaryCommandObjects();
 }
@@ -493,7 +493,7 @@ IE::Core::Threading::Task<bool> IE::Graphics::RenderEngine::update() {
 
     // Record all command buffers
     auto commandBufferRecording =
-      IE::Core::Core::getThreadPool().submit(m_renderPassSeries.execute(m_primaryCommandBuffers[currentFrame]));
+      IE::Core::getThreadPool().submit(m_renderPassSeries.execute(m_primaryCommandBuffers[currentFrame]));
 
     // Acquire an image from the swapchain
     uint32_t imageIndex{0};
@@ -523,7 +523,7 @@ IE::Core::Threading::Task<bool> IE::Graphics::RenderEngine::update() {
       .signalSemaphoreCount = 1,
       .pSignalSemaphores    = &m_renderFinishedSemaphores[0]->semaphore};
 
-    co_await IE::Core::Core::getThreadPool().resumeAfter(commandBufferRecording);
+    co_await IE::Core::getThreadPool().resumeAfter(commandBufferRecording);
 
     // @todo Add error checking.
     vkQueueSubmit(

@@ -22,7 +22,7 @@ class EventActionMapping {
       const std::function<void(E &)> &action,
       const std::string              &engineID
     ) {
-        std::shared_ptr<E> engine = IE::Core::Core::getEngine<E>(engineID);
+        std::shared_ptr<E> engine = IE::Core::getEngine<E>(engineID);
         m_eventHashTable.insert(std::pair(event, [engine, action] { action(*engine); }));
     }
 
@@ -33,9 +33,7 @@ class EventActionMapping {
       const std::function<void(E *)> &action,
       const std::string              &engineID
     ) {
-        m_eventHashTable.insert(
-          std::pair(event, IE::Core::Core::getEngine<Engine>(engineID)->bindFunction<E>(action))
-        );
+        m_eventHashTable.insert(std::pair(event, IE::Core::getEngine<Engine>(engineID)->bindFunction<E>(action)));
     }
 
     template<typename E>

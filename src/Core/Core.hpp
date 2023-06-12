@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Core/LogModule/Logger.hpp"
-#include "Core/ThreadingModule/ThreadPool.hpp"
+#include "EngineModule/Engine.hpp"
+#include "FileSystemModule/FileSystem.hpp"
+#include "LogModule/Logger.hpp"
+#include "ThreadingModule/ThreadPool.hpp"
 
 #include <filesystem>
 #include <mutex>
@@ -16,9 +18,10 @@ class FileSystem;
 class Engine;
 class EventActionMapping;
 
+namespace detail {
 class Core final {
 public:
-    static IE::Core::Core &getInst(const std::filesystem::path &t_path = "");
+    static Core &getInst(const std::filesystem::path &t_path = "");
 
     template<typename T, typename... Args>
         requires std::derived_from<T, IE::Core::Engine>
@@ -59,4 +62,24 @@ private:
 
     explicit Core(const std::filesystem::path &t_path);
 };
+}  // namespace detail
+
+void init(const std::filesystem::path &t_path);
+
+IE::Core::Logger                &getLogger();
+IE::Core::FileSystem            &getFileSystem();
+IE::Core::Threading::ThreadPool &getThreadPool();
+IE::Core::EventActionMapping    &getEventActionMapping();
+
+template<typename T, typename... Args>
+    requires std::derived_from<T, IE::Core::Engine>
+std::shared_ptr<T> createEngine(const std::string &t_id, Args... args) {
+    return IE::Core::detail::Core::createEngine<T>(t_id, args...);
+}
+
+template<typename T>
+    requires std::derived_from<T, IE::Core::Engine>
+static std::shared_ptr<T> getEngine(const std::string &t_id) {
+    return IE::Core::detail::Core::getEngine<T>(t_id);
+}
 }  // namespace IE::Core
