@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Awaitable.hpp"
-#include "Task.hpp"
+#include "BaseTask.hpp"
 
 #include <atomic>
 #include <memory>
@@ -24,7 +24,8 @@ class ThreadPool;
 class ResumeAfter : public Awaitable {
 public:
     template<typename... Args>
-    explicit ResumeAfter(ThreadPool *t_threadPool, Args... args) : Awaitable(t_threadPool) {
+    ResumeAfter(ThreadPool *t_threadPool, ThreadType t_threadType, Args... args) :
+            Awaitable(t_threadPool, t_threadType) {
         std::vector<std::shared_ptr<BaseTask>> tasks;
         tasks.reserve(sizeof...(args));
         (..., tasks.push_back(args));
@@ -37,8 +38,12 @@ public:
         }
     }
 
-    ResumeAfter(ThreadPool *t_threadPool, const std::vector<std::shared_ptr<BaseTask>> &t_tasks) :
-            Awaitable(t_threadPool) {
+    ResumeAfter(
+      ThreadPool                                   *t_threadPool,
+      ThreadType                                    t_threadType,
+      const std::vector<std::shared_ptr<BaseTask>> &t_tasks
+    ) :
+            Awaitable(t_threadPool, t_threadType) {
         for (const std::shared_ptr<BaseTask> &dependent : t_tasks)
             if (!*dependent->m_finished) {
                 std::lock_guard<std::mutex> lock(*dependent->m_dependentsMutex);
@@ -49,15 +54,15 @@ public:
 
     bool await_ready() override;
 
-
     void await_suspend(std::coroutine_handle<> t_handle) override;
 
-    virtual void releaseDependency();
+    void releaseDependency() override;
+
+    virtual ~ResumeAfter() = default;
 
 protected:
     std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{
       std::make_shared<std::atomic<std::coroutine_handle<>>>()};
-    // clang-format on
     std::shared_ptr<std::atomic<size_t>> m_dependencyCount{std::make_shared<std::atomic<size_t>>()};
 };
 }  // namespace IE::Core::Threading

@@ -7,18 +7,18 @@ class IECamera;
 
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
-#include "GraphicsModule/Buffer/IEBuffer.hpp"
-#include "GraphicsModule/Shader/IEDescriptorSet.hpp"
-#include "GraphicsModule/Shader/IEPipeline.hpp"
-#include "GraphicsModule/Shader/IEShader.hpp"
-#include "GraphicsModule/Shader/IEUniformBufferObject.hpp"
+#include "Buffer/IEBuffer.hpp"
 #include "IEMaterial.hpp"
+#include "IEMesh.hpp"
 #include "IEVertex.hpp"
 #include "Image/IETexture.hpp"
+#include "Shader/IEDescriptorSet.hpp"
+#include "Shader/IEPipeline.hpp"
+#include "Shader/IEShader.hpp"
+#include "Shader/IEUniformBufferObject.hpp"
 
 // Modular dependencies
-#include "Core/AssetModule/IEAspect.hpp"
-#include "IEMesh.hpp"
+#include "Core/AssetModule/Aspect.hpp"
 
 // External dependencies
 #include <assimp/BaseImporter.h>
@@ -36,7 +36,7 @@ enum IERenderableStatus {
     IE_RENDERABLE_STATE_IN_VRAM  = 0x4
 };
 
-class IERenderable : public IEAspect {
+class IERenderable : public IE::Core::Aspect {
 public:
     std::string           modelName{};
     std::vector<IEMesh>   meshes{};
@@ -51,9 +51,7 @@ public:
     glm::mat4             modelMatrix{};
     IERenderableStatus    status{IE_RENDERABLE_STATE_UNKNOWN};
 
-    IERenderable() = default;
-
-    IERenderable(IERenderEngine *, const std::string &);
+    IERenderable(IE::Core::Engine *, IE::Core::File *);
 
     static void setAPI(const IEAPI &);
 

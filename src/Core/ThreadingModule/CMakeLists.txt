@@ -1,15 +1,13 @@
 set(IEThreadingModuleSourceFiles  # Gather sources
-        Awaitable.cpp
-        CoroutineTask.cpp
-        EnsureThread.cpp
-        FunctionTask.cpp
-        Queue.cpp
-        ResumeAfter.cpp
-        ResumeOnMainThreadAfter.cpp
-        Task.cpp
-        ThreadPool.cpp
-        Worker.cpp
-        )
+  Awaitable.cpp
+  BaseTask.cpp
+  EnsureThread.cpp
+  Queue.cpp
+  ResumeAfter.cpp
+  Task.cpp
+  ThreadPool.cpp
+  Worker.cpp
+  )
 
 
 add_library(IEThreadingModule ${IEThreadingModuleSourceFiles})

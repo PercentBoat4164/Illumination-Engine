@@ -5,7 +5,7 @@
 #include "GraphicsModule/Renderable/IERenderable.hpp"
 
 /* Include dependencies from Core. */
-#include "Core/AssetModule/IEAsset.hpp"
+#include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
 #include "Core/LogModule/Logger.hpp"
 
@@ -81,8 +81,6 @@ GLFWwindow *IERenderEngine::createWindow() const {
     int width, height;
     glfwGetFramebufferSize(pWindow, &width, &height);
     *settings->currentResolution = {width, height};
-    IE::Core::Core::registerWindow(pWindow);
-    IE::Core::Core::getWindow(pWindow)->graphicsEngine = const_cast<IERenderEngine *>(this);
     return pWindow;
 }
 
@@ -110,8 +108,8 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
         }
         icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
     }
-    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());             // Set icons
-    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                           // Free all pixel data
+    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
+    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                // Free all pixel data
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
@@ -183,7 +181,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
       .set_desired_present_mode(settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
       .set_desired_extent((*settings->currentResolution)[0], (*settings->currentResolution)[1])
       .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}
-      )                   // This may have to change in the event that HDR is to be supported.
+      )  // This may have to change in the event that HDR is to be supported.
       .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     if (useOldSwapchain)  // Use the old swapchain if it exists and its usage was requested.
         swapchainBuilder.set_old_swapchain(swapchain);
@@ -336,7 +334,7 @@ void IERenderEngine::destroyCommandPools() {
     computeCommandPool->destroy();
 }
 
-IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
+IERenderEngine::IERenderEngine(const std::string &t_id, IESettings *settings) : Engine(t_id), settings(settings) {
     // Create a Vulkan instance
     createVulkanInstance();
 
@@ -347,7 +345,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     window = createWindow();
     setWindowIcons("res/logos");
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
+    glfwGetWindowPos(window, settings->currentPosition->data(), &(*settings->currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     glfwSetWindowPosCallback(window, windowPositionCallback);
@@ -420,12 +418,12 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
     settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
 }
 
-void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
-    for (std::shared_ptr<IEAspect> &aspect : asset->aspects) {
+void IERenderEngine::addAsset(const std::shared_ptr<IE::Core::Asset> &asset) {
+    for (std::shared_ptr<IE::Core::Aspect> &aspect : asset->m_aspects) {
         // If aspect is downcast-able to a renderable
         if (dynamic_cast<IERenderable *>(aspect.get())) {
             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
-            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->filename);
+            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->m_file->name);
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
         }
@@ -642,12 +640,12 @@ IERenderEngine::~IERenderEngine() {
 }
 
 void IERenderEngine::windowPositionCallback(GLFWwindow *pWindow, int x, int y) {
-    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
+    auto *renderEngine                       = static_cast<IERenderEngine *>(glfwGetWindowUserPointer(pWindow));
     *renderEngine->settings->currentPosition = {x, y};
 }
 
 void IERenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int width, int height) {
-    auto *renderEngine = static_cast<IERenderEngine *>(IE::Core::Core::getWindow(pWindow)->graphicsEngine);
+    auto *renderEngine                         = static_cast<IERenderEngine *>(glfwGetWindowUserPointer(pWindow));
     *renderEngine->settings->currentResolution = {width, height};
     renderEngine->framebufferResized           = true;
 }
@@ -734,7 +732,9 @@ bool IERenderEngine::ExtensionAndFeatureInfo::variableDescriptorCountSupportQuer
     return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount != 0U;
 }
 
-IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings{t_settings}) {
+IERenderEngine::IERenderEngine(const std::string &t_id, IESettings &t_settings) :
+        Engine(t_id),
+        settings(new IESettings{t_settings}) {
     // Initialize GLFW then create and setup window
     /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
      * abstraction.*/
@@ -857,15 +857,13 @@ std::function<void(IERenderEngine &)> IERenderEngine::_destroy =
       return;
   }};
 
-IERenderEngine::AspectType *IERenderEngine::getAspect(const std::string &t_id) {
-    return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
+std::shared_ptr<IERenderable> IERenderEngine::getRenderable(const std::string &t_id) {
+    return IE::Core::Engine::getAspect<IERenderable>(t_id);
 }
 
-IERenderEngine::AspectType *IERenderEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
-    AspectType *aspect = getAspect(t_id);
-    if (!aspect) aspect = new AspectType();
-    t_asset.lock()->addAspect(aspect);
-    return aspect;
+std::shared_ptr<IERenderable>
+IERenderEngine::createRenderable(const std::string &t_id, IE::Core::File *t_resource) {
+    return IE::Core::Engine::createAspect<IERenderable>(static_cast<IE::Core::Engine *>(this), t_id, t_resource);
 }
 
 void IERenderEngine::queueToggleFullscreen() {

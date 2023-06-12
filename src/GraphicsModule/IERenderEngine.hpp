@@ -1,6 +1,7 @@
 #pragma once
 
 /* Define macros used throughout the file. */
+#include <type_traits>
 #define IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING           "RayQueryRayTracing"
 #define IE_ENGINE_FEATURE_QUERY_VARIABLE_DESCRIPTOR_COUNT "VariableDescriptorCount"
 
@@ -12,15 +13,14 @@ struct GLFWmonitor;
 /* Include classes used as attributes or function arguments. */
 // Internal dependencies
 #include "CommandBuffer/IECommandPool.hpp"
-#include "Core/AssetModule/IEAsset.hpp"
-#include "Core/EngineModule/Engine.hpp"
-#include "GraphicsModule/RenderPass/IEFramebuffer.hpp"
-#include "GraphicsModule/RenderPass/IERenderPass.hpp"
+#include "Core/Core.hpp"
 #include "IEAPI.hpp"
 #include "IECamera.hpp"
 #include "IESettings.hpp"
 #include "Image/IETexture.hpp"
 #include "Renderable/IERenderable.hpp"
+#include "RenderPass/IEFramebuffer.hpp"
+#include "RenderPass/IERenderPass.hpp"
 
 // External dependencies
 #include <VkBootstrap.h>
@@ -204,7 +204,7 @@ public:
         bool variableDescriptorCountSupportQuery() const;
     };
 
-    explicit IERenderEngine(IESettings *settings = new IESettings{});
+    explicit IERenderEngine(const std::string &t_id, IESettings *settings);
 
     void toggleFullscreen();
 
@@ -248,9 +248,9 @@ public:
     // global depth image used by all framebuffers. Should this be here?
     std::shared_ptr<IEImage>                       depthImage{};
 
-    void addAsset(const std::shared_ptr<IEAsset> &asset);
+    void addAsset(const std::shared_ptr<IE::Core::Asset> &asset);
 
-    explicit IERenderEngine(IESettings &settings);
+    explicit IERenderEngine(const std::string &t_id, IESettings &settings);
 
     bool update();
 
@@ -306,7 +306,21 @@ public:
 
     static void setAPI(const IEAPI &API);
 
-    AspectType *createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) override;
-    AspectType *getAspect(const std::string &t_id) override;
-    void        queueToggleFullscreen();
+    template<typename T>
+    auto createAspect(const std::string &t_id, IE::Core::File *t_resource) -> std::shared_ptr<T> {
+        IE::Core::getLogger().log(
+          "Cannot create Aspect with ID '" + t_id + "' due to invalid type.",
+          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
+        return nullptr;
+    }
+
+    template<>
+    std::shared_ptr<IERenderable> createAspect<IERenderable>(const std::string &t_id, IE::Core::File *t_resource) {
+        return createRenderable(t_id, t_resource);
+    }
+
+    std::shared_ptr<IERenderable> createRenderable(const std::string &t_id, IE::Core::File *t_resource);
+    std::shared_ptr<IERenderable> getRenderable(const std::string &t_id);
+    void                          queueToggleFullscreen();
 };

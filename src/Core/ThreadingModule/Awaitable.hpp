@@ -13,6 +13,13 @@ using std::experimental::suspend_never;
 #endif
 
 namespace IE::Core::Threading {
+enum ThreadType {
+    IE_THREAD_TYPE_MAIN_THREAD,
+    IE_THREAD_TYPE_WORKER_THREAD,
+};
+}  // namespace IE::Core::Threading
+
+namespace IE::Core::Threading {
 class ThreadPool;
 
 class Awaitable {
@@ -24,9 +31,14 @@ public:
 
     virtual void await_resume();
 
-protected:
-    explicit Awaitable(ThreadPool *t_threadPool);
+    virtual void releaseDependency() = 0;
 
-    ThreadPool *m_threadPool{};
+protected:
+    void submit(std::coroutine_handle<> t_handle);
+
+    Awaitable(ThreadPool *t_threadPool, ThreadType t_threadType);
+
+    ThreadPool *m_threadPool;
+    ThreadType  m_threadType;
 };
 }  // namespace IE::Core::Threading

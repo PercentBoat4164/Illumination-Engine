@@ -38,6 +38,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
     # Added to prevent known errors from clouding the log.
     add_compile_options("-Wno-nullability-completeness")
+    add_compile_options("-Wno-deprecated-non-prototype")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if (WIN32)
         set(BUILD_SHARED_LIBS ON)
