@@ -40,7 +40,6 @@ set(ASSIMP_INSTALL OFF)
 set(ASSIMP_WARNINGS_AS_ERRORS OFF)
 set(ASSIMP_ASAN OFF)
 set(ASSIMP_UBSAN OFF)
-set(ASSIMP_BUILD_DOCS OFF)  # Obsolete
 set(ASSIMP_INJECT_DEBUG_POSTFIX OFF)
 set(ASSIMP_IGNORE_GIT_HASH ON)
 set(ASSIMP_INSTALL_PDB OFF)
@@ -128,33 +127,21 @@ set(SHADERC_SKIP_INSTALL ON)
 if (NOT DEFINED USE_CCACHE)
     set(USE_CCACHE ON)
 endif ()
+set(CCACHE_VERSION 4.8.1)
 
-# CCache is only available for Linux and macOS
-# Linux install:
-# sudo apt install ccache
-# macOS install:
-# brew install ccache
-if (WIN32)
-    set(USE_CCACHE OFF)
-endif ()
+include(../cmake/Ccache.cmake)
 
 # Add all packages
 find_package(OpenGL REQUIRED)
-if (APPLE)
-    find_package(Vulkan REQUIRED shaderc_combined)
-else ()
-    find_package(Vulkan REQUIRED shaderc_combined)
-endif ()
+find_package(Vulkan REQUIRED shaderc_combined)
 
 set(OpenGL_GL_PREFERENCE "GLVND")
 CPMAddPackage(
-        NAME glew
+        NAME GLEW
         URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
         VERSION 2.2.0
         SOURCE_SUBDIR build/cmake
 )
-
-CPMAddPackage(NAME Ccache.cmake GITHUB_REPOSITORY TheLartians/Ccache.cmake VERSION 1.2.4)
 CPMAddPackage("gh:assimp/assimp@5.2.5")
 CPMAddPackage("gh:g-truc/glm#master")
 CPMAddPackage("gh:glfw/glfw#3.3.8")
@@ -171,6 +158,6 @@ add_library(INT_src dummy.cpp)
 target_link_libraries(EXT_AssImp PUBLIC assimp)
 target_link_libraries(EXT_SpdLog PUBLIC spdlog)
 target_link_libraries(EXT_OpenGL PUBLIC OpenGL::GL glew_s glfw glm::glm)
-target_include_directories(EXT_OpenGL PUBLIC ${glew_SOURCE_DIR}/include)
+target_include_directories(EXT_OpenGL PUBLIC ${GLEW_SOURCE_DIR}/include)
 target_link_libraries(EXT_Vulkan PUBLIC Vulkan::Vulkan Vulkan::shaderc_combined vk-bootstrap VulkanMemoryAllocator glfw glm::glm ${Vulkan_shaderc_combined_LIBRARY} spirv-cross-reflect spirv-cross-cpp)
 target_include_directories(INT_src PUBLIC ${IE_BASE_DIR}/src)
