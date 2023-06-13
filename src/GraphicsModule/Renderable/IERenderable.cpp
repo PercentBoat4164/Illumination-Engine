@@ -17,7 +17,7 @@
 
 IERenderable::IERenderable(IE::Core::Engine *engineLink, IE::Core::File *t_resource) :
         Aspect(engineLink, t_resource) {
-    create(static_cast<IERenderEngine *>(engineLink), t_resource->path);
+    create(static_cast<IERenderEngine *>(engineLink), t_resource);
 }
 
 void IERenderable::setAPI(const IEAPI &API) {
@@ -38,17 +38,15 @@ void IERenderable::setAPI(const IEAPI &API) {
     }
 }
 
-std::function<void(IERenderable &, IERenderEngine *, const std::string &)> IERenderable::_create{nullptr};
+std::function<void(IERenderable &, IERenderEngine *, IE::Core::File *)> IERenderable::_create{nullptr};
 
-void IERenderable::create(IERenderEngine *engineLink, const std::string &filePath) {
+void IERenderable::create(IERenderEngine *engineLink, IE::Core::File *t_resource) {
     linkedRenderEngine = engineLink;
-    directory          = filePath.substr(0, filePath.find_last_of('/'));
-    modelName          = filePath.substr(filePath.find_last_of('/'));
-    _create(*this, engineLink, filePath);
+    _create(*this, engineLink, t_resource);
     status = IE_RENDERABLE_STATE_UNLOADED;
 }
 
-void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &filePath) {
+void IERenderable::_openglCreate(IERenderEngine *engineLink, IE::Core::File *t_resource) {
     linkedRenderEngine = engineLink;
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
@@ -59,7 +57,7 @@ void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &
     modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
 }
 
-void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &filePath) {
+void IERenderable::_vulkanCreate(IERenderEngine *engineLink, IE::Core::File *t_resource) {
     linkedRenderEngine = engineLink;
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
@@ -86,7 +84,7 @@ void IERenderable::loadFromDiskToRAM() {
 void IERenderable::_openglLoadFromDiskToRAM() {
     // Read input file
     const aiScene *scene = importer.ReadFile(
-      directory + modelName,
+      m_resourceFile->m_path.string(),
       aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_RemoveRedundantMaterials |
         aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_SortByPType |
         aiProcess_GenUVCoords | aiProcess_GenNormals | aiProcess_ValidateDataStructure |
@@ -95,7 +93,7 @@ void IERenderable::_openglLoadFromDiskToRAM() {
     );
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         linkedRenderEngine->settings->logger.log(
-          "Failed to prepare scene from file: " + std::string(directory + modelName) +
+          "Failed to prepare scene from file: " + m_resourceFile->m_path.string() +
             "\t\tError: " + importer.GetErrorString(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -107,7 +105,7 @@ void IERenderable::_openglLoadFromDiskToRAM() {
     // import all meshes
     for (IEMesh &mesh : meshes) {
         mesh.create(linkedRenderEngine);
-        mesh.loadFromDiskToRAM(directory, scene, scene->mMeshes[meshIndex++]);
+        mesh.loadFromDiskToRAM(m_resourceFile->m_path.parent_path().string(), scene, scene->mMeshes[meshIndex++]);
     }
 
     modelBuffer.uploadToRAM(std::vector<char>{sizeof(glm::mat4)});
@@ -116,7 +114,7 @@ void IERenderable::_openglLoadFromDiskToRAM() {
 void IERenderable::_vulkanLoadFromDiskToRAM() {
     // Read input file
     const aiScene *scene = importer.ReadFile(
-      directory + modelName,
+      m_resourceFile->m_path.string(),
       aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_RemoveRedundantMaterials |
         aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_SortByPType |
         aiProcess_GenUVCoords | aiProcess_GenNormals | aiProcess_ValidateDataStructure |
@@ -125,7 +123,7 @@ void IERenderable::_vulkanLoadFromDiskToRAM() {
     );
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         linkedRenderEngine->settings->logger.log(
-          "Failed to prepare scene from file: " + std::string(directory + modelName) +
+          "Failed to prepare scene from file: " + m_resourceFile->m_path.string() +
             "\t\tError: " + importer.GetErrorString(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -137,7 +135,7 @@ void IERenderable::_vulkanLoadFromDiskToRAM() {
     // import all meshes
     for (IEMesh &mesh : meshes) {
         mesh.create(linkedRenderEngine);
-        mesh.loadFromDiskToRAM(directory, scene, scene->mMeshes[meshIndex++]);
+        mesh.loadFromDiskToRAM(m_resourceFile->m_path.parent_path().string(), scene, scene->mMeshes[meshIndex++]);
     }
 
     modelBuffer.uploadToRAM(std::vector<char>{sizeof(glm::mat4)});

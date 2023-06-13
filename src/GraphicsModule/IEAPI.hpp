@@ -20,7 +20,7 @@ public:
 
     IEAPI();
 
-    std::string name{};     // The name of the API to use
+    std::string name{};     // The m_name of the API to use
     IEVersion   version{};  // The version of the API to use
 
     /**

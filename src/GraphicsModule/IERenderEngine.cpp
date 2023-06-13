@@ -90,7 +90,7 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
     int                    channels;
     std::vector<GLFWimage> icons{};
 
-    // iterate over all files and directories within path recursively
+    // iterate over all files and directories within m_path recursively
     for (const std::filesystem::directory_entry &file : std::filesystem::recursive_directory_iterator(path)) {
         stbi_uc *pixels = stbi_load(
           file.path().string().c_str(),
@@ -108,8 +108,8 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
         }
         icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
     }
-    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());  // Set icons
-    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                // Free all pixel data
+    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());             // Set icons
+    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                           // Free all pixel data
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
@@ -128,7 +128,7 @@ vkb::Device IERenderEngine::setUpDevice(
 ) {
     vkb::PhysicalDeviceSelector selector{instance};
     // Note: The physical device selection stage is used to add extensions while the logical device building stage
-    // is used to add extension features.
+    // is used to add m_extension features.
 
     // Add desired extensions if any are listed.
     if (desiredExtensions != nullptr && !desiredExtensions->empty())
@@ -142,7 +142,7 @@ vkb::Device IERenderEngine::setUpDevice(
     // Prepare to build logical device
     vkb::DeviceBuilder logicalDeviceBuilder{physicalDeviceBuilder.value()};
 
-    // Add extension features if any are listed.
+    // Add m_extension features if any are listed.
     if (desiredExtensionFeatures != nullptr) logicalDeviceBuilder.add_pNext(desiredExtensionFeatures);
 
     // Build logical device.
@@ -181,7 +181,7 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
       .set_desired_present_mode(settings->vSync ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR)
       .set_desired_extent((*settings->currentResolution)[0], (*settings->currentResolution)[1])
       .set_desired_format({VK_FORMAT_B8G8R8A8_SRGB, VK_COLORSPACE_SRGB_NONLINEAR_KHR}
-      )  // This may have to change in the event that HDR is to be supported.
+      )                   // This may have to change in the event that HDR is to be supported.
       .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     if (useOldSwapchain)  // Use the old swapchain if it exists and its usage was requested.
         swapchainBuilder.set_old_swapchain(swapchain);
@@ -210,7 +210,7 @@ void IERenderEngine::createSyncObjects() {
     VkSemaphoreCreateInfo semaphoreCreateInfo{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
     VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, VK_FENCE_CREATE_SIGNALED_BIT};
 
-    // Ensure that the vectors have the appropriate size as to avoid errors in the next step.
+    // Ensure that the vectors have the appropriate m_size as to avoid errors in the next step.
     imageAvailableSemaphores.resize(swapchain.image_count);
     renderFinishedSemaphores.resize(swapchain.image_count);
     inFlightFences.resize(swapchain.image_count);
@@ -423,7 +423,7 @@ void IERenderEngine::addAsset(const std::shared_ptr<IE::Core::Asset> &asset) {
         // If aspect is downcast-able to a renderable
         if (dynamic_cast<IERenderable *>(aspect.get())) {
             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
-            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->m_file->name);
+            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->m_file);
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
         }

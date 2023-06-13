@@ -18,7 +18,8 @@ void IE::Core::Threading::Worker::start(ThreadPool *t_threadPool) {
         // If threads are being asked to shut down, ensure that the number of threads to shut down is correctly
         // synchronized.
         for (uint32_t n = pool.m_threadShutdownCount.load(); pool.m_threadShutdownCount > 0;)
-            if (pool.m_threadShutdownCount.compare_exchange_weak(n, n - 1, std::memory_order_relaxed)) return;
+            if (pool.m_threadShutdownCount.compare_exchange_weak(n, n - 1, std::memory_order_relaxed))
+                return;
         // Wait until this thread is requested to awaken.
         if (!pool.m_queue.pop(task))
             pool.m_workAssignedNotifier.wait(lock, [&] {
@@ -27,7 +28,8 @@ void IE::Core::Threading::Worker::start(ThreadPool *t_threadPool) {
         // If threads are being asked to shut down, ensure that the number of threads to shut down is correctly
         // synchronized.
         for (uint32_t n = pool.m_threadShutdownCount.load(); pool.m_threadShutdownCount > 0;)
-            if (pool.m_threadShutdownCount.compare_exchange_weak(n, n - 1, std::memory_order_relaxed)) {
+            if (pool.m_threadShutdownCount.compare_exchange_weak(n, n - 1, std::memory_order_relaxed))
+                {
                 if (task) {
                     pool.m_queue.push(task);
                     pool.m_workAssignedNotifier.notify_one();

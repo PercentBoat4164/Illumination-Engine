@@ -3,7 +3,7 @@
 #include "EngineModule/EventActionMapping.hpp"
 #include "FileSystemModule/FileSystem.hpp"
 
-IE::Core::Logger IE::Core::detail::Core::m_logger{ILLUMINATION_ENGINE_CORE_LOGGER_NAME};
+IE::Core::Logger                                    IE::Core::detail::Core::m_logger{ILLUMINATION_ENGINE_CORE_LOGGER_NAME};
 std::mutex       IE::Core::detail::Core::m_enginesMutex{};
 std::unordered_map<std::string, std::shared_ptr<IE::Core::Engine>> IE::Core::detail::Core::m_engines{};
 std::mutex                                                         IE::Core::detail::Core::m_windowsMutex{};

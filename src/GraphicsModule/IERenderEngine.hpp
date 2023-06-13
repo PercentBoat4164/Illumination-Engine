@@ -49,10 +49,10 @@ private:
     GLFWwindow *createWindow() const;
 
     /**
-     * @brief Changes the window icon to all of the images found in [path] with a
-     * name that contains last part of
-     * [path].
-     * @param path string of path to icons folder plus the identifier.
+     * @brief Changes the window icon to all of the images found in [m_path] with a
+     * m_name that contains last part of
+     * [m_path].
+     * @param m_path string of m_path to icons folder plus the identifier.
      */
     void setWindowIcons(const std::filesystem::path &path) const;
 
@@ -65,7 +65,7 @@ private:
     /**
      * @brief Creates a physical and logical device with the extensions and
      * features provided activated.
-     * @param desiredExtensions vector of vectors of Vulkan extension names.
+     * @param desiredExtensions vector of vectors of Vulkan m_extension names.
      * @param desiredExtensionFeatures pointer to pNext chain of desired features.
      * @return The newly created vkb::Device.
      */
@@ -75,7 +75,7 @@ private:
     );
 
     /**
-     * @brief Creates a VmaAllocator with no flags activated.
+     * @brief Creates a VmaAllocator with no t_flags activated.
      * @return The newly created VmaAllocator.
      */
     VmaAllocator setUpGPUMemoryAllocator();

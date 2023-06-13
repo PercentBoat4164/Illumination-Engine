@@ -61,7 +61,7 @@ elseif ()
 endif ()
 
 # Compilation Options for similar interface compilers
-if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC" OR CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options("/Zi" "/Od")  # Complete debugging information with no optimization
 else ()
     add_compile_options("-g" "-O0")  # Debugging information with no optimization

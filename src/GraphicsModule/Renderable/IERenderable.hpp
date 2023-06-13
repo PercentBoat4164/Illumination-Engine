@@ -38,7 +38,6 @@ enum IERenderableStatus {
 
 class IERenderable : public IE::Core::Aspect {
 public:
-    std::string           modelName{};
     std::vector<IEMesh>   meshes{};
     IEBuffer              modelBuffer{};
     IERenderEngine       *linkedRenderEngine{};
@@ -47,7 +46,6 @@ public:
     Assimp::Importer      importer{};
     bool                  render{true};
     uint32_t              commandBufferIndex{};
-    std::string           directory{};
     glm::mat4             modelMatrix{};
     IERenderableStatus    status{IE_RENDERABLE_STATE_UNKNOWN};
 
@@ -56,13 +54,13 @@ public:
     static void setAPI(const IEAPI &);
 
     /* API dependent functions */
-    static std::function<void(IERenderable &, IERenderEngine *, const std::string &)> _create;
+    static std::function<void(IERenderable &, IERenderEngine *, IE::Core::File *)> _create;
 
-    void create(IERenderEngine *, const std::string &);
+    void create(IERenderEngine *, IE::Core::File *);
 
-    void _openglCreate(IERenderEngine *, const std::string &);
+    void _openglCreate(IERenderEngine *, IE::Core::File *);
 
-    void _vulkanCreate(IERenderEngine *, const std::string &);
+    void _vulkanCreate(IERenderEngine *, IE::Core::File *);
 
 
     static std::function<void(IERenderable &)> _loadFromDiskToRAM;

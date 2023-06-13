@@ -36,7 +36,7 @@ public:
     /** Load assimp image data into the currently set location(s).*/
     virtual void uploadTexture(const aiTexture *){};
 
-    /** Load stb_image data of size 'size' into the currently set location(s). */
+    /** Load stb_image data of m_size 'm_size' into the currently set location(s). */
     virtual void uploadTexture(stbi_uc *){};
 
     /** Load data into the currently set location(s). */

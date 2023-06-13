@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Directory.hpp"
 #include "File.hpp"
-#include "Importer.hpp"
 
 #include <filesystem>
 #include <string>
@@ -13,12 +13,16 @@ class FileSystem {
 public:
     FileSystem();
 
-    // Create a new File with the given relative path
-    File *addFile(const std::filesystem::path &filePath);
+    // Create a new File with the given relative m_path
+    File *addFile(const std::filesystem::path &t_filePath);
 
-    File *getFile(const std::filesystem::path &filePath);
+    File *getFile(const std::filesystem::path &t_filePath);
 
-    void createFolder(const std::filesystem::path &folderPath) const;
+    Directory *addDirectory(const std::filesystem::path &t_dirPath);
+
+    Directory *getDirectory(const std::filesystem::path &t_dirPath);
+
+    void createDirectory(const std::filesystem::path &folderPath) const;
 
     // Export data to a File
     void exportData(const std::filesystem::path &filePath, const std::vector<char> &data);
@@ -38,19 +42,8 @@ public:
 
     std::filesystem::path &makePathAbsolute(std::filesystem::path &filePath);
 
-    template<class T>
-    void importFile(T *data, File *file, unsigned int flags = 0) {
-        m_importer.import(data, file, flags);
-    }
-
-    template<class T>
-    void importFile(T *data, std::filesystem::path filePath, unsigned int flags = 0) {
-        m_importer.import(data, getFile(filePath), flags);
-    };
-
 private:
     std::filesystem::path                 m_path;
-    Importer                              m_importer{};
     std::unordered_map<std::string, File> m_files;
 };
 }  // namespace IE::Core

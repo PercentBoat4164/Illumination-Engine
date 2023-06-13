@@ -49,7 +49,7 @@ std::function<void(IETexture &)> IETexture::_uploadToVRAM{nullptr};
 void IETexture::uploadToVRAM() {
     if (width * height * channels == 0) {
         linkedRenderEngine->settings->logger.log(
-          "Attempt to load image with size of zero into VRAM",
+          "Attempt to load image with m_size of zero into VRAM",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_DEBUG
         );
     }
