@@ -1,46 +1,57 @@
 #include "Core.hpp"
 
-#include <concepts>
+#include "EngineModule/EventActionMapping.hpp"
+#include "FileSystemModule/FileSystem.hpp"
 
-IE::Core::Logger IE::Core::Core::m_logger{
-  ILLUMINATION_ENGINE_CORE_LOGGER_NAME};
-std::mutex                                          IE::Core::Core::m_enginesMutex{};
-std::unordered_map<std::string, IE::Core::Engine *> IE::Core::Core::m_engines{};
-std::mutex                                          IE::Core::Core::m_windowsMutex{};
-std::unordered_map<GLFWwindow *, IE::Core::Window>  IE::Core::Core::m_windows{};
-IE::Core::Threading::ThreadPool                     IE::Core::Core::m_threadPool{};
-IE::Core::FileSystem                                IE::Core::Core::m_filesystem{};
+IE::Core::Logger IE::Core::detail::Core::m_logger{ILLUMINATION_ENGINE_CORE_LOGGER_NAME};
+std::mutex       IE::Core::detail::Core::m_enginesMutex{};
+std::unordered_map<std::string, std::shared_ptr<IE::Core::Engine>> IE::Core::detail::Core::m_engines{};
+std::mutex                                                         IE::Core::detail::Core::m_windowsMutex{};
+IE::Core::Threading::ThreadPool                                    IE::Core::detail::Core::m_threadPool{};
+IE::Core::FileSystem                                               IE::Core::detail::Core::m_filesystem{};
+IE::Core::EventActionMapping                                       IE::Core::detail::Core::m_eventActionMapping{};
 
-IE::Core::Core &IE::Core::Core::getInst(const std::filesystem::path &t_path) {
-    static IE::Core::Core inst{t_path};
+IE::Core::detail::Core &IE::Core::detail::Core::getInst(const std::filesystem::path &t_path) {
+    static IE::Core::detail::Core inst{t_path};
     return inst;
 }
 
-IE::Core::Logger *IE::Core::Core::getLogger() {
-    return &m_logger;
+IE::Core::Logger &IE::Core::detail::Core::getLogger() {
+    return m_logger;
 }
 
-IE::Core::FileSystem *IE::Core::Core::getFileSystem() {
-    return &m_filesystem;
+IE::Core::FileSystem &IE::Core::detail::Core::getFileSystem() {
+    return m_filesystem;
 }
 
-IE::Core::Threading::ThreadPool *IE::Core::Core::getThreadPool() {
-    return &m_threadPool;
+IE::Core::Threading::ThreadPool &IE::Core::detail::Core::getThreadPool() {
+    return m_threadPool;
 }
 
-IE::Core::Window *IE::Core::Core::getWindow(GLFWwindow *t_window) {
-    std::unique_lock<std::mutex> lock(m_windowsMutex);
-    auto                         window = m_windows.find(t_window);
-    if (window != m_windows.end()) return &window->second;
-    else
-        m_logger.log(
-          "Window '" + std::to_string((uint64_t) t_window) + "' does not exist!",
-          IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
-        );
-    return nullptr;
+IE::Core::EventActionMapping &IE::Core::detail::Core::getEventActionMapping() {
+    return m_eventActionMapping;
 }
 
-IE::Core::Engine *IE::Core::Core::getEngine(std::string id) {
-    std::unique_lock<std::mutex> lock(m_enginesMutex);
-    return m_engines.at(id);
+IE::Core::detail::Core::Core(const std::filesystem::path &t_path) {
+    m_filesystem.setBaseDirectory(t_path);
+}
+
+void IE::Core::init(const std::filesystem::path &t_path) {
+    IE::Core::detail::Core::getInst(t_path);
+}
+
+IE::Core::Logger &IE::Core::getLogger() {
+    return IE::Core::detail::Core::getLogger();
+}
+
+IE::Core::FileSystem &IE::Core::getFileSystem() {
+    return IE::Core::detail::Core::getFileSystem();
+}
+
+IE::Core::Threading::ThreadPool &IE::Core::getThreadPool() {
+    return IE::Core::detail::Core::getThreadPool();
+}
+
+IE::Core::EventActionMapping &IE::Core::getEventActionMapping() {
+    return IE::Core::detail::Core::getEventActionMapping();
 }

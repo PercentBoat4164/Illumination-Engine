@@ -1,22 +1,20 @@
 #include "InputEngine.hpp"
 
-#include "Core/AssetModule/IEAsset.hpp"
+#include "Core/AssetModule/Asset.hpp"
 #include "Core/Core.hpp"
 #include "Keyboard.hpp"
 
-IE::Input::InputEngine::AspectType *
-IE::Input::InputEngine::createAspect(std::weak_ptr<IEAsset> t_asset, const std::string &t_id) {
-    AspectType *aspect = getAspect(t_id);
-    if (!aspect) aspect = new AspectType(m_window);
-    t_asset.lock()->addAspect(aspect);
-    return aspect;
+std::shared_ptr<IE::Core::Aspect> IE::Input::InputEngine::createAspect(const std::string &t_id) {
+    return nullptr;
 }
 
-IE::Input::InputEngine::AspectType *IE::Input::InputEngine::getAspect(const std::string &t_id) {
-    return static_cast<AspectType *>(IE::Core::Engine::getAspect(t_id));
+std::shared_ptr<IE::Core::Aspect> IE::Input::InputEngine::getAspect(const std::string &t_id) {
+    return nullptr;
 }
 
-IE::Input::InputEngine::InputEngine(GLFWwindow *t_window) : m_window(t_window) {
-    IE::Core::Core::getWindow(t_window)->inputEngine = const_cast<IE::Input::InputEngine *>(this);
-    m_aspects["keyboard"]                            = std::make_shared<IE::Input::Keyboard>(t_window);
+IE::Input::InputEngine::InputEngine(const std::string &t_ID, GLFWwindow *t_window) :
+        Engine(t_ID),
+        m_window(t_window),
+        m_keyboard(t_window) {
+    glfwSetWindowUserPointer(t_window, &m_keyboard);
 }

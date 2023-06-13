@@ -1,13 +1,19 @@
 #pragma once
 
 #include "Awaitable.hpp"
-#include "Task.hpp"
+#include "BaseTask.hpp"
 
 #include <atomic>
 #include <memory>
 #include <vector>
 #if defined(AppleClang)
 #    include <experimental/coroutine>
+
+namespace std {
+using std::experimental::coroutine_handle;
+using std::experimental::suspend_always;
+using std::experimental::suspend_never;
+}  // namespace std
 #else
 #    include <coroutine>
 #endif
@@ -18,7 +24,8 @@ class ThreadPool;
 class ResumeAfter : public Awaitable {
 public:
     template<typename... Args>
-    explicit ResumeAfter(ThreadPool *t_threadPool, Args... args) : Awaitable(t_threadPool) {
+    ResumeAfter(ThreadPool *t_threadPool, ThreadType t_threadType, Args... args) :
+            Awaitable(t_threadPool, t_threadType) {
         std::vector<std::shared_ptr<BaseTask>> tasks;
         tasks.reserve(sizeof...(args));
         (..., tasks.push_back(args));
@@ -31,8 +38,12 @@ public:
         }
     }
 
-    ResumeAfter(ThreadPool *t_threadPool, const std::vector<std::shared_ptr<BaseTask>> &t_tasks) :
-            Awaitable(t_threadPool) {
+    ResumeAfter(
+      ThreadPool                                   *t_threadPool,
+      ThreadType                                    t_threadType,
+      const std::vector<std::shared_ptr<BaseTask>> &t_tasks
+    ) :
+            Awaitable(t_threadPool, t_threadType) {
         for (const std::shared_ptr<BaseTask> &dependent : t_tasks)
             if (!*dependent->m_finished) {
                 std::lock_guard<std::mutex> lock(*dependent->m_dependentsMutex);
@@ -43,26 +54,15 @@ public:
 
     bool await_ready() override;
 
-// clang-format off
-#   if defined(AppleClang)
-    void await_suspend(std::experimental::coroutine_handle<> t_handle) override;
-#   else
     void await_suspend(std::coroutine_handle<> t_handle) override;
-#   endif
-    // clang-format on
 
-    virtual void releaseDependency();
+    void releaseDependency() override;
+
+    virtual ~ResumeAfter() = default;
 
 protected:
-    //clang-format off
-#if defined(AppleClang)
-    std::shared_ptr<std::atomic<std::experimental::coroutine_handle<>>> m_handle{
-      std::make_shared<std::atomic<std::experimental::coroutine_handle<>>>()};
-#else
     std::shared_ptr<std::atomic<std::coroutine_handle<>>> m_handle{
       std::make_shared<std::atomic<std::coroutine_handle<>>>()};
-#endif
-    // clang-format on
     std::shared_ptr<std::atomic<size_t>> m_dependencyCount{std::make_shared<std::atomic<size_t>>()};
 };
 }  // namespace IE::Core::Threading

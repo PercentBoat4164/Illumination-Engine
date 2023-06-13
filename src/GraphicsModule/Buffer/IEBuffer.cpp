@@ -386,7 +386,7 @@ void IEBuffer::unloadFromVRAM() {
 }
 
 void IEBuffer::_openglUnloadFromVRAM() {
-    if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {  // In VRAM?
+    if (status & IE_BUFFER_STATUS_DATA_IN_VRAM) {                                       // In VRAM?
         glDeleteBuffers(1, &id);
         status = static_cast<IEBufferStatus>(status & ~IE_BUFFER_STATUS_DATA_IN_VRAM);  // Not in VRAM
     }
