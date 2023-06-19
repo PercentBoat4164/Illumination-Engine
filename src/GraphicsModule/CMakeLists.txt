@@ -35,9 +35,6 @@ target_include_directories(IEGraphicsModule PUBLIC ${IE_BASE_DIR}/src ${CMAKE_CU
 set_target_properties(IEGraphicsModule PROPERTIES LINKER_LANGUAGE CXX)
 
 # Add internal dependency libraries to the target
-target_link_libraries(IEGraphicsModule PUBLIC IECore)
-
-# Add external dependency libraries and include directories to the target
-target_link_libraries(IEGraphicsModule PUBLIC INT_src EXT_AssImp EXT_OpenGL EXT_Vulkan)
+target_link_libraries(IEGraphicsModule IECore)
 
 add_dependencies(IEGraphicsModule IEGMShaders CopyResources)  # Add shader pre-compilation as a dependency

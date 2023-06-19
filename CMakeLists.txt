@@ -31,6 +31,7 @@ add_custom_command(
         COMMENT "Copying resource files...")
 
 set(IE_PREFER_LOCAL_LIBS ON)
+set(USE_CCACHE OFF)
 
 # Compilation and linking options
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
