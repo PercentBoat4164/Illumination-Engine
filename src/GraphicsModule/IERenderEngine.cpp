@@ -86,14 +86,15 @@ GLFWwindow *IERenderEngine::createWindow() const {
     return pWindow;
 }
 
-void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
+void IERenderEngine::setWindowIcons(IE::Core::File *t_directory) const {
     int                    width;
     int                    height;
     int                    channels;
     std::vector<GLFWimage> icons{};
 
     // iterate over all files and directories within path recursively
-    for (const std::filesystem::directory_entry &file : std::filesystem::recursive_directory_iterator(path)) {
+    for (const std::filesystem::directory_entry &file :
+         std::filesystem::recursive_directory_iterator(t_directory->path)) {
         stbi_uc *pixels = stbi_load(
           file.path().string().c_str(),
           &width,
@@ -103,15 +104,13 @@ void IERenderEngine::setWindowIcons(const std::filesystem::path &path) const {
         );  // Load image from disk
         if (pixels == nullptr) {
             settings->logger.log(
-
               "Failed to load icon " + file.path().generic_string() + ". Is this file an image?",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
-        }
-        icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
+        } else icons.push_back(GLFWimage{.width = width, .height = height, .pixels = pixels});  // Generate image
     }
-    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());             // Set icons
-    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);                           // Free all pixel data
+    glfwSetWindowIcon(window, static_cast<int>(icons.size()), icons.data());                    // Set icons
+    for (GLFWimage icon : icons) stbi_image_free(icon.pixels);  // Free all pixel data
 }
 
 VkSurfaceKHR IERenderEngine::createWindowSurface() {
@@ -191,7 +190,6 @@ vkb::Swapchain IERenderEngine::createSwapchain(bool useOldSwapchain) {
     if (!thisSwapchain) {
         // Failure! Log it then continue without deleting the old swapchain.
         settings->logger.log(
-
           "Failed to create swapchain! Error: " + thisSwapchain.error().message(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
@@ -345,7 +343,7 @@ IERenderEngine::IERenderEngine(IESettings *settings) : settings(settings) {
      * abstraction.*/
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     window = createWindow();
-    setWindowIcons("res/logos");
+    setWindowIcons(IE::Core::Core::getFileSystem()->addFile(std::filesystem::path{"res"} / "logos"));
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
@@ -425,7 +423,10 @@ void IERenderEngine::addAsset(const std::shared_ptr<IEAsset> &asset) {
         // If aspect is downcast-able to a renderable
         if (dynamic_cast<IERenderable *>(aspect.get())) {
             renderables.push_back(std::dynamic_pointer_cast<IERenderable>(aspect));
-            std::dynamic_pointer_cast<IERenderable>(aspect)->create(this, asset->filename);
+            std::dynamic_pointer_cast<IERenderable>(aspect)->create(
+              this,
+              IE::Core::Core::getFileSystem()->addFile(asset->filename)
+            );
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromDiskToRAM();
             std::dynamic_pointer_cast<IERenderable>(aspect)->loadFromRAMToVRAM();
         }
@@ -758,7 +759,7 @@ IERenderEngine::IERenderEngine(IESettings &t_settings) : settings(new IESettings
 
     window = createWindow();
 
-    setWindowIcons("res/logos");
+    setWindowIcons(IE::Core::Core::getFileSystem()->addFile(std::filesystem::path{"res"} / "logos"));
     glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
     glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);

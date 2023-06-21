@@ -187,16 +187,22 @@ void IEMesh::_openglLoadFromRAMToVRAM() {
     indexBuffer->uploadToVRAM();
 
 #if defined(__APPLE__)
-    std::string shaderDir{"shaders/OpenGL/macOS/"};
+    std::filesystem::path shaderDir{std::filesystem::path("shaders") / "OpenGL" / "macOS"};
 #else
-    std::string shaderDir{"shaders/OpenGL/"};
+    std::filesystem::path shaderDir{std::filesystem::path("shaders") / "OpenGL" / "macOS"};
 #endif
 
     shaders.resize(2);
     shaders[0] = std::make_shared<IEShader>();
-    shaders[0]->create(linkedRenderEngine, new IE::Core::File(shaderDir + "vertexShader.vert"));
+    shaders[0]->create(
+      linkedRenderEngine,
+      IE::Core::Core::getFileSystem()->addFile(shaderDir / "vertexShader.vert")
+    );
     shaders[1] = std::make_shared<IEShader>();
-    shaders[1]->create(linkedRenderEngine, new IE::Core::File(shaderDir + "fragmentShader.frag"));
+    shaders[1]->create(
+      linkedRenderEngine,
+      IE::Core::Core::getFileSystem()->addFile(shaderDir / "fragmentShader.frag")
+    );
 
     pipeline->create(
       linkedRenderEngine,

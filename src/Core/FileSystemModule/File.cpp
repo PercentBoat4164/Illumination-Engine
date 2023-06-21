@@ -4,11 +4,11 @@
 
 IE::Core::File::File(const std::filesystem::path &filePath) {
     path = filePath;
-    name = filePath.filename().string();
+    name = path.filename().string();
     open(std::fstream::in | std::fstream::binary);
+    if (!is_directory(path)) size = std::filesystem::file_size(path);
     fileIO.seekg(0, std::fstream::end);
-    size      = fileIO.tellg();
-    extension = filePath.extension().string();
+    extension = path.extension().string();
     close();
 }
 

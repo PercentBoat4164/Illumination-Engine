@@ -54,7 +54,7 @@ private:
      * [path].
      * @param path string of path to icons folder plus the identifier.
      */
-    void setWindowIcons(const std::filesystem::path &path) const;
+    void setWindowIcons(IE::Core::File *t_directory) const;
 
     /**
      * @brief Creates a VkSurface for the window.

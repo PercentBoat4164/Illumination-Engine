@@ -6,9 +6,14 @@
 /.vs/
 /out/
 /CMakeSettings.json
-# Ignore pre-compiled shaders
+# Pre-compiled shaders
 /res/Shaders/*/*.spv
-# Ignore dependencies
+# Dependencies
 /ext/deps/
+# Generated resources
+/res-external/*
+/res-internal/*
+# Lock files
+/build-res/.lock
 # Ignore CPM
 /cmake/CPM.cmake

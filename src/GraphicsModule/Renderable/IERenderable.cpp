@@ -14,8 +14,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-IERenderable::IERenderable(IERenderEngine *engineLink, const std::string &filePath) {
-    create(engineLink, filePath);
+IERenderable::IERenderable(IERenderEngine *engineLink, IE::Core::File *t_file) {
+    create(engineLink, t_file);
 }
 
 void IERenderable::setAPI(const IEAPI &API) {
@@ -36,17 +36,17 @@ void IERenderable::setAPI(const IEAPI &API) {
     }
 }
 
-std::function<void(IERenderable &, IERenderEngine *, const std::string &)> IERenderable::_create{nullptr};
+std::function<void(IERenderable &, IERenderEngine *, IE::Core::File *t_file)> IERenderable::_create{nullptr};
 
-void IERenderable::create(IERenderEngine *engineLink, const std::string &filePath) {
+void IERenderable::create(IERenderEngine *engineLink, IE::Core::File *t_file) {
     linkedRenderEngine = engineLink;
-    directory          = filePath.substr(0, filePath.find_last_of('/'));
-    modelName          = filePath.substr(filePath.find_last_of('/'));
-    _create(*this, engineLink, filePath);
+    directory          = t_file->path.parent_path();
+    modelName          = t_file->path.filename();
+    _create(*this, engineLink, t_file);
     status = IE_RENDERABLE_STATE_UNLOADED;
 }
 
-void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &filePath) {
+void IERenderable::_openglCreate(IERenderEngine *engineLink, IE::Core::File *t_file) {
     linkedRenderEngine = engineLink;
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
@@ -57,7 +57,7 @@ void IERenderable::_openglCreate(IERenderEngine *engineLink, const std::string &
     modelBuffer.create(linkedRenderEngine, &modelBufferCreateInfo);
 }
 
-void IERenderable::_vulkanCreate(IERenderEngine *engineLink, const std::string &filePath) {
+void IERenderable::_vulkanCreate(IERenderEngine *engineLink, IE::Core::File *t_file) {
     linkedRenderEngine = engineLink;
     for (IEMesh &mesh : meshes) mesh.create(linkedRenderEngine);
 
@@ -84,7 +84,7 @@ void IERenderable::loadFromDiskToRAM() {
 void IERenderable::_openglLoadFromDiskToRAM() {
     // Read input file
     const aiScene *scene = importer.ReadFile(
-      directory + modelName,
+      (std::filesystem::path(directory) / modelName).string(),
       aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_RemoveRedundantMaterials |
         aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_SortByPType |
         aiProcess_GenUVCoords | aiProcess_GenNormals | aiProcess_ValidateDataStructure |
@@ -93,7 +93,7 @@ void IERenderable::_openglLoadFromDiskToRAM() {
     );
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         linkedRenderEngine->settings->logger.log(
-          "Failed to prepare scene from file: " + std::string(directory + modelName) +
+          "Failed to prepare scene from file: " + (std::filesystem::path(directory) / modelName).string() +
             "\t\tError: " + importer.GetErrorString(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -114,7 +114,7 @@ void IERenderable::_openglLoadFromDiskToRAM() {
 void IERenderable::_vulkanLoadFromDiskToRAM() {
     // Read input file
     const aiScene *scene = importer.ReadFile(
-      directory + modelName,
+      (std::filesystem::path(directory) / modelName).string(),
       aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_RemoveRedundantMaterials |
         aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_SortByPType |
         aiProcess_GenUVCoords | aiProcess_GenNormals | aiProcess_ValidateDataStructure |
@@ -123,7 +123,7 @@ void IERenderable::_vulkanLoadFromDiskToRAM() {
     );
     if ((scene == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U) || (scene->mRootNode == nullptr)) {
         linkedRenderEngine->settings->logger.log(
-          "Failed to prepare scene from file: " + std::string(directory + modelName) +
+          "Failed to prepare scene from file: " + (std::filesystem::path(directory) / modelName).string() +
             "\t\tError: " + importer.GetErrorString(),
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );

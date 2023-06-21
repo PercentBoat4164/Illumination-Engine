@@ -33,9 +33,11 @@ public:
 
     void setBaseDirectory(const std::filesystem::path &t_path);
 
-    std::filesystem::path getBaseDirectory(const std::filesystem::path &t_path);
+    std::filesystem::path getBaseDirectory();
 
-    std::filesystem::path &makePathAbsolute(std::filesystem::path &filePath);
+    void setInternalResourcesDirectory(const std::filesystem::path &t_path);
+
+    std::filesystem::path getInternalResourcesDirectory();
 
     template<class T>
     void importFile(T *data, File &file, unsigned int flags = 0) {
@@ -49,6 +51,7 @@ public:
 
 private:
     std::filesystem::path                 m_path;
+    std::filesystem::path m_internalResourcesPath;
     Importer                              m_importer{};
     std::unordered_map<std::string, File> m_files;
 };

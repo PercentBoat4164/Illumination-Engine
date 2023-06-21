@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)  # 3.14 is required for CPM
-project(IlluminationEngine VERSION 0.0.0)
+set(ILLUMINATION_ENGINE_VERSION 0.0.0)
+project(IlluminationEngine VERSION ${ILLUMINATION_ENGINE_VERSION})
 
 set(CMAKE_CXX_STANDARD 23)
 
 set(BUILD_SHARED_LIBS OFF)
+
+include(cmake/Threading.cmake)
+set(BUILD_RES ${CMAKE_SOURCE_DIR}/build-res)
 
 # Detect compiler and OS
 if (${CMAKE_CXX_COMPILER_FRONTEND_VARIANT})
@@ -11,24 +15,20 @@ if (${CMAKE_CXX_COMPILER_FRONTEND_VARIANT})
 else ()
     message("Using ${CMAKE_CXX_COMPILER_ID} v${CMAKE_CXX_COMPILER_VERSION} on ${CMAKE_SYSTEM_NAME}.")
 endif ()
-add_compile_definitions("COMPILER=${CMAKE_CXX_COMPILER_ID}")
-add_compile_definitions("OS=${CMAKE_SYSTEM_NAME}")
-add_compile_definitions("COMPILER_FRONTEND=${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}")
+add_compile_definitions(IE_COMPILER="${CMAKE_CXX_COMPILER_ID}")
+add_compile_definitions(IE_COMPILER_FRONTEND="${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}")
+add_compile_definitions(IE_COMPILER_VERSION="${CMAKE_CXX_COMPILER_VERSION}")
+add_compile_definitions(IE_OS="${CMAKE_SYSTEM_NAME}")
+
+add_compile_definitions(IE_MACOS="Darwin")
+add_compile_definitions(IE_WINDOWS="Windows")
+add_compile_definitions(IE_LINUX="Linux")
 
 
 set(IE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})  # Directory Illumination Engine is being built in
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)  # Directory to put library files
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)  # Directory to put runtime files
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)  # Directory to put static libraries
-
-add_custom_target(CopyResources)
-add_custom_command(
-        TARGET CopyResources
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${IE_BASE_DIR}/res
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res &
-        DEPENDS ${IE_BASE_DIR}/res
-        COMMENT "Copying resource files...")
 
 set(IE_PREFER_LOCAL_LIBS ON)
 
@@ -65,6 +65,11 @@ if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
 else ()
     add_compile_options("-g" "-O0")  # Debugging information with no optimization
 endif ()
+
+include(cmake/BundleExecutable.cmake)
+
+set(ILLUMINATION_ENGINE_INTERNAL_RESOURCE_DIR ${CMAKE_SOURCE_DIR}/res-internal)
+set(ILLUMINATION_ENGINE_EXTERNAL_RESOURCE_DIR ${CMAKE_SOURCE_DIR}/res-external)
 
 add_subdirectory(ext)  # Generate external dependencies from source
 add_subdirectory(src)  # Generate Illumination Engine from source

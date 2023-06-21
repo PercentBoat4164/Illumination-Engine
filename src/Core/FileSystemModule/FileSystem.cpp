@@ -5,17 +5,11 @@
 #include <filesystem>
 
 IE::Core::File *IE::Core::FileSystem::addFile(const std::filesystem::path &filePath) {
-    std::filesystem::path newPath(filePath);
-    makePathAbsolute(newPath);
+    std::filesystem::path newPath(std::filesystem::absolute(filePath));
     createFolder(newPath.parent_path().string());
     auto file = getFile(newPath);
     if (file == nullptr) return &(*m_files.insert(std::make_pair(filePath.string(), File(newPath))).first).second;
     return file;
-}
-
-std::filesystem::path &IE::Core::FileSystem::makePathAbsolute(std::filesystem::path &filePath) {
-    if (!filePath.string().starts_with(m_path.string())) filePath = m_path / filePath;
-    return filePath;
 }
 
 void IE::Core::FileSystem::createFolder(const std::filesystem::path &folderPath) const {
@@ -46,23 +40,29 @@ void IE::Core::FileSystem::deleteUsedDirectory(const std::filesystem::path &file
 }
 
 IE::Core::File *IE::Core::FileSystem::getFile(const std::filesystem::path &filePath) {
-    std::filesystem::path newPath(filePath);
-    makePathAbsolute(newPath);
+    std::filesystem::path newPath(std::filesystem::absolute(filePath));
     auto iterator = m_files.find(newPath.string());
     if (iterator == m_files.end()) return nullptr;
     return &iterator->second;
 }
 
-std::filesystem::path IE::Core::FileSystem::getBaseDirectory(const std::filesystem::path &t_path) {
-    return t_path;
+std::filesystem::path IE::Core::FileSystem::getBaseDirectory() {
+    return m_path;
 }
 
 void IE::Core::FileSystem::setBaseDirectory(const std::filesystem::path &t_path) {
-    m_path = t_path;
-    m_files.clear();
-    std::filesystem::recursive_directory_iterator directory{t_path};
-    for (auto entry : directory)
-        if (!entry.is_directory()) addFile(entry.path());
+    m_path = std::filesystem::absolute(t_path);
+//    if constexpr (IE_OS == IE_MACOS) {
+//        m_internalResourcesPath = m_path / ".." / "Resources";
+//    }
+}
+
+void IE::Core::FileSystem::setInternalResourcesDirectory(const std::filesystem::path &t_path) {
+    m_internalResourcesPath = t_path;
+}
+
+std::filesystem::path IE::Core::FileSystem::getInternalResourcesDirectory() {
+    return m_internalResourcesPath;
 }
 
 IE::Core::FileSystem::FileSystem() = default;

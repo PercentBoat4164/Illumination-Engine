@@ -53,18 +53,18 @@ public:
 
     IERenderable() = default;
 
-    IERenderable(IERenderEngine *, const std::string &);
+    IERenderable(IERenderEngine *, IE::Core::File *);
 
     static void setAPI(const IEAPI &);
 
     /* API dependent functions */
-    static std::function<void(IERenderable &, IERenderEngine *, const std::string &)> _create;
+    static std::function<void(IERenderable &, IERenderEngine *, IE::Core::File *)> _create;
 
-    void create(IERenderEngine *, const std::string &);
+    void create(IERenderEngine *, IE::Core::File *);
 
-    void _openglCreate(IERenderEngine *, const std::string &);
+    void _openglCreate(IERenderEngine *, IE::Core::File *);
 
-    void _vulkanCreate(IERenderEngine *, const std::string &);
+    void _vulkanCreate(IERenderEngine *, IE::Core::File *);
 
 
     static std::function<void(IERenderable &)> _loadFromDiskToRAM;
