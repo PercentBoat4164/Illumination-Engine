@@ -1,4 +1,5 @@
 #include "Core/Core.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "Core/ThreadingModule/Awaitable.hpp"
 #include "Core/ThreadingModule/Task.hpp"
 #include "IERenderEngine.hpp"
@@ -82,6 +83,8 @@ IE::Core::Threading::Task<void> illuminationEngine() {
     }
 
     IE::Core::Core::getThreadPool()->shutdown();
+
+    IE::Core::Logger l{"Name"};
 
     co_return;
 }
