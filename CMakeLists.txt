@@ -37,13 +37,19 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_compile_definitions("Clang")
 
     # Added to prevent known errors from clouding the log.
+    add_compile_options("-Wno-deprecated-non-prototype")
     add_compile_options("-Wno-nullability-completeness")
+
+    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+        add_compile_options("/EHsc" "-Wno-unused-command-line-argument" "-Wno-error=unused-function")
+    endif ()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if (WIN32)
         set(BUILD_SHARED_LIBS ON)
     endif ()
 
     add_compile_definitions("GCC")
+    add_compile_options("-Wno-unknown-pragmas")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_definitions("MSVC")
 
@@ -60,7 +66,7 @@ elseif ()
 endif ()
 
 # Compilation Options for similar interface compilers
-if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC" OR CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options("/Zi" "/Od")  # Complete debugging information with no optimization
 else ()
     add_compile_options("-g" "-O0")  # Debugging information with no optimization
