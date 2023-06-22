@@ -1,12 +1,13 @@
 #include "Core/Core.hpp"
-#include "Core/ThreadingModule/CoroutineTask.hpp"
+#include "Core/ThreadingModule/Awaitable.hpp"
+#include "Core/ThreadingModule/Task.hpp"
 #include "IERenderEngine.hpp"
 #include "InputModule/InputEngine.hpp"
 #include "InputModule/Keyboard.hpp"
 
 #include <GLFW/glfw3.h>
 
-IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
+IE::Core::Threading::Task<void> illuminationEngine() {
     IESettings settings     = IESettings();
     auto      *renderEngine = IE::Core::Core::createEngine<IERenderEngine>("render engine", settings);
 
@@ -88,7 +89,9 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
 int main(int argc, char **argv) {
     if (argc >= 1) IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
 
-    auto main = IE::Core::Core::getThreadPool()->submitToMainThread(illuminationEngine);
+    auto main = IE::Core::Core::getThreadPool()->submit(
+      IE::Core::Threading::IE_THREAD_TYPE_MAIN_THREAD,
+      illuminationEngine()
+    );
     IE::Core::Core::getThreadPool()->startMainThreadLoop();
-    main->wait();
 }

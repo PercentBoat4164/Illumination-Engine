@@ -15,17 +15,8 @@ void IE::Core::Threading::ResumeAfter::await_suspend(std::coroutine_handle<> t_h
 }
 
 void IE::Core::Threading::ResumeAfter::releaseDependency() {
-    // clang-format off
     if (--*m_dependencyCount == 0) {
-#       if defined(AppleClang)
-        std::coroutine_handle<> handle{m_handle->load()};
-        m_threadPool->submit([handle] {
-            std::experimental::coroutine_handle<> h{handle};
-            h.resume();
-        });
-#       else
-        m_threadPool->submit(m_handle->load());
-#       endif
+        submit(m_handle->load());
+        m_threadPool->awakenAll();
     }
-    // clang-format on
 }

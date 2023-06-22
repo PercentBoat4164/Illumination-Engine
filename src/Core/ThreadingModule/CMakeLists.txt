@@ -1,11 +1,9 @@
 set(IEThreadingModuleSourceFiles  # Gather sources
         Awaitable.cpp
-        CoroutineTask.cpp
+        BaseTask.cpp
         EnsureThread.cpp
-        FunctionTask.cpp
         Queue.cpp
         ResumeAfter.cpp
-        ResumeOnMainThreadAfter.cpp
         Task.cpp
         ThreadPool.cpp
         Worker.cpp
@@ -13,5 +11,5 @@ set(IEThreadingModuleSourceFiles  # Gather sources
 
 
 add_library(IEThreadingModule ${IEThreadingModuleSourceFiles})
-target_link_libraries(IEThreadingModule PUBLIC INT_src)
+target_link_libraries(IEThreadingModule INT_src)
 set_target_properties(IEThreadingModule PROPERTIES LINKER_LANGUAGE CXX)
