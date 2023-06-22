@@ -108,7 +108,6 @@ void IEImage::uploadToRAM(const std::vector<char> &data) {
     }
     if (data.size() > width * height * channels) {
         linkedRenderEngine->settings->logger.log(
-
           "Attempt to load in more data to RAM than can fit in image!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -127,7 +126,6 @@ void IEImage::uploadToRAM(void *data, size_t size) {
     }
     if (size > width * height * channels) {
         linkedRenderEngine->settings->logger.log(
-
           "Attempt to load in more data to RAM than can fit in image!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
         );
@@ -494,7 +492,6 @@ uint8_t IEImage::getBytesInFormat() const {
         case VK_FORMAT_MAX_ENUM:
         default:
             linkedRenderEngine->settings->logger.log(
-
               "Attempt to get number of bytes in pixel of format VK_FORMAT_UNDEFINED!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );

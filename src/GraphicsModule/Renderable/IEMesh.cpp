@@ -81,7 +81,6 @@ void IEMesh::_openglLoadFromDiskToRAM(const std::string &directory, const aiScen
     for (size_t i = 0; i < triangleCount; ++i) {
         if (mesh->mFaces[i].mNumIndices != 3) {
             linkedRenderEngine->settings->logger.log(
-
               "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
@@ -141,7 +140,6 @@ void IEMesh::_vulkanLoadFromDiskToRAM(const std::string &directory, const aiScen
     for (size_t i = 0; i < triangleCount; ++i) {
         if (mesh->mFaces[i].mNumIndices != 3) {
             linkedRenderEngine->settings->logger.log(
-
               "Attempted to add a non-triangular face to a mesh! Try using the aiProcess_Triangulate flag.",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_WARN
             );
