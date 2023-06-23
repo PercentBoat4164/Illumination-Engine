@@ -24,6 +24,16 @@ add_compile_definitions(IE_MACOS="Darwin")
 add_compile_definitions(IE_WINDOWS="Windows")
 add_compile_definitions(IE_LINUX="Linux")
 
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    add_compile_definitions(IE_OS_IS_MACOS=true)
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    add_compile_definitions(IE_OS_IS_WINDOWS=true)
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    add_compile_definitions(IE_OS_IS_LINUX=true)
+else ()
+    message(FATAL_ERROR "Unsupported operating system in use: ${CMAKE_SYSTEM_NAME}")
+endif ()
+
 
 set(IE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})  # Directory Illumination Engine is being built in
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)  # Directory to put library files

@@ -6,10 +6,10 @@
 
 IE::Core::File *IE::Core::FileSystem::addFile(const std::filesystem::path &filePath) {
     std::filesystem::path newPath(std::filesystem::absolute(filePath));
-    createFolder(newPath.parent_path().string());
     auto file = getFile(newPath);
-    if (file == nullptr) return &(*m_files.insert(std::make_pair(filePath.string(), File(newPath))).first).second;
-    return file;
+    if (file != nullptr) return file;
+    createFolder(newPath.parent_path().string());
+    return &(*m_files.insert(std::make_pair(filePath.string(), File(newPath))).first).second;
 }
 
 void IE::Core::FileSystem::createFolder(const std::filesystem::path &folderPath) const {
@@ -46,19 +46,19 @@ IE::Core::File *IE::Core::FileSystem::getFile(const std::filesystem::path &fileP
     return &iterator->second;
 }
 
+IE::Core::File *IE::Core::FileSystem::getInternalResourceFile(const std::filesystem::path &filePath) {
+    return addFile(m_internalResourcesPath / filePath);
+}
+
 std::filesystem::path IE::Core::FileSystem::getBaseDirectory() {
     return m_path;
 }
 
 void IE::Core::FileSystem::setBaseDirectory(const std::filesystem::path &t_path) {
     m_path = std::filesystem::absolute(t_path);
-//    if constexpr (IE_OS == IE_MACOS) {
-//        m_internalResourcesPath = m_path / ".." / "Resources";
-//    }
-}
-
-void IE::Core::FileSystem::setInternalResourcesDirectory(const std::filesystem::path &t_path) {
-    m_internalResourcesPath = t_path;
+#   ifdef IE_OS_IS_MACOS
+        m_internalResourcesPath = std::filesystem::canonical(m_path / ".." / "Resources");
+#   endif
 }
 
 std::filesystem::path IE::Core::FileSystem::getInternalResourcesDirectory() {

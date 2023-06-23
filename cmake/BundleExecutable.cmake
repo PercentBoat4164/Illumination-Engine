@@ -52,6 +52,13 @@ function(ConiferAddExecutable ConiferAddExecutable_EXECUTABLE)
             set(ConiferAddExecutable_SOURCES ${ConiferAddExecutable_SOURCES};${ConiferAddExecutable_RES_INTERNAL_DIR}/${FILE})
         endforeach ()
 
+        file(GLOB_RECURSE RESOURCES FOLLOW_SYMLINKS RELATIVE ${BUILD_RES} CONFIGURE_DEPENDS ${BUILD_RES}/shaders/*)
+        foreach (FILE ${RESOURCES})
+            cmake_path(SET DESTINATION NORMALIZE Resources/${FILE}/..)
+            set_source_files_properties(${BUILD_RES}/${FILE} PROPERTIES MACOSX_PACKAGE_LOCATION "${DESTINATION}")
+            set(ConiferAddExecutable_SOURCES ${ConiferAddExecutable_SOURCES};${BUILD_RES}/${FILE})
+        endforeach ()
+
         set(BUNDLE MACOSX_BUNDLE)
     endif ()
 

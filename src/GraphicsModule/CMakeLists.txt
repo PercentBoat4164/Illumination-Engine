@@ -1,6 +1,3 @@
-# Generate all subdirectories
-add_subdirectory(DefaultShaders)
-
 set(IEGraphicsModuleSourceFiles  # Gather sources
         Buffer/IEBuffer.cpp
         CommandBuffer/DependencyStructs/IEBufferMemoryBarrier.cpp
@@ -46,5 +43,3 @@ target_link_libraries(IEGraphicsModule PUBLIC IECore)
 
 # Add external dependency libraries and include directories to the target
 target_link_libraries(IEGraphicsModule PUBLIC INT_src EXT_AssImp EXT_OpenGL EXT_Vulkan)
-
-add_dependencies(IEGraphicsModule IEGMShaders)  # Add shader pre-compilation as a dependency

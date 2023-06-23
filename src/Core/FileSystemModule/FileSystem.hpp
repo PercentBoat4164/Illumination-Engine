@@ -17,6 +17,8 @@ public:
 
     File *getFile(const std::filesystem::path &filePath);
 
+        File                                 *getInternalResourceFile(const std::filesystem::path &filePath);
+
     void createFolder(const std::filesystem::path &folderPath) const;
 
     // Export data to a File
