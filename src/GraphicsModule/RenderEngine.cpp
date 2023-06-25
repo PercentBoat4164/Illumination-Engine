@@ -22,6 +22,14 @@ unsigned int IE::Graphics::RenderEngine::APIDebugMessenger(
 
 IE::Core::Threading::Task<GLFWwindow *> IE::Graphics::RenderEngine::createWindow() {
     // Initialize GLFW
+        // On macOS GLFW must be initialized, and the m_window must be created from the main thread.
+#ifdef __APPLE__
+    co_await IE::Core::getThreadPool().ensureThread(
+      IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD
+    );
+    glfwInitHint(GLFW_COCOA_MENUBAR, GLFW_FALSE);
+    glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GLFW_FALSE);
+#   endif
     if (glfwInit() != GLFW_TRUE) {
         const char *description{};
         int         code{glfwGetError(&description)};
@@ -49,12 +57,6 @@ IE::Core::Threading::Task<GLFWwindow *> IE::Graphics::RenderEngine::createWindow
     }
 
     // Create m_window
-    // On macOS the m_window must be created from the main thread.
-#ifdef __APPLE__
-    co_await IE::Core::Core::getThreadPool()->ensureThread(
-      IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD
-    );
-#endif
     m_window = glfwCreateWindow(
       (int) m_defaultResolution[0],
       (int) m_defaultResolution[1],
@@ -63,7 +65,7 @@ IE::Core::Threading::Task<GLFWwindow *> IE::Graphics::RenderEngine::createWindow
       nullptr
     );
 #ifdef __APPLE__
-    co_await IE::Core::Core::getThreadPool()->ensureThread(
+    co_await IE::Core::getThreadPool().ensureThread(
       IE::Core::Threading::ThreadType::IE_THREAD_TYPE_WORKER_THREAD
     );
 #endif
