@@ -18,8 +18,8 @@ std::filesystem::path &IE::Core::FileSystem::makePathAbsolute(std::filesystem::p
     return filePath;
 }
 
-void IE::Core::FileSystem::createDirectory(const std::filesystem::path &folderPath) const {
-    std::filesystem::create_directories(m_path / folderPath);
+void IE::Core::FileSystem::createDirectory(const std::filesystem::path &t_directoryPath) const {
+    std::filesystem::create_directories(m_path / t_directoryPath);
 }
 
 void IE::Core::FileSystem::exportData(const std::filesystem::path &filePath, const std::vector<char> &data) {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Stream.hpp"
+
 #include <../contrib/stb/stb_image.h>
 #include <../contrib/rapidjson/include/rapidjson/document.h>
 #include <assimp/Importer.hpp>
@@ -39,7 +41,8 @@ public:
 
     explicit File(const File &t_other);
 
-    IE_FILESYSTEM_RESULT read(std::string &t_data, const std::streamsize &t_chars, const std::streamsize &t_pos = 0) {
+    IE_FILESYSTEM_RESULT
+    read(std::string &t_data, const std::streamsize &t_chars, const std::streamsize &t_pos = 0) {
         std::streamsize len = std::min(m_size, t_chars);
         t_data.resize(len);
         m_stream.seekg(t_pos, std::fstream::beg);
@@ -47,8 +50,9 @@ public:
         return IE_FILESYSTEM_RESULT_SUCCESS;
     }
 
+    template<typename T>
     IE_FILESYSTEM_RESULT
-    read(std::vector<char> &t_data, const std::streamsize &t_chars, const std::streamsize &t_pos =0) {
+    read(std::vector<T> &t_data, const std::streamsize &t_chars, const std::streamsize &t_pos = 0) {
         std::streamsize len = std::min(m_size, t_chars);
         t_data.resize(len);
         m_stream.seekg(t_pos, std::fstream::beg);
@@ -63,7 +67,7 @@ public:
         return IE_FILESYSTEM_RESULT_SUCCESS;
     }
 
-    IE_FILESYSTEM_RESULT insert(const std::string t_data, const std::streamsize &t_pos =0) {
+    IE_FILESYSTEM_RESULT insert(const std::string t_data, const std::streamsize &t_pos = 0) {
         std::string stringEnd;
         stringEnd.resize(m_size - t_pos);
         m_stream.seekg(t_pos, std::fstream::beg);
@@ -74,15 +78,23 @@ public:
         return IE_FILESYSTEM_RESULT_SUCCESS;
     }
 
-    IE_FILESYSTEM_RESULT overwrite(const std::string t_data, const std::streamsize &t_pos =0) {
+    IE_FILESYSTEM_RESULT overwrite(const std::string t_data, const std::streamsize &t_pos = 0) {
         m_stream.seekg(t_pos, std::fstream::beg);
         m_stream.write(t_data.c_str(), t_data.size());
         m_size = m_size - t_pos + t_data.size();
         return IE_FILESYSTEM_RESULT_SUCCESS;
     }
 
-    IE_FILESYSTEM_RESULT erase(const std::streamsize &t_pos, const std::streamsize &t_chars) {
-        // Figure out how to erase a block from the file.
+    bool isDirectory() {
+        return std::filesystem::is_directory(m_path);
+    }
+
+    bool isFile() {
+        return std::filesystem::is_regular_file(m_path);
+    }
+
+    bool isSymlink() {
+        return std::filesystem::is_symlink(m_path);
     }
 
     template<IE_FILE_TYPE T = IE_FILE_TYPE_MODEL>
@@ -92,12 +104,15 @@ public:
 
     template<IE_FILE_TYPE T = IE_FILE_TYPE_IMAGE>
     stbi_uc *import() {
-        return nullptr;
+        std::vector<stbi_uc> data;
+        read(data, -1);
+        int w, h, c;
+        return stbi_load_from_memory(data.data(), data.size(), &w, &h, &c, 4);
     }
 
     template<IE_FILE_TYPE T = IE_FILE_TYPE_AUDIO>
-    std::vector<char> stream(size_t t_bufferSize) {
-        return {};
+    IE::Core::Stream<std::vector<char>> stream(size_t t_bufferSize) {
+        co_return {};
     }
 
     template<IE_FILE_TYPE T = IE_FILE_TYPE_AUDIO>
@@ -107,9 +122,9 @@ public:
 
     template<IE_FILE_TYPE T = IE_FILE_TYPE_JSON>
     rapidjson::Document import() {
-        rapidjson::Document document;
         std::string str;
         read(str, -1);
+        rapidjson::Document document;
         document.Parse(str.c_str());
         return document;
     }
@@ -124,4 +139,4 @@ private:
     // Close the file
     void close();
 };
-}  // namespace IE::Core
+}

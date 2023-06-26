@@ -1,8 +1,7 @@
 set(IEFileSystemModuleSourceFiles  # Gather sources
         File.cpp
         FileSystem.cpp
-        Directory.cpp
-        )
+        Stream.cpp Stream.hpp)
 
 # Create and define properties for the library
 add_library(IEFileSystemModule ${IEFileSystemModuleSourceFiles})

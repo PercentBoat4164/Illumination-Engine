@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Directory.hpp"
 #include "File.hpp"
 
 #include <filesystem>
@@ -18,11 +17,7 @@ public:
 
     File *getFile(const std::filesystem::path &t_filePath);
 
-    Directory *addDirectory(const std::filesystem::path &t_dirPath);
-
-    Directory *getDirectory(const std::filesystem::path &t_dirPath);
-
-    void createDirectory(const std::filesystem::path &folderPath) const;
+    void createDirectory(const std::filesystem::path &t_directoryPath) const;
 
     // Export data to a File
     void exportData(const std::filesystem::path &filePath, const std::vector<char> &data);
