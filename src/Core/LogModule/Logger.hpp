@@ -2,6 +2,7 @@
 
 /**
  * This file contains the Logger class for logging messages.
+ * These messages will be used for tracking engine processes & code paths, and recording errors
  */
 
 // External dependencies
