@@ -3,14 +3,14 @@ set(CPM_SOURCE_CACHE ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 set(CPM_USE_LOCAL_PACKAGES ${IE_PREFER_LOCAL_LIBS})
 
 function(download_with_cache ARG_DOWNLOAD_URL ARG_OUTPUT_FILE)
-    file(DOWNLOAD ${ARG_DOWNLOAD_URL} STATUS _DOWNLOAD_RESULTS)
-    list(GET _DOWNLOAD_RESULTS 0 _ERROR_CODE)
-    if (_ERROR_CODE GREATER 0)
-        list(GET _DOWNLOAD_RESULTS 1 _ERROR_MESSAGE)
-        message(WARNING "Could not get CPM.cmake because: ${_ERROR_MESSAGE}")
-    else ()
-        file(DOWNLOAD ${ARG_DOWNLOAD_URL} ${ARG_OUTPUT_FILE})
-    endif ()
+	file(DOWNLOAD ${ARG_DOWNLOAD_URL} STATUS _DOWNLOAD_RESULTS)
+	list(GET _DOWNLOAD_RESULTS 0 _ERROR_CODE)
+	if (_ERROR_CODE GREATER 0)
+		list(GET _DOWNLOAD_RESULTS 1 _ERROR_MESSAGE)
+		message(WARNING "Could not get CPM.cmake because: ${_ERROR_MESSAGE}")
+	else ()
+		file(DOWNLOAD ${ARG_DOWNLOAD_URL} ${ARG_OUTPUT_FILE})
+	endif ()
 endfunction()
 
 # Download the latest CPM.cmake file
@@ -23,7 +23,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
 set(ASSIMP_HUNTER_ENABLED OFF)
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 if (APPLE)
-    set(ASSIMP_BUILD_FRAMEWORK OFF)
+	set(ASSIMP_BUILD_FRAMEWORK OFF)
 endif ()
 set(ASSIMP_DOUBLE_PRECISION OFF)
 set(ASSIMP_OPT_BUILD_PACKAGES OFF)
@@ -46,7 +46,7 @@ set(ASSIMP_INSTALL_PDB OFF)
 set(USE_STATIC_CRT OFF)
 set(ASSIMP_BUILD_DRACO OFF)  # Fails as of AssImp v5.2.5
 if (WINDOWS)
-    set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
+	set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
 endif ()
 
 # GLM Options
@@ -95,11 +95,11 @@ set(GLFW_INSTALL OFF)
 set(GLFW_BUILD_EXAMPLES OFF)
 set(GLFW_VULKAN_STATIC OFF)
 if (WINDOWS)
-    set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF)
-    set(GLFW_USE_HYBRID_HPG OFF)
+	set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF)
+	set(GLFW_USE_HYBRID_HPG OFF)
 endif ()
 if (LINUX)
-    set(GLFW_USE_WAYLAND OFF)
+	set(GLFW_USE_WAYLAND OFF)
 endif ()
 
 # SpdLog Options
@@ -125,7 +125,7 @@ set(SHADERC_SKIP_INSTALL ON)
 
 # CCache Options
 if (NOT DEFINED USE_CCACHE)
-    set(USE_CCACHE ON)
+	set(USE_CCACHE ON)
 endif ()
 set(CCACHE_VERSION 4.8.1)
 
@@ -136,19 +136,19 @@ find_package(OpenGL REQUIRED)
 find_package(Vulkan REQUIRED shaderc_combined)
 
 set(OpenGL_GL_PREFERENCE "GLVND")
-CPMAddPackage(
-        NAME GLEW
-        URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
-        VERSION 2.2.0
-        SOURCE_SUBDIR build/cmake
+cpmaddpackage(
+  NAME GLEW
+  URL https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
+  VERSION 2.2.0
+  SOURCE_SUBDIR build/cmake
 )
-CPMAddPackage("gh:assimp/assimp@5.2.5")
-CPMAddPackage("gh:g-truc/glm#master")
-CPMAddPackage("gh:glfw/glfw#3.3.8")
-CPMAddPackage("gh:gabime/spdlog@1.11.0")
-CPMAddPackage("gh:charles-lunarg/vk-bootstrap@0.7")
-CPMAddPackage("gh:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@3.0.1")
-CPMAddPackage("gh:KhronosGroup/SPIRV-Cross#main")  # This should be main. The latest guaranteed working version is kept there. All tags are for older versions.
+cpmaddpackage("gh:assimp/assimp@5.2.5")
+cpmaddpackage("gh:g-truc/glm#master")
+cpmaddpackage("gh:glfw/glfw#3.3.8")
+cpmaddpackage("gh:gabime/spdlog@1.11.0")
+cpmaddpackage("gh:charles-lunarg/vk-bootstrap@0.7")
+cpmaddpackage("gh:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@3.0.1")
+cpmaddpackage("gh:KhronosGroup/SPIRV-Cross#main")  # This should be main. The latest guaranteed working version is kept there. All tags are for older versions.
 
 add_library(EXT_AssImp dummy.cpp)
 add_library(EXT_SpdLog dummy.cpp)

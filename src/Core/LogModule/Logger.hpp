@@ -27,9 +27,6 @@ class Logger {
 private:
     // Used to allow copying loggers between pointers.
     std::shared_ptr<spdlog::logger>                           m_logger;
-    // Used to determine when the 'Start of new log' message should be displayed, and when the m_logFileSink should
-    // be initialized.
-    static bool                                               m_init;
     // Used to give all loggers the 'logs/IlluminationEngine.log' file sink.
     static std::shared_ptr<spdlog::sinks::basic_file_sink_st> m_logFileSink;
     // Used to ensure synchronous access to the m_logger. Needs to be a pointer type because an instance of the
