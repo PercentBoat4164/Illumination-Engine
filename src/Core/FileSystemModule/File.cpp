@@ -6,7 +6,7 @@ IE::Core::File::File(const std::filesystem::path &filePath) {
     path = filePath;
     name = path.filename().string();
     open(std::fstream::in | std::fstream::binary);
-    if (!is_directory(path)) size = std::filesystem::file_size(path);
+    if (!std::filesystem::is_directory(path)) size = std::filesystem::file_size(path);
     fileIO.seekg(0, std::fstream::end);
     extension = path.extension().string();
     close();

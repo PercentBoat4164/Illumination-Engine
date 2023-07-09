@@ -4,5 +4,5 @@ set(IELogModuleSourceFiles  # Gather sources
 
 # Create and define properties for the library
 add_library(IELogModule ${IELogModuleSourceFiles})
-target_link_libraries(IELogModule PUBLIC INT_src EXT_SpdLog EXT_Vulkan)
+target_link_libraries(IELogModule PUBLIC EXT_SpdLog EXT_Vulkan IEFileSystemModule)
 set_target_properties(IELogModule PROPERTIES LINKER_LANGUAGE CXX)

@@ -1,5 +1,7 @@
 #include "Logger.hpp"
 
+#include "Core/Core.hpp"
+
 #include <memory>
 #include <mutex>
 #include <spdlog/async.h>
@@ -19,7 +21,9 @@ std::mutex                                        *IE::Core::Logger::m_logMutex{
 IE::Core::Logger::Logger(const std::string &t_name) {
     m_logMutex = new std::mutex();
     if (!m_init)
-        m_logFileSink = std::make_shared<spdlog::sinks::basic_file_sink_st>("logs/IlluminationEngine.log");
+        m_logFileSink = std::make_shared<spdlog::sinks::basic_file_sink_st>(
+          IE::Core::Core::getFileSystem()->getInternalLogDirectory() / "IlluminationEngine.log"
+        );
     std::vector<spdlog::sink_ptr> sinks{m_logFileSink, std::make_shared<spdlog::sinks::stdout_color_sink_st>()};
     m_logger = std::make_shared<spdlog::logger>(t_name, sinks.begin(), sinks.end());
     setLogLevel(ILLUMINATION_ENGINE_LOG_LEVEL_TRACE);

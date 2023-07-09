@@ -85,9 +85,7 @@ IE::Core::Threading::CoroutineTask<void> illuminationEngine() {
     co_return;
 }
 
-int main(int argc, char **argv) {
-    if (argc >= 1) IE::Core::Core::getInst(std::filesystem::path(argv[0]).parent_path().string());
-
+int main() {
     auto main = IE::Core::Core::getThreadPool()->submitToMainThread(illuminationEngine);
     IE::Core::Core::getThreadPool()->startMainThreadLoop();
     main->wait();

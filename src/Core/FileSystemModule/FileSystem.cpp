@@ -3,10 +3,25 @@
 #include "File.hpp"
 
 #include <filesystem>
+#include <iostream>
+
+IE::Core::FileSystem::FileSystem() {
+    std::cout << "Before initial canonical.\n";
+    m_path = std::filesystem::canonical(".");
+    std::cout << m_path << "\n";
+#ifdef IE_OS_IS_MACOS
+    /**@todo Make this work for things other than the Illumination Engine applications. */
+    if (std::filesystem::exists(m_path / "IlluminationEngine.app"))
+        m_path = m_path / "IlluminationEngine.app" / "Contents" / "MacOS";
+    m_internalResourcesPath = std::filesystem::canonical(m_path / ".." / "Resources");
+    std::filesystem::create_directories(m_path / ".." / ".." / ".." / "Logs");
+    m_internalLogPath = std::filesystem::canonical(m_path / ".." / ".." / ".." / "Logs");
+#endif
+}
 
 IE::Core::File *IE::Core::FileSystem::addFile(const std::filesystem::path &filePath) {
     std::filesystem::path newPath(std::filesystem::absolute(filePath));
-    auto file = getFile(newPath);
+    auto                  file = getFile(newPath);
     if (file != nullptr) return file;
     createFolder(newPath.parent_path().string());
     return &(*m_files.insert(std::make_pair(filePath.string(), File(newPath))).first).second;
@@ -41,7 +56,7 @@ void IE::Core::FileSystem::deleteUsedDirectory(const std::filesystem::path &file
 
 IE::Core::File *IE::Core::FileSystem::getFile(const std::filesystem::path &filePath) {
     std::filesystem::path newPath(std::filesystem::absolute(filePath));
-    auto iterator = m_files.find(newPath.string());
+    auto                  iterator = m_files.find(newPath.string());
     if (iterator == m_files.end()) return nullptr;
     return &iterator->second;
 }
@@ -50,19 +65,18 @@ IE::Core::File *IE::Core::FileSystem::getInternalResourceFile(const std::filesys
     return addFile(m_internalResourcesPath / filePath);
 }
 
-std::filesystem::path IE::Core::FileSystem::getBaseDirectory() {
-    return m_path;
+IE::Core::File *IE::Core::FileSystem::getInternalLogFile(const std::filesystem::path &t_path) {
+    return addFile(m_internalLogPath / t_path);
 }
 
-void IE::Core::FileSystem::setBaseDirectory(const std::filesystem::path &t_path) {
-    m_path = std::filesystem::absolute(t_path);
-#   ifdef IE_OS_IS_MACOS
-        m_internalResourcesPath = std::filesystem::canonical(m_path / ".." / "Resources");
-#   endif
+std::filesystem::path IE::Core::FileSystem::getBaseDirectory() {
+    return m_path;
 }
 
 std::filesystem::path IE::Core::FileSystem::getInternalResourcesDirectory() {
     return m_internalResourcesPath;
 }
 
-IE::Core::FileSystem::FileSystem() = default;
+std::filesystem::path IE::Core::FileSystem::getInternalLogDirectory() {
+    return m_internalLogPath;
+}

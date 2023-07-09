@@ -4,7 +4,7 @@ add_subdirectory(InputModule)
 add_subdirectory(GraphicsModule)
 
 # Create and define properties for the executable target
-ConiferAddExecutable(IlluminationEngine
+ConiferAddExecutable(IlluminationEngine ${IE_BASE_DIR}/build-res
         NAME "Illumination Engine"
         VERSION ${ILLUMINATION_ENGINE_VERSION}
         ICON_SVG ${CMAKE_SOURCE_DIR}/build-res/IlluminationEngineLogo.svg

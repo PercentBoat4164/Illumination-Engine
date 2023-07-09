@@ -2,46 +2,45 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+<!--Should always be APPL (for application)-->
 	<key>CFBundlePackageType</key>
-	<string>${MACOS_BUNDLE_PACKAGE_TYPE}</string>
-
+	<string>${MACOSX_BUNDLE_PACKAGE_TYPE}</string>
+<!--com.applicationname.companyname-->
 	<key>CFBundleIdentifier</key>
-	<string>${MACOS_BUNDLE_IDENTIFIER}</string>
-
+	<string>${MACOSX_BUNDLE_IDENTIFIER}</string>
+<!--All the following use the formal name of the executable (including capitalization and spaces)-->
 	<key>CFBundleName</key>
-	<string>${MACOS_BUNDLE_NAME}</string>
-
+	<string>${MACOSX_BUNDLE_NAME}</string>
 	<key>CFBundleDisplayName</key>
-	<string>${MACOS_BUNDLE_NAME}</string>
-
+	<string>${MACOSX_BUNDLE_NAME}</string>
 	<key>CFBundleSpokenName</key>
-	<string>${MACOS_BUNDLE_NAME}</string>
-
+	<string>${MACOSX_BUNDLE_NAME}</string>
+<!--The version of the executable-->
 	<key>CFBundleVersion</key>
-	<string>${MACOS_BUNDLE_VERSION}</string>
-
+	<string>${MACOSX_BUNDLE_VERSION}</string>
 	<key>CFBundleShortVersionString</key>
-	<string>${MACOS_BUNDLE_VERSION}</string>
-
+	<string>${MACOSX_BUNDLE_VERSION}</string>
+<!--The informal name of the executable (as it appears in the filesystem)-->
+	<key>CFBundleExecutable</key>
+	<string>${MACOSX_BUNDLE_EXECUTABLE}</string>
+<!--The name of the icon file (usually icon.icns)-->
+	<key>CFBundleIconFile</key>
+	<string>${MACOSX_BUNDLE_ICON}</string>
+<!--Apple's required information (hardcoded)-->
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-
 	<key>NSHumanReadableCopyright</key>
-	<string>${MACOS_BUNDLE_COPYRIGHT}</string>
-
+	<string>${MACOSX_BUNDLE_COPYRIGHT}</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
-
-	<key>CFBundleExecutable</key>
-	<string>${MACOS_BUNDLE_EXECUTABLE}</string>
-
-	<key>CFBundleIconFile</key>
-	<string>${MACOS_BUNDLE_ICON}</string>
-
-	<key>CFBundleSignature</key>
-	<string>????</string>
-
 	<key>CSResourcesFileMapped</key>
 	<true/>
+<!--Used to prevent issues with entitlements-->
+	<key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+
 </dict>
 </plist>

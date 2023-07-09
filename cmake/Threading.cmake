@@ -1,12 +1,12 @@
-function (RunSequentiallyStartBlock RunSequentially_MUTEX)
+function(RunSequentiallyStartBlock RunSequentially_MUTEX)
     file(LOCK ${RunSequentially_MUTEX})
 endfunction()
 
-function (RunSequentiallyEndBlock RunSequentially_MUTEX)
+function(RunSequentiallyEndBlock RunSequentially_MUTEX)
     file(LOCK ${RunSequentially_MUTEX} RELEASE)
 endfunction()
 
-function (RunOnceStallAllStartBlock RunOnceStallAll_MUTEX RunOnceStallAll_SHOULD_CONTINUE)
+function(RunOnceStallAllStartBlock RunOnceStallAll_MUTEX RunOnceStallAll_SHOULD_CONTINUE)
     file(LOCK ${RunOnceStallAll_MUTEX} TIMEOUT 0 RESULT_VARIABLE SHOULD_CONTINUE)
     if (SHOULD_CONTINUE STREQUAL "0")
         set(${RunOnceStallAll_SHOULD_CONTINUE} TRUE PARENT_SCOPE)
@@ -22,7 +22,7 @@ function(RunOnceStallAllEndBlock RunOnceStallAll_MUTEX RunOnceStallAll_SHOULD_CO
     file(LOCK ${RunOnceStallAll_MUTEX} RELEASE)
 endfunction()
 
-function (RunOnceStallOneStartBlock RunOnceStallOne_MUTEX RunOnceStallOne_SHOULD_CONTINUE)
+function(RunOnceStallOneStartBlock RunOnceStallOne_MUTEX RunOnceStallOne_SHOULD_CONTINUE)
     file(LOCK ${RunOnceStallOne_MUTEX} TIMEOUT 0 RESULT_VARIABLE SHOULD_CONTINUE)
     if (SHOULD_CONTINUE STREQUAL "0")
         set(${RunOnceStallOne_SHOULD_CONTINUE} TRUE PARENT_SCOPE)
@@ -31,7 +31,7 @@ function (RunOnceStallOneStartBlock RunOnceStallOne_MUTEX RunOnceStallOne_SHOULD
     endif ()
 endfunction()
 
-function (RunOnceStallOneEndBlock RunOnceStallOne_MUTEX RunOnceStallOne_SHOULD_CONTINUE)
+function(RunOnceStallOneEndBlock RunOnceStallOne_MUTEX RunOnceStallOne_SHOULD_CONTINUE)
     if (${RunOnceStallOne_SHOULD_CONTINUE})
         file(LOCK ${RunOnceStallOne_MUTEX} RELEASE RESULT_VARIABLE IGNORED)
     endif ()

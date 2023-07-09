@@ -17,7 +17,9 @@ public:
 
     File *getFile(const std::filesystem::path &filePath);
 
-        File                                 *getInternalResourceFile(const std::filesystem::path &filePath);
+    File *getInternalResourceFile(const std::filesystem::path &filePath);
+
+    File *getInternalLogFile(const std::filesystem::path &t_path);
 
     void createFolder(const std::filesystem::path &folderPath) const;
 
@@ -33,13 +35,11 @@ public:
     // Delete a directory that has other files in it
     void deleteUsedDirectory(const std::filesystem::path &filePath);
 
-    void setBaseDirectory(const std::filesystem::path &t_path);
-
     std::filesystem::path getBaseDirectory();
 
-    void setInternalResourcesDirectory(const std::filesystem::path &t_path);
-
     std::filesystem::path getInternalResourcesDirectory();
+
+    std::filesystem::path getInternalLogDirectory();
 
     template<class T>
     void importFile(T *data, File &file, unsigned int flags = 0) {
@@ -53,7 +53,8 @@ public:
 
 private:
     std::filesystem::path                 m_path;
-    std::filesystem::path m_internalResourcesPath;
+    std::filesystem::path                 m_internalResourcesPath;
+    std::filesystem::path                 m_internalLogPath;
     Importer                              m_importer{};
     std::unordered_map<std::string, File> m_files;
 };

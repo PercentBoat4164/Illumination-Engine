@@ -60,16 +60,12 @@ public:
     static Threading::ThreadPool *getThreadPool();
 
 private:
+    static FileSystem                                          m_filesystem;
     static IE::Core::Logger                                    m_logger;
     static std::mutex                                          m_enginesMutex;
     static std::unordered_map<std::string, IE::Core::Engine *> m_engines;
     static std::mutex                                          m_windowsMutex;
     static std::unordered_map<GLFWwindow *, IE::Core::Window>  m_windows;
     static Threading::ThreadPool                               m_threadPool;
-    static FileSystem                                          m_filesystem;
-
-    Core(const std::filesystem::path &t_path) {
-        m_filesystem.setBaseDirectory(t_path);
-    }
 };
 }  // namespace IE::Core

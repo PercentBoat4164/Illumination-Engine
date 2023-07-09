@@ -1,17 +1,4 @@
-#set(BUNDLE MACOSX_BUNDLE PARENT_SCOPE)
-#
-#set(MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/macOS/Info.plist.in PARENT_SCOPE)
-#
-#set(MACOS_BUNDLE_PACKAGE_TYPE APPL PARENT_SCOPE)
-#set(MACOS_BUNDLE_IDENTIFIER "com.conifercomputing.illuminationengine" PARENT_SCOPE)
-#set(MACOS_BUNDLE_NAME "Illumination Engine" PARENT_SCOPE)
-#set(MACOS_BUNDLE_VERSION "${ILLUMINATION_ENGINE_VERSION}" PARENT_SCOPE)
-#set(MACOS_BUNDLE_COPYRIGHT "Please no steal!" PARENT_SCOPE)
-#set(MACOS_BUNDLE_EXECUTABLE IlluminationEngine PARENT_SCOPE)
-#set(MACOS_BUNDLE_ICON ${ICON_PATH} PARENT_SCOPE)
-#set(MACOS_BUNDLE_SHORT_VERSION_STRING "${ILLUMINATION_ENGINE_VERSION}" PARENT_SCOPE)
-
-function(ConiferAddExecutable ConiferAddExecutable_EXECUTABLE)
+function(ConiferAddExecutable ConiferAddExecutable_EXECUTABLE ConiferAddExecutable_BUILD_RES)
     set(options IDENTIFIER COPYRIGHT)
     set(oneValueArgs NAME VERSION ICON_SVG RES_INTERNAL_DIR)
     set(multiValueArgs SOURCES)
@@ -27,7 +14,7 @@ function(ConiferAddExecutable ConiferAddExecutable_EXECUTABLE)
             endif ()
 
             # Build icon from SVG
-            RunOnceStallAllStartBlock(${BUILD_RES}/.lock CONTINUE)
+            RunOnceStallAllStartBlock(${ConiferAddExecutable_BUILD_RES}/.lock CONTINUE)
             if (CONTINUE)
                 find_program(SVG_CONVERTER rsvg-convert REQUIRED)  # brew install librsvg
                 find_program(ICON_UTIL iconutil REQUIRED)
@@ -42,7 +29,7 @@ function(ConiferAddExecutable ConiferAddExecutable_EXECUTABLE)
                 execute_process(COMMAND ${CMAKE_COMMAND} -E;rename;${ConiferAddExecutable_RES_INTERNAL_DIR}/icon.iconset;${ConiferAddExecutable_RES_INTERNAL_DIR}/logos)
                 execute_process(COMMAND ${CMAKE_COMMAND} -E;rm;-rf;${ConiferAddExecutable_RES_INTERNAL_DIR}/icon.iconset)
             endif ()
-            RunOnceStallAllEndBlock(${BUILD_RES}/.lock CONTINUE)
+            RunOnceStallAllEndBlock(${ConiferAddExecutable_BUILD_RES}/.lock CONTINUE)
         endif ()
 
         file(GLOB_RECURSE RESOURCES FOLLOW_SYMLINKS RELATIVE ${ConiferAddExecutable_RES_INTERNAL_DIR} CONFIGURE_DEPENDS ${ConiferAddExecutable_RES_INTERNAL_DIR}/*)
@@ -52,11 +39,11 @@ function(ConiferAddExecutable ConiferAddExecutable_EXECUTABLE)
             set(ConiferAddExecutable_SOURCES ${ConiferAddExecutable_SOURCES};${ConiferAddExecutable_RES_INTERNAL_DIR}/${FILE})
         endforeach ()
 
-        file(GLOB_RECURSE RESOURCES FOLLOW_SYMLINKS RELATIVE ${BUILD_RES} CONFIGURE_DEPENDS ${BUILD_RES}/shaders/*)
+        file(GLOB_RECURSE RESOURCES FOLLOW_SYMLINKS RELATIVE ${ConiferAddExecutable_BUILD_RES} CONFIGURE_DEPENDS ${ConiferAddExecutable_BUILD_RES}/shaders/*)
         foreach (FILE ${RESOURCES})
             cmake_path(SET DESTINATION NORMALIZE Resources/${FILE}/..)
-            set_source_files_properties(${BUILD_RES}/${FILE} PROPERTIES MACOSX_PACKAGE_LOCATION "${DESTINATION}")
-            set(ConiferAddExecutable_SOURCES ${ConiferAddExecutable_SOURCES};${BUILD_RES}/${FILE})
+            set_source_files_properties(${ConiferAddExecutable_BUILD_RES}/${FILE} PROPERTIES MACOSX_PACKAGE_LOCATION "${DESTINATION}")
+            set(ConiferAddExecutable_SOURCES ${ConiferAddExecutable_SOURCES};${ConiferAddExecutable_BUILD_RES}/${FILE})
         endforeach ()
 
         set(BUNDLE MACOSX_BUNDLE)
@@ -68,4 +55,16 @@ function(ConiferAddExecutable ConiferAddExecutable_EXECUTABLE)
     endif ()
 
     add_executable(${ConiferAddExecutable_EXECUTABLE} ${BUNDLE} ${ConiferAddExecutable_SOURCES})
+
+    # macOS specific code
+    if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+        set(MACOSX_BUNDLE_PACKAGE_TYPE "APPL" PARENT_SCOPE)
+        set(MACOSX_BUNDLE_IDENTIFIER "com.illuminationengine.conifercomputing" PARENT_SCOPE)
+        set(MACOSX_BUNDLE_NAME "${ConiferAddExecutable_NAME}" PARENT_SCOPE)
+        set(MACOSX_BUNDLE_VERSION "${ConiferAddExecutable_VERSION}" PARENT_SCOPE)
+        set(MACOSX_BUNDLE_COPYRIGHT "Please no stealing!" PARENT_SCOPE)
+        set(MACOSX_BUNDLE_EXECUTABLE "${ConiferAddExecutable_EXECUTABLE}" PARENT_SCOPE)
+        set(MACOSX_BUNDLE_ICON "icon.icns" PARENT_SCOPE)
+        set_target_properties(${ConiferAddExecutable_EXECUTABLE} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${ConiferAddExecutable_BUILD_RES}/macOS/Info.plist.in)
+    endif ()
 endfunction()
