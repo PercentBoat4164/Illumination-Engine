@@ -30,7 +30,6 @@ void IE::Graphics::CommandPool::create(
 }
 
 void IE::Graphics::CommandPool::destroy() {
-    m_commandBuffers.clear();
     if (m_commandPool != VK_NULL_HANDLE) {
         vkDestroyCommandPool(m_linkedRenderEngine->m_device.device, m_commandPool, nullptr);
         m_commandPool = VK_NULL_HANDLE;

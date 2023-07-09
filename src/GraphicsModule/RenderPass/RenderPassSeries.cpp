@@ -3,7 +3,9 @@
 #include "Image/ImageVulkan.hpp"
 #include "RenderEngine.hpp"
 
+#include <memory>
 #include <vulkan/vulkan.h>
+
 
 IE::Graphics::RenderPassSeries::RenderPassSeries(IE::Graphics::RenderEngine *t_engineLink) :
         m_linkedRenderEngine(t_engineLink) {
@@ -197,7 +199,7 @@ std::vector<std::vector<VkSubpassDependency>> IE::Graphics::RenderPassSeries::bu
                                         break;
                                     }
                                 }
-                                if (!dependencyAlreadyExists) {
+                                if (!dependencyAlreadyExists)
                                     subpassDependencies[i].push_back(
                                       {.srcSubpass    = static_cast<uint32_t>(j),
                                        .dstSubpass    = static_cast<uint32_t>(l),
@@ -210,7 +212,6 @@ std::vector<std::vector<VkSubpassDependency>> IE::Graphics::RenderPassSeries::bu
                                          thisAttachment.second.m_preset
                                        )}
                                     );
-                                }
                                 // The only purpose of this goto is to escape this nested loop.
                                 // The logic for this is that the attachment's dependency has already been found,
                                 //      so we can skip checking the rest of the subpasses.
@@ -277,10 +278,15 @@ auto IE::Graphics::RenderPassSeries::addRenderPass(const std::shared_ptr<IE::Gra
 }
 
 IE::Core::Threading::Task<void>
-IE::Graphics::RenderPassSeries::execute(std::shared_ptr<CommandBuffer> commandBuffer) {
+IE::Graphics::RenderPassSeries::execute(std::shared_ptr<CommandBuffer> t_commandBuffer) {
     std::vector<std::shared_ptr<IE::Core::Threading::BaseTask>> tasks;
     tasks.reserve(m_renderPasses.size());
     for (std::shared_ptr<RenderPass> renderPass : m_renderPasses)
-        tasks.push_back(IE::Core::getThreadPool().submit([&renderPass] { renderPass->execute(); }));
+        tasks.push_back(IE::Core::getThreadPool().submit([&renderPass, &t_commandBuffer] { return renderPass->record(t_commandBuffer); }));
     co_await IE::Core::getThreadPool().resumeAfter(tasks);
+    // record the secondary command buffers into the primary command buffer
+    std::vector<std::shared_ptr<CommandBuffer>> buffers;
+    buffers.reserve(m_renderPasses.size());
+    buffers[0] = std::static_pointer_cast<IE::Core::Threading::Task<std::shared_ptr<CommandBuffer>>>(tasks[0])->value();
+    t_commandBuffer->recordExecuteSecondaryCommandBuffers(buffers);
 }

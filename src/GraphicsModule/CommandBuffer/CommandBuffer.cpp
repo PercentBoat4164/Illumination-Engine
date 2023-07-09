@@ -50,8 +50,7 @@ void IE::Graphics::CommandBuffer::allocate(AllocationFlags t_flags) {
 void IE::Graphics::CommandBuffer::record(
   RecordFlags  t_flags,
   RenderPass  *t_renderPass,
-  uint32_t     t_subpass,
-  Framebuffer *t_framebuffer
+  uint32_t     t_subpass
 ) {
     std::lock_guard<std::mutex> lock(*m_commandPool->m_commandPoolMutex);
 
@@ -63,7 +62,7 @@ void IE::Graphics::CommandBuffer::record(
           .pNext                = nullptr,
           .renderPass           = t_renderPass->m_renderPass,
           .subpass              = t_subpass,
-          .framebuffer          = t_framebuffer->m_framebuffer,
+          .framebuffer          = t_renderPass->m_framebuffer.m_framebuffer,
           .occlusionQueryEnable = VK_FALSE,
           .queryFlags           = 0x0,
           .pipelineStatistics   = 0x0};
@@ -184,7 +183,7 @@ void IE::Graphics::CommandBuffer::execute(VkSemaphore input, VkSemaphore output,
         finish(false);
     } else if (m_status != IE_COMMAND_BUFFER_STATE_EXECUTABLE) {
         m_linkedRenderEngine->getLogger().log(
-          "Attempt to execute a command buffer that is not recording or executable!",
+          "Attempt to record a command buffer that is not recording or executable!",
           IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
     }

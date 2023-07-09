@@ -459,6 +459,7 @@ IE::Core::Logger IE::Graphics::RenderEngine::getLogger() {
     return m_graphicsAPICallbackLog;
 }
 
+/**@todo Make this function completely lock-free. */
 IE::Graphics::CommandPool *IE::Graphics::RenderEngine::getCommandPool() {
     static uint32_t             commandPoolIndex;
     static std::mutex           functionMutex;

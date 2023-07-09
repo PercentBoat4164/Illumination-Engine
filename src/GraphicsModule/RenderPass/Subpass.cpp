@@ -58,11 +58,15 @@ void IE::Graphics::Subpass::registerRenderable(IE::Graphics::Renderable *t_rende
     auto buffer{std::make_shared<CommandBuffer>(m_linkedRenderEngine->getCommandPool())};
 
     buffer->allocate(IE_COMMAND_BUFFER_ALLOCATE_SECONDARY);
-    buffer->record(0, m_renderPass, 0, &m_renderPass->m_framebuffer);
+    buffer->record(0, m_renderPass, 0);
 }
 
-void IE::Graphics::Subpass::execute(IE::Graphics::CommandBuffer t_masterCommandBuffer) {
-    t_masterCommandBuffer.recordExecuteSecondaryCommandBuffers(m_commandBuffers);
+std::shared_ptr<IE::Graphics::CommandBuffer>
+IE::Graphics::Subpass::record(std::shared_ptr<CommandBuffer> t_masterCommandBuffer, uint32_t index) {
+    auto commandBuffer{std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine->getCommandPool())};
+    commandBuffer->allocate(IE_COMMAND_BUFFER_ALLOCATE_SECONDARY);
+    commandBuffer->record(IE_COMMAND_BUFFER_RECORD_NONE, m_renderPass, index);
+    return commandBuffer;
 }
 
 void IE::Graphics::Subpass::destroy() {

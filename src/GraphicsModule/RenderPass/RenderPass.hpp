@@ -17,11 +17,6 @@ public:
         IE_RENDER_PASS_PRESET_CUSTOM = 0x0,
     };
 
-    enum ProgressionStatus {
-        IE_RENDER_PASS_PROGRESSION_STATUS_NEXT_SUBPASS_IN_SAME_RENDER_PASS,
-        IE_RENDER_PASS_PROGRESSION_STATUS_NEXT_RENDER_PASS,
-    };
-
     Preset                                              m_preset;
     IE::Graphics::RenderPassSeries                     *m_renderPassSeries{};
     IE::Graphics::Framebuffer                           m_framebuffer;
@@ -49,6 +44,6 @@ public:
       std::vector<IE::Graphics::Image::Preset> &t_attachmentPresets
     );
 
-    void execute();
+    std::shared_ptr<IE::Graphics::CommandBuffer> record(std::shared_ptr<IE::Graphics::CommandBuffer> &t_commandBuffer);
 };
 }  // namespace IE::Graphics

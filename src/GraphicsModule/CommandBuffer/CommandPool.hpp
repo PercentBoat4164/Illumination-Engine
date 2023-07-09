@@ -19,7 +19,6 @@ namespace IE::Graphics {
 class CommandPool {
 public:
     VkCommandPool                               m_commandPool{};
-    std::vector<std::shared_ptr<CommandBuffer>> m_commandBuffers{};
     IE::Graphics::RenderEngine                 *m_linkedRenderEngine{};
     VkQueue                                     m_queue{};
     std::shared_ptr<std::mutex>                 m_commandPoolMutex{std::make_shared<std::mutex>()};

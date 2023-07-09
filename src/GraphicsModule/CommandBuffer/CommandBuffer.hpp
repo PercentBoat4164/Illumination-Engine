@@ -29,12 +29,14 @@ enum Status {
 };
 
 enum AllocationFlagBits {
+    IE_COMMAND_BUFFER_ALLOCATE_NONE = 0x0,
     IE_COMMAND_BUFFER_ALLOCATE_SECONDARY = 0x1,
 };
 
 using AllocationFlags = uint64_t;
 
 enum RecordFlagBits {
+    IE_COMMAND_BUFFER_RECORD_NONE = 0x0,
     IE_COMMAND_BUFFER_RECORD_ONE_TIME_SUBMIT = 0x1
 };
 
@@ -66,8 +68,7 @@ public:
     void record(
       RecordFlags  t_flags       = 0,
       RenderPass  *t_renderPass  = nullptr,
-      uint32_t     t_subpass     = 0,
-      Framebuffer *t_framebuffer = nullptr
+      uint32_t     t_subpass     = 0
     );
 
     void free(std::lock_guard<std::mutex> &lock);
@@ -143,13 +144,10 @@ public:
 
     void recordEndRenderPass();
 
-    CommandBuffer(const CommandBuffer &source) = delete;
-
-    CommandBuffer(CommandBuffer &&source) = delete;
-
     void recordBeginRenderPass(VkRenderPassBeginInfo *pRenderPassBegin, VkSubpassContents contents);
 
     void recordExecuteSecondaryCommandBuffers(std::vector<VkCommandBuffer> t_commandBuffers);
+
     void recordExecuteSecondaryCommandBuffers(std::vector<std::shared_ptr<CommandBuffer>> t_commandBuffers);
 };
 }  // namespace IE::Graphics

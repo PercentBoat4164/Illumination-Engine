@@ -1,5 +1,6 @@
 #include "RenderPass.hpp"
 
+#include "CommandBuffer/CommandBuffer.hpp"
 #include "RenderEngine.hpp"
 
 IE::Graphics::RenderPass::RenderPass(Preset t_preset) : m_preset(t_preset) {
@@ -42,7 +43,10 @@ void IE::Graphics::RenderPass::build(
     m_framebuffer.build(this, t_attachmentPresets);
 }
 
-void IE::Graphics::RenderPass::execute() {
+std::shared_ptr<IE::Graphics::CommandBuffer> IE::Graphics::RenderPass::record(std::shared_ptr<IE::Graphics::CommandBuffer> &t_commandBuffer) {
+    auto commandBuffer{std::make_shared<IE::Graphics::CommandBuffer>(m_linkedRenderEngine->getCommandPool())};
+    int n = 0;
+    for (std::shared_ptr<Subpass> &subpass : m_subpasses) subpass->record(t_commandBuffer, n++);
 }
 
 IE::Graphics::RenderPass::~RenderPass() {

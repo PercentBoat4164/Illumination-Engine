@@ -76,13 +76,11 @@ public:
 
     void build(IE::Graphics::RenderPass *t_renderPass);
 
-    // Executing
-    std::vector<std::shared_ptr<IE::Graphics::CommandBuffer>> m_commandBuffers{};
-
     void registerRenderable(IE::Graphics::Renderable *t_renderable);
 
     void destroy();
 
-    void execute(CommandBuffer t_masterCommandBuffer);
+    std::shared_ptr<IE::Graphics::CommandBuffer>
+    record(std::shared_ptr<CommandBuffer> t_masterCommandBuffer, uint32_t index);
 };
 }  // namespace IE::Graphics
