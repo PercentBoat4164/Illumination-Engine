@@ -57,11 +57,9 @@ std::filesystem::path IE::Core::FileSystem::getBaseDirectory(const std::filesyst
     return t_path;
 }
 
-void IE::Core::FileSystem::setBaseDirectory(const std::filesystem::path &t_path) {
-    m_path = t_path;
+IE::Core::FileSystem::FileSystem() {
+    m_path = std::filesystem::canonical(".");
     m_files.clear();
-    for (auto entry : std::filesystem::recursive_directory_iterator{t_path})
+    for (auto entry : std::filesystem::recursive_directory_iterator{m_path})
         if (!entry.is_directory()) addFile(entry.path());
 }
-
-IE::Core::FileSystem::FileSystem() = default;

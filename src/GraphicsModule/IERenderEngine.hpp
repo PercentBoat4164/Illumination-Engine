@@ -46,7 +46,7 @@ private:
      * @brief Creates a window using hardcoded hints and settings from settings.
      * @return The window that was just created.
      */
-    GLFWwindow *createWindow() const;
+    GLFWwindow * createWindow() const;
 
     /**
      * @brief Changes the window icon to all of the images found in [m_path] with a
@@ -204,8 +204,6 @@ public:
         bool variableDescriptorCountSupportQuery() const;
     };
 
-    explicit IERenderEngine(const std::string &t_id, IESettings *settings);
-
     void toggleFullscreen();
 
     static std::string translateVkResultCodes(VkResult result);
@@ -250,9 +248,13 @@ public:
 
     void addAsset(const std::shared_ptr<IE::Core::Asset> &asset);
 
-    explicit IERenderEngine(const std::string &t_id, IESettings &settings);
-
     bool update();
+
+    static IE::Core::Threading::Task<std::shared_ptr<IERenderEngine>>
+    Factory(const std::string &t_id, IESettings &t_settings);
+
+    static IE::Core::Threading::Task<std::shared_ptr<IERenderEngine>> Factory(const std::string &t_id, IESettings *t_settings);
+
 
 private:
     std::vector<VkFence>               inFlightFences{};
@@ -268,6 +270,9 @@ private:
     float                              previousTime{};
     bool                               shouldBeFullscreen{settings->fullscreen};
 
+    explicit IERenderEngine(const std::string &t_id, IESettings &settings);
+
+    explicit IERenderEngine(const std::string &t_id, IESettings *t_settings);
 
     static std::function<bool(IERenderEngine &)> _update;
 

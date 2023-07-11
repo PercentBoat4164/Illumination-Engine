@@ -62,7 +62,7 @@ vkb::Instance IERenderEngine::createVulkanInstance() {
     return instance;
 }
 
-GLFWwindow *IERenderEngine::createWindow() const {
+GLFWwindow * IERenderEngine::createWindow() const {
     GLFWwindow *pWindow = glfwCreateWindow(
       settings->defaultResolution[0],
       settings->defaultResolution[1],
@@ -334,88 +334,7 @@ void IERenderEngine::destroyCommandPools() {
     computeCommandPool->destroy();
 }
 
-IERenderEngine::IERenderEngine(const std::string &t_id, IESettings *settings) : Engine(t_id), settings(settings) {
-    // Create a Vulkan instance
-    createVulkanInstance();
-
-    // Initialize GLFW then create and setup window
-    /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
-     * abstraction.*/
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    window = createWindow();
-    setWindowIcons("res/logos");
-    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    glfwGetWindowPos(window, settings->currentPosition->data(), &(*settings->currentPosition)[1]);
-    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
-    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    glfwSetWindowPosCallback(window, windowPositionCallback);
-    glfwSetWindowUserPointer(window, this);
-
-    // Create surface
-    createWindowSurface();
-
-    // Set up the device
-    std::vector<std::vector<const char *>> extensions{};
-    if (settings->rayTracing) {
-        extensions.push_back(extensionAndFeatureInfo.queryEngineFeatureExtensionRequirements(
-          IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING,
-          &API
-        ));
-        /**@todo Find a better way to handle specifying features. Perhaps use a similar method as was used for
-         * extensions.*/
-        extensionAndFeatureInfo.accelerationStructureFeatures.accelerationStructure = VK_TRUE;
-        extensionAndFeatureInfo.bufferDeviceAddressFeatures.bufferDeviceAddress     = VK_TRUE;
-        extensionAndFeatureInfo.rayQueryFeatures.rayQuery                           = VK_TRUE;
-        extensionAndFeatureInfo.rayTracingPipelineFeatures.rayTracingPipeline       = VK_TRUE;
-    }
-    setUpDevice(&extensions, extensionAndFeatureInfo.pNextHighestFeature);
-
-    // Get API Version
-    autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_VULKAN);
-
-    // Build function pointers and generate queues
-    buildFunctionPointers();
-
-    // Set up GPU Memory allocator
-    setUpGPUMemoryAllocator();
-
-    // Create swapchain
-    createSwapchain(false);
-    deletionQueue.insert(deletionQueue.begin(), [&] { destroySwapchain(); });
-
-    // Create sync objects
-    /**@todo Create an abstraction for sync objects if necessary.*/
-    createSyncObjects();
-    deletionQueue.insert(deletionQueue.begin(), [&] { destroySyncObjects(); });
-
-    // Create command pools
-    createCommandPools();
-    deletionQueue.insert(deletionQueue.begin(), [&] { destroyCommandPools(); });
-
-    IEImage::CreateInfo depthImageCreateInfo{
-      .format          = VK_FORMAT_D32_SFLOAT_S8_UINT,
-      .layout          = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-      .usage           = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-      .aspect          = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-      .allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY,
-      .width           = swapchain.extent.width,
-      .height          = swapchain.extent.height,
-      .channels        = 1,
-    };
-    depthImage = std::make_shared<IEImage>(this, &depthImageCreateInfo);
-    depthImage->uploadToVRAM();
-
-    // Create render pass
-    createRenderPass();
-    deletionQueue.insert(deletionQueue.begin(), [&] { renderPass->destroy(); });
-
-    graphicsCommandPool->index(0)->execute();
-    camera.create(this);
-    settings->logger.log(
-      device.physical_device.properties.deviceName,
-      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
-    );
-    settings->logger.log(API.name + " v" + API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
+IERenderEngine::IERenderEngine(const std::string &t_id, IESettings *t_settings) : Engine(t_id), settings(t_settings) {
 }
 
 void IERenderEngine::addAsset(const std::shared_ptr<IE::Core::Asset> &asset) {
@@ -732,71 +651,11 @@ bool IERenderEngine::ExtensionAndFeatureInfo::variableDescriptorCountSupportQuer
     return descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount != 0U;
 }
 
+
+
 IERenderEngine::IERenderEngine(const std::string &t_id, IESettings &t_settings) :
         Engine(t_id),
         settings(new IESettings{t_settings}) {
-    // Initialize GLFW then create and setup window
-    /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
-     * abstraction.*/
-    if (glfwInit() != GLFW_TRUE)
-        settings->logger.log("Failed to initialize GLFW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
-    glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-#ifndef __APPLE__
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-#else
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-#endif
-#ifndef NDEBUG
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-#endif
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy.
-    glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GL_TRUE);    // Use Core Profile by default.
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
-
-    window = createWindow();
-
-    setWindowIcons("res/logos");
-    glfwSetWindowSizeLimits(window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    glfwGetWindowPos(window, &(*settings->currentPosition)[0], &(*settings->currentPosition)[1]);
-    glfwSetWindowAttrib(window, GLFW_AUTO_ICONIFY, 0);
-    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    glfwSetWindowPosCallback(window, windowPositionCallback);
-    glfwSetWindowUserPointer(window, this);
-
-    // Make context current
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(settings->vSync ? 1 : 0);
-
-    // Initialize glew
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK)
-        settings->logger.log("Failed to initialize GLEW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
-
-    // Get API Version
-    autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);
-
-#ifndef NDEBUG
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronous
-#    ifndef __APPLE__
-    glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-#    endif
-#endif
-
-    camera.create(this);
-    this->settings->logger.log(
-      reinterpret_cast<const char *>(glGetString(GL_RENDERER)),
-      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
-    );
-    this->settings->logger.log(
-      API.name + " v" + API.version.name + "@" +
-        reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION)),
-      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
-    );
 }
 
 void APIENTRY IERenderEngine::
@@ -868,4 +727,163 @@ IERenderEngine::createRenderable(const std::string &t_id, IE::Core::File *t_reso
 
 void IERenderEngine::queueToggleFullscreen() {
     shouldBeFullscreen = !shouldBeFullscreen;
+}
+
+IE::Core::Threading::Task<std::shared_ptr<IERenderEngine>> IERenderEngine::Factory(const std::string &t_id, IESettings *t_settings) {
+    auto renderEngine = std::shared_ptr<IERenderEngine>(new IERenderEngine(t_id, t_settings));
+
+    // Create a Vulkan instance
+    renderEngine->createVulkanInstance();
+
+    // Initialize GLFW then create and setup window
+    /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
+     * abstraction.*/
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    renderEngine->window = renderEngine->createWindow();
+    renderEngine->setWindowIcons("res/logos");
+    glfwSetWindowSizeLimits(renderEngine->window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    glfwGetWindowPos(renderEngine->window, renderEngine->settings->currentPosition->data(), &(*renderEngine->settings->currentPosition)[1]);
+    glfwSetWindowAttrib(renderEngine->window, GLFW_AUTO_ICONIFY, 0);
+    glfwSetFramebufferSizeCallback(renderEngine->window, framebufferResizeCallback);
+    glfwSetWindowPosCallback(renderEngine->window, windowPositionCallback);
+    glfwSetWindowUserPointer(renderEngine->window, renderEngine.get());
+
+    // Create surface
+    renderEngine->createWindowSurface();
+
+    // Set up the device
+    std::vector<std::vector<const char *>> extensions{};
+    if (renderEngine->settings->rayTracing) {
+        extensions.push_back(renderEngine->extensionAndFeatureInfo.queryEngineFeatureExtensionRequirements(
+          IE_ENGINE_FEATURE_RAY_QUERY_RAY_TRACING,
+          &renderEngine->API
+        ));
+        /**@todo Find a better way to handle specifying features. Perhaps use a similar method as was used for
+         * extensions.*/
+        renderEngine->extensionAndFeatureInfo.accelerationStructureFeatures.accelerationStructure = VK_TRUE;
+        renderEngine->extensionAndFeatureInfo.bufferDeviceAddressFeatures.bufferDeviceAddress     = VK_TRUE;
+        renderEngine->extensionAndFeatureInfo.rayQueryFeatures.rayQuery                           = VK_TRUE;
+        renderEngine->extensionAndFeatureInfo.rayTracingPipelineFeatures.rayTracingPipeline       = VK_TRUE;
+    }
+    renderEngine->setUpDevice(&extensions, renderEngine->extensionAndFeatureInfo.pNextHighestFeature);
+
+    // Get API Version
+    renderEngine->autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_VULKAN);
+
+    // Build function pointers and generate queues
+    renderEngine->buildFunctionPointers();
+
+    // Set up GPU Memory allocator
+    renderEngine->setUpGPUMemoryAllocator();
+
+    // Create swapchain
+    renderEngine->createSwapchain(false);
+    renderEngine->deletionQueue.insert(renderEngine->deletionQueue.begin(), [&] { renderEngine->destroySwapchain(); });
+
+    // Create sync objects
+    /**@todo Create an abstraction for sync objects if necessary.*/
+    renderEngine->createSyncObjects();
+    renderEngine->deletionQueue.insert(renderEngine->deletionQueue.begin(), [&] { renderEngine->destroySyncObjects(); });
+
+    // Create command pools
+    renderEngine->createCommandPools();
+    renderEngine->deletionQueue.insert(renderEngine->deletionQueue.begin(), [&] { renderEngine->destroyCommandPools(); });
+
+    IEImage::CreateInfo depthImageCreateInfo{
+      .format          = VK_FORMAT_D32_SFLOAT_S8_UINT,
+      .layout          = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+      .usage           = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+      .aspect          = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+      .allocationUsage = VMA_MEMORY_USAGE_GPU_ONLY,
+      .width           = renderEngine->swapchain.extent.width,
+      .height          = renderEngine->swapchain.extent.height,
+      .channels        = 1,
+    };
+    renderEngine->depthImage = std::make_shared<IEImage>(renderEngine.get(), &depthImageCreateInfo);
+    renderEngine->depthImage->uploadToVRAM();
+
+    // Create render pass
+    renderEngine->createRenderPass();
+    renderEngine->deletionQueue.insert(renderEngine->deletionQueue.begin(), [&] { renderEngine->renderPass->destroy(); });
+
+    renderEngine->graphicsCommandPool->index(0)->execute();
+    renderEngine->camera.create(renderEngine.get());
+    renderEngine->settings->logger.log(
+      renderEngine->device.physical_device.properties.deviceName,
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
+    );
+    renderEngine->settings->logger.log(renderEngine->API.name + " v" + renderEngine->API.version.name, IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO);
+    co_return renderEngine;
+}
+
+IE::Core::Threading::Task<std::shared_ptr<IERenderEngine>>
+IERenderEngine::Factory(const std::string &t_id, IESettings &t_settings) {
+    auto renderEngine = std::shared_ptr<IERenderEngine>(new IERenderEngine(t_id, t_settings));
+#ifdef __APPLE__
+    co_await IE::Core::getThreadPool().ensureThread(IE::Core::Threading::ThreadType::IE_THREAD_TYPE_MAIN_THREAD);
+    glfwInitHint(GLFW_COCOA_MENUBAR, GLFW_FALSE);
+    glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GLFW_FALSE);
+#endif
+    // Initialize GLFW then create and setup window
+    /**@todo Clean up this section of the code as it is still quite messy. Optimally this would be done with a GUI
+     * abstraction.*/
+    if (glfwInit() != GLFW_TRUE)
+        renderEngine->settings->logger.log("Failed to initialize GLFW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+    glfwWindowHint(GLFW_SAMPLES, 1);  // 1x MSAA (No MSAA)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+#ifndef __APPLE__
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+#else
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+#endif
+#ifndef NDEBUG
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // To make macOS happy.
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // Use Core Profile by default.
+#endif
+
+    renderEngine->window = renderEngine->createWindow();
+
+    renderEngine->setWindowIcons("res/logos");
+    glfwSetWindowSizeLimits(renderEngine->window, 1, 1, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    glfwGetWindowPos(renderEngine->window, &(*renderEngine->settings->currentPosition)[0], &(*renderEngine->settings->currentPosition)[1]);
+    glfwSetWindowAttrib(renderEngine->window, GLFW_AUTO_ICONIFY, 0);
+    glfwSetFramebufferSizeCallback(renderEngine->window, framebufferResizeCallback);
+    glfwSetWindowPosCallback(renderEngine->window, windowPositionCallback);
+    glfwSetWindowUserPointer(renderEngine->window, renderEngine.get());
+
+    // Make context current
+    glfwMakeContextCurrent(renderEngine->window);
+    glfwSwapInterval(renderEngine->settings->vSync ? 1 : 0);
+
+    // Initialize glew
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK)
+        renderEngine->settings->logger.log("Failed to initialize GLEW!", IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR);
+
+    // Get API Version
+    renderEngine->autoDetectAPIVersion(IE_RENDER_ENGINE_API_NAME_OPENGL);
+
+#ifndef NDEBUG
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // makes sure errors are displayed synchronous
+#    ifndef __APPLE__
+    glDebugMessageCallback(&IERenderEngine::glDebugOutput, nullptr);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+#    endif
+#endif
+
+    renderEngine->camera.create(renderEngine.get());
+    renderEngine->settings->logger.log(
+      reinterpret_cast<const char *>(glGetString(GL_RENDERER)),
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
+    );
+    renderEngine->settings->logger.log(
+      renderEngine->API.name + " v" + renderEngine->API.version.name + "@" +
+        reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION)),
+      IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_INFO
+    );
+    co_return renderEngine;
 }

@@ -12,11 +12,11 @@ IE::Core::Threading::EnsureThread::EnsureThread(
 }
 
 bool IE::Core::Threading::EnsureThread::await_ready() {
-    return std::this_thread::get_id() == m_threadPool->mainThreadID ^ (m_type != IE_THREAD_TYPE_MAIN_THREAD);
+    return std::this_thread::get_id() == m_threadPool->mainThreadID ^ (m_threadType != IE_THREAD_TYPE_MAIN_THREAD);
 }
 
 void IE::Core::Threading::EnsureThread::await_suspend(std::coroutine_handle<> t_handle) {
-    m_threadPool->submit(m_type, t_handle);
+    m_threadPool->submit(m_threadType, t_handle);
 }
 
 void IE::Core::Threading::EnsureThread::releaseDependency() {

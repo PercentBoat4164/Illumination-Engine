@@ -3,8 +3,11 @@
 
 IE::Core::Threading::Task<void> illuminationEngine() {
     IESettings                      settings{};
-    std::shared_ptr<IERenderEngine> renderEngine =
-      IE::Core::createEngine<IERenderEngine>("render engine", settings);
+
+    auto r = IE::Core::getThreadPool().submit(IE::Core::createEngine<IERenderEngine>("render engine", settings));
+    co_await IE::Core::getThreadPool().resumeAfter(r);
+
+    std::shared_ptr<IERenderEngine> renderEngine = r->value();
 
     IE::Core::Asset asset(IE::Core::getFileSystem().getFile("res/assets/AncientStatue"));
     asset.addAspect(renderEngine->createRenderable(
@@ -21,9 +24,7 @@ IE::Core::Threading::Task<void> illuminationEngine() {
     co_return;
 }
 
-int main(int argc, char **argv) {
-    if (argc >= 1) IE::Core::init(std::filesystem::path(argv[0]).parent_path().string());
-
+int main() {
     IE::Core::getThreadPool().submit(illuminationEngine());
 
     IE::Core::getThreadPool().startMainThreadLoop();

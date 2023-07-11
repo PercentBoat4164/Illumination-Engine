@@ -110,10 +110,10 @@ public:
         return stbi_load_from_memory(data.data(), data.size(), &w, &h, &c, 4);
     }
 
-    template<IE_FILE_TYPE T = IE_FILE_TYPE_AUDIO>
-    IE::Core::Stream<std::vector<char>> stream(size_t t_bufferSize) {
-        co_return {};
-    }
+//    template<IE_FILE_TYPE T = IE_FILE_TYPE_AUDIO>
+//    IE::Core::Stream<std::vector<char>> stream(size_t t_bufferSize) {
+//        co_return {};
+//    }
 
     template<IE_FILE_TYPE T = IE_FILE_TYPE_AUDIO>
     std::vector<char> import() {

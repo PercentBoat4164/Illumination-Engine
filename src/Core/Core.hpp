@@ -24,21 +24,20 @@ class EventActionMapping;
 namespace detail {
 class Core final {
 public:
-    static Core &getInst(const std::filesystem::path &t_path = "");
-
     template<typename T, typename... Args>
         requires std::derived_from<T, IE::Core::Engine>
 
-    static std::shared_ptr<T> createEngine(const std::string &id, Args... args) {
+    static IE::Core::Threading::Task<std::shared_ptr<T>> createEngine(const std::string &id, Args... args) {
         std::unique_lock<std::mutex> lock(m_enginesMutex);
         if (m_engines.find(id) != m_engines.end())
             m_logger.log(
               "Engine '" + id + "' already exists!",
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
-        std::shared_ptr<T> engine = std::make_shared<T>(id, args...);
-        m_engines[id]             = engine;
-        return engine;
+        std::shared_ptr<IE::Core::Threading::Task<std::shared_ptr<T>>> engine = getThreadPool().submit(T::Factory(id, args...));
+        co_await getThreadPool().resumeAfter(engine);
+        m_engines[id]             = engine->value();
+        co_return engine->value();
     }
 
     template<typename T>
@@ -62,12 +61,8 @@ private:
     static Threading::ThreadPool                                              m_threadPool;
     static IE::Core::EventActionMapping                                       m_eventActionMapping;
     static FileSystem                                                         m_filesystem;
-
-    explicit Core(const std::filesystem::path &t_path);
 };
 }  // namespace detail
-
-void init(const std::filesystem::path &t_path);
 
 IE::Core::Logger                &getLogger();
 IE::Core::FileSystem            &getFileSystem();
@@ -76,8 +71,10 @@ IE::Core::EventActionMapping    &getEventActionMapping();
 
 template<typename T, typename... Args>
     requires std::derived_from<T, IE::Core::Engine>
-std::shared_ptr<T> createEngine(const std::string &t_id, Args... args) {
-    return IE::Core::detail::Core::createEngine<T>(t_id, args...);
+static IE::Core::Threading::Task<std::shared_ptr<T>> createEngine(const std::string &t_id, Args... args) {
+    auto e = IE::Core::getThreadPool().submit(IE::Core::detail::Core::createEngine<T>(t_id, args...));
+    co_await IE::Core::getThreadPool().resumeAfter(e);
+    co_return e->value();
 }
 
 template<typename T>

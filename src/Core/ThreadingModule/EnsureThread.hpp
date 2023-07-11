@@ -16,8 +16,5 @@ public:
     void await_suspend(std::coroutine_handle<> t_handle) override;
 
     virtual ~EnsureThread() = default;
-
-protected:
-    ThreadType m_type;
 };
 }  // namespace IE::Core::Threading
