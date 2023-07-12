@@ -99,7 +99,7 @@ VkDescriptorSetLayout IE::Graphics::DescriptorSet::getLayout(
                     layoutBindings.push_back(
                       {.binding         = info.binding,
                        .descriptorType  = info.type,
-                       .descriptorCount = 1,  // Indicates size of array in shader. Arrays are not supported yet.
+                       .descriptorCount = 1,  // Indicates m_size of array in shader. Arrays are not supported yet.
                        .stageFlags      = static_cast<VkShaderStageFlags>(shader->m_stage),
                        .pImmutableSamplers = nullptr}
                     );
@@ -108,7 +108,7 @@ VkDescriptorSetLayout IE::Graphics::DescriptorSet::getLayout(
             layoutBindings.push_back(
               {.binding            = get<1>(descriptor),
                .descriptorType     = get<0>(descriptor),
-               .descriptorCount    = 1,  // Indicates size of array in shader. Arrays are not supported yet.
+               .descriptorCount    = 1,  // Indicates m_size of array in shader. Arrays are not supported yet.
                .stageFlags         = VK_SHADER_STAGE_ALL_GRAPHICS,
                .pImmutableSamplers = nullptr}
             );

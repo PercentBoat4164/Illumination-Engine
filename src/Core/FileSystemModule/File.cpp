@@ -1,95 +1,80 @@
 #include "File.hpp"
 
+#include <filesystem>
 #include <iostream>
 
 IE::Core::File::File(const std::filesystem::path &filePath) {
-    path = filePath;
-    name = filePath.filename().string();
-    open(std::fstream::in | std::fstream::binary);
-    fileIO.seekg(0, std::fstream::end);
-    size      = fileIO.tellg();
-    extension = filePath.extension().string();
-    close();
+    m_path = filePath;
+    m_name = m_path.filename().string();
+    open();
+    m_stream.ignore(std::numeric_limits<std::streamsize>::max());
+    m_size = m_stream.gcount();
+    m_stream.clear();  //  Since ignore will have set eof.
+    m_stream.seekg(0, std::fstream::end);
+    m_extension = m_path.extension().string();
 }
 
-IE::Core::File::File(const IE::Core::File &file) {
-    name      = file.name;
-    path      = file.path;
-    size      = file.size;
-    extension = file.extension;
+IE::Core::File::File(File &&t_other) noexcept {
+    m_name      = t_other.m_name;
+    m_path      = t_other.m_path;
+    m_size      = t_other.m_size;
+    m_extension = t_other.m_extension;
 }
 
-IE::Core::File &IE::Core::File::operator=(const IE::Core::File &file) {
-    if (this == &file) return *this;
-    name      = file.name;
-    path      = file.path;
-    size      = file.size;
-    extension = file.extension;
+IE::Core::File::File(const File &t_other) {
+    m_name      = t_other.m_name;
+    m_path      = t_other.m_path;
+    m_size      = t_other.m_size;
+    m_extension = t_other.m_extension;
+}
+
+IE::Core::File &IE::Core::File::operator=(const IE::Core::File &t_other) {
+    if (this == &t_other) return *this;
+    m_name      = t_other.m_name;
+    m_path      = t_other.m_path;
+    m_size      = t_other.m_size;
+    m_extension = t_other.m_extension;
     return *this;
 }
 
-std::vector<char> IE::Core::File::read() {
-    std::vector<char> data(size);
-    open(std::fstream::in | std::fstream::binary);
-    getSize();
-    fileIO.seekg(0, std::fstream::beg);
-    fileIO.read(data.data(), size);
+IE::Core::File::~File() {
     close();
-    return data;
-}
-
-std::vector<char> IE::Core::File::read(std::streamsize numBytes, std::streamsize startPosition) {
-    std::vector<char> data(size);
-    open();
-    fileIO.seekg(startPosition);
-    fileIO.read(data.data(), numBytes);
-    close();
-    return data;
 }
 
 void IE::Core::File::write(const std::vector<char> &data) {
-    std::cout << "writing to file\n" << path.generic_string() << "\n";
-    open();
-    if (fileIO.is_open()) {
+    std::cout << "writing to file\n" << m_path.generic_string() << "\n";
+    if (m_stream.is_open()) {
         std::cout << "file opened\n";
-        fileIO.clear();
-        fileIO << &data;
-        size = fileIO.tellg();
-        close();
+        m_stream.clear();
+        m_stream << &data;
+        m_size = m_stream.tellg();
     } else {
         std::cout << "file failed to open\n";
     }
 }
 
 void IE::Core::File::overwrite(const std::vector<char> &data, std::streamsize startPosition) {
-    open();
-    if (startPosition == -1)             // If no starting position
-        startPosition = fileIO.tellg();  // Start here
+    if (startPosition == -1)               // If no starting position
+        startPosition = m_stream.tellg();  // Start here
 
     // Go to starting position
-    fileIO.seekg(startPosition);
+    m_stream.seekg(startPosition);
 
     // Write to file
     auto dataSize = static_cast<std::streamsize>(data.size());
-    fileIO.write(data.data(), dataSize);
+    m_stream.write(data.data(), dataSize);
 
     // Update file length
-    size = std::max(dataSize + startPosition, size);
-    close();
-}
-
-std::streamsize IE::Core::File::getSize() {
-    fileIO.seekg(0, std::fstream::end);
-    return size = fileIO.tellg();
+    m_size = std::max(dataSize + startPosition, m_size);
 }
 
 void IE::Core::File::open(std::ios::openmode mode) {
-    if (!fileIO.is_open()) {
-        fileIO.open(path, mode);
-        size = fileIO.tellg();
+    if (!m_stream.is_open()) {
+        m_stream.open(m_path, mode);
+        m_size = m_stream.tellg();
     }
 }
 
 void IE::Core::File::close() {
-    if (fileIO.is_open()) fileIO.close();
+    if (m_stream.is_open()) m_stream.close();
 }

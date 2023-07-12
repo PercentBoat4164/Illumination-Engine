@@ -1,6 +1,9 @@
 #include "Shader.hpp"
 
+#include "Core/Core.hpp"
+#include "Core/FileSystemModule/File.hpp"
 #include "Core/FileSystemModule/FileSystem.hpp"
+#include "Core/LogModule/Logger.hpp"
 #include "RenderEngine.hpp"
 
 #include <spirv_cpp.hpp>
@@ -26,19 +29,24 @@ void IE::Graphics::Shader::compile() {
 
     options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-    auto                          contents(m_file->read());
-    std::string                   str(contents.begin(), contents.end());
+    std::string str;
+    if (m_file->read(str, -1) != IE::Core::IE_FILESYSTEM_RESULT_SUCCESS) {
+        m_linkedRenderEngine->getLogger().log(
+          "Failed to compile file: " + m_file->m_path.string(),
+          Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
+        );
+    }
     shaderc::SpvCompilationResult compilationResult{
-      compiler.CompileGlslToSpv(str, m_kind, m_file->path.string().c_str(), options)};
+      compiler.CompileGlslToSpv(str, m_kind, m_file->m_path.string().c_str(), options)};
 
     if (compilationResult.GetCompilationStatus() != shaderc_compilation_status_success)
         m_linkedRenderEngine->getLogger().log(
           "Shader Compiler encountered " + std::to_string(compilationResult.GetNumErrors()) + " error(s) and " +
-            std::to_string(compilationResult.GetNumWarnings()) + " warning(s) in " + m_file->path.string() +
+            std::to_string(compilationResult.GetNumWarnings()) + " warning(s) in " + m_file->m_path.string() +
             ":\n" + compilationResult.GetErrorMessage().erase(compilationResult.GetErrorMessage().length() - 1),
           Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
         );
-    else m_linkedRenderEngine->getLogger().log("Compiled Shader " + m_file->path.string());
+    else m_linkedRenderEngine->getLogger().log("Compiled Shader " + m_file->m_path.string());
 
     // reflect
     m_code = {compilationResult.begin(), compilationResult.end()};
@@ -73,20 +81,20 @@ IE::Graphics::Shader::Shader(const std::filesystem::path &t_filename) :
         );
     }
     // Get kind from filename
-    if (m_file->extension == ".vert") m_kind = shaderc_vertex_shader;
-    else if (m_file->extension == ".tesc") m_kind = shaderc_tess_control_shader;
-    else if (m_file->extension == ".tese") m_kind = shaderc_tess_evaluation_shader;
-    else if (m_file->extension == ".geom") m_kind = shaderc_geometry_shader;
-    else if (m_file->extension == ".frag") m_kind = shaderc_fragment_shader;
-    else if (m_file->extension == ".comp") m_kind = shaderc_compute_shader;
-    else if (m_file->extension == ".mesh") m_kind = shaderc_mesh_shader;
-    else if (m_file->extension == ".task") m_kind = shaderc_task_shader;
-    else if (m_file->extension == ".rgen") m_kind = shaderc_raygen_shader;
-    else if (m_file->extension == ".ahit") m_kind = shaderc_anyhit_shader;
-    else if (m_file->extension == ".chit") m_kind = shaderc_closesthit_shader;
-    else if (m_file->extension == ".intr") m_kind = shaderc_intersection_shader;
-    else if (m_file->extension == ".call") m_kind = shaderc_callable_shader;
-    else if (m_file->extension == ".miss") m_kind = shaderc_miss_shader;
+    if (m_file->m_extension == ".vert") m_kind = shaderc_vertex_shader;
+    else if (m_file->m_extension == ".tesc") m_kind = shaderc_tess_control_shader;
+    else if (m_file->m_extension == ".tese") m_kind = shaderc_tess_evaluation_shader;
+    else if (m_file->m_extension == ".geom") m_kind = shaderc_geometry_shader;
+    else if (m_file->m_extension == ".frag") m_kind = shaderc_fragment_shader;
+    else if (m_file->m_extension == ".comp") m_kind = shaderc_compute_shader;
+    else if (m_file->m_extension == ".mesh") m_kind = shaderc_mesh_shader;
+    else if (m_file->m_extension == ".task") m_kind = shaderc_task_shader;
+    else if (m_file->m_extension == ".rgen") m_kind = shaderc_raygen_shader;
+    else if (m_file->m_extension == ".ahit") m_kind = shaderc_anyhit_shader;
+    else if (m_file->m_extension == ".chit") m_kind = shaderc_closesthit_shader;
+    else if (m_file->m_extension == ".intr") m_kind = shaderc_intersection_shader;
+    else if (m_file->m_extension == ".call") m_kind = shaderc_callable_shader;
+    else if (m_file->m_extension == ".miss") m_kind = shaderc_miss_shader;
     else m_kind = shaderc_glsl_infer_from_source;
 }
 

@@ -164,10 +164,10 @@ VkSurfaceKHR IE::Graphics::RenderEngine::createSurface() {
             const char *description{};
             int         code = glfwGetError(&description);
             m_graphicsAPICallbackLog.log(
-              "Failed to create m_window surface! Error: " + std::to_string(code) + " " + description,
+              "Failed to create window surface! Error: " + std::to_string(code) + " " + description,
               IE::Core::Logger::ILLUMINATION_ENGINE_LOG_LEVEL_ERROR
             );
-        } else m_graphicsAPICallbackLog.log("Created m_window surface");
+        } else m_graphicsAPICallbackLog.log("Created window surface");
         return m_surface;
     }
     return {};
@@ -450,7 +450,7 @@ IE::Graphics::RenderEngine::~RenderEngine() {
 void IE::Graphics::RenderEngine::framebufferResizeCallback(GLFWwindow *pWindow, int x, int y) {
     auto *renderEngine = static_cast<IE::Graphics::RenderEngine *>(glfwGetWindowUserPointer(pWindow));
     renderEngine->m_graphicsAPICallbackLog.log(
-      "Changing m_window size to (" + std::to_string(x) + ", " + std::to_string(y) + ")"
+      "Changing m_window m_size to (" + std::to_string(x) + ", " + std::to_string(y) + ")"
     );
     renderEngine->m_currentResolution = {static_cast<size_t>(x), static_cast<size_t>(y)};
 }

@@ -1,7 +1,7 @@
 set(IEFileSystemModuleSourceFiles  # Gather sources
   File.cpp
   FileSystem.cpp
-  Importer.cpp
+  Stream.cpp
   )
 
 # Create and define properties for the library

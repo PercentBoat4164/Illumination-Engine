@@ -21,8 +21,6 @@ class EventActionMapping;
 namespace detail {
 class Core final {
 public:
-    static Core &getInst(const std::filesystem::path &t_path = "");
-
     template<typename T, typename... Args>
         requires std::derived_from<T, IE::Core::Engine>
 
@@ -51,6 +49,8 @@ public:
     static IE::Core::Threading::ThreadPool &getThreadPool();
     static IE::Core::EventActionMapping    &getEventActionMapping();
 
+    Core() = delete;
+
 private:
     static IE::Core::Logger                                                   m_logger;
     static std::mutex                                                         m_enginesMutex;
@@ -59,12 +59,8 @@ private:
     static Threading::ThreadPool                                              m_threadPool;
     static IE::Core::EventActionMapping                                       m_eventActionMapping;
     static FileSystem                                                         m_filesystem;
-
-    explicit Core(const std::filesystem::path &t_path);
 };
 }  // namespace detail
-
-void init(const std::filesystem::path &t_path);
 
 IE::Core::Logger                &getLogger();
 IE::Core::FileSystem            &getFileSystem();

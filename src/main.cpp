@@ -29,9 +29,7 @@ IE::Core::Threading::Task<void> illuminationEngine() {
 }
 
 int main(int argc, char **argv) {
-    if (argc >= 1) IE::Core::init(std::filesystem::path(argv[0]).parent_path().string());
+        auto job = IE::Core::getThreadPool().submit(illuminationEngine());
 
-    auto job = IE::Core::getThreadPool().submit(illuminationEngine());
-
-    IE::Core::getThreadPool().startMainThreadLoop();
+        IE::Core::getThreadPool().startMainThreadLoop();
 }
